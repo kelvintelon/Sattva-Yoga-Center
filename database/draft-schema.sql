@@ -1,14 +1,6 @@
-BEGIN;
+BEGIN TRANSACTION;
 
-DROP TABLE IF EXISTS users, class_details, client_info, teacher_details, class_attendance CASCADE;     --CASCADE for serialized foreign keys?
-
-CREATE TABLE users (
-	user_id SERIAL,
-	username varchar(50) NOT NULL UNIQUE,
-	password_hash varchar(200) NOT NULL,
-	role varchar(50) NOT NULL,
-	CONSTRAINT PK_user PRIMARY KEY (user_id)
-);
+DROP TABLE IF EXISTS users, teacher_details, class_details, client_info, class_attendance;     --CASCADE for serialized foreign keys?
 
 CREATE TABLE teacher_details
 (
@@ -16,7 +8,7 @@ CREATE TABLE teacher_details
     last_name         varchar(30) NOT NULL,
     first_name        varchar(30) NOT NULL,
     is_teacher_active boolean     NOT NULL,
-	user_id			  int		  NOT NULL,
+	user_id int NOT NULL,
 	CONSTRAINT PK_teacher_id PRIMARY KEY (teacher_id),
 	CONSTRAINT FK_teacher_id_user_id FOREIGN KEY (user_id) REFERENCES user_id(users)
 );
@@ -26,12 +18,21 @@ CREATE TABLE class_details
     class_id          serial    NOT NULL,
     teacher_id        int       NOT NULL,
     class_datetime    timestamp NOT NULL,
-    class_duration    int      NOT NULL,
+    class_duration    int       NOT NULL,
     is_paid           boolean   NOT NULL,  --??
     class_description text      NOT NULL,
     CONSTRAINT PK_class_details PRIMARY KEY (class_id),
     CONSTRAINT FK_teacher_id FOREIGN KEY (teacher_id) REFERENCES teacher_details (teacher_id)
 
+);
+
+CREATE TABLE users 
+(
+	user_id serial,
+	username 					varchar(50)   NOT NULL UNIQUE,
+	password_hash 				varchar(200)  NOT NULL,
+	role 						varchar(50)   NOT NULL,
+	CONSTRAINT PK_user PRIMARY KEY (user_id)
 );
 
 CREATE TABLE client_info
@@ -50,11 +51,10 @@ CREATE TABLE client_info
     email                   varchar(30) NOT NULL,
     has_record_of_liability boolean     NOT NULL,
     date_of_entry           timestamp,
-	user_id			  int		  NOT NULL,
+	user_id int NOT NULL,
     CONSTRAINT PK_client_id PRIMARY KEY (client_id),
-	CONSTRAINT FK_client_id_user_id FOREIGN KEY (user_id) REFERENCES user_id(users)
+	CONSTRAINT FK_client_id_user_id FOREIGN KEY (user_id) REFERENCES user_id (users)
 );
-
 
 
 CREATE TABLE class_attendance
@@ -75,8 +75,6 @@ CREATE TABLE class_attendance
     CONSTRAINT PK_class_attendance PRIMARY KEY (class_attendance_id),
     CONSTRAINT FK_class_attendance_id FOREIGN KEY (class_id) REFERENCES class_details (class_id),
     CONSTRAINT FK_class_attendance_client_id FOREIGN KEY (client_id) REFERENCES client_info (client_id)
---     CONSTRAINT FK_package_id FOREIGN KEY (package_id) REFERENCES ???
-
 );
 
-COMMIT;
+COMMIT TRANSACTION;
