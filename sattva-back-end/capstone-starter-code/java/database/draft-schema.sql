@@ -2,6 +2,15 @@ BEGIN;
 
 DROP TABLE IF EXISTS class_details, client_info, teacher_details, class_attendance CASCADE;     --CASCADE for serialized foreign keys?
 
+CREATE TABLE teacher_details
+(
+    teacher_id        serial      NOT NULL,
+    last_name         varchar(30) NOT NULL,
+    first_name        varchar(30) NOT NULL,
+    is_teacher_active boolean     NOT NULL,
+	CONSTRAINT PK_teacher_id PRIMARY KEY (teacher_id)
+);
+
 CREATE TABLE class_details
 (
     class_id          serial    NOT NULL,
@@ -35,13 +44,7 @@ CREATE TABLE client_info
 
 );
 
-CREATE TABLE teacher_details
-(
-    teacher_id        serial      NOT NULL,
-    last_name         varchar(30) NOT NULL,
-    first_name        varchar(30) NOT NULL,
-    is_teacher_active boolean     NOT NULL
-);
+
 
 CREATE TABLE class_attendance
 (
