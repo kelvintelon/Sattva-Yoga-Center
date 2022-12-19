@@ -1,40 +1,28 @@
 <template>
   <div>
     <header>
-      <img
-        class="logo"
-        src="@/assets/sattva-logo.jpeg"
-      />
+      <img class="logo" src="@/assets/sattva-logo.jpeg" />
       <div class="inner_header">
-         <router-link style="text-decoration: none; color: inherit;" v-bind:to="{ name: 'home'}">
-
-          <!-- <img class="logo" src="../../img/sattva-logo.jpeg" /> -->
+        <router-link
+          style="text-decoration: none; color: inherit"
+          v-bind:to="{ name: 'home' }"
+        >
           <div class="logo_container">
             <h1 class="title">Sattva Yoga Center</h1>
-              </div>
-          </router-link> 
-        
-
-
+          </div>
+        </router-link>
       </div>
-      
     </header>
-
-
   </div>
 </template>
 
 <script>
 export default {
-    name:  "header-logo",
-    data(){
-        return{
-         
-        }
-    },
-    created(){
-      
-    }
+  name: "header-logo",
+  data() {
+    return {};
+  },
+  created() {},
 };
 </script>
 
@@ -44,8 +32,16 @@ header {
   justify-content: center;
 }
 
-.inner_header{
+.inner_header {
   margin-left: 40px;
+}
+
+.title {
+  font-size: 50px;
+}
+
+.logo {
+  height: 150px;
 }
 
 header {
@@ -61,15 +57,13 @@ header {
   height: 80px; */
 }
 
-
-
-.logo_container{
+.logo_container {
   /* height: 100%;
   display: table;
   float: left; */
 }
 
-.logo_container h1{
+.logo_container h1 {
   /* font-family: 'Billabong', sans-serif;
   /* font-family: 'Montserrat', sans-serif; 
   color: aliceblue;
@@ -80,7 +74,7 @@ header {
   font-weight: 200; */
 }
 
-.logo{
+.logo {
   /* height: 100%;
   display: table-cell;
 
@@ -92,9 +86,6 @@ header {
   margin-bottom: auto;
 
   width: 60px;*/
-  height: 130px; 
-
+  
 }
-
-
 </style>
