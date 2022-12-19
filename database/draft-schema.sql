@@ -1,6 +1,6 @@
 BEGIN TRANSACTION;
 
-DROP TABLE IF EXISTS users, teacher_details, class_details, client_info, class_attendance;     --CASCADE for serialized foreign keys?
+DROP TABLE IF EXISTS users, teacher_details, client_info, class_attendance, class_details CASCADE;     --CASCADE for serialized foreign keys?
 
 CREATE TABLE teacher_details
 (
@@ -26,15 +26,6 @@ CREATE TABLE class_details
 
 );
 
-CREATE TABLE users 
-(
-	user_id serial,
-	username 					varchar(50)   NOT NULL UNIQUE,
-	password_hash 				varchar(200)  NOT NULL,
-	role 						varchar(50)   NOT NULL,
-	CONSTRAINT PK_user PRIMARY KEY (user_id)
-);
-
 CREATE TABLE client_info
 (
     client_id               serial      NOT NULL,
@@ -50,12 +41,20 @@ CREATE TABLE client_info
     is_on_email_list        boolean     NOT NULL,
     email                   varchar(30) NOT NULL,
     has_record_of_liability boolean     NOT NULL,
-    date_of_entry           timestamp,
-	user_id int NOT NULL,
+    date_of_entry           timestamp   NOT NULL,
+	user_id 				int 		NOT NULL,
     CONSTRAINT PK_client_id PRIMARY KEY (client_id),
 	CONSTRAINT FK_client_id_user_id FOREIGN KEY (user_id) REFERENCES user_id (users)
 );
 
+CREATE TABLE users 
+(
+	user_id 					serial		  NOT NULL,
+	username 					varchar(50)   NOT NULL UNIQUE,
+	password_hash 				varchar(200)  NOT NULL,
+	role 						varchar(50)   NOT NULL,
+	CONSTRAINT PK_user PRIMARY KEY (user_id)
+);
 
 CREATE TABLE class_attendance
 (
