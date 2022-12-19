@@ -1,7 +1,7 @@
-package com.techelevator.dao;
+package com.sattvayoga.dao;
 
-import com.techelevator.model.User;
-import com.techelevator.model.UserNotFoundException;
+import com.sattvayoga.model.User;
+import com.sattvayoga.model.UserNotFoundException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

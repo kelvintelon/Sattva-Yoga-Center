@@ -1,9 +1,9 @@
-package com.techelevator.model;
+package com.sattvayoga.model;
 
 /**
  * DTO for storing a user's credentials.
  */
-public class LoginDTO {
+public class LoginDto {
 
    private String username;
    private String password;

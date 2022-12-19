@@ -1,8 +1,8 @@
-package com.techelevator.model;
+package com.sattvayoga.model;
 
 import javax.validation.constraints.NotEmpty;
 
-public class RegisterUserDTO {
+public class RegisterUserDto {
 
     @NotEmpty
     private String username;

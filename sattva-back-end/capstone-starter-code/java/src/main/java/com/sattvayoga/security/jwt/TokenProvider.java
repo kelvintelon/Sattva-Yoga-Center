@@ -1,4 +1,4 @@
-package com.techelevator.security.jwt;
+package com.sattvayoga.security.jwt;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;

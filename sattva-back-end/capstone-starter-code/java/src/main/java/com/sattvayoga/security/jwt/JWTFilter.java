@@ -1,4 +1,4 @@
-package com.techelevator.security.jwt;
+package com.sattvayoga.security.jwt;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

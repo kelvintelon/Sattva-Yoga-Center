@@ -1,4 +1,4 @@
-package com.techelevator;
+package com.sattvayoga;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

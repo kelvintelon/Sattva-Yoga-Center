@@ -1,6 +1,6 @@
-package com.techelevator.dao;
+package com.sattvayoga.dao;
 
-import com.techelevator.model.User;
+import com.sattvayoga.model.User;
 
 import java.util.List;
 
