@@ -1,47 +1,68 @@
-CREATE TABLE class_attendance
-    class_attendance_id serial PRIMARY KEY
-    class_id int (foreign key)
-    package_id int (foreign key?)
-    purchase_id int
-    client_id int (foreign key)
-drop in boolean
-new_client boolean
-drop_in_fee numeric
-mat_use_fee numeric
-guest boolean
-count int
-private boolean
-unlimited boolean
+BEGIN;
+
+DROP TABLE IF EXISTS class_details, client_info, teacher_details, class_attendance CASCADE;     --CASCADE for serialized foreign keys?
 
 CREATE TABLE class_details
-    class_id serial PRIMARY KEY
-    teacher_id int (foreign key)
-    date_of_class date
-    class_time time
-    duration int
-    paid boolean
-    description text
+(
+    class_id          serial    NOT NULL,
+    teacher_id        int       NOT NULL,
+    class_datetime    timestamp NOT NULL,
+    class_duration    time      NOT NULL,
+    is_paid           boolean   NOT NULL,
+    class_description text      NOT NULL,
+    CONSTRAINT PK_class_details PRIMARY KEY (class_id),
+    CONSTRAINT FK_teacher_id FOREIGN KEY (teacher_id) REFERENCES teacher_details (teacher_id)
+
+);
 
 CREATE TABLE client_info
-    client_id serial PRIMARY KEY
-    last_name varchar(30)
-    first_name varchar(30)
-    is_client_active boolean
-    constant_contact boolean
-    street_address varchar(30)
-    city varchar(30)
-    state_abbreviation varchar(2)
-    zip_code varchar(10)
-    phone_number varchar(15)
-    email_list boolean
-    email varchar(30)
-    record_of_liability boolean
-    date_of_entry date
+(
+    client_id               serial      NOT NULL,
+    last_name               varchar(30) NOT NULL,
+    first_name              varchar(30) NOT NULL,
+    is_client_active        boolean     NOT NULL,
+    is_constant_contact     boolean     NOT NULL,
+    street_address          varchar(50) NOT NULL,
+    city                    varchar(30) NOT NULL,
+    state_abbreviation      varchar(2)  NOT NULL,
+    zip_code                varchar(12) NOT NULL,
+    phone_number            varchar(15) NOT NULL,
+    is_on_email_list        boolean     NOT NULL,
+    email                   varchar(30) NOT NULL,
+    has_record_of_liability boolean     NOT NULL,
+    date_of_entry           timestamp,
+    CONSTRAINT PK_client_id PRIMARY KEY (client_id)
+
+);
 
 CREATE TABLE teacher_details
-    teacher_id serial PRIMARY KEY
-    last_name varchar(30)
-    first_name varchar(30)
-    is_teacher_active boolean
+(
+    teacher_id        serial      NOT NULL,
+    last_name         varchar(30) NOT NULL,
+    first_name        varchar(30) NOT NULL,
+    is_teacher_active boolean     NOT NULL
+);
 
+CREATE TABLE class_attendance
+(
+    class_attendance_id serial         NOT NULL,
+    class_id            int            NOT NULL,
+    client_id           int            NOT NULL,
+    package_id          int            NOT NULL,
+    purchase_id         int            NOT NULL,
+    is_new_client       boolean        NOT NULL,
+    is_drop_in          boolean        NOT NULL,
+    drop_in_fee         decimal(13, 2) NOT NULL,
+    mat_use_fee         decimal(13, 2) NOT NULL,
+    is_guest            boolean,
+    attendance_count    int,
+    is_private          boolean, -- what is this field for?
+    is_unlimited        boolean, -- what is this field for?
+    CONSTRAINT PK_class_attendance PRIMARY KEY (class_attendance_id),
+    CONSTRAINT FK_class_attendance_id FOREIGN KEY (class_id) REFERENCES class_details (class_id),
+    CONSTRAINT FK_class_attendance_client_id FOREIGN KEY (client_id) REFERENCES client_info (client_id)
+--     CONSTRAINT FK_package_id FOREIGN KEY (package_id) REFERENCES ???
 
+);
+
+COMMIT;
