@@ -1,11 +1,10 @@
 <template>
   <div>
-    <img class="logo" src="@/assets/sattva-logo.jpeg" />
     <div class="inner_header">
       <router-link
         style="text-decoration: none; color: inherit"
         v-bind:to="{ name: 'home' }"
-      >
+      ><img class="logo" src="@/assets/sattva-logo.jpeg" />
       </router-link>
     </div>
   </div>
@@ -22,13 +21,9 @@ export default {
 </script>
 
 <style>
-/* header {
-  display: flex;
-  justify-content: left;
-} */
 
 .inner_header {
-  margin-left: 40px;
+  padding: 10px;
 }
 
 .title {
@@ -36,6 +31,6 @@ export default {
 }
 
 .logo {
-  height: 140px;
+  height: 130px;
 }
 </style>

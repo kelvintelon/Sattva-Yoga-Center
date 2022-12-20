@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <header-logo class="header-logo"></header-logo>
+    <top-header></top-header>
     <header>Sattva</header>
     <p>You must be authenticated to see this</p>
     
@@ -11,12 +11,12 @@
 
 
 <script>
-import HeaderLogo from "../components/HeaderLogo.vue";
+import TopHeader from "../components/TopHeader.vue"
 
 export default {
   name: "home",
   components: {
-    HeaderLogo,
+    TopHeader
   },
 };
 </script>
