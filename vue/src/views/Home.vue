@@ -1,8 +1,11 @@
 <template>
   <div class="home">
-    <header-logo></header-logo>
-    <h1>Home</h1>
+    <header-logo class="header-logo"></header-logo>
+    <header>Sattva</header>
     <p>You must be authenticated to see this</p>
+    
+
+    
   </div>
 </template>
 
@@ -17,3 +20,7 @@ export default {
   },
 };
 </script>
+
+<style>
+
+</style>
