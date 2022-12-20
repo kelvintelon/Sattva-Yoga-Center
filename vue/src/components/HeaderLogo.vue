@@ -8,7 +8,6 @@
           v-bind:to="{ name: 'home' }"
         >
           <div class="logo_container">
-            <h1 class="title">Sattva Yoga Center</h1>
           </div>
         </router-link>
       </div>
