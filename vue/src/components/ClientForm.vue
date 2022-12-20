@@ -1,5 +1,5 @@
 <template>
-  <div>
+
     <div class="client-form-template">
       <v-form ref="form" v-model="valid" lazy-validation>
         <v-text-field
@@ -78,7 +78,7 @@
         <v-btn class="mr-4" type="submit" :disabled="invalid"> submit </v-btn>
       </v-form>
     </div>
-  </div>
+
 </template>
 
 <script>
@@ -102,7 +102,7 @@ export default {
       (v) => /.+@.+\..+/.test(v) || "E-mail must be valid",
     ],
     select: null,
-    items: ["Item 1", "Item 2", "Item 3", "Item 4"],
+    items: [ 'AL', 'AK', 'AS', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'DC', 'FM', 'FL', 'GA', 'GU', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MH', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'MP', 'OH', 'OK', 'OR', 'PW', 'PA', 'PR', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VI', 'VA', 'WA', 'WV', 'WI', 'WY' ],
   }),
 
   methods: {
@@ -117,7 +117,6 @@ export default {
 <style>
 .client-form-template {
   display: flex;
-  width: 50%;
   justify-content: center;
 }
 </style>
