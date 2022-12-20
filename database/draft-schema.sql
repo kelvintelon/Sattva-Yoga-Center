@@ -28,7 +28,7 @@ CREATE TABLE class_details
     teacher_id        int       NOT NULL,
     class_datetime    timestamp NOT NULL,
     class_duration    int       NOT NULL,
-    is_paid           boolean   NOT NULL, 
+    is_paid           boolean   NOT NULL,           -- why this field? (Whether or not you have to pay to take the class)
     class_description text      NOT NULL,
     CONSTRAINT PK_class_details PRIMARY KEY (class_id),
     CONSTRAINT FK_teacher_id FOREIGN KEY (teacher_id) REFERENCES teacher_details (teacher_id)

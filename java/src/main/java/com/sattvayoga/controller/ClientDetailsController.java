@@ -22,6 +22,10 @@ public class ClientDetailsController {
         // should we have exceptions if the client is already registered
         // (an exception that means they are already inside the client table)
 
+
+        // if we don't want all the hardcoded values passed in from the userwe can call the setters and
+        // set them for the following method:
+
         clientDetailsDao.createClient(client);
     }
 }

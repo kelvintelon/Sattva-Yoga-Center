@@ -81,6 +81,9 @@ public class JdbcUserDao implements UserDao {
         String ssRole = role.toUpperCase().startsWith("ROLE_") ? role.toUpperCase() : "ROLE_" + role.toUpperCase();
 
         return jdbcTemplate.update(insertUserSql, username, password_hash, ssRole) == 1;
+
+        // make this a getForObject method returning USER_ID
+
     }
 
     private YogaUser mapRowToUser(SqlRowSet rs) {

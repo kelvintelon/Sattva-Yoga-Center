@@ -15,10 +15,10 @@ public class JdbcClassDetailsDao implements ClassDetailsDao {
     public boolean createClass(ClassDetails classDetails) {
 
         String sql = "INSERT INTO class_details (teacher_id, class_datetime, class_duration, is_paid, " +
-                "class_description) VALUES (?, ?, ?, ?)";
+                "class_description) VALUES (?, ?, ?, ?, ?)";
         return jdbcTemplate.update(sql, classDetails.getTeacher_id(), classDetails.getClass_datetime(),
                 classDetails.getClass_duration(), classDetails.isIs_paid(),
-                classDetails.getClass_duration()) == 1;
+                classDetails.getClass_description()) == 1;
     }
 
 

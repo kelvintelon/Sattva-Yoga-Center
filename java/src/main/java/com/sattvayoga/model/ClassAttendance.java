@@ -1,145 +1,120 @@
 package com.sattvayoga.model;
 
+import java.math.BigDecimal;
+
 public class ClassAttendance {
 
-    private String class_attendance_id;
-    private String class_id;
-    private String client_id;
-    private String package_id;
-    private String purchase_id;
-    private String is_new_client;
-    private String is_drop_in;
-    private String drop_in_fee;
-    private String mat_use_fee;
-    private String is_guest;
-    private String attendance_count; // not including it in the constructors until we figure out what it's for
+    private int class_attendance_id;
+    private int class_id;
+    private int client_id;
+    private int package_id;
+    private int class_purchase_id;
+    private boolean is_new_client;
+    private boolean is_drop_in;
+    private BigDecimal drop_in_fee;
+    private BigDecimal mat_use_fee;
+    private boolean is_guest;
+    private int attendance_count; // not including it in the constructors until we figure out what it's for
 
-    // if they are not dropping in, not using a mat, no guest ** NONE OF THESE CAN BE NULL**
-    public ClassAttendance(String class_attendance_id, String class_id, String client_id, String package_id, String purchase_id, String is_new_client, String is_drop_in) {
+    public ClassAttendance(int class_attendance_id, int class_id, int client_id, int package_id, int class_purchase_id, boolean is_new_client, boolean is_drop_in, BigDecimal drop_in_fee, BigDecimal mat_use_fee, boolean is_guest, int attendance_count) {
         this.class_attendance_id = class_attendance_id;
         this.class_id = class_id;
         this.client_id = client_id;
         this.package_id = package_id;
-        this.purchase_id = purchase_id;
-        this.is_new_client = is_new_client;
-        this.is_drop_in = is_drop_in;
-    }
-
-    // if dropping in is true, and they are using a mat, but no guest
-    public ClassAttendance(String class_attendance_id, String class_id, String client_id, String package_id, String purchase_id, String is_new_client, String is_drop_in, String drop_in_fee, String mat_use_fee) {
-        this.class_attendance_id = class_attendance_id;
-        this.class_id = class_id;
-        this.client_id = client_id;
-        this.package_id = package_id;
-        this.purchase_id = purchase_id;
-        this.is_new_client = is_new_client;
-        this.is_drop_in = is_drop_in;
-        this.drop_in_fee = drop_in_fee;
-        this.mat_use_fee = mat_use_fee;
-    }
-
-    // if dropping in is true, and they are using a mat, and they have a guest
-    public ClassAttendance(String class_attendance_id, String class_id, String client_id, String package_id, String purchase_id, String is_new_client, String is_drop_in, String drop_in_fee, String mat_use_fee, String is_guest) {
-        this.class_attendance_id = class_attendance_id;
-        this.class_id = class_id;
-        this.client_id = client_id;
-        this.package_id = package_id;
-        this.purchase_id = purchase_id;
+        this.class_purchase_id = class_purchase_id;
         this.is_new_client = is_new_client;
         this.is_drop_in = is_drop_in;
         this.drop_in_fee = drop_in_fee;
         this.mat_use_fee = mat_use_fee;
         this.is_guest = is_guest;
-    }
-
-
-    public String getClass_attendance_id() {
-        return class_attendance_id;
-    }
-
-    public void setClass_attendance_id(String class_attendance_id) {
-        this.class_attendance_id = class_attendance_id;
-    }
-
-    public String getClass_id() {
-        return class_id;
-    }
-
-    public void setClass_id(String class_id) {
-        this.class_id = class_id;
-    }
-
-    public String getClient_id() {
-        return client_id;
-    }
-
-    public void setClient_id(String client_id) {
-        this.client_id = client_id;
-    }
-
-    public String getPackage_id() {
-        return package_id;
-    }
-
-    public void setPackage_id(String package_id) {
-        this.package_id = package_id;
-    }
-
-    public String getPurchase_id() {
-        return purchase_id;
-    }
-
-    public void setPurchase_id(String purchase_id) {
-        this.purchase_id = purchase_id;
-    }
-
-    public String getIs_new_client() {
-        return is_new_client;
-    }
-
-    public void setIs_new_client(String is_new_client) {
-        this.is_new_client = is_new_client;
-    }
-
-    public String getIs_drop_in() {
-        return is_drop_in;
-    }
-
-    public void setIs_drop_in(String is_drop_in) {
-        this.is_drop_in = is_drop_in;
-    }
-
-    public String getDrop_in_fee() {
-        return drop_in_fee;
-    }
-
-    public void setDrop_in_fee(String drop_in_fee) {
-        this.drop_in_fee = drop_in_fee;
-    }
-
-    public String getMat_use_fee() {
-        return mat_use_fee;
-    }
-
-    public void setMat_use_fee(String mat_use_fee) {
-        this.mat_use_fee = mat_use_fee;
-    }
-
-    public String getIs_guest() {
-        return is_guest;
-    }
-
-    public void setIs_guest(String is_guest) {
-        this.is_guest = is_guest;
-    }
-
-    public String getAttendance_count() {
-        return attendance_count;
-    }
-
-    public void setAttendance_count(String attendance_count) {
         this.attendance_count = attendance_count;
     }
 
+    public int getClass_attendance_id() {
+        return class_attendance_id;
+    }
 
+    public void setClass_attendance_id(int class_attendance_id) {
+        this.class_attendance_id = class_attendance_id;
+    }
+
+    public int getClass_id() {
+        return class_id;
+    }
+
+    public void setClass_id(int class_id) {
+        this.class_id = class_id;
+    }
+
+    public int getClient_id() {
+        return client_id;
+    }
+
+    public void setClient_id(int client_id) {
+        this.client_id = client_id;
+    }
+
+    public int getPackage_id() {
+        return package_id;
+    }
+
+    public void setPackage_id(int package_id) {
+        this.package_id = package_id;
+    }
+
+    public int getClass_purchase_id() {
+        return class_purchase_id;
+    }
+
+    public void setClass_purchase_id(int class_purchase_id) {
+        this.class_purchase_id = class_purchase_id;
+    }
+
+    public boolean isIs_new_client() {
+        return is_new_client;
+    }
+
+    public void setIs_new_client(boolean is_new_client) {
+        this.is_new_client = is_new_client;
+    }
+
+    public boolean isIs_drop_in() {
+        return is_drop_in;
+    }
+
+    public void setIs_drop_in(boolean is_drop_in) {
+        this.is_drop_in = is_drop_in;
+    }
+
+    public BigDecimal getDrop_in_fee() {
+        return drop_in_fee;
+    }
+
+    public void setDrop_in_fee(BigDecimal drop_in_fee) {
+        this.drop_in_fee = drop_in_fee;
+    }
+
+    public BigDecimal getMat_use_fee() {
+        return mat_use_fee;
+    }
+
+    public void setMat_use_fee(BigDecimal mat_use_fee) {
+        this.mat_use_fee = mat_use_fee;
+    }
+
+    public boolean isIs_guest() {
+        return is_guest;
+    }
+
+    public void setIs_guest(boolean is_guest) {
+        this.is_guest = is_guest;
+    }
+
+    public int getAttendance_count() {
+        return attendance_count;
+    }
+
+    public void setAttendance_count(int attendance_count) {
+        this.attendance_count = attendance_count;
+    }
 }
