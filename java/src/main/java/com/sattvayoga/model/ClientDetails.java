@@ -2,7 +2,7 @@ package com.sattvayoga.model;
 
 import java.sql.Timestamp;
 
-public class Client {
+public class ClientDetails {
     private int client_id;
     private String last_name;
     private String first_name;
@@ -19,7 +19,7 @@ public class Client {
     private Timestamp date_of_entry;
     private int user_id;
 
-    public Client(int client_id, String last_name, String first_name, boolean is_client_active, boolean is_constant_contact, String street_address, String city, String state_abbreviation, String zip_code, String phone_number, boolean is_on_email_list, String email, boolean has_record_of_liability, Timestamp date_of_entry, int user_id) {
+    public ClientDetails(int client_id, String last_name, String first_name, boolean is_client_active, boolean is_constant_contact, String street_address, String city, String state_abbreviation, String zip_code, String phone_number, boolean is_on_email_list, String email, boolean has_record_of_liability, Timestamp date_of_entry, int user_id) {
         this.client_id = client_id;
         this.last_name = last_name;
         this.first_name = first_name;

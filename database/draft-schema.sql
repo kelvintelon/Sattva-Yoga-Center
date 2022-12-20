@@ -41,7 +41,7 @@ CREATE TABLE client_info
     last_name               varchar(30) NOT NULL,
     first_name              varchar(30) NOT NULL,
     is_client_active        boolean     NOT NULL,
-    is_constant_contact     boolean     NOT NULL,
+    is_constant_contact     boolean     NOT NULL,    -- do we need this?
     street_address          varchar(50) NOT NULL,
     city                    varchar(30) NOT NULL,
     state_abbreviation      varchar(2)  NOT NULL,

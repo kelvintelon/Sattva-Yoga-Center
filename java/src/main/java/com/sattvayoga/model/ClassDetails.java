@@ -2,7 +2,7 @@ package com.sattvayoga.model;
 
 import java.sql.Timestamp;
 
-public class Class {
+public class ClassDetails {
     private int class_id;
     private int teacher_id;
     private Timestamp class_datetime;
@@ -10,7 +10,7 @@ public class Class {
     private boolean is_paid;
     private String class_description;
 
-    public Class(int class_id, int teacher_id, Timestamp class_datetime, int class_duration, boolean is_paid, String class_description) {
+    public ClassDetails(int class_id, int teacher_id, Timestamp class_datetime, int class_duration, boolean is_paid, String class_description) {
         this.class_id = class_id;
         this.teacher_id = teacher_id;
         this.class_datetime = class_datetime;

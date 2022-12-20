@@ -12,7 +12,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import com.sattvayoga.model.User;
+import com.sattvayoga.model.YogaUser;
 
 @Component
 public class JdbcUserDao implements UserDao {
@@ -38,7 +38,7 @@ public class JdbcUserDao implements UserDao {
     }
 
 	@Override
-	public User getUserById(int userId) {
+	public YogaUser getUserById(int userId) {
 		String sql = "SELECT * FROM users WHERE user_id = ?";
 		SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
 		if (results.next()) {
@@ -49,13 +49,13 @@ public class JdbcUserDao implements UserDao {
 	}
 
     @Override
-    public List<User> findAll() {
-        List<User> users = new ArrayList<>();
+    public List<YogaUser> findAll() {
+        List<YogaUser> users = new ArrayList<>();
         String sql = "select * from users";
 
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
         while (results.next()) {
-            User user = mapRowToUser(results);
+            YogaUser user = mapRowToUser(results);
             users.add(user);
         }
 
@@ -63,10 +63,10 @@ public class JdbcUserDao implements UserDao {
     }
 
     @Override
-    public User findByUsername(String username) {
+    public YogaUser findByUsername(String username) {
         if (username == null) throw new IllegalArgumentException("Username cannot be null");
 
-        for (User user : this.findAll()) {
+        for (YogaUser user : this.findAll()) {
             if (user.getUsername().equalsIgnoreCase(username)) {
                 return user;
             }
@@ -83,8 +83,8 @@ public class JdbcUserDao implements UserDao {
         return jdbcTemplate.update(insertUserSql, username, password_hash, ssRole) == 1;
     }
 
-    private User mapRowToUser(SqlRowSet rs) {
-        User user = new User();
+    private YogaUser mapRowToUser(SqlRowSet rs) {
+        YogaUser user = new YogaUser();
         user.setId(rs.getInt("user_id"));
         user.setUsername(rs.getString("username"));
         user.setPassword(rs.getString("password_hash"));

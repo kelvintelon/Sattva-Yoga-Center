@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sattvayoga.dao.UserDao;
 import com.sattvayoga.model.LoginDto;
 import com.sattvayoga.model.RegisterUserDto;
-import com.sattvayoga.model.User;
+import com.sattvayoga.model.YogaUser;
 import com.sattvayoga.model.UserAlreadyExistsException;
 import com.sattvayoga.security.jwt.JWTFilter;
 import com.sattvayoga.security.jwt.TokenProvider;
@@ -45,7 +45,7 @@ public class AuthenticationController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = tokenProvider.createToken(authentication, false);
         
-        User user = userDao.findByUsername(loginDto.getUsername());
+        YogaUser user = userDao.findByUsername(loginDto.getUsername());
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
@@ -55,8 +55,9 @@ public class AuthenticationController {
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     public void register(@Valid @RequestBody RegisterUserDto newUser) {
+        // we need to make sure the roles match and correspond if they are a client/teacher
         try {
-            User user = userDao.findByUsername(newUser.getUsername());
+            YogaUser user = userDao.findByUsername(newUser.getUsername());
             throw new UserAlreadyExistsException();
         } catch (UsernameNotFoundException e) {
             userDao.create(newUser.getUsername(),newUser.getPassword(), newUser.getRole());
@@ -69,9 +70,9 @@ public class AuthenticationController {
     static class LoginResponse {
 
         private String token;
-        private User user;
+        private YogaUser user;
 
-        LoginResponse(String token, User user) {
+        LoginResponse(String token, YogaUser user) {
             this.token = token;
             this.user = user;
         }
@@ -86,11 +87,11 @@ public class AuthenticationController {
         }
 
         @JsonProperty("user")
-		public User getUser() {
+		public YogaUser getUser() {
 			return user;
 		}
 
-		public void setUser(User user) {
+		public void setUser(YogaUser user) {
 			this.user = user;
 		}
     }

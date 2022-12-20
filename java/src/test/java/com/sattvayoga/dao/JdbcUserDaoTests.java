@@ -1,6 +1,6 @@
 package com.sattvayoga.dao;
 
-import com.sattvayoga.model.User;
+import com.sattvayoga.model.YogaUser;
 import com.sattvayoga.model.UserNotFoundException;
 import org.junit.Assert;
 import org.junit.Before;
@@ -12,9 +12,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import java.util.List;
 
 public class JdbcUserDaoTests extends BaseDaoTests {
-    protected static final User USER_1 = new User(1, "user1", "user1", "ROLE_USER");
-    protected static final User USER_2 = new User(2, "user2", "user2", "ROLE_USER");
-    private static final User USER_3 = new User(3, "user3", "user3", "ROLE_USER");
+    protected static final YogaUser USER_1 = new YogaUser(1, "user1", "user1", "ROLE_USER");
+    protected static final YogaUser USER_2 = new YogaUser(2, "user2", "user2", "ROLE_USER");
+    private static final YogaUser USER_3 = new YogaUser(3, "user3", "user3", "ROLE_USER");
 
     private JdbcUserDao sut;
 
@@ -53,7 +53,7 @@ public class JdbcUserDaoTests extends BaseDaoTests {
 
     @Test
     public void findByUsername_given_valid_user_returns_user() {
-        User actualUser = sut.findByUsername(USER_1.getUsername());
+        YogaUser actualUser = sut.findByUsername(USER_1.getUsername());
 
         Assert.assertEquals(USER_1, actualUser);
     }
@@ -65,14 +65,14 @@ public class JdbcUserDaoTests extends BaseDaoTests {
 
     @Test
     public void getUserById_given_valid_user_id_returns_user() {
-        User actualUser = sut.getUserById(USER_1.getId());
+        YogaUser actualUser = sut.getUserById(USER_1.getId());
 
         Assert.assertEquals(USER_1, actualUser);
     }
 
     @Test
     public void findAll_returns_all_users() {
-        List<User> users = sut.findAll();
+        List<YogaUser> users = sut.findAll();
 
         Assert.assertNotNull(users);
         Assert.assertEquals(3, users.size());
@@ -98,13 +98,13 @@ public class JdbcUserDaoTests extends BaseDaoTests {
 
     @Test
     public void create_user_creates_a_user() {
-        User newUser = new User(-1, "new", "user", "ROLE_USER");
+        YogaUser newUser = new YogaUser(-1, "new", "user", "ROLE_USER");
 
         boolean userWasCreated = sut.create(newUser.getUsername(), newUser.getPassword(), "ROLE_USER");
 
         Assert.assertTrue(userWasCreated);
 
-        User actualUser = sut.findByUsername(newUser.getUsername());
+        YogaUser actualUser = sut.findByUsername(newUser.getUsername());
         newUser.setId(actualUser.getId());
 
         actualUser.setPassword(newUser.getPassword()); // reset password back to unhashed password for testing

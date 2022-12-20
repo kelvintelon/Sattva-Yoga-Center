@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public class User {
+public class YogaUser {
 
    private int id;
    private String username;
@@ -16,9 +16,9 @@ public class User {
    private boolean activated;
    private Set<Authority> authorities = new HashSet<>();
 
-   public User() { }
+   public YogaUser() { }
 
-   public User(int id, String username, String password, String authorities) {
+   public YogaUser(int id, String username, String password, String authorities) {
       this.id = id;
       this.username = username;
       this.password = password;
@@ -78,7 +78,7 @@ public class User {
    public boolean equals(Object o) {
       if (this == o) return true;
       if (o == null || getClass() != o.getClass()) return false;
-      User user = (User) o;
+      YogaUser user = (YogaUser) o;
       return id == user.id &&
               activated == user.activated &&
               Objects.equals(username, user.username) &&

@@ -1,16 +1,16 @@
 package com.sattvayoga.dao;
 
-import com.sattvayoga.model.User;
+import com.sattvayoga.model.YogaUser;
 
 import java.util.List;
 
 public interface UserDao {
 
-    List<User> findAll();
+    List<YogaUser> findAll();
 
-    User getUserById(int userId);
+    YogaUser getUserById(int userId);
 
-    User findByUsername(String username);
+    YogaUser findByUsername(String username);
 
     int findIdByUsername(String username);
 

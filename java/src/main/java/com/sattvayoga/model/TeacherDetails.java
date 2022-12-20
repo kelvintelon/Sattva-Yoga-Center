@@ -1,13 +1,13 @@
 package com.sattvayoga.model;
 
-public class Teacher {
+public class TeacherDetails {
     private int teacher_id;
     private String last_name;
     private String first_name;
     private boolean is_teacher_active;
     private int user_id;
 
-    public Teacher(int teacher_id, String last_name, String first_name, boolean is_teacher_active, int user_id) {
+    public TeacherDetails(int teacher_id, String last_name, String first_name, boolean is_teacher_active, int user_id) {
         this.teacher_id = teacher_id;
         this.last_name = last_name;
         this.first_name = first_name;
