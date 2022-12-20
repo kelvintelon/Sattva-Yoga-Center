@@ -4,24 +4,29 @@
       <header-logo></header-logo>
       <h1 class="header-title">Sattva Yoga Center</h1>
     </div>
-    
-      <login-button></login-button>
-    
+
+    <login-button v-if="$store.state.token == ''"></login-button>
+
+    <my-account-button v-else></my-account-button>
   </div>
 </template>
 
 <script>
 import HeaderLogo from "./HeaderLogo.vue";
 import LoginButton from "./LoginButton.vue";
+import MyAccountButton from "./MyAccountButton.vue";
 
 export default {
   name: "top-header",
   components: {
     HeaderLogo,
     LoginButton,
+    MyAccountButton,
   },
   data() {
-    return {};
+    return {
+      expand: false,
+    };
   },
   created() {},
 };
