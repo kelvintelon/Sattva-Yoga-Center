@@ -58,13 +58,12 @@ public class AuthenticationController {
         // we need to make sure the roles match and correspond if they are a client/teacher
         try {
             YogaUser user = userDao.findByUsername(newUser.getUsername());
-
             throw new UserAlreadyExistsException();
         } catch (UsernameNotFoundException e) {
             userDao.create(newUser.getUsername(),newUser.getPassword(), newUser.getRole());
         }
     }
-    
+
     /**
      * Object to return as body in JWT Authentication.
      */
