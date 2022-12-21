@@ -6,6 +6,8 @@ import Logout from '../views/Logout.vue'
 import Register from '../views/Register.vue'
 import store from '../store/index'
 import ClientRegistration from '../views/ClientRegistration.vue'
+import ClassRegistration from '../views/ClassRegistration.vue'
+import Checkout from '../views/Checkout.vue'
 
 Vue.use(Router)
 
@@ -61,7 +63,23 @@ const router = new Router({
       meta: {
         requiresAuth: false
       }
-    }
+    },
+    {
+      path:"/registerForClass",
+      name:"classRegistration",
+      component: ClassRegistration,
+      meta: {
+        requiresAuth: false
+      }
+    },
+    {
+      path:"/checkout",
+      name:"checkout",
+      component: Checkout,
+      meta: {
+        requiresAuth: false
+      }
+    },
   ]
 })
 
