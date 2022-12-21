@@ -1,7 +1,7 @@
 <template>
 
     <div class="client-form-template">
-      <v-form ref="form" v-model="valid" lazy-validation>
+      <v-form ref="form" v-model="valid" lazy-validation class="client-form">
         <v-text-field
           v-model="firstName"
           :counter="10"
@@ -114,9 +114,13 @@ export default {
 </script>
 
 
-<style>
+<style scoped>
 .client-form-template {
   display: flex;
   justify-content: center;
+}
+
+.client-form {
+  width: 40%;
 }
 </style>
