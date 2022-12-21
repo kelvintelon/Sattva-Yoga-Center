@@ -1,16 +1,16 @@
-import Vue from 'vue'
-import Router from 'vue-router'
-import Home from '../views/Home.vue'
-import Login from '../views/Login.vue'
-import Logout from '../views/Logout.vue'
-import Register from '../views/Register.vue'
-import store from '../store/index'
-import ClientRegistration from '../views/ClientRegistration.vue'
-import ClassRegistration from '../views/ClassRegistration.vue'
-import Checkout from '../views/Checkout.vue'
-import ProfilePage from '../views/ProfilePage.vue'
+import Vue from "vue";
+import Router from "vue-router";
+import Home from "../views/Home.vue";
+import Login from "../views/Login.vue";
+import Logout from "../views/Logout.vue";
+import Register from "../views/Register.vue";
+import store from "../store/index";
+import ClientRegistration from "../views/ClientRegistration.vue";
+import ClassRegistration from "../views/ClassRegistration.vue";
+import Checkout from "../views/Checkout.vue";
+// import LoginForm from "../views/LoginForm.vue";
 
-Vue.use(Router)
+Vue.use(Router);
 
 /**
  * The Vue Router is used to "direct" the browser to render a specific view component
@@ -22,82 +22,82 @@ Vue.use(Router)
  */
 
 const router = new Router({
-  mode: 'history',
+  mode: "history",
   base: process.env.BASE_URL,
   routes: [
     {
-      path: '/',
-      name: 'home',
+      path: "/",
+      name: "home",
       component: Home,
       meta: {
-        requiresAuth: false
-      }
+        requiresAuth: false,
+      },
     },
     {
       path: "/login",
       name: "login",
       component: Login,
       meta: {
-        requiresAuth: false
-      }
+        requiresAuth: false,
+      },
     },
+    // {
+    //   path: "/login2",
+    //   name: "login-form",
+    //   component: LoginForm,
+    //   meta: {
+    //     requiresAuth: false,
+    //   },
+    // },
     {
       path: "/logout",
       name: "logout",
       component: Logout,
       meta: {
-        requiresAuth: false
-      }
+        requiresAuth: false,
+      },
     },
     {
       path: "/register",
       name: "register",
       component: Register,
       meta: {
-        requiresAuth: false
-      }
+        requiresAuth: false,
+      },
     },
     {
-      path:"/clientRegistration",
-      name:"clientRegistration",
+      path: "/clientRegistration",
+      name: "clientRegistration",
       component: ClientRegistration,
       meta: {
-        requiresAuth: false
-      }
+        requiresAuth: false,
+      },
     },
     {
-      path:"/registerForClass",
-      name:"classRegistration",
+      path: "/registerForClass",
+      name: "classRegistration",
       component: ClassRegistration,
       meta: {
-        requiresAuth: true
-      }
+        requiresAuth: false,
+      },
     },
     {
-      path:"/checkout",
-      name:"checkout",
+      path: "/checkout",
+      name: "checkout",
       component: Checkout,
       meta: {
-        requiresAuth: true
-      }
+        requiresAuth: false,
+      },
     },
-    {
-      path:"/myProfile",
-      name:"profile-page",
-      component: ProfilePage,
-      meta: {
-        requiresAuth: true
-      }
-    },
-  ]
-})
+  ],
+});
 
 router.beforeEach((to, from, next) => {
   // Determine if the route requires Authentication
-  const requiresAuth = to.matched.some(x => x.meta.requiresAuth);
+  const requiresAuth = to.matched.some((x) => x.meta.requiresAuth);
 
   // If it does and they are not logged in, send the user to "/login"
-  if (requiresAuth && store.state.token === '') {
+  if (requiresAuth && store.state.token === "") {
     next("/login");
   } else {
     // Else let them go to their next destination

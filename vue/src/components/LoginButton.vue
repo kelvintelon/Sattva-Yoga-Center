@@ -1,8 +1,7 @@
 <template>
   <div class="login-button">
     <v-btn elevation="5" v-on:click="goToLogin()">
-      <v-icon > mdi-login-variant
-      </v-icon> Login
+      <v-icon> mdi-login-variant </v-icon> Login
     </v-btn>
   </div>
 </template>
@@ -14,16 +13,12 @@ export default {
     return {};
   },
   methods: {
-      goToLogin() {
-        this.$router.push({name:"login"});
-      },
+    goToLogin() {
+      this.$router.push({ name: "login" });
+    },
   },
   created() {},
 };
 </script>
 
-<style>
-
-
-
-</style>
+<style></style>

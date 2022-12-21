@@ -1,7 +1,12 @@
 <template>
-  <div class="home">
+  <div class="client">
     <top-header></top-header>
-    <client-form></client-form>
+
+    <v-container v-for="align in alignments" :key="align" class="grey lighten-5 mb-6">
+      <v-row>
+       <client-form></client-form>
+      </v-row>
+    </v-container>
   </div>
 </template>
 
@@ -11,7 +16,7 @@ import TopHeader from "../components/TopHeader.vue";
 import ClientForm from "../components/ClientForm.vue";
 
 export default {
-  name: "home",
+  name: "client",
   components: {
     TopHeader,
     ClientForm,
