@@ -29,7 +29,7 @@ export default {
   },
   methods: {
     goToPage() {
-      this.$router.push({ name: "home" });
+      this.$router.push({ name: "profile-page" });
     },
     expandMore() {
       this.expand = true;

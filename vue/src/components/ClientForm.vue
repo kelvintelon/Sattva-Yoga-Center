@@ -207,7 +207,8 @@ export default {
           if (response.status == 201) {
             alert ("You have been registered as a client!");
             
-            this.$store.commit("SET_CLIENT_ID", response.data.client_id);
+            // this.$store.commit("SET_CLIENT_ID", response.data.client_id);
+            this.$store.commit("SET_CLIENT_DETAILS", response.data.clientDetails);
             this.reset();
             this.$router.push("/registerForClass");
           }

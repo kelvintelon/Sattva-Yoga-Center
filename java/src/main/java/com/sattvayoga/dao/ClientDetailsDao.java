@@ -4,5 +4,7 @@ import com.sattvayoga.model.ClientDetails;
 
 public interface ClientDetailsDao {
 
-    int createClient(ClientDetails client);
+    ClientDetails createClient(ClientDetails client);
+
+    ClientDetails findClientByUserId(int userId);
 }

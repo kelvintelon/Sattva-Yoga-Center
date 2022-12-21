@@ -37,6 +37,9 @@ public class ClientDetails {
         this.user_id = user_id;
     }
 
+    public ClientDetails() {
+    }
+
     public int getClient_id() {
         return client_id;
     }

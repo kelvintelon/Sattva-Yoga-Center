@@ -8,6 +8,7 @@ import store from '../store/index'
 import ClientRegistration from '../views/ClientRegistration.vue'
 import ClassRegistration from '../views/ClassRegistration.vue'
 import Checkout from '../views/Checkout.vue'
+import ProfilePage from '../views/ProfilePage.vue'
 
 Vue.use(Router)
 
@@ -69,7 +70,7 @@ const router = new Router({
       name:"classRegistration",
       component: ClassRegistration,
       meta: {
-        requiresAuth: false
+        requiresAuth: true
       }
     },
     {
@@ -77,7 +78,15 @@ const router = new Router({
       name:"checkout",
       component: Checkout,
       meta: {
-        requiresAuth: false
+        requiresAuth: true
+      }
+    },
+    {
+      path:"/myProfile",
+      name:"profile-page",
+      component: ProfilePage,
+      meta: {
+        requiresAuth: true
       }
     },
   ]
