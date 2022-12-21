@@ -2,8 +2,8 @@ import axios from 'axios';
 
 export default {
 
-    registerClass(clientDetails) {
-        return axios.post('/registerClass', clientDetails)
+    registerClass(classAttendance) {
+        return axios.post('/registerForClass', classAttendance)
     },
 
 }

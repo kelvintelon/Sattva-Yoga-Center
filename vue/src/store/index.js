@@ -19,7 +19,8 @@ if(currentToken != null) {
 export default new Vuex.Store({
   state: {
     token: currentToken || '',
-    user: currentUser || {}
+    user: currentUser || {},
+    clientId: 0,
   },
   mutations: {
     SET_AUTH_TOKEN(state, token) {
@@ -37,6 +38,10 @@ export default new Vuex.Store({
       state.token = '';
       state.user = {};
       axios.defaults.headers.common = {};
-    }
+    },
+    SET_CLIENT_ID(state, client_id) {
+      state.clientId = client_id;
+      localStorage.setItem('client', client_id);
+    },
   }
 })
