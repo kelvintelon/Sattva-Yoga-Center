@@ -39,7 +39,7 @@ export default {
         .then((response) => {
           if (response.status == 201) {
             alert("You have registered your class!");
-            this.$router.push("/s");
+            this.$router.push("/");
           }
         })
         .catch((error) => {
