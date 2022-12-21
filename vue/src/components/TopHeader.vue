@@ -32,7 +32,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .first-container {
   display: flex;
   align-items: center;
