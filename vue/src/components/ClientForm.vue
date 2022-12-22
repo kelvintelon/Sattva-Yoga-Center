@@ -1,12 +1,15 @@
 <template>
   <div class="client-form-template">
+    
     <v-form
       ref="form"
       v-model="valid"
       lazy-validation
       class="client-form"
       @submit.prevent="submit"
+      justify="center" align="center"
     >
+    <h1>Set Up Your Profile</h1>
       <v-text-field
         v-model="clientDetails.first_name"
         :counter="10"
