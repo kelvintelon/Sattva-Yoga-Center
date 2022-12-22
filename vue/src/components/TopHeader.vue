@@ -6,6 +6,7 @@
     </div>
 
     <login-button v-if="$store.state.token == ''"></login-button>
+    <logout-button v-if="$store.state.token !== ''"></logout-button>
 
     <my-account-button v-else></my-account-button>
   </div>
@@ -15,6 +16,7 @@
 import HeaderLogo from "./HeaderLogo.vue";
 import LoginButton from "./LoginButton.vue";
 import MyAccountButton from "./MyAccountButton.vue";
+import LogoutButton from "./LogoutButton.vue";
 
 export default {
   name: "top-header",
@@ -22,6 +24,7 @@ export default {
     HeaderLogo,
     LoginButton,
     MyAccountButton,
+    LogoutButton
   },
   data() {
     return {
