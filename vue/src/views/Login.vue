@@ -1,5 +1,4 @@
 <template>
-  <!-- <div id="login" class="text-center"> -->
   <v-container fill-height fluid>
     <v-row justify="center" align="center">
       <v-spacer></v-spacer>
@@ -24,39 +23,17 @@
           <v-text-field
             v-model="user.username"
             id="username"
-            :rules="nameRules"
+            :rules="userNameRules"
             label="Username"
             required
           ></v-text-field>
           <v-text-field
             v-model="user.password"
             id="password"
-            :rules="nameRules"
+            :rules="passwordRules"
             label="Password"
             required
           ></v-text-field>
-          <!-- <label for="username" class="sr-only">Username</label>
-            <input
-              type="text"
-              id="username"
-              class="form-control"
-              placeholder="Username"
-              v-model="user.username"
-              required
-              autofocus
-            /> -->
-          <!-- <label for="password" class="sr-only">Password</label>
-            <input
-              type="password"
-              id="password"
-              class="form-control"
-              placeholder="Password"
-              v-model="user.password"
-              required
-            /> -->
-          <!-- <router-link :to="{ name: 'register' }"
-              >Need an account?</router-link
-            > -->
           <v-btn v-on:click="goToLogout()">Need an account? </v-btn>
           <br />
           <v-btn type="submit">Sign in</v-btn>
@@ -81,7 +58,6 @@
       <v-spacer></v-spacer>
     </v-row>
   </v-container>
-  <!-- </div> -->
 </template>
 
 <script>
@@ -97,6 +73,16 @@ export default {
         username: "",
         password: "",
       },
+      userNameRules: [
+        (v) => !!v || "Username is required",
+        (v) =>
+          (v && v.length <= 30) || "Username must be less than 30 characters",
+      ],
+      passwordRules: [
+        (v) => !!v || "Password is required",
+        (v) =>
+          (v && v.length <= 30) || "Password must be less than 30 characters",
+      ],
       invalidCredentials: false,
     };
   },
