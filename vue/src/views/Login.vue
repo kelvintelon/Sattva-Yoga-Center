@@ -1,41 +1,41 @@
 <template>
-  <div id="login" class="text-center">
-    <v-container>
-      <header-logo></header-logo>
-      <v-row>
-        <v-spacer></v-spacer>
-        <v-col cols="4" justify="center" align="center">
-          <v-form class="form-signin" @submit.prevent="login">
-            <h1 class="h3 mb-3 font-weight-normal">Please Sign In</h1>
-            <div
-              class="alert alert-danger"
-              role="alert"
-              v-if="invalidCredentials"
-            >
-              Invalid username and password!
-            </div>
-            <div
-              class="alert alert-success"
-              role="alert"
-              v-if="this.$route.query.registration"
-            >
-              Thank you for registering, please sign in.
-            </div>
-            <v-text-field
-              v-model="user.username"
-              id="username"
-              :rules="nameRules"
-              label="Username"
-              required
-            ></v-text-field>
-            <v-text-field
-              v-model="user.password"
-              id="password"
-              :rules="nameRules"
-              label="Password"
-              required
-            ></v-text-field>
-            <!-- <label for="username" class="sr-only">Username</label>
+  <!-- <div id="login" class="text-center"> -->
+  <v-container fill-height fluid>
+    <v-row justify="center" align="center">
+      <v-spacer></v-spacer>
+      <v-col cols="4" justify="center" align="center">
+        <header-logo></header-logo>
+        <v-form class="form-signin" @submit.prevent="login">
+          <h1 class="h3 mb-3 font-weight-normal">Please Sign In</h1>
+          <div
+            class="alert alert-danger"
+            role="alert"
+            v-if="invalidCredentials"
+          >
+            Invalid username and password!
+          </div>
+          <div
+            class="alert alert-success"
+            role="alert"
+            v-if="this.$route.query.registration"
+          >
+            Thank you for registering, please sign in.
+          </div>
+          <v-text-field
+            v-model="user.username"
+            id="username"
+            :rules="nameRules"
+            label="Username"
+            required
+          ></v-text-field>
+          <v-text-field
+            v-model="user.password"
+            id="password"
+            :rules="nameRules"
+            label="Password"
+            required
+          ></v-text-field>
+          <!-- <label for="username" class="sr-only">Username</label>
             <input
               type="text"
               id="username"
@@ -45,7 +45,7 @@
               required
               autofocus
             /> -->
-            <!-- <label for="password" class="sr-only">Password</label>
+          <!-- <label for="password" class="sr-only">Password</label>
             <input
               type="password"
               id="password"
@@ -54,18 +54,34 @@
               v-model="user.password"
               required
             /> -->
-            <!-- <router-link :to="{ name: 'register' }"
+          <!-- <router-link :to="{ name: 'register' }"
               >Need an account?</router-link
             > -->
-            <v-btn v-on:click="goToLogout()">Need an account?        </v-btn>
-            <br>
-            <v-btn type="submit">Sign in</v-btn>
-          </v-form>
-        </v-col>
-        <v-spacer></v-spacer>
-      </v-row>
-    </v-container>
-  </div>
+          <v-btn v-on:click="goToLogout()">Need an account? </v-btn>
+          <br />
+          <v-btn type="submit">Sign in</v-btn>
+          <div>
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+          </div>
+        </v-form>
+      </v-col>
+      <v-spacer></v-spacer>
+    </v-row>
+  </v-container>
+  <!-- </div> -->
 </template>
 
 <script>
@@ -102,7 +118,7 @@ export default {
             this.invalidCredentials = true;
           }
         });
-    },    
+    },
     goToLogout() {
       this.$router.push({ name: "profile-page" });
     },
