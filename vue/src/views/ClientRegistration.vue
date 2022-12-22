@@ -19,7 +19,7 @@ import TopHeader from "../components/TopHeader.vue";
 import ClientForm from "../components/ClientForm.vue";
 
 export default {
-  name: "client",
+  name: "client-registration",
   components: {
     TopHeader,
     ClientForm,

@@ -11,7 +11,7 @@ import TopHeader from "../components/TopHeader.vue";
 import ShoppingCart from "../components/ShoppingCart.vue";
 
 export default {
-  name: "home",
+  name: "checkout",
   components: {
     TopHeader,
     ShoppingCart,

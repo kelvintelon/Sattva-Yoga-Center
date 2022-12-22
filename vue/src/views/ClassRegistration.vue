@@ -11,7 +11,7 @@ import TopHeader from "../components/TopHeader.vue";
 import ClassRegistrationSelect from "../components/ClassRegistrationSelect.vue";
 
 export default {
-  name: "home",
+  name: "class-registration",
   components: {
     TopHeader,
     ClassRegistrationSelect,
