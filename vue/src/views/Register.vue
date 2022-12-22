@@ -1,54 +1,55 @@
 <template>
-    <v-container fill-height fluid>
-      <v-row justify="center" align="center"> 
-        <v-spacer></v-spacer>
-        <v-col cols="4" justify="center" align="center">
-          <header-logo></header-logo>
-          <v-form
-            class="form-register"
-            @submit.prevent="register"
-            lazy-validation
-            v-model="valid"
+  <v-container fill-height fluid>
+    <v-row justify="center" align="center">
+      <v-spacer></v-spacer>
+      <v-col cols="4" justify="center" align="center">
+        <header-logo></header-logo>
+        <v-form
+          class="form-register"
+          @submit.prevent="register"
+          lazy-validation
+          v-model="valid"
+        >
+          <h1 class="h3 mb-3 font-weight-normal">Create Account</h1>
+          <div
+            class="alert alert-danger"
+            role="alert"
+            v-if="registrationErrors"
           >
-            <h1 class="h3 mb-3 font-weight-normal">Create Account</h1>
-            <div
-              class="alert alert-danger"
-              role="alert"
-              v-if="registrationErrors"
-            >
-              {{ registrationErrorMsg }}
-            </div>
-            <v-text-field
-              v-model="user.username"
-              id="username"
-              label="Username"
-              :rules="userNameRules"
-              required
-            ></v-text-field>
-            <v-text-field
-              v-model="user.password"
-              id="password"
-              label="Password"
-              :rules="passwordRules"
-              required
-            ></v-text-field>
-            <v-text-field
-              v-model="user.confirmPassword"
-              id="confirmPassword"
-              label="Confirm Password"
-              :rules="passwordRules"
-              required
-            ></v-text-field>
-            <v-btn
-              class="btn btn-lg btn-primary btn-block"
-              v-on:click="goToPage()"
-            >
-              Have an account?
-            </v-btn>
-            <br />
-            <v-btn class="btn btn-lg btn-primary btn-block" type="submit">
-              Create Account
-            </v-btn>
+            {{ registrationErrorMsg }}
+          </div>
+          <v-text-field
+            v-model="user.username"
+            id="username"
+            label="Username"
+            :rules="userNameRules"
+            required
+          ></v-text-field>
+          <v-text-field
+            v-model="user.password"
+            id="password"
+            label="Password"
+            :rules="passwordRules"
+            required
+          ></v-text-field>
+          <v-text-field
+            v-model="user.confirmPassword"
+            id="confirmPassword"
+            label="Confirm Password"
+            :rules="passwordRules"
+            required
+          ></v-text-field>
+          <v-btn
+            class="btn btn-lg btn-primary btn-block"
+            v-on:click="goToPage()"
+          >
+            Have an account?
+          </v-btn>
+          <br />
+          <v-btn class="btn btn-lg btn-primary btn-block" type="submit">
+            Create Account
+          </v-btn>
+          <div>
             <br />
             <br />
             <br />
@@ -63,11 +64,12 @@
             <br />
             <br />
             <br />
-          </v-form>
-        </v-col>
-        <v-spacer></v-spacer>
-      </v-row>
-    </v-container>
+          </div>
+        </v-form>
+      </v-col>
+      <v-spacer></v-spacer>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
