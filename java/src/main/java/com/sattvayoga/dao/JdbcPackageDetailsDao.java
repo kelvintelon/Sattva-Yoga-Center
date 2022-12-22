@@ -14,10 +14,12 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao{
 
     @Override
     public boolean createPackage(PackageDetails packageDetails) {
-        String sql = "INSERT INTO package_details (description, package_cost, cost_per_class) VALUES " +
-                "(?, ?, ?)";
+        String sql = "INSERT INTO package_details (description, package_cost, activation_date, expiration_date, " +
+                "classes_remaining) VALUES " +
+                "(?, ?, ?, ?, ?)";
 
         return jdbcTemplate.update(sql, packageDetails.getDescription(), packageDetails.getPackage_cost(),
-                packageDetails.getCost_per_class()) == 1;
+                packageDetails.getActivation_date(),packageDetails.getExpiration_date(),
+                packageDetails.getClasses_remaining()) == 1;
     }
 }

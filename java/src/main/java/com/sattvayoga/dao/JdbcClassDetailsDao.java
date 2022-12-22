@@ -21,5 +21,6 @@ public class JdbcClassDetailsDao implements ClassDetailsDao {
                 classDetails.getClass_description()) == 1;
     }
 
+    // for mapRow, be careful about is_paid . It can be null.
 
 }

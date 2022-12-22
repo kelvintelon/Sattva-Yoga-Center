@@ -1,6 +1,6 @@
 BEGIN TRANSACTION;
 
-DROP TABLE IF EXISTS users,teacher_details,class_details,client_info,client_class,package_purchase,package_details CASCADE;
+DROP TABLE IF EXISTS users,teacher_details,class_details,client_details,client_class,package_purchase,package_details CASCADE;
 
 CREATE TABLE users 
 (
@@ -35,7 +35,7 @@ CREATE TABLE class_details
 
 );
 
-CREATE TABLE client_info
+CREATE TABLE client_details
 (
     client_id               serial      NOT NULL,
     last_name               varchar(30) NOT NULL,
@@ -61,7 +61,7 @@ CREATE TABLE client_class
 	client_id			int				NOT NULL,
 	class_id			int				NOT NULL,
 	CONSTRAINT PK_client_class PRIMARY KEY (client_id,class_id),
-	CONSTRAINT FK_client_class_client_id FOREIGN KEY (client_id) REFERENCES client_info(client_id),
+	CONSTRAINT FK_client_class_client_id FOREIGN KEY (client_id) REFERENCES client_details(client_id),
 	CONSTRAINT FK_client_class_class_id FOREIGN KEY (class_id) REFERENCES class_details(class_id)
 );
 
@@ -88,9 +88,10 @@ CREATE TABLE package_purchase
 	total_amount_paid	decimal(13, 2),
 	discount			decimal(13, 2),
 	CONSTRAINT PK_package_purchase PRIMARY KEY (package_purchase_id),
-	CONSTRAINT FK_package_purchase_client_id FOREIGN KEY (client_id) REFERENCES client_info (client_id),
+	CONSTRAINT FK_package_purchase_client_id FOREIGN KEY (client_id) REFERENCES client_details (client_id),
 	CONSTRAINT FK_package_purchase_package_id FOREIGN KEY (package_id) REFERENCES package_details (package_id)
 );
 
 
 COMMIT TRANSACTION;
+
