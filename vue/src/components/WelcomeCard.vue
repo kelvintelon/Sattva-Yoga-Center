@@ -1,10 +1,11 @@
 <template>
   <!-- m is margin; x is left & right spacing -->
   <v-card class="mx-auto my-12"
-          color="deep-orange lighten-5"
+          color="red lighten-4"
+          min-height="100%"
   >
 
-    <v-img src="https://www.sattva-yoga-center.com/media?pgid=jamo2yiw-3955c9e2-f0b6-485d-9081-e522c306c4ce"></v-img>
+    <v-img src="https://static.wixstatic.com/media/78a355_77a26bec9c04478f82b2c987ae20a2a2~mv2_d_1900_1930_s_2.jpg/v1/fit/w_2607,h_1405,q_90/78a355_77a26bec9c04478f82b2c987ae20a2a2~mv2_d_1900_1930_s_2.webp"></v-img>
 
     <v-card-title class="font-weight-bold">welcome</v-card-title>
 
@@ -22,7 +23,7 @@
 
     </v-card-text>
 
-    <v-divider ></v-divider>
+
 
 
   </v-card>
