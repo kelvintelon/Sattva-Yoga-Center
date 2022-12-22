@@ -32,7 +32,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
     @Override
     public ClientDetails findClientByUserId(int userId) {
-        String sql = "SELECT * FROM client_info WHERE client_info = ?";
+        String sql = "SELECT * FROM client_info WHERE user_id = ?";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
         if (results.next()) {
             return mapRowToClient(results);

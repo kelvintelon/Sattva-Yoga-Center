@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @PreAuthorize("isAuthenticated()")
 @RestController
@@ -25,9 +26,15 @@ public class ClientDetailsController {
         this.userDao = userDao;
     }
 
+    @RequestMapping(path = "/getClientDetails", method = RequestMethod.GET)
+    public ClientDetails getClientDetails(Principal principal) {
+        ClientDetails clientDetails = clientDetailsDao.findClientByUserId(userDao.findIdByUsername(principal.getName()));
+        return clientDetails;
+    }
+
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/registerClient", method = RequestMethod.POST)
-    public ResponseEntity<ClientDetailsResponse> registerClient(@RequestBody ClientDetails client, Principal principal) {
+    public ResponseEntity<ClientDetailsResponse> registerClient(@RequestBody ClientDetails client) {
 
         // should we have exceptions if the client is already registered
         // (an exception that means they are already inside the client table)
