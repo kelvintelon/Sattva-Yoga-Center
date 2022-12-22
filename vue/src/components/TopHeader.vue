@@ -6,9 +6,11 @@
     </div>
 
     <login-button v-if="$store.state.token == ''"></login-button>
-    <logout-button v-if="$store.state.token !== ''"></logout-button>
+    <div v-else>
+      <logout-button></logout-button>
 
-    <my-account-button v-else></my-account-button>
+      <my-account-button></my-account-button>
+    </div>
   </div>
 </template>
 
@@ -24,7 +26,7 @@ export default {
     HeaderLogo,
     LoginButton,
     MyAccountButton,
-    LogoutButton
+    LogoutButton,
   },
   data() {
     return {
