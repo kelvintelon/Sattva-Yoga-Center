@@ -34,11 +34,12 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
     public ClientDetails findClientByUserId(int userId) {
         String sql = "SELECT * FROM client_info WHERE user_id = ?";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
+        ClientDetails clientDetails = new ClientDetails();
         if (results.next()) {
-            return mapRowToClient(results);
-        } else {
-            throw new ClientNotFoundException();
+            clientDetails = mapRowToClient(results);
         }
+
+        return clientDetails;
     }
 
     @Override
