@@ -41,6 +41,22 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         }
     }
 
+    @Override
+    public boolean updateClientDetails(ClientDetails clientDetails){
+        String sql = "UPDATE client_info SET last_name = ? , " +
+                "first_name = ? , " +
+                "street_address = ? , " +
+                "state_abbreviation = ? , " +
+                "zip_code = ? , " +
+                "email = ? , " +
+                "phone_number = ? " +
+                "WHERE user_id = ?";
+        return jdbcTemplate.update(sql, clientDetails.getLast_name(), clientDetails.getFirst_name(),
+                clientDetails.getStreet_address(), clientDetails.getState_abbreviation(),
+                clientDetails.getZip_code(), clientDetails.getEmail(), clientDetails.getPhone_number(),
+                clientDetails.getUser_id()) == 1;
+    }
+
     private ClientDetails mapRowToClient(SqlRowSet rs) {
         ClientDetails clientDetails = new ClientDetails();
         clientDetails.setClient_id(rs.getInt("client_id"));

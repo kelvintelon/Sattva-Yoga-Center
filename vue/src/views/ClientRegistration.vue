@@ -2,9 +2,12 @@
   <div class="client">
     <top-header></top-header>
 
-    <v-container v-for="align in alignments" :key="align" class="grey lighten-5 mb-6">
+    <v-container
+      :key="align"
+      class="grey lighten-5 mb-6"
+    >
       <v-row>
-       <client-form></client-form>
+        <v-col cols="12"> <client-form></client-form></v-col>
       </v-row>
     </v-container>
   </div>

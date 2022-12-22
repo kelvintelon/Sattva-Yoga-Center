@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.security.Principal;
 import java.util.List;
 
@@ -26,9 +27,19 @@ public class ClientDetailsController {
         this.userDao = userDao;
     }
 
+    @RequestMapping(value = "/updateClientDetails", method = RequestMethod.PUT)
+    public void updateClientDetails (@RequestBody ClientDetails clientDetails, Principal principal) {
+
+            clientDetailsDao.updateClientDetails(clientDetails);
+
+    }
+
     @RequestMapping(path = "/getClientDetails", method = RequestMethod.GET)
     public ClientDetails getClientDetails(Principal principal) {
-        ClientDetails clientDetails = clientDetailsDao.findClientByUserId(userDao.findIdByUsername(principal.getName()));
+        ClientDetails clientDetails =
+                clientDetailsDao.findClientByUserId(
+                        userDao.findIdByUsername(
+                                principal.getName()));
         return clientDetails;
     }
 
@@ -40,8 +51,8 @@ public class ClientDetailsController {
         // (an exception that means they are already inside the client table)
 
 
-        // if we don't want all the hardcoded values passed in from the userwe can call the setters and
-        // set them for the following method:
+        // if we don't want all the hardcoded values passed in from the user we can call the setters and
+        // set them before the following method happens:
         ClientDetails clientDetails = clientDetailsDao.createClient(client);
         HttpHeaders httpHeaders = new HttpHeaders();
         return new ResponseEntity<>(new ClientDetailsResponse(clientDetails.getClient_id(), clientDetails), httpHeaders, HttpStatus.CREATED);

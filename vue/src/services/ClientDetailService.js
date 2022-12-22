@@ -10,4 +10,8 @@ export default {
         return axios.get('/getClientDetails')
     },
 
+    updateClientDetailsOfLoggedInUser(clientDetails) {
+        return axios.put(`/updateClientDetails`, clientDetails )
+    },
+
 }

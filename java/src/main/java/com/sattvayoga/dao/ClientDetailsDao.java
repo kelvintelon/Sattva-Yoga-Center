@@ -7,4 +7,6 @@ public interface ClientDetailsDao {
     ClientDetails createClient(ClientDetails client);
 
     ClientDetails findClientByUserId(int userId);
+
+    boolean updateClientDetails(ClientDetails clientDetails);
 }
