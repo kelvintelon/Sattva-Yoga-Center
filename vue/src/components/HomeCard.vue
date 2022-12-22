@@ -39,7 +39,7 @@
     </v-card-text>
 
     <v-card-actions>
-      <v-btn color="black" text @click="signup">sign up̵</v-btn>
+      <v-btn color="black" text @click="signup">sign up</v-btn>
     </v-card-actions>
   </v-card>
 </template>
