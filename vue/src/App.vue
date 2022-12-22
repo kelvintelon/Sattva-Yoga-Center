@@ -53,3 +53,10 @@ export default {
   }),
 };
 </script>
+
+<style>
+  @font-face {
+    font-family: "Garamond";
+
+  }
+</style>

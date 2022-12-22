@@ -1,8 +1,10 @@
 <template>
   <!-- m is margin; x is left & right spacing -->
-  <v-card class="mx-auto my-12"
-          color="lime lighten-4"
+  <v-card class="mx-auto my-12 pb-12"
           min-height="100%"
+          color="lime lighten-4"
+
+
   >
 
     <v-img src="https://static.wixstatic.com/media/78a355_5f3646bdbf2a4ae485644bd021851dd1~mv2_d_1900_1326_s_2.png/v1/fit/w_2161,h_1165,q_90/78a355_5f3646bdbf2a4ae485644bd021851dd1~mv2_d_1900_1326_s_2.webp"></v-img>

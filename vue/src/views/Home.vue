@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <top-header></top-header>
-    <v-row>
+    <v-row class="mb-lg-16" align="stretch">
       <v-col cols="4">
         <home-card></home-card>
       </v-col>
@@ -31,7 +31,6 @@ export default {
     InfoFooter,
     AboutCard,
     WelcomeCard,
-
     HomeCard,
     TopHeader,
 

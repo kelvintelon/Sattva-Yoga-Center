@@ -5,7 +5,7 @@
           min-height="100%"
   >
 
-    <v-img src="https://images.pexels.com/photos/507935/pexels-photo-507935.jpeg"></v-img>
+    <v-img src="https://static.wixstatic.com/media/78a355_0dceef78b31e4be8a9368faf0905cac6~mv2.jpg/v1/fit/w_2074,h_1046,q_90/78a355_0dceef78b31e4be8a9368faf0905cac6~mv2.webp"></v-img>
 
     <v-card-title class="font-weight-bold">upcoming events</v-card-title>
 
@@ -39,7 +39,7 @@
     </v-card-text>
 
     <v-card-actions>
-      <v-btn color="black" text @click="signup">sign up</v-btn>
+      <v-btn class="mr-4">sign up</v-btn>
     </v-card-actions>
   </v-card>
 </template>
