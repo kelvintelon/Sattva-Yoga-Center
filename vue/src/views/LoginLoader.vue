@@ -39,7 +39,6 @@ export default {
     last_name: "",
     first_name: "",
     is_client_active: true,
-    is_constant_contact: true,
     street_address: "",
     city: "",
     state_abbreviation: "",

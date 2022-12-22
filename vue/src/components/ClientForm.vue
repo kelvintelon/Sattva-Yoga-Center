@@ -73,15 +73,6 @@
         required
       ></v-text-field>
 
-      <!-- <v-checkbox
-          v-model="clientDetails.is_on_email_list"
-          :error-messages="errors"
-          value=true
-          label="Join Email List"
-          type="checkbox"
-          required
-        ></v-checkbox> -->
-
       <v-checkbox
         v-model="clientDetails.is_on_email_list"
         label="Join Email List?"
@@ -106,7 +97,6 @@ export default {
       last_name: "",
       first_name: "",
       is_client_active: true,
-      is_constant_contact: true,
       street_address: "",
       city: "",
       state_abbreviation: "",
