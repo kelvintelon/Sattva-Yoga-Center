@@ -75,6 +75,7 @@
 <script>
 import authService from '../services/AuthService';
 import HeaderLogo from "../components/HeaderLogo.vue";
+
 export default {
   name: "register",
   components: {
