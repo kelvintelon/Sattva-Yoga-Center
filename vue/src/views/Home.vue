@@ -1,31 +1,27 @@
 <template>
-  <div class="home">
+  <v-container>
     <top-header></top-header>
-    <header>Sattva</header>
-    <p>You must be authenticated to see this</p>
-
-    <v-container>
-      <v-row>
-        <v-col v-for="n in 3" :key="n" cols="12" sm="4">
+    <v-row>
+      <v-col v-for="n in 3" :key="n" cols="12" sm="4">
         <home-card></home-card>
-
-        </v-col>
-      </v-row>
-    </v-container>
-  </div>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
-import TopHeader from "../components/TopHeader.vue";
+
 import HomeCard from "../components/HomeCard.vue";
+import TopHeader from '../components/TopHeader.vue';
 
 export default {
   name: "home",
   components: {
+    HomeCard,
     TopHeader,
-    HomeCard
+    
   },
 };
 </script>
 
-<style></style>
+<style></style>````
