@@ -14,9 +14,11 @@
 import HomeCard from "../components/HomeCard.vue";
 import TopHeader from '../components/TopHeader.vue';
 
+
 export default {
   name: "home",
   components: {
+
     HomeCard,
     TopHeader,
     
