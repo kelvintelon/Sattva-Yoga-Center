@@ -32,8 +32,17 @@ export default {
   methods: {
     findClientDetails() {
       this.clientProfile = this.$store.state.clientDetails;
+      
       // in case it can't retrieve the client details from the store/local storage
       if (Object.keys(this.clientProfile).length === 0) {
+        clientDetailService
+          .getClientDetailsOfLoggedInUser()
+          .then((response) => {
+            this.clientProfile = response.data;
+            this.$store.commit("SET_CLIENT_DETAILS", response.data);
+          });
+      }
+      else if (this.$store.state.clientDetails.client_id == 0) {
         clientDetailService
           .getClientDetailsOfLoggedInUser()
           .then((response) => {
