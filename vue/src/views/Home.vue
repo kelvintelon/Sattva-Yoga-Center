@@ -19,7 +19,7 @@
 <script>
 
 import HomeCard from "../components/HomeCard.vue";
-import TopHeader from '../components/TopHeader.vue';
+import TopHeader from '../components/TopHeader2.vue';
 import WelcomeCard from "@/components/WelcomeCard.vue";
 import AboutCard from "@/components/AboutCard.vue";
 import InfoFooter from "@/components/InfoFooter.vue";
