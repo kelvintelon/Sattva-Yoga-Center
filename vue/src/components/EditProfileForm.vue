@@ -6,10 +6,10 @@
       v-model="valid"
       lazy-validation
       class="client-form"
-      @submit.prevent="submit"
+      @submit.prevent="save"
       justify="center" align="center"
     >
-    <h1>Set Up Your Profile</h1>
+    <h1>Edit Your Profile</h1>
       <v-text-field
         v-model="clientDetails.first_name"
         :counter="10"
@@ -75,13 +75,13 @@
 
       <v-checkbox
         v-model="clientDetails.is_on_email_list"
-        label="Join Email List?"
+        label="Stay on Email List?"
         required
       ></v-checkbox>
 
-      <v-btn color="error" class="mr-4" @click="reset"> Reset Form </v-btn>
+      
 
-      <v-btn class="mr-4" type="submit" :disabled="invalid"> submit </v-btn>
+      <v-btn class="mr-4" type="submit" :disabled="invalid"> Save Edits </v-btn>
     </v-form>
   </div>
 </template>
@@ -131,38 +131,40 @@ export default {
   }),
 
   methods: {
-    reset() {
-      this.$refs.form.reset();
-    },
-    submit() {
-    this.clientDetails.user_id = this.$store.state.user.id;
-    this.clientDetails.date_of_entry = new Date().toISOString();
+    save() {
 
-      clientDetailService
-        .registerClient(this.clientDetails)
-        .then((response) => {
-          if (response.status == 201) {
-            alert ("You have been registered as a client!");
+      clientDetailService.updateClientDetailsOfLoggedInUser(this.clientDetails).then(
+        (response) => {
+          this.$store.commit("SET_CLIENT_DETAILS", response.data);
+          this.clientDetails = response.data
+        }
+      );
+
+      // clientDetailService
+      //   .registerClient(this.clientDetails)
+      //   .then((response) => {
+      //     if (response.status == 201) {
+      //       alert ("You have been registered as a client!");
             
-            // this.$store.commit("SET_CLIENT_ID", response.data.client_id);
-            this.$store.commit("SET_CLIENT_DETAILS", response.data.clientDetails);
-            this.reset();
-            this.$router.push("/registerForClass");
-          }
-        })
-        .catch((error) => {
-            const response = error.response;
-            this.registrationErrors = true;
-            if (response.status === 400) {
-              this.registrationErrorMsg = "Bad Request: Validation Errors";
-            }
-          })
-        ;
+      //       // this.$store.commit("SET_CLIENT_ID", response.data.client_id);
+      //       this.$store.commit("SET_CLIENT_DETAILS", response.data.clientDetails);
+      //       this.reset();
+      //       this.$router.push("/registerForClass");
+      //     }
+      //   })
+      //   .catch((error) => {
+      //       const response = error.response;
+      //       this.registrationErrors = true;
+      //       if (response.status === 400) {
+      //         this.registrationErrorMsg = "Bad Request: Validation Errors";
+      //       }
+      //     })
+      //   ;
 
     },
   },
   created() {
-
+      this.clientDetails = this.$store.state.clientDetails
   },
 };
 </script>

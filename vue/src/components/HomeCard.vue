@@ -54,6 +54,11 @@ export default {
   },
   created() {
   },
+  method: {
+    signup() {
+       this.$router.push("/registerForClass");
+    }
+  }
 };
 </script>
 

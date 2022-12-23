@@ -21,5 +21,12 @@ public class JdbcClassDetailsDao implements ClassDetailsDao {
                 classDetails.getClass_description()) == 1;
     }
 
+    public boolean registerForClass(int client_id, int class_id){
+        String sql = "INSERT INTO client_class (client_id, class_id) "+
+                "VALUES (?, ?)";
+        return jdbcTemplate.update(sql,client_id,class_id) == 1;
+    }
+
+    // for mapRow, be careful about is_paid . It can be null.
 
 }

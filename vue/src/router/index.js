@@ -9,6 +9,7 @@ import ClientRegistration from '../views/ClientRegistration.vue'
 import ClassRegistration from '../views/ClassRegistration.vue'
 import Checkout from '../views/Checkout.vue'
 import ProfilePage from '../views/ProfilePage.vue'
+import LoginLoader from '../views/LoginLoader.vue'
 
 Vue.use(Router)
 
@@ -85,6 +86,14 @@ const router = new Router({
       path:"/myProfile",
       name:"profile-page",
       component: ProfilePage,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path:"/loading",
+      name:"login-loader",
+      component: LoginLoader,
       meta: {
         requiresAuth: true
       }

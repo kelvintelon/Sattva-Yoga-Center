@@ -37,8 +37,10 @@ export default new Vuex.Store({
     LOGOUT(state) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      localStorage.removeItem('clientDetails')
       state.token = '';
       state.user = {};
+      state.clientDetails = {};
       axios.defaults.headers.common = {};
     },
     // SET_CLIENT_ID(state, client_id) {

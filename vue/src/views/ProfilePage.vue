@@ -1,7 +1,7 @@
 <template>
   <div>
     <top-header></top-header>
-
+    <!-- <edit-profile-form></edit-profile-form> -->
     <h1>{{ clientProfile.first_name }} {{ clientProfile.last_name }}</h1>
     <h1>
       {{ clientProfile.street_address }} {{ clientProfile.state_abbreviation }}
@@ -9,17 +9,20 @@
     </h1>
     <h1>{{ clientProfile.email }}</h1>
     <h1>{{ clientProfile.phone_number }}</h1>
+    <h1>{{clientProfile.is_on_email_list}}</h1>
   </div>
 </template>
 
 <script>
 import TopHeader from "../components/TopHeader.vue";
 import clientDetailService from "../services/ClientDetailService";
+// import editProfileForm from "../components/EditProfileForm.vue"
 
 export default {
   name: "profile-page",
   components: {
     TopHeader,
+    // editProfileForm,
   },
   data() {
     return {
@@ -31,9 +34,18 @@ export default {
   },
   methods: {
     findClientDetails() {
-      this.clientProfile = this.$store.state.clientDetails;
+//      this.clientProfile = this.$store.state.clientDetails;
+      
       // in case it can't retrieve the client details from the store/local storage
       if (Object.keys(this.clientProfile).length === 0) {
+        clientDetailService
+          .getClientDetailsOfLoggedInUser()
+          .then((response) => {
+            this.clientProfile = response.data;
+            this.$store.commit("SET_CLIENT_DETAILS", response.data);
+          });
+      }
+      else if (this.$store.state.clientDetails.client_id == 0) {
         clientDetailService
           .getClientDetailsOfLoggedInUser()
           .then((response) => {

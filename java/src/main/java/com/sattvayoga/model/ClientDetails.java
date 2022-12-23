@@ -7,7 +7,7 @@ public class ClientDetails {
     private String last_name;
     private String first_name;
     private boolean is_client_active;
-    private boolean is_constant_contact;
+    private boolean is_new_client;
     private String street_address;
     private String city;
     private String state_abbreviation;
@@ -19,12 +19,12 @@ public class ClientDetails {
     private Timestamp date_of_entry;
     private int user_id;
 
-    public ClientDetails(int client_id, String last_name, String first_name, boolean is_client_active, boolean is_constant_contact, String street_address, String city, String state_abbreviation, String zip_code, String phone_number, boolean is_on_email_list, String email, boolean has_record_of_liability, Timestamp date_of_entry, int user_id) {
+    public ClientDetails(int client_id, String last_name, String first_name, boolean is_client_active, boolean is_new_client,String street_address, String city, String state_abbreviation, String zip_code, String phone_number, boolean is_on_email_list, String email, boolean has_record_of_liability, Timestamp date_of_entry, int user_id) {
         this.client_id = client_id;
         this.last_name = last_name;
         this.first_name = first_name;
         this.is_client_active = is_client_active;
-        this.is_constant_contact = is_constant_contact;
+        this.is_new_client = is_new_client;
         this.street_address = street_address;
         this.city = city;
         this.state_abbreviation = state_abbreviation;
@@ -72,12 +72,12 @@ public class ClientDetails {
         this.is_client_active = is_client_active;
     }
 
-    public boolean isIs_constant_contact() {
-        return is_constant_contact;
+    public boolean isIs_new_client() {
+        return is_new_client;
     }
 
-    public void setIs_constant_contact(boolean is_constant_contact) {
-        this.is_constant_contact = is_constant_contact;
+    public void setIs_new_client(boolean is_new_client) {
+        this.is_new_client = is_new_client;
     }
 
     public String getStreet_address() {

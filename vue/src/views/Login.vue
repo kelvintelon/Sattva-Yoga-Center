@@ -64,6 +64,7 @@
 import HeaderLogo from "../components/HeaderLogo.vue";
 import authService from "../services/AuthService";
 
+
 export default {
   name: "login",
   components: { HeaderLogo },
@@ -84,7 +85,11 @@ export default {
           (v && v.length <= 30) || "Password must be less than 30 characters",
       ],
       invalidCredentials: false,
+      clientProfile: {},
     };
+  },
+  created() {
+    
   },
   methods: {
     login() {
@@ -94,7 +99,8 @@ export default {
           if (response.status == 200) {
             this.$store.commit("SET_AUTH_TOKEN", response.data.token);
             this.$store.commit("SET_USER", response.data.user);
-            this.$router.push("/clientRegistration");
+            this.$router.push("/loading");
+
           }
         })
         .catch((error) => {
@@ -106,7 +112,7 @@ export default {
         });
     },
     goToLogout() {
-      this.$router.push({ name: "profile-page" });
+      this.$router.push({ name: "register" });
     },
   },
 };

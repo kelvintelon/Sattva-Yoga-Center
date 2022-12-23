@@ -9,7 +9,7 @@
     <div v-else>
       <logout-button></logout-button>
 
-      <my-account-button></my-account-button>
+      <my-account-button v-show="foundClientInState"></my-account-button>
     </div>
   </div>
 </template>
@@ -31,9 +31,16 @@ export default {
   data() {
     return {
       expand: false,
+      foundClientInState: true,
+      clientProfile: {},
     };
   },
-  created() {},
+  created() {
+    this.clientProfile = this.$store.state.clientDetails;
+    if (Object.keys(this.clientProfile).length === 0) {
+      this.foundClientInState = false;
+    }
+  },
 };
 </script>
 

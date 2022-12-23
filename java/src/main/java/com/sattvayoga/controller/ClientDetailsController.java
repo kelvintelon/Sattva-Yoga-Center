@@ -28,7 +28,7 @@ public class ClientDetailsController {
     }
 
     @RequestMapping(value = "/updateClientDetails", method = RequestMethod.PUT)
-    public void updateClientDetails (@RequestBody ClientDetails clientDetails, Principal principal) {
+    public void updateClientDetails (@RequestBody ClientDetails clientDetails) {
 
             clientDetailsDao.updateClientDetails(clientDetails);
 
