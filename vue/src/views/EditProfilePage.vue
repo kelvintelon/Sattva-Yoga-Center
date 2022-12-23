@@ -1,8 +1,8 @@
 <template>
   <v-container class="edit-profile" fill-height fluid>
-    <v-spacer></v-spacer>
+
     <top-header></top-header>
-    <v-spacer></v-spacer>
+
     <v-row justify="center" align="center">
       <v-spacer></v-spacer>
       <v-col cols="4" justify="center" align="center">
@@ -22,7 +22,7 @@
 
 <script>
 import EditProfileForm from "../components/EditProfileForm.vue";
-import TopHeader from "../components/TopHeader.vue";
+import TopHeader from "../components/TopHeader2.vue";
 
 export default {
   name: "edit-profile-page",
