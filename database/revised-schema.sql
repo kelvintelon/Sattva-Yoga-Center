@@ -2,6 +2,7 @@ BEGIN TRANSACTION;
 
 DROP TABLE IF EXISTS users,teacher_details,class_details,client_details,client_class,package_purchase,package_details CASCADE;
 
+
 CREATE TABLE users 
 (
 	user_id 					serial		  NOT NULL,
@@ -17,9 +18,7 @@ CREATE TABLE teacher_details
     last_name         varchar(30) NOT NULL,
     first_name        varchar(30) NOT NULL,
     is_teacher_active boolean     NOT NULL,
-	user_id 		  int 		  NOT NULL,
-	CONSTRAINT PK_teacher_id PRIMARY KEY (teacher_id),
-	CONSTRAINT FK_teacher_id_user_id FOREIGN KEY (user_id) REFERENCES users (user_id)
+	CONSTRAINT PK_teacher_id PRIMARY KEY (teacher_id)
 );
 
 CREATE TABLE class_details

@@ -5,15 +5,15 @@ public class TeacherDetails {
     private String last_name;
     private String first_name;
     private boolean is_teacher_active;
-    private int user_id;
 
-    public TeacherDetails(int teacher_id, String last_name, String first_name, boolean is_teacher_active, int user_id) {
+    public TeacherDetails(int teacher_id, String last_name, String first_name, boolean is_teacher_active) {
         this.teacher_id = teacher_id;
         this.last_name = last_name;
         this.first_name = first_name;
         this.is_teacher_active = is_teacher_active;
-        this.user_id = user_id;
     }
+
+    public TeacherDetails(){};
 
     public int getTeacher_id() {
         return teacher_id;
@@ -45,13 +45,5 @@ public class TeacherDetails {
 
     public void setIs_teacher_active(boolean is_teacher_active) {
         this.is_teacher_active = is_teacher_active;
-    }
-
-    public int getUser_id() {
-        return user_id;
-    }
-
-    public void setUser_id(int user_id) {
-        this.user_id = user_id;
     }
 }
