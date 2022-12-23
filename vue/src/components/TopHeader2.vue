@@ -1,5 +1,5 @@
 <template>
-  <v-card >
+
     <v-toolbar dense color="amber lighten 1">
       <header-logo></header-logo>
 
@@ -12,7 +12,7 @@
         <logout-button></logout-button>
       </v-div>
     </v-toolbar>
-  </v-card>
+
 
 </template>
 
