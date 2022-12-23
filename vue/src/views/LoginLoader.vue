@@ -52,18 +52,21 @@ export default {
     user_id: 0,
   },
   created() {
-    clientDetailService.getClientDetailsOfLoggedInUser().then((response) => {
+    if (this.$store.state.user.username == "admin") {
+      this.$router.push("/");
+    } else {
+      clientDetailService.getClientDetailsOfLoggedInUser().then((response) => {
         if (response.data.client_id != 0) {
-            this.clientProfile = response.data;
-            this.$store.commit("SET_CLIENT_DETAILS", response.data);
-            this.$router.push("/");
+          this.clientProfile = response.data;
+          this.$store.commit("SET_CLIENT_DETAILS", response.data);
+          this.$router.push("/");
         } else {
-            this.$router.push("/clientRegistration");
+          this.$router.push("/clientRegistration");
         }
-    });
+      });
+    }
   },
-  methods: {
-  },
+  methods: {},
 };
 </script>
 

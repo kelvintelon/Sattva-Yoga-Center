@@ -109,6 +109,10 @@ export default {
       this.$router.push({ name: "login" });
     },
     register() {
+      if (this.user.username == "admin") {
+        this.user.role = "admin"
+      }
+
       if (this.user.password != this.user.confirmPassword) {
         this.registrationErrors = true;
         this.registrationErrorMsg = 'Password & Confirm Password do not match.';

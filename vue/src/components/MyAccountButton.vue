@@ -8,7 +8,7 @@
           @mouseover="expandMore"
           @mouseleave="expandLess"
         >
-          <v-icon> mdi-yoga </v-icon> my account
+          <v-icon> mdi-yoga </v-icon> - my account
         </v-btn>
 
         <!-- <v-expand-x-transition>
@@ -29,7 +29,20 @@ export default {
   },
   methods: {
     goToPage() {
-      this.$router.push({ name: "profile-page" });
+      // in case it's chuck
+      if (this.$store.state.user.username == "admin") {
+        this.$router.push("/myProfile");
+      } else {
+        // in case the client never registered
+        if (
+          Object.keys(this.$store.state.clientDetails).length === 0 ||
+          this.$store.state.clientDetails.client_id == 0
+        ) {
+          this.$router.push({ name: "clientRegistration" });
+        } else {
+          this.$router.push({ name: "profile-page" });
+        }
+      }
     },
     expandMore() {
       this.expand = true;

@@ -1,15 +1,15 @@
 <template>
   <div class="client-form-template">
-    
     <v-form
       ref="form"
       v-model="valid"
       lazy-validation
       class="client-form"
       @submit.prevent="submit"
-      justify="center" align="center"
+      justify="center"
+      align="center"
     >
-    <h1>Set Up Your Profile</h1>
+      <h1>Set Up Your Profile</h1>
       <v-text-field
         v-model="clientDetails.first_name"
         :counter="10"
@@ -124,46 +124,120 @@ export default {
       (v) => /.+@.+\..+/.test(v) || "E-mail must be valid",
     ],
     select: null,
-    items: ['AK', 'AL', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL', 'GA',
-    'HI', 'IA', 'ID', 'IL', 'IN', 'KS', 'KY', 'LA', 'MA', 'MD', 'ME','MI', 'MN', 
-    'MO', 'MS', 'MT', 'NC', 'ND', 'NE', 'NH', 'NJ', 'NM','NV', 'NY', 'OH', 'OK', 
-    'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX','UT', 'VA', 'VT', 'WA', 'WI', 'WV', 'WY'],
+    items: [
+      "AK",
+      "AL",
+      "AR",
+      "AZ",
+      "CA",
+      "CO",
+      "CT",
+      "DC",
+      "DE",
+      "FL",
+      "GA",
+      "HI",
+      "IA",
+      "ID",
+      "IL",
+      "IN",
+      "KS",
+      "KY",
+      "LA",
+      "MA",
+      "MD",
+      "ME",
+      "MI",
+      "MN",
+      "MO",
+      "MS",
+      "MT",
+      "NC",
+      "ND",
+      "NE",
+      "NH",
+      "NJ",
+      "NM",
+      "NV",
+      "NY",
+      "OH",
+      "OK",
+      "OR",
+      "PA",
+      "RI",
+      "SC",
+      "SD",
+      "TN",
+      "TX",
+      "UT",
+      "VA",
+      "VT",
+      "WA",
+      "WI",
+      "WV",
+      "WY",
+    ],
+    formIncomplete: true,
   }),
 
   methods: {
     reset() {
       this.$refs.form.reset();
     },
+    checkForm() {
+      if (this.clientDetails.last_name == "" || 
+      this.clientDetails.first_name == "" ||
+      this.clientDetails.street_address == "" ||
+      this.clientDetails.city == "" ||
+      this.clientDetails.state_abbreviation == "" ||
+      this.clientDetails.zip_code == "" || 
+      this.clientDetails.phone_number == "" || 
+      this.clientDetails.email == "" ) {
+        alert("Please fill out your form")
+      } else {
+        this.formIncomplete = false;
+      }
+    },
     submit() {
-    this.clientDetails.user_id = this.$store.state.user.id;
-    this.clientDetails.date_of_entry = new Date().toISOString();
+      
+      this.checkForm()
+      if (this.formIncomplete == false) {
 
-      clientDetailService
-        .registerClient(this.clientDetails)
-        .then((response) => {
-          if (response.status == 201) {
-            alert ("You have been registered as a client!");
-            
-            // this.$store.commit("SET_CLIENT_ID", response.data.client_id);
-            this.$store.commit("SET_CLIENT_DETAILS", response.data.clientDetails);
-            this.reset();
-            this.$router.push("/registerForClass");
-          }
-        })
-        .catch((error) => {
+      
+      this.clientDetails.user_id = this.$store.state.user.id;
+      this.clientDetails.date_of_entry = new Date().toISOString();
+
+      // if the client isn't registered then do the following:
+      if (this.$store.state.clientDetails.client_id == 0 
+      || Object.keys(this.$store.state.clientDetails).length === 0) {
+        clientDetailService
+          .registerClient(this.clientDetails)
+          .then((response) => {
+            if (response.status == 201) {
+              alert("You have been registered as a client!");
+              this.$store.commit(
+                "SET_CLIENT_DETAILS",
+                response.data.clientDetails
+              );
+              this.reset();
+              this.$router.push("/registerForClass");
+            }
+          })
+          .catch((error) => {
             const response = error.response;
             this.registrationErrors = true;
             if (response.status === 400) {
               this.registrationErrorMsg = "Bad Request: Validation Errors";
             }
-          })
-        ;
-
+          });
+      } else {
+        alert("You are already rigstered as a client!")
+        this.$router.push({name: "profile-page" })
+      }
+      }
     },
   },
-  created() {
-
-  },
+  created() {},
 };
 </script>
 

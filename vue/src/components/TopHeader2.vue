@@ -9,7 +9,7 @@
 
       <login-button v-if="$store.state.token == ''"></login-button>
       <v-div v-else>
-        <logout-button></logout-button>
+        <my-account-button></my-account-button>
       </v-div>
     </v-toolbar>
 
@@ -19,11 +19,20 @@
 <script>
 import LoginButton from "@/components/LoginButton.vue";
 import HeaderLogo from "@/components/HeaderLogo.vue";
-import LogoutButton from "@/components/LogoutButton.vue";
+import MyAccountButton from "@/components/MyAccountButton.vue";
 
 export default {
   name: "TopHeader",
-  components: {LogoutButton, HeaderLogo, LoginButton}
+  components: { MyAccountButton, HeaderLogo, LoginButton
+},
+data() {
+  return {
+    
+  }
+},
+created() {
+
+},
 }
 </script>
 
