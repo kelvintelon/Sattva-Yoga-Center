@@ -1,15 +1,39 @@
 <template>
-  <div>
-    <top-header></top-header>
-    <!-- <edit-profile-form></edit-profile-form> -->
-    <h1>{{ clientProfile.first_name }} {{ clientProfile.last_name }}</h1>
+  <!-- <edit-profile-form></edit-profile-form> -->
+  <!-- <h1>{{ clientProfile.first_name }} {{ clientProfile.last_name }}</h1>
     <h1>
       {{ clientProfile.street_address }} {{ clientProfile.state_abbreviation }}
       {{ clientProfile.zip_code }}
     </h1>
     <h1>{{ clientProfile.email }}</h1>
     <h1>{{ clientProfile.phone_number }}</h1>
-    <h1>{{clientProfile.is_on_email_list}}</h1>
+    <h1>{{clientProfile.is_on_email_list}}</h1> -->
+  <div class="client">
+    <top-header></top-header>
+    <v-container>
+      <v-row>
+        <v-col>
+          <h1>My account settings</h1>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col>
+          <v-btn elevation="5" v-on:click="goToEditProfilePage()">
+            <v-icon> mdi-yoga </v-icon> Edit profile</v-btn>
+        </v-col>
+        <v-col>
+          <v-btn></v-btn>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col>
+          <v-btn></v-btn>
+        </v-col>
+        <v-col>
+          <v-btn></v-btn>
+        </v-col>
+      </v-row>
+    </v-container>
   </div>
 </template>
 
@@ -33,9 +57,11 @@ export default {
     this.findClientDetails();
   },
   methods: {
+    goToEditProfilePage() {
+      this.$router.push({ name: "edit-profile-page" });
+    },
     findClientDetails() {
-//      this.clientProfile = this.$store.state.clientDetails;
-      
+      //      this.clientProfile = this.$store.state.clientDetails;
       // in case it can't retrieve the client details from the store/local storage
       if (Object.keys(this.clientProfile).length === 0) {
         clientDetailService
@@ -44,8 +70,7 @@ export default {
             this.clientProfile = response.data;
             this.$store.commit("SET_CLIENT_DETAILS", response.data);
           });
-      }
-      else if (this.$store.state.clientDetails.client_id == 0) {
+      } else if (this.$store.state.clientDetails.client_id == 0) {
         clientDetailService
           .getClientDetailsOfLoggedInUser()
           .then((response) => {

@@ -60,7 +60,7 @@
 
       <v-text-field
         v-model="clientDetails.phone_number"
-        :counter="10"
+        :counter="15"
         :rules="nameRules"
         label="Phone Number"
         required

@@ -1,15 +1,15 @@
 <template>
   <div class="client-form-template">
-    
     <v-form
       ref="form"
       v-model="valid"
       lazy-validation
       class="client-form"
-      @submit.prevent="save"
-      justify="center" align="center"
+      @submit.prevent="save()"
+      justify="center"
+      align="center"
     >
-    <h1>Edit Your Profile</h1>
+      <h1>Edit Your Profile</h1>
       <v-text-field
         v-model="clientDetails.first_name"
         :counter="10"
@@ -60,7 +60,7 @@
 
       <v-text-field
         v-model="clientDetails.phone_number"
-        :counter="10"
+        :counter="15"
         :rules="nameRules"
         label="Phone Number"
         required
@@ -79,9 +79,19 @@
         required
       ></v-checkbox>
 
-      
+      <v-alert type="success" v-show="showAlert">
+        You edited your profile.
+        <v-btn color="warning" @click="clickOkay()"> Okay </v-btn>
+      </v-alert>
 
-      <v-btn class="mr-4" type="submit" :disabled="invalid"> Save Edits </v-btn>
+      <v-btn
+        class="mr-4"
+        type="submit"
+        color="amber lighten-4"
+        :disabled="invalid"
+      >
+        Save Edits
+      </v-btn>
     </v-form>
   </div>
 </template>
@@ -109,6 +119,7 @@ export default {
       date_of_entry: "",
       user_id: 0,
     },
+    showAlert: false,
     nameRules: [
       (v) => !!v || "Name is required",
       (v) => (v && v.length <= 30) || "Name must be less than 30 characters",
@@ -124,28 +135,86 @@ export default {
       (v) => /.+@.+\..+/.test(v) || "E-mail must be valid",
     ],
     select: null,
-    items: ['AK', 'AL', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL', 'GA',
-    'HI', 'IA', 'ID', 'IL', 'IN', 'KS', 'KY', 'LA', 'MA', 'MD', 'ME','MI', 'MN', 
-    'MO', 'MS', 'MT', 'NC', 'ND', 'NE', 'NH', 'NJ', 'NM','NV', 'NY', 'OH', 'OK', 
-    'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX','UT', 'VA', 'VT', 'WA', 'WI', 'WV', 'WY'],
+    items: [
+      "AK",
+      "AL",
+      "AR",
+      "AZ",
+      "CA",
+      "CO",
+      "CT",
+      "DC",
+      "DE",
+      "FL",
+      "GA",
+      "HI",
+      "IA",
+      "ID",
+      "IL",
+      "IN",
+      "KS",
+      "KY",
+      "LA",
+      "MA",
+      "MD",
+      "ME",
+      "MI",
+      "MN",
+      "MO",
+      "MS",
+      "MT",
+      "NC",
+      "ND",
+      "NE",
+      "NH",
+      "NJ",
+      "NM",
+      "NV",
+      "NY",
+      "OH",
+      "OK",
+      "OR",
+      "PA",
+      "RI",
+      "SC",
+      "SD",
+      "TN",
+      "TX",
+      "UT",
+      "VA",
+      "VT",
+      "WA",
+      "WI",
+      "WV",
+      "WY",
+    ],
   }),
 
   methods: {
+    displayAlert() {
+      this.showAlert = true;
+    },
+    clickOkay() {
+      this.$router.push("/myProfile");
+    },
     save() {
+      this.clientDetails = this.$store.state.clientDetails;
+      clientDetailService
+        .updateClientDetailsOfLoggedInUser(this.clientDetails)
+        .then((response) => {
+          // this.clientDetails = response.data;
+          response
+          this.displayAlert();
 
-      clientDetailService.updateClientDetailsOfLoggedInUser(this.clientDetails).then(
-        (response) => {
-          this.$store.commit("SET_CLIENT_DETAILS", response.data);
-          this.clientDetails = response.data
-        }
-      );
+          // this.$store.commit("SET_CLIENT_DETAILS", response.data);
+        });
 
       // clientDetailService
       //   .registerClient(this.clientDetails)
       //   .then((response) => {
       //     if (response.status == 201) {
       //       alert ("You have been registered as a client!");
-            
+
       //       // this.$store.commit("SET_CLIENT_ID", response.data.client_id);
       //       this.$store.commit("SET_CLIENT_DETAILS", response.data.clientDetails);
       //       this.reset();
@@ -160,11 +229,10 @@ export default {
       //       }
       //     })
       //   ;
-
     },
   },
   created() {
-      this.clientDetails = this.$store.state.clientDetails
+    this.clientDetails = this.$store.state.clientDetails;
   },
 };
 </script>

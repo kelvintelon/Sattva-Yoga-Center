@@ -10,6 +10,7 @@ import ClassRegistration from '../views/ClassRegistration.vue'
 import Checkout from '../views/Checkout.vue'
 import ProfilePage from '../views/ProfilePage.vue'
 import LoginLoader from '../views/LoginLoader.vue'
+import EditProfilePage from '../views/EditProfilePage.vue'
 
 Vue.use(Router)
 
@@ -94,6 +95,14 @@ const router = new Router({
       path:"/loading",
       name:"login-loader",
       component: LoginLoader,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path:"/editProfile",
+      name:"edit-profile-page",
+      component: EditProfilePage,
       meta: {
         requiresAuth: true
       }
