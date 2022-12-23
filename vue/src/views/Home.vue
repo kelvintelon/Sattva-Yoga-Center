@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <top-header></top-header>
-    <v-row class="mb-lg-16" align="stretch">
+    <v-row class="mb-lg-16">
       <v-col cols="4">
         <home-card></home-card>
       </v-col>

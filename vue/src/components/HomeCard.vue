@@ -23,12 +23,13 @@
     </v-card-text>
 
     <v-divider></v-divider>
-
+<!--put the following stuff in a grid-->
     <v-card-title class="font-weight-bold">Class times</v-card-title>
 
     <v-card-text>
       <v-chip-group
           v-model="selection"
+          class="mx-4"
           active-class="amber accent-4 white--text"
           column
       >
@@ -39,7 +40,7 @@
     </v-card-text>
 
     <v-card-actions>
-      <v-btn class="mr-4">sign up</v-btn>
+      <v-btn class="mx-6">sign up</v-btn>
     </v-card-actions>
   </v-card>
 </template>
