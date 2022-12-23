@@ -74,6 +74,7 @@ CREATE TABLE package_details
 	activation_date		date, 
 	expiration_date		date,
 	classes_remaining	int,
+	is_subscription		boolean 		NOT NULL, 
 	CONSTRAINT PK_package_details PRIMARY KEY (package_id)
 );
 
