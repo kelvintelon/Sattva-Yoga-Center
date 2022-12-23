@@ -51,7 +51,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                 "state_abbreviation = ? , " +
                 "zip_code = ? , " +
                 "email = ? , " +
-                "phone_number = ? " +
+                "phone_number = ? , " +
                 "is_on_email_list = ? "+
                 "WHERE user_id = ?";
         return jdbcTemplate.update(sql, clientDetails.getLast_name(), clientDetails.getFirst_name(),
