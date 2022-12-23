@@ -22,6 +22,6 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao{
                 packageDetails.getActivation_date(),packageDetails.getExpiration_date(),
                 packageDetails.getClasses_remaining(), packageDetails.isIs_subscription()) == 1;
     }
-    
+
     //TODO For map row careful about null values
 }
