@@ -11,6 +11,8 @@ import Checkout from '../views/Checkout.vue'
 import ProfilePage from '../views/ProfilePage.vue'
 import LoginLoader from '../views/LoginLoader.vue'
 import EditProfilePage from '../views/EditProfilePage.vue'
+import TeacherManagementPage from '../views/TeacherManagementPage.vue'
+
 
 Vue.use(Router)
 
@@ -103,6 +105,14 @@ const router = new Router({
       path:"/editProfile",
       name:"edit-profile-page",
       component: EditProfilePage,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path:"/teacherManagement",
+      name:"teacher-management",
+      component: TeacherManagementPage,
       meta: {
         requiresAuth: true
       }

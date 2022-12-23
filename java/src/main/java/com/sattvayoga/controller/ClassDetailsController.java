@@ -20,7 +20,7 @@ public class ClassDetailsController {
     }
 
     // TODO add annotation for has role admin
-    // @PreAuthorize("hasRole('ADMIN')) 
+    // @PreAuthorize("hasRole('ADMIN'))
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/createClass", method = RequestMethod.POST)
     public void createClass(@RequestBody ClassDetails classDetails) {

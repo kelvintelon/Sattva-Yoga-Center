@@ -1,14 +1,5 @@
 <template>
-  <!-- <edit-profile-form></edit-profile-form> -->
-  <!-- <h1>{{ clientProfile.first_name }} {{ clientProfile.last_name }}</h1>
-    <h1>
-      {{ clientProfile.street_address }} {{ clientProfile.state_abbreviation }}
-      {{ clientProfile.zip_code }}
-    </h1>
-    <h1>{{ clientProfile.email }}</h1>
-    <h1>{{ clientProfile.phone_number }}</h1>
-    <h1>{{clientProfile.is_on_email_list}}</h1> -->
-  <div class="client">
+  <div>
     <top-header></top-header>
     <admin-account-quick-links
       v-show="adminIsLoggedin"

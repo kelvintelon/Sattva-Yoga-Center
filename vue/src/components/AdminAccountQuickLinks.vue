@@ -17,7 +17,7 @@
     </v-row>
     <v-row>
       <v-col>
-        <v-btn elevation="5"> <v-icon> mdi-account-group </v-icon> - Teacher Management </v-btn>
+        <v-btn elevation="5" v-on:click="goToTeacherManagementPage()"> <v-icon> mdi-account-group </v-icon> - Teacher Management </v-btn>
       </v-col>
       <v-col>
         <v-btn elevation="5"> <v-icon> mdi-book-open-outline </v-icon> - Package Management </v-btn>
@@ -39,8 +39,11 @@ export default {
   },
   methods: {
     goToClassManagementPage() {
-      this.$router.push({ name: "edit-profile-page" });
+      this.$router.push({ name: "profile-page" });
     },
+    goToTeacherManagementPage() {
+        this.$router.push({name: "teacher-management"})
+    }
   },
 };
 </script>
