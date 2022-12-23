@@ -15,11 +15,13 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao{
     @Override
     public boolean createPackage(PackageDetails packageDetails) {
         String sql = "INSERT INTO package_details (description, package_cost, activation_date, expiration_date, " +
-                "classes_remaining) VALUES " +
+                "classes_remaining, is_subscription) VALUES " +
                 "(?, ?, ?, ?, ?)";
 
         return jdbcTemplate.update(sql, packageDetails.getDescription(), packageDetails.getPackage_cost(),
                 packageDetails.getActivation_date(),packageDetails.getExpiration_date(),
-                packageDetails.getClasses_remaining()) == 1;
+                packageDetails.getClasses_remaining(), packageDetails.isIs_subscription()) == 1;
     }
+    
+    //TODO For map row careful about null values
 }

@@ -11,15 +11,18 @@ public class PackageDetails {
     private Date activation_date;
     private Date expiration_date;
     private int classes_remaining;
+    private boolean is_subscription;
 
 
-    public PackageDetails(int package_id, String description, BigDecimal package_cost, Date activation_date, Date expiration_date, int classes_remaining) {
+    public PackageDetails(int package_id, String description, BigDecimal package_cost, Date activation_date,
+                          Date expiration_date, int classes_remaining, boolean is_subscription) {
         this.package_id = package_id;
         this.description = description;
         this.package_cost = package_cost;
         this.activation_date = activation_date;
         this.expiration_date = expiration_date;
         this.classes_remaining = classes_remaining;
+        this.is_subscription = is_subscription;
     }
 
     public int getPackage_id() {
@@ -68,5 +71,13 @@ public class PackageDetails {
 
     public void setClasses_remaining(int classes_remaining) {
         this.classes_remaining = classes_remaining;
+    }
+
+    public boolean isIs_subscription() {
+        return is_subscription;
+    }
+
+    public void setIs_subscription(boolean is_subscription) {
+        this.is_subscription = is_subscription;
     }
 }
