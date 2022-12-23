@@ -1,8 +1,6 @@
 <template>
-  <v-card height="400px">
-    <v-footer
-        v-bind="localAttrs"
-        :padless="padless"
+
+    <v-footer class="pa-0"
     >
       <v-card
           flat
@@ -31,30 +29,6 @@
       </v-card>
     </v-footer>
 
-    <v-row
-        align="center"
-        justify="center"
-        class="ma-12"
-    >
-      <v-col
-          cols="12"
-          md="8"
-      >
-        <v-select
-            v-model="variant"
-            :items="items"
-            clearable
-            label="Variant"
-        ></v-select>
-
-        <v-checkbox
-            v-model="padless"
-            hide-details
-            label="Padless"
-        ></v-checkbox>
-      </v-col>
-    </v-row>
-  </v-card>
 </template>
 <script>
 export default {
