@@ -31,7 +31,7 @@ export default {
   },
   methods: {
     findClientDetails() {
-      this.clientProfile = this.$store.state.clientDetails;
+//      this.clientProfile = this.$store.state.clientDetails;
       
       // in case it can't retrieve the client details from the store/local storage
       if (Object.keys(this.clientProfile).length === 0) {

@@ -45,7 +45,6 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
     @Override
     public boolean updateClientDetails(ClientDetails clientDetails){
-        //TODO Add is_email_list ???
         String sql = "UPDATE client_details SET last_name = ? , " +
                 "first_name = ? , " +
                 "street_address = ? , " +
@@ -53,11 +52,12 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                 "zip_code = ? , " +
                 "email = ? , " +
                 "phone_number = ? " +
+                "is_on_email_list = ? "+
                 "WHERE user_id = ?";
         return jdbcTemplate.update(sql, clientDetails.getLast_name(), clientDetails.getFirst_name(),
                 clientDetails.getStreet_address(), clientDetails.getState_abbreviation(),
                 clientDetails.getZip_code(), clientDetails.getEmail(), clientDetails.getPhone_number(),
-                clientDetails.getUser_id()) == 1;
+                clientDetails.isIs_on_email_list(), clientDetails.getUser_id()) == 1;
     }
 
     private ClientDetails mapRowToClient(SqlRowSet rs) {
