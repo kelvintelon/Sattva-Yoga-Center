@@ -28,14 +28,6 @@
               label="Teacher Names"
               required
             ></v-select>
-
-            <!-- <v-text-field
-            v-model="classDetails.class_datetime"
-            :counter="10"
-            :rules="calendarRules"
-            label="YYYY-MM-DD"
-            required
-          ></v-text-field> -->
             <v-menu
               v-model="menu"
               :close-on-content-click="false"
@@ -87,6 +79,7 @@
                 @click:minute="$refs.menu.save(time)"
                 scrollable
                 format="24hr"
+                :rules="timeRules"
               ></v-time-picker>
             </v-menu>
             <v-select
@@ -98,6 +91,7 @@
             ></v-select>
             <v-text-field
               v-model="classDetails.class_description"
+              :rules="descriptionRules"
               label="Description"
               required
             ></v-text-field>
@@ -126,15 +120,11 @@
 <script>
 import classDetailService from "../services/ClassDetailService";
 import teacherService from "../services/TeacherService";
-import TopHeader from "./TopHeader2.vue";
 
 export default {
   // props: ['teacher'],
   data: () => ({
     name: "create-class-form",
-    components: {
-      TopHeader,
-    },
     date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
       .toISOString()
       .substr(0, 10),
@@ -142,7 +132,6 @@ export default {
     menu2: false,
     menu: false,
     expand: false,
-    expand2: false,
     durationOptions: [10, 20, 30, 40, 50, 60],
     classDetails: {
       teacher_id: "",
@@ -164,10 +153,12 @@ export default {
         (v && v.length <= 30) ||
         "Date and Time must be less than 30 characters",
     ],
+    descriptionRules: [(v) => !!v || "Description is required"],
     durationRules: [(v) => !!v || "Duration is required"],
     teacherNames: [],
     teacherObj: [],
     fullName: "",
+    formIncomplete: true,
   }),
 
   created() {
@@ -175,6 +166,20 @@ export default {
   },
 
   methods: {
+    checkForm() {
+      if (
+        this.classDetails.teacher_id == 0 ||
+        this.classDetails.class_duration == 0 ||
+        this.classDetails.class_description == "" ||
+        this.time == "" ||
+        this.time == null ||
+        this.time == undefined
+      ) {
+        alert("Please fill out your form");
+      } else {
+        this.formIncomplete = false;
+      }
+    },
     reset() {
       this.$refs.form.reset();
     },
@@ -188,15 +193,22 @@ export default {
         }
       });
 
-      // assign the date and time through concatenation
-      this.classDetails.class_datetime = this.date+"T"+this.time+":00"
- 
-      // after completing the object do the post
-      classDetailService.createClass(this.classDetails).then((response) => {
-        if (response.status == 201) {
-         alert("You have created a class!");
-        }
-      });
+      this.checkForm();
+      if (this.formIncomplete == false) {
+        // assign the date and time through concatenation
+        this.classDetails.class_datetime = this.date + "T" + this.time + ":00";
+
+        // checks if form has date time (the only field where rules don't work)
+
+        // after completing the object do the post
+        classDetailService.createClass(this.classDetails).then((response) => {
+          if (response.status == 201) {
+            alert("You have created a class!");
+          } else {
+            alert("!Error creating a class!");
+          }
+        });
+      }
     },
 
     fetchTeachers() {
