@@ -4,7 +4,6 @@
 
     <v-container
       :key="align"
-      class="grey lighten-5 mb-6"
     >
       <v-row>
         <v-col cols="12"> <class-form></class-form></v-col>
@@ -15,7 +14,7 @@
 
 
 <script>
-import TopHeader from "../components/TopHeader.vue";
+import TopHeader from "../components/TopHeader2.vue";
 import ClassForm from "../components/CreateClassForm.vue";
 
 export default {
