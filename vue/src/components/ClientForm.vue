@@ -231,7 +231,7 @@ export default {
             }
           });
       } else {
-        alert("You are already rigstered as a client!")
+        alert("You are already registered as a client!")
         this.$router.push({name: "profile-page" })
       }
       }

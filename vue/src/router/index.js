@@ -12,6 +12,7 @@ import ProfilePage from '../views/ProfilePage.vue'
 import LoginLoader from '../views/LoginLoader.vue'
 import EditProfilePage from '../views/EditProfilePage.vue'
 import TeacherManagementPage from '../views/TeacherManagementPage.vue'
+import ClassManagement from '../views/ClassManagement.vue'
 
 
 Vue.use(Router)
@@ -117,6 +118,14 @@ const router = new Router({
         requiresAuth: true
       }
     },
+    {
+      path:"/classManagement",
+      name:"class-management",
+      component: ClassManagement,
+      meta: {
+        requiresAuth: true
+      }
+    }
   ]
 })
 

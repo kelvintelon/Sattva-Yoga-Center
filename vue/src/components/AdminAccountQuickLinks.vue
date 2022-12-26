@@ -39,7 +39,7 @@ export default {
   },
   methods: {
     goToClassManagementPage() {
-      this.$router.push({ name: "profile-page" });
+      this.$router.push({ name: "class-management" });
     },
     goToTeacherManagementPage() {
         this.$router.push({name: "teacher-management"})
