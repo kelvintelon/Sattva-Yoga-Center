@@ -21,7 +21,7 @@
           <h1>Create a class</h1>
 
           <v-select
-            v-model="classDetails.teacher.teacher_id"
+            v-model="selectedTeacherName"
             :items="teacherNames"
             :rules="[(v) => !!v || 'Item is required']"
             label="Teacher Names"
@@ -88,7 +88,7 @@ import classDetailService from "../services/ClassDetailService";
 import teacherService from "../services/TeacherService";
 
 export default {
-  props: ['teacher'],
+  // props: ['teacher'],
   data: () => ({
     expand: false,
 
@@ -102,15 +102,19 @@ export default {
       class_description: "",
     },
 
+    selectedTeacherName: "",
+
     nameRules: [
       (v) => !!v || "Name is required",
       (v) => (v && v.length <= 30) || "Name must be less than 30 characters",
     ],
 
     teacherNames: [],
+    teacherObj: [],
+    fullName: "",
   }),
 
-  created(){
+  created() {
     this.fetchTeachers();
   },
 
@@ -120,6 +124,12 @@ export default {
     },
 
     submit() {
+      this.teacherObj.forEach((item) => {
+        this.fullName = item.first_name + " " + item.last_name;
+        if (this.selectedTeacherName == this.fullName) {
+          this.classDetails.teacher_id = item.teacher_id;
+        }
+      });
       classDetailService.createClass(this.classDetails).then((response) => {
         if (response.status == 201) {
           alert("You have created a class!");
@@ -127,12 +137,15 @@ export default {
       });
     },
 
-    fetchTeachers(){
-      teacherService.getTeacherList()
-      .then((response)=>{
-        this.teacherNames = response.data
-      })
-    }
+    fetchTeachers() {
+      teacherService.getTeacherList().then((response) => {
+        this.teacherObj = response.data;
+        this.teacherObj.forEach((item) => {
+          this.fullName = item.first_name + " " + item.last_name;
+          this.teacherNames.push(this.fullName);
+        });
+      });
+    },
   },
 };
 </script>
