@@ -20,4 +20,6 @@ public interface ClassDetailsDao {
     List<ClientDetailsDTO> getClientDetailsByClassId(int Classid);
 
     boolean updateClass(ClassDetails classDetails);
+
+    boolean deleteClass(int classId);
 }

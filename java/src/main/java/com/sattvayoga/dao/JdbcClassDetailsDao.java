@@ -68,10 +68,19 @@ public class JdbcClassDetailsDao implements ClassDetailsDao {
                 classDetails.getClass_duration(), classDetails.isIs_paid(), classDetails.getClass_description(), classDetails.getClass_id()) == 1;
     }
 
-//    @Override
-//    public boolean deleteClass(int classId) {
-//        String sql = "DELETE from "
-//    }
+    @Override
+    public boolean deleteClass(int classId) {
+        String sql = "BEGIN TRANSACTION;\n" +
+                "\n" +
+                "DELETE FROM client_class \n" +
+                "WHERE client_class.class_id = ?;\n" +
+                "\n" +
+                "DELETE FROM class_details\n" +
+                "WHERE class_id = ?;\n" +
+                "\n" +
+                "COMMIT TRANSACTION;";
+        return jdbcTemplate.update(sql, classId, classId)==1;
+    }
 
 //    @Override
 //    public boolean deleteTeacher(int teacherId) {

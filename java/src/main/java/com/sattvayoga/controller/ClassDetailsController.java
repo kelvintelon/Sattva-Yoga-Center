@@ -29,13 +29,11 @@ public class ClassDetailsController {
     }
 
 
-
     @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value= "/classList", method = RequestMethod.GET)
     public List<ClassDetails> getAllClasses() {
         return classDetailsDao.getAllClasses();
     }
-
 
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
@@ -56,6 +54,12 @@ public class ClassDetailsController {
         // (an exception that means they are already inside the class table)
 
         classDetailsDao.registerForClass(clientClass.getClient_id(),clientClass.getClass_id());
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value = "/deleteClass/{classId}", method = RequestMethod.DELETE)
+    public void deleteClass (@PathVariable int classId) {
+        classDetailsDao.deleteClass(classId);
     }
 
     static class ClientClassWrapper {
