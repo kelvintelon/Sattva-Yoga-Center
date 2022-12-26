@@ -7,12 +7,28 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Component
 public class JdbcTeacherDetailsDao implements TeacherDetailsDao {
 
     private final JdbcTemplate jdbcTemplate;
 
     public JdbcTeacherDetailsDao(JdbcTemplate jdbcTemplate) { this.jdbcTemplate = jdbcTemplate;}
+
+
+    @Override
+    public List<TeacherDetails> getTeacherList() {
+        List<TeacherDetails> allTeachers = new ArrayList<>();
+        String sql = "SELECT teacher_id, first_name, last_name, is_teacher_active from teacher_details;";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+        while(result.next()){
+            allTeachers.add(mapRowToTeacher(result));
+        }
+        return allTeachers;
+    }
+
     @Override
     public boolean createTeacher(TeacherDetails teacher) {
         String sql = "INSERT INTO teacher_details (last_name, first_name, is_teacher_active) VALUES (?, ?, ?)";
