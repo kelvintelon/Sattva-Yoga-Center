@@ -8,21 +8,26 @@ public class PackageDetails {
     private int package_id;
     private String description;
     private BigDecimal package_cost;
-    private Date activation_date;
-    private Date expiration_date;
-    private int classes_remaining;
+    private int classes_amount;
+    private int subscription_duration;
     private boolean is_subscription;
 
+    private boolean is_in_person;
 
-    public PackageDetails(int package_id, String description, BigDecimal package_cost, Date activation_date,
-                          Date expiration_date, int classes_remaining, boolean is_subscription) {
+    public PackageDetails(int package_id, String description,
+                          BigDecimal package_cost, int classes_amount,
+                          boolean is_subscription, int subscription_duration,
+                          boolean is_in_person) {
         this.package_id = package_id;
         this.description = description;
         this.package_cost = package_cost;
-        this.activation_date = activation_date;
-        this.expiration_date = expiration_date;
-        this.classes_remaining = classes_remaining;
+        this.classes_amount = classes_amount;
         this.is_subscription = is_subscription;
+        this.subscription_duration = subscription_duration;
+        this.is_in_person = is_in_person;
+    }
+
+    public PackageDetails() {
     }
 
     public int getPackage_id() {
@@ -49,28 +54,12 @@ public class PackageDetails {
         this.package_cost = package_cost;
     }
 
-    public Date getActivation_date() {
-        return activation_date;
+    public int getClasses_amount() {
+        return classes_amount;
     }
 
-    public void setActivation_date(Date activation_date) {
-        this.activation_date = activation_date;
-    }
-
-    public Date getExpiration_date() {
-        return expiration_date;
-    }
-
-    public void setExpiration_date(Date expiration_date) {
-        this.expiration_date = expiration_date;
-    }
-
-    public int getClasses_remaining() {
-        return classes_remaining;
-    }
-
-    public void setClasses_remaining(int classes_remaining) {
-        this.classes_remaining = classes_remaining;
+    public void setClasses_amount(int classes_amount) {
+        this.classes_amount = classes_amount;
     }
 
     public boolean isIs_subscription() {
@@ -79,5 +68,21 @@ public class PackageDetails {
 
     public void setIs_subscription(boolean is_subscription) {
         this.is_subscription = is_subscription;
+    }
+
+    public int getSubscription_duration() {
+        return subscription_duration;
+    }
+
+    public void setSubscription_duration(int subscription_duration) {
+        this.subscription_duration = subscription_duration;
+    }
+
+    public boolean isIs_in_person() {
+        return is_in_person;
+    }
+
+    public void setIs_in_person(boolean is_in_person) {
+        this.is_in_person = is_in_person;
     }
 }

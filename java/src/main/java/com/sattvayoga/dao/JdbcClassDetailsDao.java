@@ -30,12 +30,14 @@ public class JdbcClassDetailsDao implements ClassDetailsDao {
                 classDetails.getClass_description()) == 1;
     }
 
+    @Override
     public boolean registerForClass(int client_id, int class_id) {
         String sql = "INSERT INTO client_class (client_id, class_id) " +
                 "VALUES (?, ?)";
         return jdbcTemplate.update(sql, client_id, class_id) == 1;
     }
 
+    @Override
     public List<ClassDetails> getAllClasses() {
         List<ClassDetails> allClasses = new ArrayList<>();
         String sql = "SELECT class_id, teacher_id, class_datetime, class_duration, is_paid, class_description " +

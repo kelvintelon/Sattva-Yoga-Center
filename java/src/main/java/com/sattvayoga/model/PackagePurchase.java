@@ -11,17 +11,25 @@ public class PackagePurchase {
     private Timestamp date_purchased;
     private int package_id;
     private boolean is_expired;
+    private int classes_remaining;
+    private Date activation_date;
+    private Date expiration_date;
     private BigDecimal total_amount_paid;
     private boolean is_monthly_renew;
     private BigDecimal discount;
 
-    public PackagePurchase(int package_purchase_id, int client_id, Timestamp date_purchased, int package_id, boolean is_expired,
-                           BigDecimal total_amount_paid, boolean is_monthly_renew, BigDecimal discount) {
+    public PackagePurchase(int package_purchase_id, int client_id, Timestamp date_purchased, int package_id,
+                           boolean is_expired, int classes_remaining, Date activation_date,
+                           Date expiration_date, BigDecimal total_amount_paid, boolean is_monthly_renew,
+                           BigDecimal discount) {
         this.package_purchase_id = package_purchase_id;
         this.client_id = client_id;
         this.date_purchased = date_purchased;
         this.package_id = package_id;
         this.is_expired = is_expired;
+        this.classes_remaining = classes_remaining;
+        this.activation_date = activation_date;
+        this.expiration_date = expiration_date;
         this.total_amount_paid = total_amount_paid;
         this.is_monthly_renew = is_monthly_renew;
         this.discount = discount;
@@ -65,6 +73,30 @@ public class PackagePurchase {
 
     public void setIs_expired(boolean is_expired) {
         this.is_expired = is_expired;
+    }
+
+    public int getClasses_remaining() {
+        return classes_remaining;
+    }
+
+    public void setClasses_remaining(int classes_remaining) {
+        this.classes_remaining = classes_remaining;
+    }
+
+    public Date getActivation_date() {
+        return activation_date;
+    }
+
+    public void setActivation_date(Date activation_date) {
+        this.activation_date = activation_date;
+    }
+
+    public Date getExpiration_date() {
+        return expiration_date;
+    }
+
+    public void setExpiration_date(Date expiration_date) {
+        this.expiration_date = expiration_date;
     }
 
     public BigDecimal getTotal_amount_paid() {

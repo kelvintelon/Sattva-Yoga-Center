@@ -70,10 +70,10 @@ CREATE TABLE package_details
 	package_id			serial			NOT NULL,  
 	description			text			NOT NULL,
 	package_cost		decimal(13, 2)	NOT NULL,
-	activation_date		date, 
-	expiration_date		date,
-	classes_remaining	int,
+	classes_amount		int,
+	subscription_duration	int,
 	is_subscription		boolean 		NOT NULL, 
+	is_in_person		boolean			NOT NULL,
 	CONSTRAINT PK_package_details PRIMARY KEY (package_id)
 );
 
@@ -84,6 +84,9 @@ CREATE TABLE package_purchase
 	package_id			int				NOT NULL,
 	date_purchased		timestamp 		NOT NULL,
 	is_expired			boolean   		NOT NULL,
+	classes_remaining	int,
+	activation_date		date, 
+	expiration_date		date,
 	is_monthly_renew	boolean,					
 	total_amount_paid	decimal(13, 2),
 	discount			decimal(13, 2),

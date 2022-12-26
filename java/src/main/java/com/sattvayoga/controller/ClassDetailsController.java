@@ -21,20 +21,6 @@ public class ClassDetailsController {
         this.classDetailsDao = classDetailsDao;
     }
 
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @RequestMapping(value= "/updateClass", method = RequestMethod.PUT)
-    public void updateClass(@RequestBody ClassDetails classDetails) {
-        classDetailsDao.updateClass(classDetails);
-    }
-
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @RequestMapping(value= "/classList", method = RequestMethod.GET)
-    public List<ClassDetails> getAllClasses() {
-        return classDetailsDao.getAllClasses();
-    }
-
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/createClass", method = RequestMethod.POST)
@@ -44,6 +30,12 @@ public class ClassDetailsController {
         // (an exception that means they are already inside the class table)
 
         classDetailsDao.createClass(classDetails);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value= "/classList", method = RequestMethod.GET)
+    public List<ClassDetails> getAllClasses() {
+        return classDetailsDao.getAllClasses();
     }
 
     @ResponseStatus(HttpStatus.CREATED)
@@ -57,10 +49,20 @@ public class ClassDetailsController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value= "/updateClass", method = RequestMethod.PUT)
+    public void updateClass(@RequestBody ClassDetails classDetails) {
+        classDetailsDao.updateClass(classDetails);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/deleteClass/{classId}", method = RequestMethod.DELETE)
     public void deleteClass (@PathVariable int classId) {
         classDetailsDao.deleteClass(classId);
     }
+
+
+
+
 
     static class ClientClassWrapper {
 
