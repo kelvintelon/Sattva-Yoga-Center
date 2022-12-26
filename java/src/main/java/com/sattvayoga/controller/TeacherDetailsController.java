@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @PreAuthorize("isAuthenticated()")
 @RestController
 @CrossOrigin
@@ -39,5 +41,11 @@ public class TeacherDetailsController {
     @RequestMapping(value = "/deleteTeacher/{teacherId}", method = RequestMethod.DELETE)
     public void deleteTeacher (@PathVariable int teacherId) {
         teacherDetailsDao.deleteTeacher(teacherId);
+    }
+
+    @PreAuthorize("permitAll")
+    @GetMapping(path = "/getTeacherList")
+    public List<TeacherDetails> getTeacherList(){
+        return teacherDetailsDao.getTeacherList();
     }
 }
