@@ -21,15 +21,23 @@ public class ClassDetailsController {
         this.classDetailsDao = classDetailsDao;
     }
 
-    // TODO add annotation for has role admin
-    // @PreAuthorize("hasRole('ADMIN'))
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value= "/updateClass", method = RequestMethod.PUT)
+    public void updateClass(@RequestBody ClassDetails classDetails) {
+        classDetailsDao.updateClass(classDetails);
+    }
+
+
+
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value= "/classList", method = RequestMethod.GET)
     public List<ClassDetails> getAllClasses() {
         return classDetailsDao.getAllClasses();
     }
 
-    // TODO add annotation for has role admin
-    // @PreAuthorize("hasRole('ADMIN'))
+
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/createClass", method = RequestMethod.POST)
     public void createClass(@RequestBody ClassDetails classDetails) {

@@ -1,6 +1,7 @@
 package com.sattvayoga.dao;
 
 import com.sattvayoga.model.ClientDetails;
+import com.sattvayoga.model.ClientDetailsDTO;
 import com.sattvayoga.model.TeacherDetails;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -55,23 +56,41 @@ public class JdbcClassDetailsDao implements ClassDetailsDao {
         return allClasses;
     }
 
-    
+    @Override
+    public boolean updateClass(ClassDetails classDetails) {
+        String sql = "UPDATE class_details SET teacher_id = ? , " +
+                "class_datetime = ? , " +
+                "class_duration = ? , " +
+                "is_paid = ? , " +
+                "class_description = ? " +
+                "WHERE class_id = ?";
+        return jdbcTemplate.update(sql, classDetails.getClass_id(), classDetails.getClass_datetime(),
+                classDetails.getClass_duration(), classDetails.isIs_paid(), classDetails.getClass_description(), classDetails.getClass_id()) == 1;
+    }
+
+//    @Override
+//    public boolean deleteClass(int classId) {
+//        String sql = "DELETE from "
+//    }
+
+//    @Override
+//    public boolean deleteTeacher(int teacherId) {
+//        String sql = "DELETE from teacher_details WHERE teacher_id = ?;";
+//        return jdbcTemplate.update(sql, teacherId)==1;
+//    }
 
     // helper method to find a list of clients per class
     @Override
-    public List<ClientDetails> getClientDetailsByClassId(int ClassId) {
-        List<ClientDetails> client_list = new ArrayList<>();
+    public List<ClientDetailsDTO> getClientDetailsByClassId(int ClassId) {
+        List<ClientDetailsDTO> client_list = new ArrayList<>();
         String sql = "SELECT * " +
                 "FROM client_details " +
                 "JOIN client_class ON client_details.client_id = client_class.client_id " +
                 "WHERE class_id = ?";
 
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, ClassId);
-        while(result.next()) {
-            ClientDetails clientDetails = new ClientDetails();
-            clientDetails.setClient_id(result.getInt("client_id"));
-            clientDetails.setFirst_name(result.getString("first_name"));
-            clientDetails.setLast_name(result.getString("last_name"));
+        while (result.next()) {
+            ClientDetailsDTO clientDetails = new ClientDetailsDTO(result.getInt("client_id"),result.getString("first_name"),result.getString("last_name"));
 
             client_list.add(clientDetails);
         }

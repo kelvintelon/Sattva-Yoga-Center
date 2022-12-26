@@ -11,9 +11,9 @@ public class ClassDetails {
     private boolean is_paid;
     private String class_description;
     private String teacher_name;
-    private List<ClientDetails> client_list;
+    private List<ClientDetailsDTO> client_list;
 
-    public ClassDetails(int class_id, int teacher_id, Timestamp class_datetime, int class_duration, boolean is_paid, String class_description, String teacher_name, List<ClientDetails> client_list) {
+    public ClassDetails(int class_id, int teacher_id, Timestamp class_datetime, int class_duration, boolean is_paid, String class_description, String teacher_name, List<ClientDetailsDTO> client_list) {
         this.class_id = class_id;
         this.teacher_id = teacher_id;
         this.class_datetime = class_datetime;
@@ -93,11 +93,11 @@ public class ClassDetails {
         this.teacher_name = teacher_name;
     }
 
-    public List<ClientDetails> getClient_list() {
+    public List<ClientDetailsDTO> getClient_list() {
         return client_list;
     }
 
-    public void setClient_list(List<ClientDetails> client_list) {
+    public void setClient_list(List<ClientDetailsDTO> client_list) {
         this.client_list = client_list;
     }
 }
