@@ -40,6 +40,12 @@ public class ClientDetails {
     public ClientDetails() {
     }
 
+    public ClientDetails(int client_id, String last_name, String first_name) {
+        this.client_id = client_id;
+        this.last_name = last_name;
+        this.first_name = first_name;
+    }
+
     public int getClient_id() {
         return client_id;
     }

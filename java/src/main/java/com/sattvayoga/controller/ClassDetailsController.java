@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @PreAuthorize("isAuthenticated()")
 @RestController
 @CrossOrigin
@@ -17,6 +19,13 @@ public class ClassDetailsController {
 
     public ClassDetailsController(ClassDetailsDao classDetailsDao) {
         this.classDetailsDao = classDetailsDao;
+    }
+
+    // TODO add annotation for has role admin
+    // @PreAuthorize("hasRole('ADMIN'))
+    @RequestMapping(value= "/classList", method = RequestMethod.GET)
+    public List<ClassDetails> getAllClasses() {
+        return classDetailsDao.getAllClasses();
     }
 
     // TODO add annotation for has role admin
