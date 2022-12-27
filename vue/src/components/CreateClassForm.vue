@@ -1,116 +1,108 @@
 <template>
   <v-container>
     <v-row justify="center" style="min-height: 160px">
-      <v-col cols="5">
-        <v-btn class="ma-2" color="primary" @click="expand = !expand">
-          Create a class
-        </v-btn>
-
-        <v-expand-transition>
-          <v-form
-            ref="form"
-            v-show="expand"
-            height="100"
-            width="500"
-            v-model="valid"
-            lazy-validation
-            class="class-form mx-auto white"
-            @submit.prevent="submit"
-            justify="center"
-            align="center"
+      <v-col cols="6">
+        <v-form
+          ref="form"
+          height="100"
+          width="500"
+          show="expand"
+          v-model="valid"
+          lazy-validation
+          class="class-form mx-auto white"
+          @submit.prevent="submit"
+          justify="center"
+          align="center"
+        >
+          <v-select
+            v-model="selectedTeacherName"
+            :items="teacherNames"
+            :rules="[(v) => !!v || 'Name is required']"
+            label="Teacher Names"
+            required
+          ></v-select>
+          <v-menu
+            v-model="menu"
+            :close-on-content-click="false"
+            :nudge-right="40"
+            transition="scale-transition"
+            offset-y
+            min-width="auto"
           >
-            <h1>Create a class</h1>
-
-            <v-select
-              v-model="selectedTeacherName"
-              :items="teacherNames"
-              :rules="[(v) => !!v || 'Name is required']"
-              label="Teacher Names"
-              required
-            ></v-select>
-            <v-menu
-              v-model="menu"
-              :close-on-content-click="false"
-              :nudge-right="40"
-              transition="scale-transition"
-              offset-y
-              min-width="auto"
-            >
-              <template v-slot:activator="{ on, attrs }">
-                <v-text-field
-                  v-model="date"
-                  label="Date picker"
-                  prepend-icon="mdi-calendar-multiselect"
-                  readonly
-                  v-bind="attrs"
-                  v-on="on"
-                ></v-text-field>
-              </template>
-              <v-date-picker
+            <template v-slot:activator="{ on, attrs }">
+              <v-text-field
                 v-model="date"
-                @input="menu = false"
-              ></v-date-picker>
-            </v-menu>
-            <v-menu
-              ref="menu"
-              v-model="menu2"
-              :close-on-content-click="false"
-              :nudge-right="40"
-              :return-value.sync="time"
-              transition="scale-transition"
-              offset-y
-              max-width="290px"
-              min-width="290px"
-            >
-              <template v-slot:activator="{ on, attrs }">
-                <v-text-field
-                  v-model="time"
-                  label="Time in Military Format"
-                  prepend-icon="mdi-clock-time-four-outline"
-                  readonly
-                  v-bind="attrs"
-                  v-on="on"
-                ></v-text-field>
-              </template>
-              <v-time-picker
-                v-if="menu2"
+                label="Date picker"
+                prepend-icon="mdi-calendar-multiselect"
+                readonly
+                v-bind="attrs"
+                v-on="on"
+              ></v-text-field>
+            </template>
+            <v-date-picker v-model="date" @input="menu = false"></v-date-picker>
+          </v-menu>
+          <v-menu
+            ref="menu"
+            v-model="menu2"
+            :close-on-content-click="false"
+            :nudge-right="40"
+            :return-value.sync="time"
+            transition="scale-transition"
+            offset-y
+            max-width="290px"
+            min-width="290px"
+          >
+            <template v-slot:activator="{ on, attrs }">
+              <v-text-field
                 v-model="time"
-                full-width
-                @click:minute="$refs.menu.save(time)"
-                scrollable
-                format="24hr"
-                :rules="timeRules"
-              ></v-time-picker>
-            </v-menu>
-            <v-select
-              v-model="classDetails.class_duration"
-              :items="durationOptions"
-              :rules="durationRules"
-              label="Duration in minutes"
-              required
-            ></v-select>
-            <v-text-field
-              v-model="classDetails.class_description"
-              :rules="descriptionRules"
-              label="Description"
-              required
-            ></v-text-field>
+                label="Time"
+                prepend-icon="mdi-clock-time-four-outline"
+                readonly
+                v-bind="attrs"
+                v-on="on"
+              ></v-text-field>
+            </template>
+            <v-time-picker
+              v-if="menu2"
+              v-model="time"
+              full-width
+              @click:minute="$refs.menu.save(time)"
+              scrollable
+              :rules="timeRules"
+            ></v-time-picker>
+          </v-menu>
+          <v-select
+            v-model="classDetails.class_duration"
+            :items="durationOptions"
+            :rules="durationRules"
+            label="Duration in minutes"
+            required
+          ></v-select>
+          <v-text-field
+            v-model="classDetails.class_description"
+            :rules="descriptionRules"
+            label="Description"
+            required
+          ></v-text-field>
 
-            <v-checkbox
-              v-model="classDetails.is_paid"
-              label="Paid class?"
-              required
-            ></v-checkbox>
-
-            <v-btn color="error" class="mr-4" @click="reset">
-              Reset Form
-            </v-btn>
-
-            <v-btn class="mr-4" type="submit" :disabled="invalid">
-              submit
-            </v-btn>
-          </v-form>
-        </v-expand-transition>
+          <v-checkbox
+            v-model="classDetails.is_paid"
+            label="Paid class?"
+            required
+          ></v-checkbox>
+          <v-row justify="center" align="center"
+            ><v-col cols="10">
+              <v-btn color="error" class="mr-4" @click="reset">
+                Reset Form
+              </v-btn>
+            </v-col>
+            <v-col>
+              <v-btn class="mr-4" type="submit" :disabled="invalid">
+                submit
+              </v-btn></v-col
+            ></v-row
+          >
+        </v-form>
       </v-col>
     </v-row>
   </v-container>
@@ -131,7 +123,7 @@ export default {
     time: null,
     menu2: false,
     menu: false,
-    expand: false,
+    expand: true,
     durationOptions: [10, 20, 30, 40, 50, 60],
     classDetails: {
       teacher_id: "",
@@ -206,7 +198,7 @@ export default {
             alert("You have created a class!");
             this.classDetails.teacher_name = this.selectedTeacherName;
             this.$store.state.classList.push(this.classDetails);
-            this.expand = !this.expand;
+            this.reset();
           } else {
             alert("!Error creating a class!");
           }
