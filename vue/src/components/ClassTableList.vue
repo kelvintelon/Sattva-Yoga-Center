@@ -1,12 +1,13 @@
 <template>
   <div id="app">
     <v-app id="inspire">
-      <v-data-table :headers="headers" :items="classes" class="elevation-5">
+      <v-data-table :headers="headers" :items="classes" class="elevation-5" sort-by="class_id">
         <template v-slot:top>
           <v-toolbar flat>
             <v-toolbar-title>My Classes</v-toolbar-title>
             <v-divider class="mx-4" inset vertical></v-divider>
             <v-spacer></v-spacer>
+            <!-- FORM from CreateClassForm-->
             <v-dialog v-model="dialog" max-width="500px">
               <template v-slot:activator="{ on, attrs }">
                 <v-btn
@@ -139,8 +140,151 @@
                   </v-row>
                 </v-container>
 
-                <!-- OLD FORM -->
-                <!-- <v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="blue darken-1" text @click="close">
+                    Cancel
+                  </v-btn>
+                  <!-- <v-btn color="blue darken-1" text @click="save"> Save </v-btn> -->
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+
+            <!-- EDIT FORM -->
+            <v-dialog v-model="dialog2" max-width="500px">
+              <v-card justify="center">
+                <v-card-title>
+                  <span class="text-h5">{{ formTitle }}</span>
+                </v-card-title>
+
+                <v-container>
+                  <v-row justify="center" style="min-height: 160px">
+                    <v-col cols="6">
+                      <v-form
+                        ref="form"
+                        height="100"
+                        width="500"
+                        v-model="valid"
+                        lazy-validation
+                        class="class-form mx-auto white"
+                        @submit.prevent="update"
+                        justify="center"
+                        align="center"
+                      >
+                        <v-select
+                          v-model="editedTeacherName"
+                          item-value="editedTeacherName"
+                          :items="teacherNames"
+                          :rules="[(v) => !!v || 'Name is required']"
+                          label="Teacher Names"
+                          required
+                        ></v-select>
+                        <v-menu
+                          v-model="menu3"
+                          :close-on-content-click="false"
+                          :nudge-right="40"
+                          transition="scale-transition"
+                          offset-y
+                          min-width="auto"
+                        >
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-text-field
+                              v-model="editedDate"
+                              label="Date picker"
+                              prepend-icon="mdi-calendar-multiselect"
+                              readonly
+                              v-bind="attrs"
+                              v-on="on"
+                            ></v-text-field>
+                          </template>
+                          <v-date-picker
+                            v-model="editedDate"
+                            @input="menu3 = false"
+                          ></v-date-picker>
+                        </v-menu>
+                        <v-menu
+                          ref="menu"
+                          v-model="menu4"
+                          :close-on-content-click="false"
+                          :nudge-right="40"
+                          :return-value.sync="editedTime"
+                          transition="scale-transition"
+                          offset-y
+                          max-width="290px"
+                          min-width="290px"
+                        >
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-text-field
+                              v-model="editedTime"
+                              label="Time"
+                              prepend-icon="mdi-clock-time-four-outline"
+                              readonly
+                              v-bind="attrs"
+                              v-on="on"
+                            ></v-text-field>
+                          </template>
+                          <v-time-picker
+                            v-if="menu4"
+                            v-model="editedTime"
+                            full-width
+                            @click:minute="$refs.menu.save(editedTime)"
+                            scrollable
+                            :rules="timeRules"
+                          ></v-time-picker>
+                        </v-menu>
+                        <v-select
+                          v-model="editedItem.class_duration"
+                          :items="durationOptions"
+                          :rules="durationRules"
+                          label="Duration in minutes"
+                          required
+                        ></v-select>
+                        <v-text-field
+                          v-model="editedItem.class_description"
+                          :rules="descriptionRules"
+                          label="Description"
+                          required
+                        ></v-text-field>
+
+                        <v-checkbox
+                          v-model="editedItem.is_paid"
+                          label="Paid class?"
+                          required
+                        ></v-checkbox>
+                        <v-row justify="center" align="center"
+                          ><v-col cols="10">
+                            <v-btn color="error" class="mr-4" @click="reset">
+                              Reset Form
+                            </v-btn>
+                          </v-col>
+                          <v-col>
+                            <v-btn
+                              class="mr-4"
+                              type="submit"
+                              :disabled="invalid"
+                            >
+                              update
+                            </v-btn></v-col
+                          ></v-row
+                        >
+                      </v-form>
+                    </v-col>
+                  </v-row>
+                </v-container>
+
+
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="blue darken-1" text @click="close2">
+                    Cancel
+                  </v-btn>
+                  <!-- <v-btn color="blue darken-1" text @click="save"> Save </v-btn> -->
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+
+                <!-- <v-dialog v-model="dialog2" max-width="500px">
+                <v-card-text>
                 <v-container>
                   <v-row>
                     <v-col
@@ -149,8 +293,8 @@
                       md="4"
                     >
                       <v-text-field
-                        v-model="editedItem.name"
-                        label="Dessert name"
+                        v-model="editedItem.class_description"
+                        label="Class Descripton"
                       ></v-text-field>
                     </v-col>
                     <v-col
@@ -159,8 +303,8 @@
                       md="4"
                     >
                       <v-text-field
-                        v-model="editedItem.calories"
-                        label="Calories"
+                        v-model="editedItem.teacher_name"
+                        label="Teacher"
                       ></v-text-field>
                     </v-col>
                     <v-col
@@ -195,17 +339,8 @@
                     </v-col>
                   </v-row>
                 </v-container>
-              </v-card-text> -->
-
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn color="blue darken-1" text @click="close">
-                    Cancel
-                  </v-btn>
-                  <!-- <v-btn color="blue darken-1" text @click="save"> Save </v-btn> -->
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
+              </v-card-text> 
+            </v-dialog> -->
 
             <!-- DELETE ? -->
             <v-dialog v-model="dialogDelete" max-width="500px">
@@ -268,12 +403,15 @@ export default {
     return {
       // ==================== this is table stuff vvvv
       dialog: false,
+      dialog2: false,
       dialogDelete: false,
       headers: [
+          {text: "Class ID",
+          align: "start",
+          sortable: true,
+          value: "class_id"},
         {
           text: "Class Description",
-          align: "start",
-          sortable: false,
           value: "class_description",
         },
         { text: "Teacher", value: "teacher_name" },
@@ -285,19 +423,25 @@ export default {
       classes: [],
       editedIndex: -1,
       editedItem: {
-        name: "",
-        calories: 0,
-        fat: 0,
-        carbs: 0,
-        protein: 0,
+        class_description: "",
+        teacher_id: "",
+        class_duration: 0,
+        class_datetime: "",
+        is_paid: "",
       },
+      editedTeacherName: "",
+      editedDate: "",
+      editedTime: "",
+      menu3: false,
+      menu4: false,
       defaultItem: {
-        name: "",
-        calories: 0,
-        fat: 0,
-        carbs: 0,
-        protein: 0,
+        class_description: "",
+        teacher_id: "",
+        class_duration: 0,
+        class_datetime: "",
+        is_paid: "",
       },
+      
       // ====================  this is form stuff vvvv
       date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
         .toISOString()
@@ -332,7 +476,9 @@ export default {
       teacherNames: [],
       teacherObj: [],
       fullName: "",
+      fullname2: "",
       formIncomplete: true,
+      formIncomplete2: true,
     };
   },
   created() {
@@ -356,11 +502,12 @@ export default {
     editItem(item) {
       this.editedIndex = this.classes.indexOf(item);
       this.editedItem = Object.assign({}, item);
-      this.dialog = true;
+      this.dialog2 = true;
     },
 
     deleteItem(item) {
-      this.editedIndex = this.desserts.indexOf(item);
+      this.editedIndex = this.classes.indexOf(item);
+      this.editedTeacherName = item.teacher_name.value;
       this.editedItem = Object.assign({}, item);
       this.dialogDelete = true;
     },
@@ -372,28 +519,36 @@ export default {
 
     close() {
       this.dialog = false;
-
+    this.reset();
         // ==================== This isn't being used right now
         // this.$nextTick(() => {
         //   this.editedItem = Object.assign({}, this.defaultItem);
         //   this.editedIndex = -1;
         // });
     },
-
+    close2() {
+      this.dialog2 = false;
+    this.reset();
+        // ==================== This isn't being used right now
+        // this.$nextTick(() => {
+        //   this.editedItem = Object.assign({}, this.defaultItem);
+        //   this.editedIndex = -1;
+        // });
+    },
     closeDelete() {
       this.dialogDelete = false;
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-      });
+    //   this.$nextTick(() => {
+    //     this.editedItem = Object.assign({}, this.defaultItem);
+    //     this.editedIndex = -1;
+    //   });
     },
 
     save() {
-      if (this.editedIndex > -1) {
-        Object.assign(this.desserts[this.editedIndex], this.editedItem);
-      } else {
-        this.desserts.push(this.editedItem);
-      }
+    //   if (this.editedIndex > -1) {
+    //     Object.assign(this.desserts[this.editedIndex], this.editedItem);
+    //   } else {
+    //     this.desserts.push(this.editedItem);
+    //   }
       this.close();
     },
     // ==================== this is form stuff vvvv
@@ -409,6 +564,20 @@ export default {
         alert("Please fill out your form");
       } else {
         this.formIncomplete = false;
+      }
+    },
+    checkForm2() {
+        if (
+        this.editedItem.teacher_id == 0 ||
+        this.editedItem.class_duration == 0 ||
+        this.editedItem.class_description == "" ||
+        this.editedTime == "" ||
+        this.editedTime == null ||
+        this.editedTime == undefined
+      ) {
+        alert("Please fill out your form");
+      } else {
+        this.formIncomplete2 = false;
       }
     },
     reset() {
@@ -432,14 +601,13 @@ export default {
 
         // checks if form has date time (the only field where rules don't work)
 
-        // after completing the object do the post
+        // after completing the object do the POST REQUEST
         classDetailService.createClass(this.classDetails).then((response) => {
           if (response.status == 201) {
             alert("You have created a class!");
             // this.classDetails.teacher_name = this.selectedTeacherName;
             // this.$store.state.classList.push(this.classDetails);
             this.getClassTable();
-            this.reset();
             this.close();
           } else {
             alert("Error creating a class!");
@@ -447,13 +615,39 @@ export default {
         });
       }
     },
+    update() {
+        // assign teacher name to object
+        this.teacherObj.forEach((item2) => {
+        this.fullName2 = item2.first_name + " " + item2.last_name;
+        if (this.editedTeacherName == this.fullName2) {
+          this.editedItem.teacher_id = item2.teacher_id;
+        }
+      });
 
+      this.checkForm2();
+      if (this.formIncomplete2 == false) {
+
+          // assign the date and time through concatenation
+          this.editedItem.class_datetime = this.editedDate + "T" + this.editedTime + ":00";
+
+          // after completing the object do the PUT REQUEST
+          classDetailService.updateClass(this.editedItem).then((response) => {
+              if (response.status == 200) {
+                  alert("You have updated a class!");
+                  this.getClassTable();
+                  this.close2();
+              } else {
+                  alert("Error updating a class!")
+              }
+          })
+      }
+    },
     fetchTeachers() {
       teacherService.getTeacherList().then((response) => {
         this.teacherObj = response.data;
         this.teacherObj.forEach((item) => {
-          this.fullName = item.first_name + " " + item.last_name;
-          this.teacherNames.push(this.fullName);
+            
+          this.teacherNames.push(item.first_name + " " + item.last_name);
         });
       });
     },

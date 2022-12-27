@@ -66,7 +66,7 @@ public class JdbcClassDetailsDao implements ClassDetailsDao {
                 "is_paid = ? , " +
                 "class_description = ? " +
                 "WHERE class_id = ?";
-        return jdbcTemplate.update(sql, classDetails.getClass_id(), classDetails.getClass_datetime(),
+        return jdbcTemplate.update(sql, classDetails.getTeacher_id(), classDetails.getClass_datetime(),
                 classDetails.getClass_duration(), classDetails.isIs_paid(), classDetails.getClass_description(), classDetails.getClass_id()) == 1;
     }
 

@@ -8,6 +8,9 @@ export default {
 
     getAllClasses() {
         return axios.get(`/classList`)
-    }
+    },
     
+    updateClass(editedClass) {
+        return axios.put(`/updateClass`, editedClass)
+    },
 }
