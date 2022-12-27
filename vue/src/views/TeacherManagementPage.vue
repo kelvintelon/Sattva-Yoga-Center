@@ -2,7 +2,9 @@
 <div>
     <top-header></top-header>
   <v-container>
-    
+          <v-row>
+        <v-col cols="12"> <create-teacher-form></create-teacher-form></v-col>
+      </v-row>
     <v-simple-table>
     <template v-slot:default>
       <thead>
@@ -33,11 +35,13 @@
 
 <script>
 import TopHeader from "../components/TopHeader2.vue";
+import CreateTeacherForm from "../components/CreateTeacherForm.vue"
 
 export default {
     name: "teacher-management",
     components: {
     TopHeader,
+    CreateTeacherForm
   },
 }
 </script>
