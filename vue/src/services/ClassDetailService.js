@@ -13,4 +13,7 @@ export default {
     updateClass(editedClass) {
         return axios.put(`/updateClass`, editedClass)
     },
+    deleteClass(classID) {
+        return axios.delete(`/deleteClass/${classID}`)
+    }
 }
