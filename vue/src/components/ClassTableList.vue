@@ -346,6 +346,7 @@
             <v-dialog v-model="dialogDelete" max-width="500px">
             <v-card>
               <v-card-title class="text-h5">Are you sure you want to delete this item?</v-card-title>
+              <v-card-title class="text-h6">This will delete the sign up list as well</v-card-title>
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
@@ -501,19 +502,27 @@ export default {
     },
     editItem(item) {
       this.editedIndex = this.classes.indexOf(item);
+      this.editedTeacherName = item.teacher_name.value;
       this.editedItem = Object.assign({}, item);
       this.dialog2 = true;
     },
 
     deleteItem(item) {
       this.editedIndex = this.classes.indexOf(item);
-      this.editedTeacherName = item.teacher_name.value;
+      
       this.editedItem = Object.assign({}, item);
       this.dialogDelete = true;
     },
 
     deleteItemConfirm() {
-      this.desserts.splice(this.editedIndex, 1);
+      this.classes.splice(this.editedIndex, 1);
+    classDetailService.deleteClass(this.editedItem.class_id).then((response) => {
+        if (response.status == 200) {
+            alert("Class successfully removed!");
+        } else {
+            alert("Error removing class!")
+        }
+    });
       this.closeDelete();
     },
 
