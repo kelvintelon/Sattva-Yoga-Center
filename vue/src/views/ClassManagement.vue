@@ -5,8 +5,10 @@
     <v-container
       :key="align"
     >
+   
       <v-row>
-        <v-col cols="12"> <class-form></class-form></v-col>
+        <v-col cols="12"> <class-table-list></class-table-list>
+        <class-form></class-form></v-col>
       </v-row>
     </v-container>
   </div>
@@ -16,12 +18,14 @@
 <script>
 import TopHeader from "../components/TopHeader2.vue";
 import ClassForm from "../components/CreateClassForm.vue";
+import ClassTableList from "../components/ClassTableList.vue";
 
 export default {
   name: "class-management",
   components: {
     TopHeader,
     ClassForm,
+    ClassTableList,
   },
 };
 </script>

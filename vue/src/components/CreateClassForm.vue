@@ -123,8 +123,8 @@ import teacherService from "../services/TeacherService";
 
 export default {
   // props: ['teacher'],
+  name: "create-class-form",
   data: () => ({
-    name: "create-class-form",
     date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
       .toISOString()
       .substr(0, 10),
@@ -204,6 +204,9 @@ export default {
         classDetailService.createClass(this.classDetails).then((response) => {
           if (response.status == 201) {
             alert("You have created a class!");
+            this.classDetails.teacher_name = this.selectedTeacherName;
+            this.$store.state.classList.push(this.classDetails);
+            this.expand = !this.expand;
           } else {
             alert("!Error creating a class!");
           }
