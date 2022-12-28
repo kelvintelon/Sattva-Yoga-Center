@@ -2,7 +2,7 @@
   <v-data-table
     :headers="headers"
     :items="teachers"
-    sort-by="calories"
+    sort-by="teacher_id"
     class="elevation-1"
   >
     <template v-slot:top>
@@ -10,6 +10,7 @@
         <v-toolbar-title>Teacher List</v-toolbar-title>
         <v-divider class="mx-4" inset vertical></v-divider>
         <v-spacer></v-spacer>
+
         <v-dialog v-model="dialog" max-width="500px">
           <template v-slot:activator="{ on, attrs }">
             <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
@@ -20,7 +21,7 @@
             <v-card-title>
               <span class="text-h5">{{ formTitle }}</span>
             </v-card-title>
-
+            <!-- FORM from CreateTeacherForm-->
             <v-container>
               <v-row justify="center" style="min-height: 160px">
                 <v-col cols="5">
@@ -65,7 +66,7 @@
               </v-row>
             </v-container>
 
-<!-- OLD FORM
+            <!-- OLD FORM
             <v-card-text>
               <v-container>
                 <v-row>
@@ -110,11 +111,76 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
+
+        <!-- EDIT Form -->
+        <v-dialog v-model="dialog2" max-width="500px">
+          <v-card justify="center">
+            <v-card-title>
+              <span class="text-h5">{{ formTitle }}</span>
+            </v-card-title>
+
+            <v-container>
+              <v-row justify="center" style="min-height: 160px">
+                <v-col cols="5">
+                  <v-form
+                    ref="form"
+                    height="100"
+                    width="500"
+                    v-model="valid"
+                    lazy-validation
+                    class="class-form mx-auto white"
+                    @submit.prevent="update"
+                  >
+                    <v-text-field
+                      v-model="editedItem.first_name"
+                      :rules="nameRules"
+                      label="First Name"
+                      required
+                    ></v-text-field>
+
+                    <v-text-field
+                      v-model="editedItem.last_name"
+                      :rules="nameRules"
+                      label="Last Name"
+                      required
+                    ></v-text-field>
+
+                    <v-checkbox
+                      v-model="editedItem.is_teacher_active"
+                      label="Active?"
+                      required
+                    ></v-checkbox>
+
+                    <v-btn color="error" class="mr-4" @click="reset">
+                      Reset Form
+                    </v-btn>
+
+                    <v-btn class="mr-4" type="submit" :disabled="invalid">
+                      update
+                    </v-btn>
+                  </v-form>
+                </v-col>
+              </v-row>
+            </v-container>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="blue darken-1" text @click="close2"> Cancel </v-btn>
+              <!-- <v-btn color="blue darken-1" text @click="save"> Save </v-btn> -->
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+
+        <!-- DELETE -->
         <v-dialog v-model="dialogDelete" max-width="500px">
           <v-card>
             <v-card-title class="text-h5"
-              >Are you sure you want to delete this item?</v-card-title
+              >Are you sure you want to remove this teacher?</v-card-title
             >
+            <v-card-title class="text-h6"
+              >You need to unassign this teacher from classes first for this to work</v-card-title
+            >
+
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="blue darken-1" text @click="closeDelete"
@@ -129,41 +195,28 @@
         </v-dialog>
       </v-toolbar>
     </template>
-<!-- EDIT DELETE ICONS
-    <template v-slot:item.actions="{ item }">
-      <v-icon
-        small
-        class="mr-2"
-        @click="editItem(item)"
-      >
-        mdi-pencil
-      </v-icon>
-      <v-icon
-        small
-        @click="deleteItem(item)"
-      >
-        mdi-delete
-      </v-icon>
+    <!-- EDIT/DELETE ICONS -->
+    <template v-slot:[`item.actions`]="{ item }">
+      <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
+      <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
     </template>
     <template v-slot:no-data>
-      <v-btn
-        color="primary"
-        @click="initialize"
-      >
-        Reset
-      </v-btn>
+      <v-btn color="primary" @click="initialize"> Reset </v-btn>
     </template>
--->
   </v-data-table>
 </template>
 
 <script>
 import teacherService from "../services/TeacherService";
+// import classDetailService from "../services/ClassDetailService";
+
 export default {
   name: "teacher-table-list",
   data() {
     return {
+//============ Table stuff
       dialog: false,
+      dialog2: false,
       dialogDelete: false,
       headers: [
         {
@@ -174,27 +227,26 @@ export default {
         },
         { text: "Last Name", value: "last_name" },
         { text: "Active", value: "is_teacher_active" },
+        { text: "Actions", value: "actions", sortable: false },
       ],
       teachers: [],
       editedIndex: -1,
       editedItem: {
-        name: "",
-        calories: 0,
-        fat: 0,
-        carbs: 0,
-        protein: 0,
+        teacher_id: "",
+        first_name: "",
+        last_name: "",
+        is_teacher_active: true,
       },
       defaultItem: {
-        name: "",
-        calories: 0,
-        fat: 0,
-        carbs: 0,
-        protein: 0,
+        teacher_id: "",
+        first_name: "",
+        last_name: "",
+        is_teacher_active: true,
       },
 
       //============ form data
-      // expand: false,
       teacherDetails: {
+        teacher_id: "",
         first_name: "",
         last_name: "",
         is_teacher_active: true,
@@ -206,6 +258,7 @@ export default {
       ],
 
       formIncomplete: true,
+      formIncomplete2: true,
       //============
     };
   },
@@ -222,9 +275,19 @@ export default {
         this.formIncomplete = false;
       }
     },
+
+    checkForm2() {
+      if (this.editedItem.first_name == "" || this.editedItem.last_name == "") {
+        alert("Please fill out your form");
+      } else {
+        this.formIncomplete2 = false;
+      }
+    },
+
     reset() {
       this.$refs.form.reset();
     },
+
     submit() {
       this.checkForm();
       if (this.formIncomplete == false) {
@@ -236,6 +299,22 @@ export default {
             this.close();
           } else {
             alert("Error creating a teacher!");
+          }
+        });
+      }
+    },
+
+    update() {
+      this.checkForm2();
+      if (this.formIncomplete2 == false) {
+        teacherService.updateTeacher(this.editedItem).then((response) => {
+          if (response.status == 200) {
+            alert("You have updated a teacher");
+            this.getTeachers();
+            this.reset();
+            this.close2();
+          } else {
+            alert("Error updating a teacher!");
           }
         });
       }
@@ -254,44 +333,65 @@ export default {
     },
 
     editItem(item) {
-      this.editedIndex = this.desserts.indexOf(item);
+      this.editedIndex = this.teachers.indexOf(item);
       this.editedItem = Object.assign({}, item);
-      this.dialog = true;
+      this.dialog2 = true;
     },
 
     deleteItem(item) {
-      this.editedIndex = this.desserts.indexOf(item);
+      this.editedIndex = this.teachers.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialogDelete = true;
     },
 
     deleteItemConfirm() {
-      this.desserts.splice(this.editedIndex, 1);
+      this.teachers.splice(this.editedIndex, 1);
+      // classDetailService.deleteClass(how to get class_id)
+      teacherService
+        .deleteTeacher(this.editedItem.teacher_id)
+        .then((response) => {
+          if (response.status == 200) {
+            alert("Teacher successfully removed!");
+          } else {
+            // error alert not working
+            alert("Error removing teacher!");
+          }
+        });
       this.closeDelete();
     },
 
     close() {
       this.dialog = false;
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-      });
+      this.reset();
+      // this.$nextTick(() => {
+      //   this.editedItem = Object.assign({}, this.defaultItem);
+      //   this.editedIndex = -1;
+      // });
+    },
+
+    close2() {
+      this.dialog2 = false;
+      this.reset();
+      // this.$nextTick(() => {
+      //   this.editedItem = Object.assign({}, this.defaultItem);
+      //   this.editedIndex = -1;
+      // });
     },
 
     closeDelete() {
       this.dialogDelete = false;
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-      });
+      // this.$nextTick(() => {
+      //   this.editedItem = Object.assign({}, this.defaultItem);
+      //   this.editedIndex = -1;
+      // });
     },
 
     save() {
-      if (this.editedIndex > -1) {
-        Object.assign(this.desserts[this.editedIndex], this.editedItem);
-      } else {
-        this.desserts.push(this.editedItem);
-      }
+      // if (this.editedIndex > -1) {
+      //   Object.assign(this.desserts[this.editedIndex], this.editedItem);
+      // } else {
+      //   this.desserts.push(this.editedItem);
+      // }
       this.close();
     },
   },
