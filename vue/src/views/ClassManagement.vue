@@ -7,7 +7,11 @@
     >
    
       <v-row>
-        <v-col cols="12"> <class-table-list></class-table-list>
+        <v-col cols="14">
+            <!-- <class-calendar></class-calendar> -->
+            <br>
+            <br>
+           <class-table-list></class-table-list>
       </v-col>
       </v-row>
     </v-container>
@@ -18,12 +22,14 @@
 <script>
 import TopHeader from "../components/TopHeader.vue";
 import ClassTableList from "../components/ClassTableList.vue";
+// import ClassCalendar from "../components/ClassCalendar.vue";
 
 export default {
   name: "class-management",
   components: {
     TopHeader,
     ClassTableList,
+    // ClassCalendar,
   },
 };
 </script>
