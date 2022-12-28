@@ -1,7 +1,12 @@
 <template>
   <div id="app">
     <v-app id="inspire">
-      <v-data-table :headers="headers" :items="classes" class="elevation-5" sort-by="class_id">
+      <v-data-table
+        :headers="headers"
+        :items="classes"
+        class="elevation-5"
+        sort-by="class_id"
+      >
         <template v-slot:top>
           <v-toolbar flat>
             <v-toolbar-title>My Classes</v-toolbar-title>
@@ -28,7 +33,7 @@
                 <!-- FORM from CreateClassForm-->
                 <v-container>
                   <v-row justify="center" style="min-height: 160px">
-                    <v-col cols="6">
+                    <v-col cols="7">
                       <v-form
                         ref="form"
                         height="100"
@@ -47,58 +52,73 @@
                           label="Teacher Names"
                           required
                         ></v-select>
-                        <v-menu
-                          v-model="menu"
-                          :close-on-content-click="false"
-                          :nudge-right="40"
-                          transition="scale-transition"
-                          offset-y
-                          min-width="auto"
-                        >
-                          <template v-slot:activator="{ on, attrs }">
-                            <v-text-field
-                              v-model="date"
-                              label="Date picker"
-                              prepend-icon="mdi-calendar-multiselect"
-                              readonly
-                              v-bind="attrs"
-                              v-on="on"
-                            ></v-text-field>
-                          </template>
-                          <v-date-picker
-                            v-model="date"
-                            @input="menu = false"
-                          ></v-date-picker>
-                        </v-menu>
+                        <!-- TIME PICKER -->
                         <v-menu
                           ref="menu"
-                          v-model="menu2"
+                          v-model="dropDownOpen"
                           :close-on-content-click="false"
                           :nudge-right="40"
-                          :return-value.sync="time"
+                          :return-value.sync="selectedTime"
+                          lazy
                           transition="scale-transition"
                           offset-y
                           max-width="290px"
                           min-width="290px"
                         >
-                          <template v-slot:activator="{ on, attrs }">
+                          <template v-slot:activator="{ on }">
                             <v-text-field
-                              v-model="time"
-                              label="Time"
+                              v-model="displayTime"
+                              label="Start Time"
                               prepend-icon="mdi-clock-time-four-outline"
                               readonly
-                              v-bind="attrs"
                               v-on="on"
                             ></v-text-field>
                           </template>
-                          <v-time-picker
-                            v-if="menu2"
-                            v-model="time"
-                            full-width
-                            @click:minute="$refs.menu.save(time)"
-                            scrollable
-                            :rules="timeRules"
-                          ></v-time-picker>
+                          <v-container class="v-date-time-widget-container">
+                            <v-row>
+                              <v-spacer></v-spacer>
+                              <v-btn
+                                fab
+                                small
+                                :color="getMeridiamButtonColor('AM')"
+                                class="btn-am"
+                                @click="meridiam = 'AM'"
+                                >AM</v-btn
+                              >
+                              <v-spacer></v-spacer>
+                              <v-btn
+                                fab
+                                small
+                                :color="getMeridiamButtonColor('PM')"
+                                class="btn-pm"
+                                @click="meridiam = 'PM'"
+                                >PM</v-btn
+                              >
+                              <v-spacer></v-spacer
+                            ></v-row>
+                            <v-time-picker
+                              v-if="dropDownOpen"
+                              v-model="timeModel"
+                              full-width
+                              scrollable
+                              :rules="timeRules"
+                              :no-title="true"
+                              ampm-in-title
+                              ><v-spacer></v-spacer>
+                              <h3>{{ selectedTime }}</h3>
+                              <v-btn
+                                text
+                                color="primary"
+                                @click="dropDownOpen = false"
+                              >
+                                Cancel
+                              </v-btn>
+                              <v-btn text color="primary" @click="confirm()">
+                                OK
+                              </v-btn></v-time-picker
+                            >
+                            <!-- END OF TIME PICKER -->
+                          </v-container>
                         </v-menu>
                         <v-select
                           v-model="classDetails.class_duration"
@@ -113,7 +133,20 @@
                           label="Description"
                           required
                         ></v-text-field>
-
+                        <v-select
+                          v-model="classDetails.date_range"
+                          :items="days"
+                          :menu-props="{ maxHeight: '400' }"
+                          label="Select Days"
+                          multiple
+                          hint="Pick your Days For Class"
+                          persistent-hint
+                        ></v-select>
+                        <v-checkbox
+                          v-model="classDetails.is_repeating"
+                          label="Repeat Every Week"
+                          required
+                        ></v-checkbox>
                         <v-checkbox
                           v-model="classDetails.is_paid"
                           label="Paid class?"
@@ -272,7 +305,6 @@
                   </v-row>
                 </v-container>
 
-
                 <v-card-actions>
                   <v-spacer></v-spacer>
                   <v-btn color="blue darken-1" text @click="close2">
@@ -283,7 +315,7 @@
               </v-card>
             </v-dialog>
 
-                <!-- <v-dialog v-model="dialog2" max-width="500px">
+            <!-- <v-dialog v-model="dialog2" max-width="500px">
                 <v-card-text>
                 <v-container>
                   <v-row>
@@ -344,50 +376,50 @@
 
             <!-- DELETE ? -->
             <v-dialog v-model="dialogDelete" max-width="500px">
-            <v-card>
-              <v-card-title class="text-h5">Are you sure you want to delete this item?</v-card-title>
-              <v-card-title class="text-h6">This will delete the sign up list as well</v-card-title>
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
-                <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
-                <v-spacer></v-spacer>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
+              <v-card>
+                <v-card-title class="text-h5"
+                  >Are you sure you want to delete this item?</v-card-title
+                >
+                <v-card-title class="text-h6"
+                  >This will delete the sign up list as well</v-card-title
+                >
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="blue darken-1" text @click="closeDelete"
+                    >Cancel</v-btn
+                  >
+                  <v-btn color="blue darken-1" text @click="deleteItemConfirm"
+                    >OK</v-btn
+                  >
+                  <v-spacer></v-spacer>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
           </v-toolbar>
-          <!-- CHECK BOX for IS_PAID -->
+          <!-- CHECK BOX for IS_PAID AND IS_REPEATING -->
+        </template>
+        <template v-slot:[`item.is_repeating`]="{ item }">
+          <v-simple-checkbox
+            v-model="item.is_repeating"
+            disabled
+          ></v-simple-checkbox>
         </template>
         <template v-slot:[`item.is_paid`]="{ item }">
-        <v-simple-checkbox
-          v-model="item.is_paid"
-          disabled
-        ></v-simple-checkbox>
+          <v-simple-checkbox
+            v-model="item.is_paid"
+            disabled
+          ></v-simple-checkbox>
         </template>
         <!-- ICONS  -->
         <template v-slot:[`item.actions`]="{ item }">
-        <v-icon
-          small
-          class="mr-2"
-          @click="editItem(item)"
-        >
-          mdi-pencil
-        </v-icon>
-        <v-icon
-          small
-          @click="deleteItem(item)"
-        >
-          mdi-delete
-        </v-icon>
-      </template>
-      <template v-slot:no-data>
-        <v-btn
-          color="primary"
-          @click="initialize"
-        >
-          Reset
-        </v-btn>
-      </template>
+          <v-icon small class="mr-2" @click="editItem(item)">
+            mdi-pencil
+          </v-icon>
+          <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
+        </template>
+        <template v-slot:no-data>
+          <v-btn color="primary" @click="initialize"> Reset </v-btn>
+        </template>
       </v-data-table>
     </v-app>
   </div>
@@ -400,6 +432,7 @@ import teacherService from "../services/TeacherService";
 export default {
   name: "class-table-list",
   components: {},
+  props: ["value"],
   data() {
     return {
       // ==================== this is table stuff vvvv
@@ -407,19 +440,18 @@ export default {
       dialog2: false,
       dialogDelete: false,
       headers: [
-          {text: "Class ID",
-          align: "start",
-          sortable: true,
-          value: "class_id"},
+        { text: "Class ID", align: "start", sortable: true, value: "class_id" },
         {
           text: "Class Description",
           value: "class_description",
         },
         { text: "Teacher", value: "teacher_name" },
         { text: "Duration (minutes)", value: "class_duration" },
-        { text: "Class Time", value: "class_datetime" },
+        { text: "Class Time", value: "start_time", sortable: true },
+        { text: "Repeat Every Week", value: "is_repeating" },
+        { text: "Selected Days", value: "date_range" },
         { text: "Is Paid", value: "is_paid" },
-        { text: 'Actions', value: 'actions', sortable: false },
+        { text: "Actions", value: "actions", sortable: false },
       ],
       classes: [],
       editedIndex: -1,
@@ -427,8 +459,10 @@ export default {
         class_description: "",
         teacher_id: "",
         class_duration: 0,
-        class_datetime: "",
-        is_paid: "",
+        start_time: "",
+        is_paid: true,
+        is_repeating: "",
+        date_range: [],
       },
       editedTeacherName: "",
       editedDate: "",
@@ -439,25 +473,32 @@ export default {
         class_description: "",
         teacher_id: "",
         class_duration: 0,
-        class_datetime: "",
-        is_paid: "",
+        start_time: "",
+        is_paid: true,
+        is_repeating: true,
+        date_range: [],
       },
-      
+
       // ====================  this is form stuff vvvv
       date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
         .toISOString()
         .substr(0, 10),
+      displayTime: "",
+      timeModel: "",
+      dropDownOpen: false,
       time: null,
       menu2: false,
       menu: false,
       expand: true,
       durationOptions: [10, 20, 30, 40, 50, 60],
       classDetails: {
-        teacher_id: "",
-        class_datetime: "",
-        class_duration: 0,
-        is_paid: true,
         class_description: "",
+        teacher_id: "",
+        class_duration: 0,
+        start_time: "",
+        is_paid: true,
+        is_repeating: true,
+        date_range: [],
       },
 
       selectedTeacherName: "",
@@ -476,10 +517,13 @@ export default {
       durationRules: [(v) => !!v || "Duration is required"],
       teacherNames: [],
       teacherObj: [],
+      days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
       fullName: "",
       fullname2: "",
       formIncomplete: true,
       formIncomplete2: true,
+      meridiam: "",
+      selectedTime: "",
     };
   },
   created() {
@@ -487,6 +531,17 @@ export default {
     this.getClassTable();
     // ==================== this is form stuff vvvv
     this.fetchTeachers();
+
+    var d = new Date();
+    var currentHour = d.getHours() % 12;
+    var minutes = (d.getMinutes() < 10 ? "0" : "") + d.getMinutes();
+    var currentTime = currentHour + ":" + minutes;
+    this.timeModel = currentTime;
+    this.dateModel = d.toISOString().substr(0, 10);
+
+    if (d.getHours() >= 12) {
+      this.meridiam = "PM";
+    }
   },
   methods: {
     // ==================== this is table stuff vvvv
@@ -509,55 +564,57 @@ export default {
 
     deleteItem(item) {
       this.editedIndex = this.classes.indexOf(item);
-      
+
       this.editedItem = Object.assign({}, item);
       this.dialogDelete = true;
     },
 
     deleteItemConfirm() {
       this.classes.splice(this.editedIndex, 1);
-    classDetailService.deleteClass(this.editedItem.class_id).then((response) => {
-        if (response.status == 200) {
+      classDetailService
+        .deleteClass(this.editedItem.class_id)
+        .then((response) => {
+          if (response.status == 200) {
             alert("Class successfully removed!");
-        } else {
-            alert("Error removing class!")
-        }
-    });
+          } else {
+            alert("Error removing class!");
+          }
+        });
       this.closeDelete();
     },
 
     close() {
       this.dialog = false;
-    this.reset();
-        // ==================== This isn't being used right now
-        // this.$nextTick(() => {
-        //   this.editedItem = Object.assign({}, this.defaultItem);
-        //   this.editedIndex = -1;
-        // });
+      this.reset();
+      // ==================== This isn't being used right now
+      // this.$nextTick(() => {
+      //   this.editedItem = Object.assign({}, this.defaultItem);
+      //   this.editedIndex = -1;
+      // });
     },
     close2() {
       this.dialog2 = false;
-    this.reset();
-        // ==================== This isn't being used right now
-        // this.$nextTick(() => {
-        //   this.editedItem = Object.assign({}, this.defaultItem);
-        //   this.editedIndex = -1;
-        // });
+      this.reset();
+      // ==================== This isn't being used right now
+      // this.$nextTick(() => {
+      //   this.editedItem = Object.assign({}, this.defaultItem);
+      //   this.editedIndex = -1;
+      // });
     },
     closeDelete() {
       this.dialogDelete = false;
-    //   this.$nextTick(() => {
-    //     this.editedItem = Object.assign({}, this.defaultItem);
-    //     this.editedIndex = -1;
-    //   });
+      //   this.$nextTick(() => {
+      //     this.editedItem = Object.assign({}, this.defaultItem);
+      //     this.editedIndex = -1;
+      //   });
     },
 
     save() {
-    //   if (this.editedIndex > -1) {
-    //     Object.assign(this.desserts[this.editedIndex], this.editedItem);
-    //   } else {
-    //     this.desserts.push(this.editedItem);
-    //   }
+      //   if (this.editedIndex > -1) {
+      //     Object.assign(this.desserts[this.editedIndex], this.editedItem);
+      //   } else {
+      //     this.desserts.push(this.editedItem);
+      //   }
       this.close();
     },
     // ==================== this is form stuff vvvv
@@ -566,9 +623,8 @@ export default {
         this.classDetails.teacher_id == 0 ||
         this.classDetails.class_duration == 0 ||
         this.classDetails.class_description == "" ||
-        this.time == "" ||
-        this.time == null ||
-        this.time == undefined
+        this.classDetails.start_time == "" ||
+        this.classDetails.date_range == []
       ) {
         alert("Please fill out your form");
       } else {
@@ -576,13 +632,12 @@ export default {
       }
     },
     checkForm2() {
-        if (
+      if (
         this.editedItem.teacher_id == 0 ||
         this.editedItem.class_duration == 0 ||
         this.editedItem.class_description == "" ||
-        this.editedTime == "" ||
-        this.editedTime == null ||
-        this.editedTime == undefined
+        this.editedItem.start_time == "" ||
+        this.editedItem.date_range == []
       ) {
         alert("Please fill out your form");
       } else {
@@ -604,12 +659,6 @@ export default {
 
       this.checkForm();
       if (this.formIncomplete == false) {
-
-        // assign the date and time through concatenation
-        this.classDetails.class_datetime = this.date + "T" + this.time + ":00";
-
-        // checks if form has date time (the only field where rules don't work)
-
         // after completing the object do the POST REQUEST
         classDetailService.createClass(this.classDetails).then((response) => {
           if (response.status == 201) {
@@ -625,8 +674,8 @@ export default {
       }
     },
     update() {
-        // assign teacher name to object
-        this.teacherObj.forEach((item2) => {
+      // assign teacher name to object
+      this.teacherObj.forEach((item2) => {
         this.fullName2 = item2.first_name + " " + item2.last_name;
         if (this.editedTeacherName == this.fullName2) {
           this.editedItem.teacher_id = item2.teacher_id;
@@ -635,35 +684,84 @@ export default {
 
       this.checkForm2();
       if (this.formIncomplete2 == false) {
-
-          // assign the date and time through concatenation
-          this.editedItem.class_datetime = this.editedDate + "T" + this.editedTime + ":00";
-
-          // after completing the object do the PUT REQUEST
-          classDetailService.updateClass(this.editedItem).then((response) => {
-              if (response.status == 200) {
-                  alert("You have updated a class!");
-                  this.getClassTable();
-                  this.close2();
-              } else {
-                  alert("Error updating a class!")
-              }
-          })
+        // after completing the object do the PUT REQUEST
+        classDetailService.updateClass(this.editedItem).then((response) => {
+          if (response.status == 200) {
+            alert("You have updated a class!");
+            this.getClassTable();
+            this.close2();
+          } else {
+            alert("Error updating a class!");
+          }
+        });
       }
     },
     fetchTeachers() {
       teacherService.getTeacherList().then((response) => {
         this.teacherObj = response.data;
         this.teacherObj.forEach((item) => {
-            
           this.teacherNames.push(item.first_name + " " + item.last_name);
         });
       });
     },
+    getMeridiamButtonColor(m) {
+      if (m == this.meridiam) {
+        return "primary";
+      } else {
+        return "dark-gray";
+      }
+    },
+    confirm() {
+      this.onUpdateDate();
+      this.dropDownOpen = false;
+    },
+    onUpdateDate() {
+      if (!this.timeModel) {
+        return false;
+      }
+      this.selectedTime = this.timeModel + " " + this.meridiam;
+      this.displayTime = this.selectedTime;
+      this.classDetails.start_time = this.selectedTime;
+      this.$emit("input", this.selectedTime);
+    },
   },
   computed: {
+    model: {
+      get() {
+        return this.value;
+      },
+      // set(model) {}
+    },
+
+    // currentSelection() {
+    //   this.selectedTime = this.timeModel + " " + this.meridiam;
+    //   return this.selectedTime;
+    // },
+
     formTitle() {
       return this.editedIndex === -1 ? "Create A Class" : "Edit Class";
+    },
+    modifiedTime() {
+      var currentTime = new Date(this.time);
+      var hours = currentTime.getHours();
+      //Note: before converting into 12 hour format
+      var suffix = "";
+      if (hours > 11) {
+        suffix += "PM";
+      } else {
+        suffix += "AM";
+      }
+      var minutes = currentTime.getMinutes();
+      if (minutes < 10) {
+        minutes = "0" + minutes;
+      }
+      if (hours > 12) {
+        hours -= 12;
+      } else if (hours === 0) {
+        hours = 12;
+      }
+      var time = hours + ":" + minutes + " " + suffix;
+      return time;
     },
   },
   watch: {
@@ -678,4 +776,16 @@ export default {
 </script>
 
 <style>
+.btn-am {
+  float: left;
+}
+
+.btn-pm {
+  float: right;
+}
+
+.v-date-time-widget-container {
+  background: white;
+  padding: 10px;
+}
 </style>
