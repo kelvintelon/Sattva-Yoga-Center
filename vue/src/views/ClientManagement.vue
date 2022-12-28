@@ -7,7 +7,7 @@
     >
    
       <v-row>
-        <v-col cols="12"> <class-table-list></class-table-list>
+        <v-col cols="12"> <client-table-list></client-table-list>
       </v-col>
       </v-row>
     </v-container>
@@ -17,16 +17,17 @@
 
 <script>
 import TopHeader from "../components/TopHeader2.vue";
-import ClassTableList from "../components/ClassTableList.vue";
+import ClientTableList from "../components/ClientTableList.vue";
 
 export default {
-  name: "class-management",
+  name: "client-management",
   components: {
     TopHeader,
-    ClassTableList,
+    ClientTableList,
   },
 };
 </script>
 
 <style>
+
 </style>

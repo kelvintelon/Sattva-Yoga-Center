@@ -1,5 +1,7 @@
 package com.sattvayoga.dao;
 
+import ch.qos.logback.core.net.server.Client;
+import com.sattvayoga.model.ClassDetails;
 import com.sattvayoga.model.ClientDetails;
 import com.sattvayoga.model.ClientNotFoundException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -7,6 +9,8 @@ import org.springframework.jdbc.core.SqlRowSetResultSetExtractor;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.ToDoubleBiFunction;
 
 @Component
@@ -58,6 +62,23 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                 clientDetails.getStreet_address(), clientDetails.getState_abbreviation(),
                 clientDetails.getZip_code(), clientDetails.getEmail(), clientDetails.getPhone_number(),
                 clientDetails.isIs_on_email_list(), clientDetails.getUser_id()) == 1;
+    }
+
+    @Override
+    public List<ClientDetails> getAllClients() {
+        List<ClientDetails> allClients = new ArrayList<>();
+
+        String sql = "SELECT * FROM client_details;";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+        while(result.next()) {
+            ClientDetails clientDetails = mapRowToClient(result);
+
+            clientDetails.setFull_address(clientDetails.getStreet_address() + " "
+                    + clientDetails.getCity() + " " + clientDetails.getState_abbreviation() + " " + clientDetails.getZip_code());
+
+            allClients.add(clientDetails);
+        }
+        return allClients;
     }
 
     private ClientDetails mapRowToClient(SqlRowSet rs) {

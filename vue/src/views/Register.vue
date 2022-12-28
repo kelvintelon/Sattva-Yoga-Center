@@ -43,11 +43,11 @@
             class="btn btn-lg btn-primary btn-block"
             v-on:click="goToPage()"
           >
-            Have an account?
+            Have an existing account?
           </v-btn>
           <br />
           <v-btn class="btn btn-lg btn-primary btn-block" type="submit">
-            Create Account
+            Create New Account
           </v-btn>
           <div>
             <br />

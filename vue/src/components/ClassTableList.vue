@@ -599,11 +599,12 @@ export default {
     },
 
     deleteItemConfirm() {
-      this.classes.splice(this.editedIndex, 1);
+      
       classDetailService
         .deleteClass(this.editedItem.class_id)
         .then((response) => {
           if (response.status == 200) {
+            this.classes.splice(this.editedIndex, 1);
             alert("Class successfully removed!");
           } else {
             alert("Error removing class!");

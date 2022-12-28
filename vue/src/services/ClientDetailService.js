@@ -14,4 +14,8 @@ export default {
         return axios.put(`/updateClientDetails`, clientDetails )
     },
 
+    getClientList() {
+        return axios.get('/clientList')
+    }
+
 }

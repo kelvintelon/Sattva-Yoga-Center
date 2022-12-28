@@ -23,6 +23,14 @@
         <v-btn elevation="5"> <v-icon> mdi-book-open-outline </v-icon> - Package Management </v-btn>
       </v-col>
     </v-row>
+    <v-row>
+      <v-col>
+        <v-btn elevation="5" v-on:click="goToClientManagementPage()"> <v-icon> mdi-account-group </v-icon> - Client Management </v-btn>
+      </v-col>
+      <v-col>
+        <!-- <v-btn elevation="5"> <v-icon> mdi-book-open-outline </v-icon> - Package Management </v-btn> -->
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -43,6 +51,9 @@ export default {
     },
     goToTeacherManagementPage() {
         this.$router.push({name: "teacher-management"})
+    },
+    goToClientManagementPage() {
+        this.$router.push({name: "client-management"})
     }
   },
 };

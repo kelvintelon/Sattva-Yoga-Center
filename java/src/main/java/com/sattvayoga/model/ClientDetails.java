@@ -19,6 +19,9 @@ public class ClientDetails {
     private Timestamp date_of_entry;
     private int user_id;
 
+    //helper
+    private String full_address;
+
     public ClientDetails(int client_id, String last_name, String first_name, boolean is_client_active, boolean is_new_client,String street_address, String city, String state_abbreviation, String zip_code, String phone_number, boolean is_on_email_list, String email, boolean has_record_of_liability, Timestamp date_of_entry, int user_id) {
         this.client_id = client_id;
         this.last_name = last_name;
@@ -35,6 +38,25 @@ public class ClientDetails {
         this.has_record_of_liability = has_record_of_liability;
         this.date_of_entry = date_of_entry;
         this.user_id = user_id;
+    }
+
+    public ClientDetails(int client_id, String last_name, String first_name, boolean is_client_active, boolean is_new_client, String street_address, String city, String state_abbreviation, String zip_code, String phone_number, boolean is_on_email_list, String email, boolean has_record_of_liability, Timestamp date_of_entry, int user_id, String full_address) {
+        this.client_id = client_id;
+        this.last_name = last_name;
+        this.first_name = first_name;
+        this.is_client_active = is_client_active;
+        this.is_new_client = is_new_client;
+        this.street_address = street_address;
+        this.city = city;
+        this.state_abbreviation = state_abbreviation;
+        this.zip_code = zip_code;
+        this.phone_number = phone_number;
+        this.is_on_email_list = is_on_email_list;
+        this.email = email;
+        this.has_record_of_liability = has_record_of_liability;
+        this.date_of_entry = date_of_entry;
+        this.user_id = user_id;
+        this.full_address = full_address;
     }
 
     public ClientDetails() {
@@ -164,5 +186,13 @@ public class ClientDetails {
 
     public void setUser_id(int user_id) {
         this.user_id = user_id;
+    }
+
+    public String getFull_address() {
+        return full_address;
+    }
+
+    public void setFull_address(String full_address) {
+        this.full_address = full_address;
     }
 }

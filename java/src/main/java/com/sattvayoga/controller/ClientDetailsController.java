@@ -43,6 +43,13 @@ public class ClientDetailsController {
         return clientDetails;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(path = "/clientList", method = RequestMethod.GET)
+    public List<ClientDetails> getAllClients() {
+
+        return clientDetailsDao.getAllClients();
+    }
+
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/registerClient", method = RequestMethod.POST)
     public ResponseEntity<ClientDetailsResponse> registerClient(@RequestBody ClientDetails client) {

@@ -13,6 +13,7 @@ import LoginLoader from '../views/LoginLoader.vue'
 import EditProfilePage from '../views/EditProfilePage.vue'
 import TeacherManagementPage from '../views/TeacherManagementPage.vue'
 import ClassManagement from '../views/ClassManagement.vue'
+import ClientManagement from '../views/ClientManagement.vue'
 
 
 Vue.use(Router)
@@ -125,7 +126,15 @@ const router = new Router({
       meta: {
         requiresAuth: true
       }
-    }
+    },
+    {
+      path:"/clientManagement",
+      name:"client-management",
+      component: ClientManagement,
+      meta: {
+        requiresAuth: true
+      }
+    },
   ]
 })
 

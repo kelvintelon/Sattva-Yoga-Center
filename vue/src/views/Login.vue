@@ -34,7 +34,7 @@
             label="Password"
             required
           ></v-text-field>
-          <v-btn v-on:click="goToLogout()">Need an account? </v-btn>
+          <v-btn v-on:click="goToLogout()"> Register </v-btn>
           <br />
           <v-btn type="submit">Sign in</v-btn>
           <div>
