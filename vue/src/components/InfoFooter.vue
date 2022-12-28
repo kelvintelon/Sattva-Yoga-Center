@@ -6,7 +6,7 @@
           flat
           tile
           width="100%"
-          class="red lighten-1 text-center"
+          class="orange lighten-1git s text-center"
       >
         <v-card-text>
           <v-btn
