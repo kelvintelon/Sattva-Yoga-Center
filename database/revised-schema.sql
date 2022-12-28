@@ -25,7 +25,10 @@ CREATE TABLE class_details
 (
     class_id          serial    NOT NULL,
     teacher_id        int       NOT NULL,
-    class_datetime    timestamp NOT NULL,
+--     class_datetime    timestamp,
+	is_repeating	  boolean   NOT NULL,
+	start_time		  text		NOT NULL,
+	date_range		  text[],	
     class_duration    int       NOT NULL,
     is_paid           boolean,           
     class_description text      NOT NULL,

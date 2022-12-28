@@ -6,31 +6,42 @@ import java.util.List;
 public class ClassDetails {
     private int class_id;
     private int teacher_id;
-    private Timestamp class_datetime;
     private int class_duration;
     private boolean is_paid;
     private String class_description;
-    private String teacher_name;
-    private List<ClientDetailsDTO> client_list;
 
-    public ClassDetails(int class_id, int teacher_id, Timestamp class_datetime, int class_duration, boolean is_paid, String class_description, String teacher_name, List<ClientDetailsDTO> client_list) {
+    // calendar properties
+    private boolean is_repeating;
+    private String[] date_range;
+    private String start_time;
+
+    // additional information properties
+    private List<ClientDetailsDTO> client_list;
+    private String teacher_name;
+
+    public ClassDetails(int class_id, int teacher_id, int class_duration, boolean is_paid, String class_description, String teacher_name, boolean is_repeating, String[] date_range, String start_time) {
         this.class_id = class_id;
         this.teacher_id = teacher_id;
-        this.class_datetime = class_datetime;
         this.class_duration = class_duration;
         this.is_paid = is_paid;
         this.class_description = class_description;
         this.teacher_name = teacher_name;
-        this.client_list = client_list;
+        this.is_repeating = is_repeating;
+        this.date_range = date_range;
+        this.start_time = start_time;
     }
 
-    public ClassDetails(int class_id, int teacher_id, Timestamp class_datetime, int class_duration, boolean is_paid, String class_description) {
+    public ClassDetails(int class_id, int teacher_id, int class_duration, boolean is_paid, String class_description, String teacher_name, boolean is_repeating, String[] date_range, String start_time, List<ClientDetailsDTO> client_list) {
         this.class_id = class_id;
         this.teacher_id = teacher_id;
-        this.class_datetime = class_datetime;
         this.class_duration = class_duration;
         this.is_paid = is_paid;
         this.class_description = class_description;
+        this.teacher_name = teacher_name;
+        this.is_repeating = is_repeating;
+        this.date_range = date_range;
+        this.start_time = start_time;
+        this.client_list = client_list;
     }
 
     public ClassDetails() {
@@ -53,13 +64,6 @@ public class ClassDetails {
         this.teacher_id = teacher_id;
     }
 
-    public Timestamp getClass_datetime() {
-        return class_datetime;
-    }
-
-    public void setClass_datetime(Timestamp class_datetime) {
-        this.class_datetime = class_datetime;
-    }
 
     public int getClass_duration() {
         return class_duration;
@@ -100,4 +104,29 @@ public class ClassDetails {
     public void setClient_list(List<ClientDetailsDTO> client_list) {
         this.client_list = client_list;
     }
+
+    public boolean isIs_repeating() {
+        return is_repeating;
+    }
+
+    public void setIs_repeating(boolean is_repeating) {
+        this.is_repeating = is_repeating;
+    }
+
+    public String[] getDate_range() {
+        return date_range;
+    }
+
+    public void setDate_range(String[] date_range) {
+        this.date_range = date_range;
+    }
+
+    public String getStart_time() {
+        return start_time;
+    }
+
+    public void setStart_time(String start_time) {
+        this.start_time = start_time;
+    }
+
 }

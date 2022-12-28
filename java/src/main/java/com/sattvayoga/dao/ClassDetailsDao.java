@@ -5,6 +5,7 @@ import com.sattvayoga.model.ClientDetails;
 import com.sattvayoga.model.ClientDetailsDTO;
 import com.sattvayoga.model.TeacherDetails;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public interface ClassDetailsDao {
@@ -13,7 +14,7 @@ public interface ClassDetailsDao {
 
     boolean registerForClass(int client_id, int class_id);
 
-    List<ClassDetails> getAllClasses();
+    List<ClassDetails> getAllClasses() throws SQLException;
 
     TeacherDetails getTeacherDetailsByTeacherId(int TeacherId);
 

@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLException;
 import java.util.List;
 
 @PreAuthorize("isAuthenticated()")
@@ -34,7 +35,7 @@ public class ClassDetailsController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value= "/classList", method = RequestMethod.GET)
-    public List<ClassDetails> getAllClasses() {
+    public List<ClassDetails> getAllClasses() throws SQLException {
         return classDetailsDao.getAllClasses();
     }
 

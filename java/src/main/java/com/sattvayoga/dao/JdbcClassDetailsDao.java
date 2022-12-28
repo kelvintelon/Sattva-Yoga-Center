@@ -8,7 +8,11 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import com.sattvayoga.model.ClassDetails;
 
+import java.sql.Array;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -23,11 +27,11 @@ public class JdbcClassDetailsDao implements ClassDetailsDao {
     @Override
     public boolean createClass(ClassDetails classDetails) {
 
-        String sql = "INSERT INTO class_details (teacher_id, class_datetime, class_duration, is_paid, " +
-                "class_description) VALUES (?, ?, ?, ?, ?)";
-        return jdbcTemplate.update(sql, classDetails.getTeacher_id(), classDetails.getClass_datetime(),
+        String sql = "INSERT INTO class_details (teacher_id, class_duration, is_paid, " +
+                "class_description, is_repeating, date_range, start_time) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        return jdbcTemplate.update(sql, classDetails.getTeacher_id(),
                 classDetails.getClass_duration(), classDetails.isIs_paid(),
-                classDetails.getClass_description()) == 1;
+                classDetails.getClass_description(), classDetails.isIs_repeating(), classDetails.getDate_range(), classDetails.getStart_time()) == 1;
     }
 
     @Override
@@ -38,9 +42,10 @@ public class JdbcClassDetailsDao implements ClassDetailsDao {
     }
 
     @Override
-    public List<ClassDetails> getAllClasses() {
+    public List<ClassDetails> getAllClasses() throws SQLException {
         List<ClassDetails> allClasses = new ArrayList<>();
-        String sql = "SELECT class_id, teacher_id, class_datetime, class_duration, is_paid, class_description " +
+        String sql = "SELECT class_id, teacher_id, class_duration, is_paid, class_description, " +
+                "is_repeating, date_range, start_time " +
                 "FROM class_details; ";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
         while (result.next()) {
@@ -61,13 +66,17 @@ public class JdbcClassDetailsDao implements ClassDetailsDao {
     @Override
     public boolean updateClass(ClassDetails classDetails) {
         String sql = "UPDATE class_details SET teacher_id = ? , " +
-                "class_datetime = ? , " +
                 "class_duration = ? , " +
                 "is_paid = ? , " +
-                "class_description = ? " +
+                "class_description = ? , " +
+                "is_repeating = ? , " +
+                "date_range = ? , " +
+                "start_time = ? " +
                 "WHERE class_id = ?";
-        return jdbcTemplate.update(sql, classDetails.getTeacher_id(), classDetails.getClass_datetime(),
-                classDetails.getClass_duration(), classDetails.isIs_paid(), classDetails.getClass_description(), classDetails.getClass_id()) == 1;
+        return jdbcTemplate.update(sql, classDetails.getTeacher_id(), classDetails.getClass_duration(),
+                classDetails.isIs_paid(), classDetails.getClass_description(),
+                classDetails.isIs_repeating(), classDetails.getDate_range(), classDetails.getStart_time(),
+                classDetails.getClass_id()) == 1;
     }
 
     @Override
@@ -129,16 +138,30 @@ public class JdbcClassDetailsDao implements ClassDetailsDao {
     }
 
 
-    private ClassDetails mapRowToClass(SqlRowSet rs) {
+    private ClassDetails mapRowToClass(SqlRowSet rs) throws SQLException {
         ClassDetails classDetails = new ClassDetails();
         classDetails.setClass_id(rs.getInt("class_id"));
         classDetails.setTeacher_id(rs.getInt("teacher_id"));
-        classDetails.setClass_datetime(rs.getTimestamp("class_datetime"));
         classDetails.setClass_duration(rs.getInt("class_duration"));
-        if (rs.getBoolean("is_paid") == false || rs.getBoolean("is_paid") == true) {
-            classDetails.setIs_paid(rs.getBoolean("is_paid"));
-        }
+        classDetails.setIs_paid(rs.getBoolean("is_paid"));
         classDetails.setClass_description(rs.getString("class_description"));
+        classDetails.setIs_repeating(rs.getBoolean("is_repeating"));
+        classDetails.setStart_time(rs.getString("start_time"));
+
+        Object newObject = rs.getObject("date_range");
+
+        if(newObject instanceof Array) {
+            Array tempArray = (Array) newObject;
+            Object[] tempObjectArray = (Object[]) tempArray.getArray();
+            String[] dateRange = new String[tempObjectArray.length];
+            for (int i = 0; i < tempObjectArray.length; i++) {
+                dateRange[i] = tempObjectArray[i].toString();
+            }
+            classDetails.setDate_range(dateRange);
+        }
+
+
+
         return classDetails;
     }
 
