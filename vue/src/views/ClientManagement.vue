@@ -16,7 +16,7 @@
 
 
 <script>
-import TopHeader from "../components/TopHeader2.vue";
+import TopHeader from "../components/TopHeader.vue";
 import ClientTableList from "../components/ClientTableList.vue";
 
 export default {
