@@ -6,7 +6,7 @@
           flat
           tile
           width="100%"
-          class="orange lighten-1git s text-center"
+          class="amber lighten-1git s text-center"
       >
         <v-card-text>
           <v-btn
@@ -23,8 +23,9 @@
 
         <v-divider></v-divider>
 
-        <v-card-text class="white--text">
-          {{ new Date().getFullYear() }} — <strong>Sattva Yoga Center</strong>
+        <v-card-text class="black--text">
+          {{ new Date().getFullYear() }}
+          <strong>Sattva Yoga Center</strong>
         </v-card-text>
       </v-card>
     </v-footer>

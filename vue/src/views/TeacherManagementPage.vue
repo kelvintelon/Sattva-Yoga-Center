@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import TopHeader from "../components/TopHeader2.vue";
+import TopHeader from "../components/TopHeader.vue";
 // import CreateTeacherForm from "../components/CreateTeacherForm.vue";
 import TeacherTableList from "../components/TeacherTableList.vue"
 

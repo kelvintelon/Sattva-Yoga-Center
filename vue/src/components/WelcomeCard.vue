@@ -1,7 +1,7 @@
 <template>
   <!-- m is margin; x is left & right spacing -->
   <v-card class="mx-auto my-12"
-          color="red lighten-4"
+          color="amber lighten-5"
           min-height="100%"
   >
 
