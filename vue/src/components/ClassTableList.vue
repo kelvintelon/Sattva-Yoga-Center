@@ -105,7 +105,7 @@
                               :no-title="true"
                               ampm-in-title
                               ><v-spacer></v-spacer>
-                              <h3>{{ selectedTime }}</h3>
+        
                               <v-btn
                                 text
                                 color="primary"
@@ -212,58 +212,73 @@
                           label="Teacher Names"
                           required
                         ></v-select>
-                        <v-menu
-                          v-model="menu3"
-                          :close-on-content-click="false"
-                          :nudge-right="40"
-                          transition="scale-transition"
-                          offset-y
-                          min-width="auto"
-                        >
-                          <template v-slot:activator="{ on, attrs }">
-                            <v-text-field
-                              v-model="editedDate"
-                              label="Date picker"
-                              prepend-icon="mdi-calendar-multiselect"
-                              readonly
-                              v-bind="attrs"
-                              v-on="on"
-                            ></v-text-field>
-                          </template>
-                          <v-date-picker
-                            v-model="editedDate"
-                            @input="menu3 = false"
-                          ></v-date-picker>
-                        </v-menu>
+                        <!-- TIME PICKER -->
                         <v-menu
                           ref="menu"
                           v-model="menu4"
                           :close-on-content-click="false"
                           :nudge-right="40"
-                          :return-value.sync="editedTime"
+                          :return-value.sync="selectedTime"
+                          lazy
                           transition="scale-transition"
                           offset-y
                           max-width="290px"
                           min-width="290px"
                         >
-                          <template v-slot:activator="{ on, attrs }">
+                          <template v-slot:activator="{ on }">
                             <v-text-field
-                              v-model="editedTime"
-                              label="Time"
+                              v-model="displayTime"
+                              label="Start Time"
                               prepend-icon="mdi-clock-time-four-outline"
                               readonly
-                              v-bind="attrs"
                               v-on="on"
                             ></v-text-field>
                           </template>
+                          <v-container class="v-date-time-widget-container">
+                            <v-row>
+                              <v-spacer></v-spacer>
+                              <v-btn
+                                fab
+                                small
+                                :color="getMeridiamButtonColor('AM')"
+                                class="btn-am"
+                                @click="meridiam = 'AM'"
+                                >AM</v-btn
+                              >
+                              <v-spacer></v-spacer>
+                              <v-btn
+                                fab
+                                small
+                                :color="getMeridiamButtonColor('PM')"
+                                class="btn-pm"
+                                @click="meridiam = 'PM'"
+                                >PM</v-btn
+                              >
+                              <v-spacer></v-spacer
+                            ></v-row>
                           <v-time-picker
                             v-if="menu4"
-                            v-model="editedTime"
+                            v-model="timeModel"
                             full-width
-                            @click:minute="$refs.menu.save(editedTime)"
                             scrollable
                             :rules="timeRules"
-                          ></v-time-picker>
+                            :no-title="true"
+                              ampm-in-title
+                          ><v-spacer></v-spacer>
+        
+                              <v-btn
+                                text
+                                color="primary"
+                                @click="menu4 = false"
+                              >
+                                Cancel
+                              </v-btn>
+                              <v-btn text color="primary" @click="confirm()">
+                                OK
+                              </v-btn></v-time-picker
+                            >
+                        <!-- END OF TIME PICKER -->
+                          </v-container>
                         </v-menu>
                         <v-select
                           v-model="editedItem.class_duration"
@@ -278,7 +293,20 @@
                           label="Description"
                           required
                         ></v-text-field>
-
+                        <v-select
+                          v-model="editedItem.date_range"
+                          :items="days"
+                          :menu-props="{ maxHeight: '400' }"
+                          label="Select Days"
+                          multiple
+                          hint="Pick your Days For Class"
+                          persistent-hint
+                        ></v-select>
+                        <v-checkbox
+                          v-model="editedItem.is_repeating"
+                          label="Repeat Every Week"
+                          required
+                        ></v-checkbox>
                         <v-checkbox
                           v-model="editedItem.is_paid"
                           label="Paid class?"
@@ -524,6 +552,7 @@ export default {
       formIncomplete2: true,
       meridiam: "",
       selectedTime: "",
+      
     };
   },
   created() {
@@ -714,6 +743,7 @@ export default {
     confirm() {
       this.onUpdateDate();
       this.dropDownOpen = false;
+      this.menu4=false;
     },
     onUpdateDate() {
       if (!this.timeModel) {
@@ -722,6 +752,7 @@ export default {
       this.selectedTime = this.timeModel + " " + this.meridiam;
       this.displayTime = this.selectedTime;
       this.classDetails.start_time = this.selectedTime;
+      this.editedItem.start_time = this.selectedTime;
       this.$emit("input", this.selectedTime);
     },
   },
