@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import TopHeader from "../components/TopHeader2.vue";
+import TopHeader from "../components/TopHeader.vue";
 import clientDetailService from "../services/ClientDetailService";
 import adminAccountQuickLinks from "../components/AdminAccountQuickLinks.vue";
 import userAccountQuickLinks from "../components/UserAccountQuickLinks.vue";

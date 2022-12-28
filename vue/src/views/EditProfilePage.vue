@@ -22,7 +22,7 @@
 
 <script>
 import EditProfileForm from "../components/EditProfileForm.vue";
-import TopHeader from "../components/TopHeader2.vue";
+import TopHeader from "../components/TopHeader.vue";
 
 export default {
   name: "edit-profile-page",

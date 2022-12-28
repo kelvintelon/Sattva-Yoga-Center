@@ -1,64 +1,43 @@
-<!--<template>-->
-<!--  <div class="first-container">-->
-<!--    <div class="second-container">-->
-<!--      <header-logo></header-logo>-->
-<!--      <h1 class="header-title">Sattva Yoga Center</h1>-->
-<!--    </div>-->
+<template>
 
-<!--    <login-button v-if="$store.state.token == ''"></login-button>-->
-<!--    <div v-else>-->
-<!--      <logout-button></logout-button>-->
+    <v-toolbar dense color="amber lighten 1" height="140">
+      <header-logo></header-logo>
 
-<!--      <my-account-button v-show="foundClientInState"></my-account-button>-->
-<!--    </div>-->
-<!--  </div>-->
-<!--</template>-->
+      <v-spacer></v-spacer>
 
-<!--<script>-->
-<!--import HeaderLogo from "./HeaderLogo.vue";-->
-<!--import LoginButton from "./LoginButton.vue";-->
-<!--import MyAccountButton from "./MyAccountButton.vue";-->
-<!--import LogoutButton from "./LogoutButton.vue";-->
+      <v-toolbar-title>Sattva Yoga Center</v-toolbar-title>
 
-<!--export default {-->
-<!--  name: "top-header",-->
-<!--  components: {-->
-<!--    HeaderLogo,-->
-<!--    LoginButton,-->
-<!--    MyAccountButton,-->
-<!--    LogoutButton,-->
-<!--  },-->
-<!--  data() {-->
-<!--    return {-->
-<!--      expand: false,-->
-<!--      foundClientInState: true,-->
-<!--      clientProfile: {},-->
-<!--    };-->
-<!--  },-->
-<!--  created() {-->
-<!--    this.clientProfile = this.$store.state.clientDetails;-->
-<!--    if (Object.keys(this.clientProfile).length === 0) {-->
-<!--      this.foundClientInState = false;-->
-<!--    }-->
-<!--  },-->
-<!--};-->
-<!--</script>-->
+      <v-spacer></v-spacer>
 
-<!--<style scoped>-->
-<!--.first-container {-->
-<!--  display: flex;-->
-<!--  align-items: center;-->
-<!--  justify-content: space-around;-->
-<!--}-->
+      <login-button v-if="$store.state.token == ''"></login-button>
+      <v-div v-else>
+        <my-account-button></my-account-button>
+      </v-div>
+    </v-toolbar>
 
-<!--.second-container {-->
-<!--  display: flex;-->
-<!--  align-items: center;-->
-<!--  flex-basis: 70%;-->
-<!--  padding: 20px;-->
-<!--}-->
 
-<!--.header-title {-->
-<!--  padding: 20px;-->
-<!--}-->
-<!--</style>-->
+</template>
+
+<script>
+import LoginButton from "@/components/LoginButton.vue";
+import HeaderLogo from "@/components/HeaderLogo.vue";
+import MyAccountButton from "@/components/MyAccountButton.vue";
+
+export default {
+  name: "TopHeader",
+  components: { MyAccountButton, HeaderLogo, LoginButton
+},
+data() {
+  return {
+    
+  }
+},
+created() {
+
+},
+}
+</script>
+
+<style scoped>
+
+</style>
