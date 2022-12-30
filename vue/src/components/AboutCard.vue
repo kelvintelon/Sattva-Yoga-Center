@@ -7,7 +7,7 @@
 
   >
 
-    <v-img src="https://static.wixstatic.com/media/78a355_5f3646bdbf2a4ae485644bd021851dd1~mv2_d_1900_1326_s_2.png/v1/fit/w_2161,h_1165,q_90/78a355_5f3646bdbf2a4ae485644bd021851dd1~mv2_d_1900_1326_s_2.webp"></v-img>
+    <v-img src="@/assets/IMG_5742.jpeg"></v-img>
 
     <v-card-title class="font-weight-bold">about</v-card-title>
 
