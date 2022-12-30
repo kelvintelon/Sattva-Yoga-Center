@@ -1,9 +1,11 @@
 <template>
-  <v-container>
+  <v-container >
     <v-row>
+      <v-spacer></v-spacer>
       <v-col>
         <h1>My Account Settings</h1>
       </v-col>
+      <v-spacer></v-spacer>
     </v-row>
     <v-row>
       <v-col>

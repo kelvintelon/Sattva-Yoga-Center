@@ -15,5 +15,18 @@ export default {
     },
     deleteClass(classID) {
         return axios.delete(`/deleteClass/${classID}`)
+    },
+
+    getAllClientClasses() {
+        return axios.get(`/clientClassList`)
+    },
+
+    registerForClass(clientClass) {
+        return axios.post(`/registerForClass`, clientClass)
+    },
+
+    removeClassForClient(classId) {
+        return axios.delete(`/removeClassForClient/${classId}`)
     }
+
 }

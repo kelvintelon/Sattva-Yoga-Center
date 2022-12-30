@@ -16,11 +16,15 @@ public interface ClassDetailsDao {
 
     List<ClassDetails> getAllClasses() throws SQLException;
 
+    List<ClassDetails> getAllClientClasses(int userId) throws SQLException;
+
     TeacherDetails getTeacherDetailsByTeacherId(int TeacherId);
 
     List<ClientDetailsDTO> getClientDetailsByClassId(int Classid);
 
     boolean updateClass(ClassDetails classDetails);
+
+    boolean deleteClassForClient(int classId, int userId);
 
     boolean deleteClass(int classId);
 }

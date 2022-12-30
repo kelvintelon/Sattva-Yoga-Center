@@ -2,12 +2,16 @@ package com.sattvayoga.controller;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sattvayoga.dao.ClassDetailsDao;
+import com.sattvayoga.dao.ClientDetailsDao;
+import com.sattvayoga.dao.UserDao;
 import com.sattvayoga.model.ClassDetails;
+import com.sattvayoga.model.ClientDetails;
 import com.sattvayoga.model.YogaUser;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -17,9 +21,13 @@ import java.util.List;
 public class ClassDetailsController {
 
     private ClassDetailsDao classDetailsDao;
+    private UserDao userDao;
+    private ClientDetailsDao clientDetailsDao;
 
-    public ClassDetailsController(ClassDetailsDao classDetailsDao) {
+    public ClassDetailsController(ClassDetailsDao classDetailsDao, UserDao userDao, ClientDetailsDao clientDetailsDao) {
         this.classDetailsDao = classDetailsDao;
+        this.userDao = userDao;
+        this.clientDetailsDao = clientDetailsDao;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -33,10 +41,16 @@ public class ClassDetailsController {
         classDetailsDao.createClass(classDetails);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value= "/classList", method = RequestMethod.GET)
     public List<ClassDetails> getAllClasses() throws SQLException {
         return classDetailsDao.getAllClasses();
+    }
+
+    @RequestMapping(value= "/clientClassList", method = RequestMethod.GET)
+    public List<ClassDetails> getAllClientClasses(Principal principal) throws SQLException {
+        int userId = userDao.findIdByUsername(principal.getName());
+        return classDetailsDao.getAllClientClasses(userId);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
@@ -47,6 +61,12 @@ public class ClassDetailsController {
         // (an exception that means they are already inside the class table)
 
         classDetailsDao.registerForClass(clientClass.getClient_id(),clientClass.getClass_id());
+    }
+
+    @RequestMapping(value = "/removeClassForClient/{classId}", method = RequestMethod.DELETE)
+    public void deleteClassForClient (@PathVariable int classId ,Principal principal) {
+       ClientDetails clientDetails = clientDetailsDao.findClientByUserId(userDao.findIdByUsername(principal.getName()));
+        classDetailsDao.deleteClassForClient(classId, clientDetails.getClient_id());
     }
 
     @PreAuthorize("hasRole('ADMIN')")

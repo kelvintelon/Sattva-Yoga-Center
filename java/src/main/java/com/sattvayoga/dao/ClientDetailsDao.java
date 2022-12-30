@@ -14,4 +14,6 @@ public interface ClientDetailsDao {
     boolean updateClientDetails(ClientDetails clientDetails);
 
     public List<ClientDetails> getAllClients();
+
+
 }

@@ -73,7 +73,7 @@ const router = new Router({
     },
     {
       path:"/registerForClass",
-      name:"classRegistration",
+      name:"class-registration",
       component: ClassRegistration,
       meta: {
         requiresAuth: true

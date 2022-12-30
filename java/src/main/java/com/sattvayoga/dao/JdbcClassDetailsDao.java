@@ -64,6 +64,31 @@ public class JdbcClassDetailsDao implements ClassDetailsDao {
     }
 
     @Override
+    public List<ClassDetails> getAllClientClasses(int userId) throws SQLException {
+        List<ClassDetails> allClientClass = new ArrayList<>();
+        String sql = "SELECT class_details.class_id, teacher_id, class_duration, is_paid, class_description, " +
+                "is_repeating, date_range, start_time " +
+                "FROM class_details " +
+                "JOIN client_class on client_class.class_id = class_details.class_id " +
+                "JOIN client_details on client_details.client_id = client_class.client_id " +
+                "WHERE client_details.user_id = ?";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId);
+        while (result.next()) {
+            ClassDetails classDetails = mapRowToClass(result);
+
+            // set teacher name for class calling helper method
+            TeacherDetails teacherDetails = getTeacherDetailsByTeacherId(classDetails.getTeacher_id());
+            classDetails.setTeacher_name(teacherDetails.getFirst_name() + " " + teacherDetails.getLast_name());
+
+            // set a list of clients for each class calling helper method
+            classDetails.setClient_list(getClientDetailsByClassId(classDetails.getClass_id()));
+
+            allClientClass.add(classDetails);
+        }
+        return allClientClass;
+    }
+
+    @Override
     public boolean updateClass(ClassDetails classDetails) {
         String sql = "UPDATE class_details SET teacher_id = ? , " +
                 "class_duration = ? , " +
@@ -77,6 +102,13 @@ public class JdbcClassDetailsDao implements ClassDetailsDao {
                 classDetails.isIs_paid(), classDetails.getClass_description(),
                 classDetails.isIs_repeating(), classDetails.getDate_range(), classDetails.getStart_time(),
                 classDetails.getClass_id()) == 1;
+    }
+
+    @Override
+    public boolean deleteClassForClient(int classId, int clientId) {
+        String sql = "DELETE FROM client_class " +
+                "WHERE client_class.class_id = ? AND client_class.client_id = ? ";
+        return jdbcTemplate.update(sql, classId, clientId)==1;
     }
 
     @Override
@@ -159,8 +191,6 @@ public class JdbcClassDetailsDao implements ClassDetailsDao {
             }
             classDetails.setDate_range(dateRange);
         }
-
-
 
         return classDetails;
     }

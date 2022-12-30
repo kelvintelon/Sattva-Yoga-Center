@@ -24,6 +24,7 @@ export default new Vuex.Store({
     // clientId: 0,
     clientDetails: currentClient || {},
     classList: [],
+    clientClassList: [],
     teacherList: [],
   },
   mutations: {
@@ -55,6 +56,9 @@ export default new Vuex.Store({
     },
     SET_CLASS_LIST(state, retrievedClassList) {
       state.classList = retrievedClassList;
+    },
+    SET_CLIENT_CLASS_LIST(state, retrievedList) {
+      state.clientClassList = retrievedList;
     },
     SET_TEACHER_LIST(state, retrievedTeacherList) {
       state.teacherList = retrievedTeacherList;
