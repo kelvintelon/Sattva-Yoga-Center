@@ -30,7 +30,7 @@
                   <span class="text-h5">{{ formTitle }}</span>
                 </v-card-title>
 
-                <!-- FORM from CreateClassForm-->
+                <!-- START OF CREATE CLASS FORM from CreateClassForm.vue-->
                 <v-container>
                   <v-row justify="center" style="min-height: 160px">
                     <v-col cols="7">
@@ -52,7 +52,7 @@
                           label="Teacher Names"
                           required
                         ></v-select>
-                        <!-- TIME PICKER -->
+                        <!-- START OF TIME PICKER -->
                         <v-menu
                           ref="menu"
                           v-model="dropDownOpen"
@@ -105,7 +105,7 @@
                               :no-title="true"
                               ampm-in-title
                               ><v-spacer></v-spacer>
-        
+
                               <v-btn
                                 text
                                 color="primary"
@@ -182,8 +182,9 @@
                 </v-card-actions>
               </v-card>
             </v-dialog>
-
-            <!-- EDIT FORM -->
+            <!-- END OF CREATE CLASS FORM -->
+            
+            <!-- START OF EDIT FORM -->
             <v-dialog v-model="dialog2" max-width="500px">
               <v-card justify="center">
                 <v-card-title>
@@ -212,7 +213,7 @@
                           label="Teacher Names"
                           required
                         ></v-select>
-                        <!-- TIME PICKER -->
+                        <!-- START OF TIME PICKER -->
                         <v-menu
                           ref="menu"
                           v-model="menu4"
@@ -256,16 +257,16 @@
                               >
                               <v-spacer></v-spacer
                             ></v-row>
-                          <v-time-picker
-                            v-if="menu4"
-                            v-model="timeModel"
-                            full-width
-                            scrollable
-                            :rules="timeRules"
-                            :no-title="true"
+                            <v-time-picker
+                              v-if="menu4"
+                              v-model="timeModel"
+                              full-width
+                              scrollable
+                              :rules="timeRules"
+                              :no-title="true"
                               ampm-in-title
-                          ><v-spacer></v-spacer>
-        
+                              ><v-spacer></v-spacer>
+
                               <v-btn
                                 text
                                 color="primary"
@@ -277,7 +278,7 @@
                                 OK
                               </v-btn></v-time-picker
                             >
-                        <!-- END OF TIME PICKER -->
+                            <!-- END OF TIME PICKER -->
                           </v-container>
                         </v-menu>
                         <v-select
@@ -342,65 +343,7 @@
                 </v-card-actions>
               </v-card>
             </v-dialog>
-
-            <!-- <v-dialog v-model="dialog2" max-width="500px">
-                <v-card-text>
-                <v-container>
-                  <v-row>
-                    <v-col
-                      cols="12"
-                      sm="6"
-                      md="4"
-                    >
-                      <v-text-field
-                        v-model="editedItem.class_description"
-                        label="Class Descripton"
-                      ></v-text-field>
-                    </v-col>
-                    <v-col
-                      cols="12"
-                      sm="6"
-                      md="4"
-                    >
-                      <v-text-field
-                        v-model="editedItem.teacher_name"
-                        label="Teacher"
-                      ></v-text-field>
-                    </v-col>
-                    <v-col
-                      cols="12"
-                      sm="6"
-                      md="4"
-                    >
-                      <v-text-field
-                        v-model="editedItem.fat"
-                        label="Fat (g)"
-                      ></v-text-field>
-                    </v-col>
-                    <v-col
-                      cols="12"
-                      sm="6"
-                      md="4"
-                    >
-                      <v-text-field
-                        v-model="editedItem.carbs"
-                        label="Carbs (g)"
-                      ></v-text-field>
-                    </v-col>
-                    <v-col
-                      cols="12"
-                      sm="6"
-                      md="4"
-                    >
-                      <v-text-field
-                        v-model="editedItem.protein"
-                        label="Protein (g)"
-                      ></v-text-field>
-                    </v-col>
-                  </v-row>
-                </v-container>
-              </v-card-text> 
-            </v-dialog> -->
+            <!-- END OF EDIT FORM -->
 
             <!-- DELETE ? -->
             <v-dialog v-model="dialogDelete" max-width="500px">
@@ -424,8 +367,8 @@
               </v-card>
             </v-dialog>
           </v-toolbar>
-          <!-- CHECK BOX for IS_PAID AND IS_REPEATING -->
         </template>
+        <!-- CHECK BOX for IS_PAID AND IS_REPEATING -->
         <template v-slot:[`item.is_repeating`]="{ item }">
           <v-simple-checkbox
             v-model="item.is_repeating"
@@ -438,7 +381,7 @@
             disabled
           ></v-simple-checkbox>
         </template>
-        <!-- ICONS  -->
+        <!-- ACTIONS / ICONS  -->
         <template v-slot:[`item.actions`]="{ item }">
           <v-icon small class="mr-2" @click="editItem(item)">
             mdi-pencil
@@ -474,7 +417,11 @@ export default {
           value: "class_description",
         },
         { text: "Teacher", value: "teacher_name" },
-        { text: "Duration (minutes)", value: "class_duration", sortable: false },
+        {
+          text: "Duration (minutes)",
+          value: "class_duration",
+          sortable: false,
+        },
         { text: "Class Time", value: "start_time", sortable: false },
         { text: "Repeat Every Week", value: "is_repeating", sortable: false },
         { text: "Selected Days", value: "date_range", sortable: false },
@@ -552,7 +499,6 @@ export default {
       formIncomplete2: true,
       meridiam: "",
       selectedTime: "",
-      
     };
   },
   created() {
@@ -599,7 +545,6 @@ export default {
     },
 
     deleteItemConfirm() {
-      
       classDetailService
         .deleteClass(this.editedItem.class_id)
         .then((response) => {
@@ -744,7 +689,7 @@ export default {
     confirm() {
       this.onUpdateDate();
       this.dropDownOpen = false;
-      this.menu4=false;
+      this.menu4 = false;
     },
     onUpdateDate() {
       if (!this.timeModel) {

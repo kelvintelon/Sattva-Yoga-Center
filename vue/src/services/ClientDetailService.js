@@ -10,12 +10,16 @@ export default {
         return axios.get('/getClientDetails')
     },
 
-    updateClientDetailsOfLoggedInUser(clientDetails) {
+    updateClientDetails(clientDetails) {
         return axios.put(`/updateClientDetails`, clientDetails )
     },
 
     getClientList() {
         return axios.get('/clientList')
-    }
+    },
+
+    removeClient(clientId) {
+        return axios.delete(`/removeClient/${clientId}`)
+    },
 
 }

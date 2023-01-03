@@ -61,7 +61,7 @@
       <v-text-field
         v-model="clientDetails.phone_number"
         :counter="15"
-        :rules="nameRules"
+        :rules="phoneeRules"
         label="Phone Number"
         required
       ></v-text-field>
@@ -200,35 +200,17 @@ export default {
     save() {
       this.clientDetails = this.$store.state.clientDetails;
       clientDetailService
-        .updateClientDetailsOfLoggedInUser(this.clientDetails)
+        .updateClientDetails(this.clientDetails)
         .then((response) => {
-          // this.clientDetails = response.data;
+          
           response
+
+          // replace this v-alert with a v-snackbar
           this.displayAlert();
 
-          // this.$store.commit("SET_CLIENT_DETAILS", response.data);
+
         });
 
-      // clientDetailService
-      //   .registerClient(this.clientDetails)
-      //   .then((response) => {
-      //     if (response.status == 201) {
-      //       alert ("You have been registered as a client!");
-
-      //       // this.$store.commit("SET_CLIENT_ID", response.data.client_id);
-      //       this.$store.commit("SET_CLIENT_DETAILS", response.data.clientDetails);
-      //       this.reset();
-      //       this.$router.push("/registerForClass");
-      //     }
-      //   })
-      //   .catch((error) => {
-      //       const response = error.response;
-      //       this.registrationErrors = true;
-      //       if (response.status === 400) {
-      //         this.registrationErrorMsg = "Bad Request: Validation Errors";
-      //       }
-      //     })
-      //   ;
     },
   },
   created() {

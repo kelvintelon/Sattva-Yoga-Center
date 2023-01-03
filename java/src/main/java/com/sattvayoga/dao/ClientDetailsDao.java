@@ -15,5 +15,5 @@ public interface ClientDetailsDao {
 
     public List<ClientDetails> getAllClients();
 
-
+    boolean deleteClient(int clientId);
 }

@@ -27,6 +27,6 @@ export default {
 
     removeClassForClient(classId) {
         return axios.delete(`/removeClassForClient/${classId}`)
-    }
+    },
 
 }

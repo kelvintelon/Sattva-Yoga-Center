@@ -61,7 +61,7 @@
       <v-text-field
         v-model="clientDetails.phone_number"
         :counter="15"
-        :rules="nameRules"
+        :rules="phoneRules"
         label="Phone Number"
         required
       ></v-text-field>
@@ -122,6 +122,10 @@ export default {
     emailRules: [
       (v) => !!v || "E-mail is required",
       (v) => /.+@.+\..+/.test(v) || "E-mail must be valid",
+    ],
+    phoneRules: [
+      (v) => !!v || "Phone is required",
+      (v) => (v && v.length <= 30) || "Name must be less than 30 characters",
     ],
     select: null,
     items: [

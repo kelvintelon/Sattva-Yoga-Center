@@ -34,6 +34,11 @@ public class ClientDetailsController {
 
     }
 
+    @RequestMapping(value = "/removeClient/{clientId}", method = RequestMethod.DELETE)
+    public void deleteClient (@PathVariable int clientId) {
+        clientDetailsDao.deleteClient(clientId);
+    }
+
     @RequestMapping(path = "/getClientDetails", method = RequestMethod.GET)
     public ClientDetails getClientDetails(Principal principal) {
         ClientDetails clientDetails =

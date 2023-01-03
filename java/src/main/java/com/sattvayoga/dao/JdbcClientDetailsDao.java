@@ -56,13 +56,33 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                 "zip_code = ? , " +
                 "email = ? , " +
                 "phone_number = ? , " +
-                "is_on_email_list = ? "+
+                "is_on_email_list = ? , " +
+                "has_record_of_liability = ? , " +
+                "is_client_active = ?  , " +
+                "is_new_client = ? " +
                 "WHERE user_id = ?";
         return jdbcTemplate.update(sql, clientDetails.getLast_name(), clientDetails.getFirst_name(),
                 clientDetails.getStreet_address(), clientDetails.getState_abbreviation(),
                 clientDetails.getZip_code(), clientDetails.getEmail(), clientDetails.getPhone_number(),
-                clientDetails.isIs_on_email_list(), clientDetails.getUser_id()) == 1;
+                clientDetails.isIs_on_email_list(), clientDetails.isHas_record_of_liability(),
+                clientDetails.isIs_client_active(), clientDetails.isIs_new_client(),
+                clientDetails.getUser_id()) == 1;
     }
+
+    @Override
+    public boolean deleteClient(int clientId) {
+        String sql = "BEGIN TRANSACTION;\n" +
+                "\n" +
+                "DELETE FROM client_class \n" +
+                "WHERE client_class.client_id = ?;\n" +
+                "\n" +
+                "DELETE FROM client_details\n" +
+                "WHERE client_id = ?;\n" +
+                "\n" +
+                "COMMIT TRANSACTION;";
+        return jdbcTemplate.update(sql, clientId, clientId)==1;
+    }
+
 
     @Override
     public List<ClientDetails> getAllClients() {
