@@ -189,55 +189,56 @@ export default {
       this.$refs.form.reset();
     },
     checkForm() {
-      if (this.clientDetails.last_name == "" || 
-      this.clientDetails.first_name == "" ||
-      this.clientDetails.street_address == "" ||
-      this.clientDetails.city == "" ||
-      this.clientDetails.state_abbreviation == "" ||
-      this.clientDetails.zip_code == "" || 
-      this.clientDetails.phone_number == "" || 
-      this.clientDetails.email == "" ) {
-        alert("Please fill out your form")
+      if (
+        this.clientDetails.last_name == "" ||
+        this.clientDetails.first_name == "" ||
+        this.clientDetails.street_address == "" ||
+        this.clientDetails.city == "" ||
+        this.clientDetails.state_abbreviation == "" ||
+        this.clientDetails.zip_code == "" ||
+        this.clientDetails.phone_number == "" ||
+        this.clientDetails.email == ""
+      ) {
+        alert("Please fill out your form");
       } else {
         this.formIncomplete = false;
       }
     },
     submit() {
-      
-      this.checkForm()
+      this.checkForm();
       if (this.formIncomplete == false) {
+        this.clientDetails.user_id = this.$store.state.user.id;
+        this.clientDetails.date_of_entry = new Date().toISOString();
 
-      
-      this.clientDetails.user_id = this.$store.state.user.id;
-      this.clientDetails.date_of_entry = new Date().toISOString();
-
-      // if the client isn't registered then do the following:
-      if (this.$store.state.clientDetails.client_id == 0 
-      || Object.keys(this.$store.state.clientDetails).length === 0) {
-        clientDetailService
-          .registerClient(this.clientDetails)
-          .then((response) => {
-            if (response.status == 201) {
-              alert("You have been registered as a client!");
-              this.$store.commit(
-                "SET_CLIENT_DETAILS",
-                response.data.clientDetails
-              );
-              this.reset();
-              this.$router.push("/registerForClass");
-            }
-          })
-          .catch((error) => {
-            const response = error.response;
-            this.registrationErrors = true;
-            if (response.status === 400) {
-              this.registrationErrorMsg = "Bad Request: Validation Errors";
-            }
-          });
-      } else {
-        alert("You are already registered as a client!")
-        this.$router.push({name: "profile-page" })
-      }
+        // if the client isn't registered then do the following:
+        if (
+          this.$store.state.clientDetails.client_id == 0 ||
+          Object.keys(this.$store.state.clientDetails).length === 0
+        ) {
+          clientDetailService
+            .registerClient(this.clientDetails)
+            .then((response) => {
+              if (response.status == 201) {
+                alert("You have been registered as a client!");
+                this.$store.commit(
+                  "SET_CLIENT_DETAILS",
+                  response.data.clientDetails
+                );
+                this.reset();
+                this.$router.push("/registerForClass");
+              }
+            })
+            .catch((error) => {
+              const response = error.response;
+              this.registrationErrors = true;
+              if (response.status === 400) {
+                this.registrationErrorMsg = "Bad Request: Validation Errors";
+              }
+            });
+        } else {
+          alert("You are already registered as a client!");
+          this.$router.push({ name: "profile-page" });
+        }
       }
     },
   },
