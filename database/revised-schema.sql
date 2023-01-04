@@ -76,7 +76,7 @@ CREATE TABLE package_details
 	classes_amount		int,
 	subscription_duration	int,
 	is_subscription		boolean 		NOT NULL, 
-	is_in_person		boolean			NOT NULL,
+	is_only_online		boolean			NOT NULL,
 	CONSTRAINT PK_package_details PRIMARY KEY (package_id)
 );
 

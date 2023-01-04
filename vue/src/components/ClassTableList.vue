@@ -349,10 +349,10 @@
             <v-dialog v-model="dialogDelete" max-width="500px">
               <v-card>
                 <v-card-title class="text-h5"
-                  >Are you sure you want to delete this item?</v-card-title
+                  >Are you sure you want to delete this class?</v-card-title
                 >
                 <v-card-title class="text-h6"
-                  >This will delete the sign up list as well</v-card-title
+                  >This will delete the class sign up list as well</v-card-title
                 >
                 <v-card-actions>
                   <v-spacer></v-spacer>
@@ -404,7 +404,7 @@ export default {
   name: "class-table-list",
   components: {},
   props: ["value"],
-  data() {
+  data() {  
     return {
       // ==================== this is table stuff vvvv
       dialog: false,
@@ -495,8 +495,8 @@ export default {
       days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
       fullName: "",
       fullname2: "",
-      formIncomplete: true,
-      formIncomplete2: true,
+      createFormIncomplete: true,
+      editFormIncomplete: true,
       meridiam: "",
       selectedTime: "",
     };
@@ -561,39 +561,16 @@ export default {
     close() {
       this.dialog = false;
       this.reset();
-      // ==================== This isn't being used right now
-      // this.$nextTick(() => {
-      //   this.editedItem = Object.assign({}, this.defaultItem);
-      //   this.editedIndex = -1;
-      // });
     },
     close2() {
       this.dialog2 = false;
       this.reset();
-      // ==================== This isn't being used right now
-      // this.$nextTick(() => {
-      //   this.editedItem = Object.assign({}, this.defaultItem);
-      //   this.editedIndex = -1;
-      // });
     },
     closeDelete() {
       this.dialogDelete = false;
-      //   this.$nextTick(() => {
-      //     this.editedItem = Object.assign({}, this.defaultItem);
-      //     this.editedIndex = -1;
-      //   });
-    },
-
-    save() {
-      //   if (this.editedIndex > -1) {
-      //     Object.assign(this.desserts[this.editedIndex], this.editedItem);
-      //   } else {
-      //     this.desserts.push(this.editedItem);
-      //   }
-      this.close();
     },
     // ==================== this is form stuff vvvv
-    checkForm() {
+    checkCreateForm() {
       if (
         this.classDetails.teacher_id == 0 ||
         this.classDetails.class_duration == 0 ||
@@ -603,10 +580,10 @@ export default {
       ) {
         alert("Please fill out your form");
       } else {
-        this.formIncomplete = false;
+        this.createFormIncomplete = false;
       }
     },
-    checkForm2() {
+    checkEditForm() {
       if (
         this.editedItem.teacher_id == 0 ||
         this.editedItem.class_duration == 0 ||
@@ -616,7 +593,7 @@ export default {
       ) {
         alert("Please fill out your form");
       } else {
-        this.formIncomplete2 = false;
+        this.editFormIncomplete = false;
       }
     },
     reset() {
@@ -632,8 +609,8 @@ export default {
         }
       });
 
-      this.checkForm();
-      if (this.formIncomplete == false) {
+      this.checkCreateForm();
+      if (this.createFormIncomplete == false) {
         // after completing the object do the POST REQUEST
         classDetailService.createClass(this.classDetails).then((response) => {
           if (response.status == 201) {
@@ -641,6 +618,7 @@ export default {
             // this.classDetails.teacher_name = this.selectedTeacherName;
             // this.$store.state.classList.push(this.classDetails);
             this.getClassTable();
+            this.reset();
             this.close();
           } else {
             alert("Error creating a class!");
@@ -657,8 +635,8 @@ export default {
         }
       });
 
-      this.checkForm2();
-      if (this.formIncomplete2 == false) {
+      this.checkEditForm();
+      if (this.editFormIncomplete == false) {
         // after completing the object do the PUT REQUEST
         classDetailService.updateClass(this.editedItem).then((response) => {
           if (response.status == 200) {

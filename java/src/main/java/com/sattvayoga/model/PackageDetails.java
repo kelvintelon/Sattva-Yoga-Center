@@ -1,7 +1,6 @@
 package com.sattvayoga.model;
 
 import java.math.BigDecimal;
-import java.sql.Date;
 
 public class PackageDetails {
 
@@ -12,7 +11,7 @@ public class PackageDetails {
     private int subscription_duration;
     private boolean is_subscription;
 
-    private boolean is_in_person;
+    private boolean is_only_online;
 
     public PackageDetails(int package_id, String description,
                           BigDecimal package_cost, int classes_amount,
@@ -24,7 +23,7 @@ public class PackageDetails {
         this.classes_amount = classes_amount;
         this.is_subscription = is_subscription;
         this.subscription_duration = subscription_duration;
-        this.is_in_person = is_in_person;
+        this.is_only_online = is_in_person;
     }
 
     public PackageDetails() {
@@ -78,11 +77,11 @@ public class PackageDetails {
         this.subscription_duration = subscription_duration;
     }
 
-    public boolean isIs_in_person() {
-        return is_in_person;
+    public boolean isIs_only_online() {
+        return is_only_online;
     }
 
-    public void setIs_in_person(boolean is_in_person) {
-        this.is_in_person = is_in_person;
+    public void setIs_only_online(boolean is_only_online) {
+        this.is_only_online = is_only_online;
     }
 }

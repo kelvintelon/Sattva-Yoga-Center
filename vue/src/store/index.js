@@ -26,6 +26,7 @@ export default new Vuex.Store({
     classList: [],
     clientClassList: [],
     teacherList: [],
+    packageList: [],
   },
   mutations: {
     SET_AUTH_TOKEN(state, token) {
@@ -57,11 +58,14 @@ export default new Vuex.Store({
     SET_CLASS_LIST(state, retrievedClassList) {
       state.classList = retrievedClassList;
     },
-    SET_CLIENT_CLASS_LIST(state, retrievedList) {
-      state.clientClassList = retrievedList;
+    SET_CLIENT_CLASS_LIST(state, retrievedClientList) {
+      state.clientClassList = retrievedClientList;
     },
     SET_TEACHER_LIST(state, retrievedTeacherList) {
       state.teacherList = retrievedTeacherList;
-    }
+    },
+    SET_PACKAGE_LIST(state, retrievedPackageList) {
+      state.packageList = retrievedPackageList;
+    },
   }
 })

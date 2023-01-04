@@ -1,11 +1,8 @@
 package com.sattvayoga.dao;
 
-import com.sattvayoga.model.ClassDetails;
 import com.sattvayoga.model.PackageDetails;
-import com.sattvayoga.model.TeacherDetails;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -24,12 +21,12 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
     @Override
     public boolean createPackage(PackageDetails packageDetails) {
         String sql = "INSERT INTO package_details (description, package_cost, " +
-                "classes_amount, subscription_duration, is_subscription, is_in_person) VALUES " +
+                "classes_amount, subscription_duration, is_subscription, is_only_online) VALUES " +
                 "(?, ?, ?, ?, ?, ?)";
 
         return jdbcTemplate.update(sql, packageDetails.getDescription(), packageDetails.getPackage_cost(),
                 packageDetails.getClasses_amount(), packageDetails.getSubscription_duration(),
-                packageDetails.isIs_subscription(), packageDetails.isIs_in_person()) == 1;
+                packageDetails.isIs_subscription(), packageDetails.isIs_only_online()) == 1;
     }
 
 
@@ -57,18 +54,26 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
                 "classes_amount = ? , " +
                 "subscription_duration = ? , " +
                 "is_subscription = ? , " +
-                "is_in_person = ? " +
+                "is_only_online = ? " +
                 "WHERE package_id = ?";
         return jdbcTemplate.update(sql, packageDetails.getPackage_id(), packageDetails.getDescription(),
                 packageDetails.getPackage_cost(), packageDetails.getClasses_amount(),
                 packageDetails.getSubscription_duration(), packageDetails.isIs_subscription(),
-                packageDetails.isIs_in_person(), packageDetails.getPackage_id())==1;
+                packageDetails.isIs_only_online(), packageDetails.getPackage_id())==1;
    }
 
     @Override
     public boolean deletePackage(int packageId) {
-        String sql = "DELETE from package_details WHERE package_id = ?;";
-        return jdbcTemplate.update(sql, packageId)==1;
+        String sql = "BEGIN TRANSACTION;\n" +
+                "\n" +
+                "DELETE FROM package_purchase \n" +
+                "WHERE package_purchase.package_id = ?;\n" +
+                "\n" +
+                "DELETE FROM package_details\n" +
+                "WHERE package_id = ?;\n" +
+                "\n" +
+                "COMMIT TRANSACTION;";
+        return jdbcTemplate.update(sql, packageId, packageId)==1;
     }
 
     private PackageDetails mapRowToPackage(SqlRowSet rs) {
@@ -83,20 +88,9 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
             packageDetails.setSubscription_duration(rs.getInt("subscription_duration"));
         }
         packageDetails.setIs_subscription(rs.getBoolean("is_subscription"));
-        packageDetails.setIs_in_person(rs.getBoolean("is_in_person"));
+        packageDetails.setIs_only_online(rs.getBoolean("is_only_online"));
 
         return packageDetails;
     }
-//    private ClassDetails mapRowToClass(SqlRowSet rs) {
-//        ClassDetails classDetails = new ClassDetails();
-//        classDetails.setClass_id(rs.getInt("class_id"));
-//        classDetails.setTeacher_id(rs.getInt("teacher_id"));
-//        classDetails.setClass_datetime(rs.getTimestamp("class_datetime"));
-//        classDetails.setClass_duration(rs.getInt("class_duration"));
-//        if (rs.getBoolean("is_paid") == false || rs.getBoolean("is_paid") == true) {
-//            classDetails.setIs_paid(rs.getBoolean("is_paid"));
-//        }
-//        classDetails.setClass_description(rs.getString("class_description"));
-//        return classDetails;
-//    }
+
 }

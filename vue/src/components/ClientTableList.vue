@@ -304,7 +304,7 @@ export default {
         "WV",
         "WY",
       ],
-      formIncomplete: true,
+      editFormIncomplete: true,
       nameRules: [
         (v) => !!v || "Name is required",
         (v) => (v && v.length <= 30) || "Name must be less than 30 characters",
@@ -331,9 +331,9 @@ export default {
   },
   methods: {
     update() {
-      this.checkForm();
+      this.checkEditForm();
 
-      if (this.formIncomplete == false) {
+      if (this.editFormIncomplete == false) {
         clientDetailService
           .updateClientDetails(this.editedItem)
           .then((response) => {
@@ -390,7 +390,7 @@ export default {
     reset() {
       this.$refs.form.reset();
     },
-    checkForm() {
+    checkEditForm() {
       if (
         this.editedItem.last_name == "" ||
         this.editedItem.first_name == "" ||
@@ -404,7 +404,7 @@ export default {
       ) {
         alert("Please fill out your form");
       } else {
-        this.formIncomplete = false;
+        this.editFormIncomplete = false;
       }
     },
   },
