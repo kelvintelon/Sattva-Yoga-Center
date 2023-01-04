@@ -178,7 +178,8 @@
               >Are you sure you want to remove this teacher?</v-card-title
             >
             <v-card-title class="text-h6"
-              >You need to unassign this teacher from classes first for this to work</v-card-title
+              >You need to unassign this teacher from classes first for this to
+              work</v-card-title
             >
 
             <v-card-actions>
@@ -208,13 +209,13 @@
 
 <script>
 import teacherService from "../services/TeacherService";
-// import classDetailService from "../services/ClassDetailService";
+import classDetailService from "../services/ClassDetailService";
 
 export default {
   name: "teacher-table-list",
   data() {
     return {
-//============ Table stuff
+      //============ Table stuff
       dialog: false,
       dialog2: false,
       dialogDelete: false,
@@ -260,6 +261,8 @@ export default {
       formIncomplete: true,
       formIncomplete2: true,
       //============
+
+      classes: [],
     };
   },
 
@@ -344,20 +347,45 @@ export default {
       this.dialogDelete = true;
     },
 
+    getClassTable() {
+      classDetailService.getAllClasses().then((response) => {
+        if (response.status == 200) {
+          this.$store.commit("SET_CLASS_LIST", response.data);
+          this.classes = response.data;
+        } else {
+          alert("Error retrieving class information");
+        }
+      });
+    },
+
     deleteItemConfirm() {
-      this.teachers.splice(this.editedIndex, 1);
-      // classDetailService.deleteClass(how to get class_id)
-      teacherService
-        .deleteTeacher(this.editedItem.teacher_id)
-        .then((response) => {
-          if (response.status == 200) {
-            alert("Teacher successfully removed!");
-          } else {
-            // error alert not working
-            alert("Error removing teacher!");
-          }
-        });
-      this.closeDelete();
+      var unique = true;
+      this.classes.forEach((item) => {
+        // console.log('class: ' + item.teacher_id);
+        // console.log('teacher: ' + this.editedItem.teacher_id);
+        if (item.teacher_id === this.editedItem.teacher_id) {
+          unique = false;
+          // console.log(unique);
+        }
+      });
+
+      if (unique == true) {
+        this.teachers.splice(this.editedIndex, 1);
+        teacherService
+          .deleteTeacher(this.editedItem.teacher_id)
+          .then((response) => {
+            if (response.status == 200) {
+              alert("Teacher successfully removed!");
+            } else {
+              // error alert not showing if server gets error
+              alert("Error removing teacher!");
+            }
+          });
+        this.closeDelete();
+      } else {
+        alert("Error! This teacher is currently assigned to a class!");
+        this.closeDelete();
+      }
     },
 
     close() {
@@ -413,6 +441,7 @@ export default {
 
   created() {
     this.getTeachers();
+    this.getClassTable();
   },
 };
 </script>
