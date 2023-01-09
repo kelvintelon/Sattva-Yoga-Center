@@ -13,4 +13,7 @@ public interface PackageDetailsDao {
     boolean updatePackage(PackageDetails packageDetails);
 
     boolean deletePackage(int packageId);
+
+    List<PackageDetails> getAllPublicPackages();
+
 }

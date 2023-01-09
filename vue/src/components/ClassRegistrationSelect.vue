@@ -72,18 +72,6 @@ export default {
   components: {},
   data() {
     return {
-      // classAttendance: {
-      //   class_id: 1,
-      //   client_id: 1,
-      //   package_id: 1,
-      //   class_purchase_id: 3,
-      //   is_new_client: true,
-      //   is_drop_in: true,
-      //   drop_in_fee: 0,
-      //   mat_use_fee: 0,
-      //   is_guest: false,
-      //   attendance_count: 1,
-      // },
       headers: [
         {
           text: "Class Description",

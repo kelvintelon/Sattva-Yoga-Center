@@ -15,7 +15,7 @@ import TeacherManagementPage from '../views/TeacherManagementPage.vue'
 import ClassManagement from '../views/ClassManagement.vue'
 import ClientManagement from '../views/ClientManagement.vue'
 import PackageManagement from '../views/PackageManagement.vue'
-
+import ClientPackageManagement from '../views/ClientPackageManagement.vue'
 
 Vue.use(Router)
 
@@ -140,6 +140,14 @@ const router = new Router({
       path:"/packageManagement",
       name:"package-management",
       component: PackageManagement,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path:"/clientPackageManagement",
+      name:"client-package-management",
+      component: ClientPackageManagement,
       meta: {
         requiresAuth: true
       }

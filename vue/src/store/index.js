@@ -27,6 +27,7 @@ export default new Vuex.Store({
     clientClassList: [],
     teacherList: [],
     packageList: [],
+    activePackageList: [],
   },
   mutations: {
     SET_AUTH_TOKEN(state, token) {
@@ -47,10 +48,6 @@ export default new Vuex.Store({
       state.clientDetails = {};
       axios.defaults.headers.common = {};
     },
-    // SET_CLIENT_ID(state, client_id) {
-    //   state.clientId = client_id;
-    //   localStorage.setItem('clientId', client_id);
-    // },
     SET_CLIENT_DETAILS(state, clientDetailsObject) {
       state.clientDetails = clientDetailsObject;
       localStorage.setItem('clientDetails', JSON.stringify(clientDetailsObject));
@@ -66,6 +63,9 @@ export default new Vuex.Store({
     },
     SET_PACKAGE_LIST(state, retrievedPackageList) {
       state.packageList = retrievedPackageList;
+    },
+    SET_ACTIVE_PACKAGE_LIST(state, retrievedActivePackageList) {
+      state.activePackageList = retrievedActivePackageList;
     },
   }
 })

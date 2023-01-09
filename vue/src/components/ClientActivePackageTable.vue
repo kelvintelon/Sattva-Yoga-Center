@@ -1,0 +1,104 @@
+<template>
+  <v-container>
+    <v-row><br /></v-row>
+    <v-row>
+      <v-spacer></v-spacer>
+      <h1>Active Packages</h1>
+      <v-spacer></v-spacer
+    ></v-row>
+    <br />
+
+    <v-data-table :headers="headers" :items="packages" class="elevation-5">
+      <template v-slot:top>
+        <v-toolbar flat>
+          <v-toolbar-title>Available Packages</v-toolbar-title>
+          <v-divider class="mx-4" inset vertical></v-divider>
+          <v-spacer></v-spacer>
+        </v-toolbar>
+      </template>
+      <template v-slot:[`item.actions`]="{ item }">
+        <v-icon small class="mr-2" @click="Purchase(item)">
+          mdi-card-plus
+        </v-icon>
+      </template>
+    </v-data-table>
+    <br />
+    <br />
+  </v-container>
+</template>
+
+<script>
+import packagePurchaseService from "../services/PackagePurchaseService";
+
+export default {
+  name: "client-package-purchase-table",
+  components: {},
+  data() {
+    return {
+      headers: [
+        {
+          text: "Package Description",
+          align: "start",
+          value: "package_description",
+        },
+        { text: "Timestamp", value: "date_purchased", sortable: true },
+        {
+          text: "Classes Remaning",
+          value: "classes_remaining",
+          sortable: true,
+        },
+        {
+          text: "Classes Remaning",
+          value: "classes_remaining",
+          sortable: true,
+        },
+        { text: "Cancel", value: "actions", sortable: false },
+      ],
+      packages: [],
+      packagePurchase: {
+        package_purchase_id: "",
+        client_id: "",
+        date_purchased: "",
+        package_id: "",
+        is_expired: "",
+        classes_remaining: "",
+        activation_date: "",
+        expiration_date: "",
+        total_amount_paid: "",
+        is_monthly_renew: "",
+        discount: "",
+        package_description: "",
+      },
+    };
+  },
+  created() {
+    this.getActivePurchasePackageTable();
+
+    this.$root.$refs.A = this;
+  },
+  methods: {
+    getActivePurchasePackageTable() {
+      packagePurchaseService.getUserPurchasedPackages().then((response) => {
+        if (response.status == 200) {
+          // focus on if it's expired or not
+
+          // this.packages = response.date.filter((item) => { return item.is_expired == false})
+
+          this.$store.commit("SET_ACTIVE_PACKAGE_LIST", response.data);
+          this.packages = response.data;
+        } else {
+          alert("Error retrieving package information");
+        }
+      });
+    },
+    Remove(item) {
+      // this will be an update
+
+     item
+    },
+  },
+};
+</script>
+
+<style>
+</style>

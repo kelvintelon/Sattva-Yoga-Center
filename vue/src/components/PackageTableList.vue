@@ -54,25 +54,23 @@
                         <v-select
                           v-model="packageDetails.classes_amount"
                           :items="classesAmountOptions"
-                      
                           label="Amount of Classes"
                           required
                         ></v-select>
                         <v-select
                           v-model="packageDetails.subscription_duration"
                           :items="durationOptions"
-                 
                           label="Duration in months"
                           required
                         ></v-select>
-                        <br>
+                        <br />
                         <v-text-field
                           v-model="packageDetails.package_cost"
                           class="mt-0 pt-0"
                           type="number"
                           style="width: 60px"
-                           label="Cost: $"
-                           min="10"
+                          label="Cost: $"
+                          min="10"
                         ></v-text-field>
 
                         <v-checkbox
@@ -137,7 +135,7 @@
                         justify="center"
                         align="center"
                       >
-                         <v-text-field
+                        <v-text-field
                           v-model="editedItem.description"
                           :rules="descriptionRules"
                           label="Description"
@@ -146,25 +144,23 @@
                         <v-select
                           v-model="editedItem.classes_amount"
                           :items="classesAmountOptions"
-                      
                           label="Amount of Classes"
                           required
                         ></v-select>
                         <v-select
                           v-model="editedItem.subscription_duration"
                           :items="durationOptions"
-                 
                           label="Duration in months"
                           required
                         ></v-select>
-                        <br>
+                        <br />
                         <v-text-field
                           v-model="editedItem.package_cost"
                           class="mt-0 pt-0"
                           type="number"
                           style="width: 60px"
-                           label="Cost: $"
-                           min="10"
+                          label="Cost: $"
+                          min="10"
                         ></v-text-field>
 
                         <v-checkbox
@@ -202,9 +198,8 @@
                   <v-spacer></v-spacer>
                   <v-btn color="blue darken-1" text @click="close2">
                     Cancel
-                  </v-btn> 
-    
-             </v-card-actions>
+                  </v-btn>
+                </v-card-actions>
               </v-card>
             </v-dialog>
             <!-- END OF EDIT FORM -->
@@ -216,7 +211,8 @@
                   >Are you sure you want to delete this package?</v-card-title
                 >
                 <v-card-title class="text-h6"
-                  >This will delete the package purchase history as well</v-card-title
+                  >This will delete the package purchase history as
+                  well</v-card-title
                 >
                 <v-card-actions>
                   <v-spacer></v-spacer>
@@ -306,15 +302,6 @@ export default {
       durationOptions: [0, 1, 6],
       classesAmountOptions: [0, 1, 10, 20],
       editedIndex: -1,
-      editedItem: {
-        package_id: "",
-        description: "",
-        package_cost: 10,
-        classes_amount: 0,
-        subscription_duration: 0,
-        is_subscription: false,
-        is_only_online: false,
-      },
 
       menu3: false,
       menu4: false,
@@ -328,7 +315,15 @@ export default {
       },
 
       // ====================  this is form stuff vvvv
-
+      editedItem: {
+        package_id: "",
+        description: "",
+        package_cost: 10,
+        classes_amount: 0,
+        subscription_duration: 0,
+        is_subscription: false,
+        is_only_online: false,
+      },
       dropDownOpen: false,
 
       menu2: false,
@@ -344,7 +339,6 @@ export default {
         is_only_online: false,
       },
       descriptionRules: [(v) => !!v || "Description is required"],
-
 
       createFormIncomplete: true,
       editFormIncomplete: true,
@@ -380,16 +374,16 @@ export default {
     },
 
     deleteItemConfirm() {
-        packageDetailService
-          .deletePackage(this.editedItem.package_id)
-          .then((response) => {
-            if (response.status == 200) {
-              this.packages.splice(this.editedIndex, 1);
-              alert("Package successfully removed!");
-            } else {
-              alert("Error removing package!");
-            }
-          });
+      packageDetailService
+        .deletePackage(this.editedItem.package_id)
+        .then((response) => {
+          if (response.status == 200) {
+            this.packages.splice(this.editedIndex, 1);
+            alert("Package successfully removed!");
+          } else {
+            alert("Error removing package!");
+          }
+        });
       this.closeDelete();
     },
 
@@ -406,18 +400,14 @@ export default {
     },
     // ==================== this is form stuff vvvv
     checkCreateForm() {
-      if (
-        this.packageDetails.description == ""
-      ) {
+      if (this.packageDetails.description == "") {
         alert("Please fill out your form");
       } else {
         this.createFormIncomplete = false;
       }
     },
     checkEditForm() {
-      if (
-        this.editedItem.description == "" 
-      ) {
+      if (this.editedItem.description == "") {
         alert("Please fill out your form");
       } else {
         this.editFormIncomplete = false;
@@ -431,16 +421,18 @@ export default {
       this.checkCreateForm();
       if (this.createFormIncomplete == false) {
         // after completing the object do the POST REQUEST
-        packageDetailService.createPackage(this.packageDetails).then((response) => {
-          if (response.status == 201) {
-            alert("You have created a class!");
-            this.getPackageTable();
-            this.reset();
-            this.close();
-          } else {
-            alert("Error creating a class!");
-          }
-        });
+        packageDetailService
+          .createPackage(this.packageDetails)
+          .then((response) => {
+            if (response.status == 201) {
+              alert("You have created a class!");
+              this.getPackageTable();
+              this.reset();
+              this.close();
+            } else {
+              alert("Error creating a class!");
+            }
+          });
       }
     },
     update() {

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@PreAuthorize("isAuthenticated()")
+
 @RestController
 @CrossOrigin
 public class PackageDetailsController {
@@ -47,6 +47,11 @@ public class PackageDetailsController {
     @RequestMapping(value = "/deletePackage/{packageId}", method = RequestMethod.DELETE)
     public void deleteClass (@PathVariable int packageId) {
         packageDetailsDao.deletePackage(packageId);
+    }
+
+    @RequestMapping(value= "/publicPackageList", method = RequestMethod.GET)
+    public List<PackageDetails> getAllPublicPackages() {
+        return packageDetailsDao.getAllPublicPackages();
     }
 
 }

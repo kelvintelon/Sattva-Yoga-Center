@@ -22,7 +22,7 @@
         <v-btn elevation="5" v-on:click="goToRegisterClassesPage()"> <v-icon> mdi-family-tree </v-icon> View Classes </v-btn>
       </v-col>
       <v-col>
-        <v-btn elevation="5" > My Recent Purchases </v-btn>
+        <v-btn elevation="5" v-on:click="goToClientPackageManagementPage()" > Package Management </v-btn>
       </v-col>
     </v-row>
     <v-row>
@@ -53,6 +53,9 @@ export default {
     },
     goToRegisterClassesPage() {
       this.$router.push({ name: "class-registration" });
+    },
+    goToClientPackageManagementPage() {
+      this.$router.push({ name: "client-package-management" });
     },
   },
 };

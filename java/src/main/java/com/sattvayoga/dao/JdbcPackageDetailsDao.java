@@ -76,6 +76,22 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
         return jdbcTemplate.update(sql, packageId, packageId)==1;
     }
 
+    @Override
+    public List<PackageDetails> getAllPublicPackages() {
+        List<PackageDetails> allPackages = new ArrayList<>();
+
+        String sql = "SELECT * FROM package_details WHERE is_only_online = TRUE;";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+        while (result.next()) {
+            PackageDetails packageDetails = mapRowToPackage(result);
+
+
+            allPackages.add(packageDetails);
+        }
+
+        return allPackages;
+    }
+
     private PackageDetails mapRowToPackage(SqlRowSet rs) {
         PackageDetails packageDetails = new PackageDetails();
         packageDetails.setPackage_id(rs.getInt("package_id"));

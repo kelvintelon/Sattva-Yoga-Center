@@ -8,6 +8,9 @@ export default {
     getAllPackages() {
         return axios.get(`/packageList`)
     },
+    getAllPublicPackages() {
+        return axios.get(`/publicPackageList`)
+    },
     updatePackage(packageObject) {
         return axios.put(`/updatePackage`, packageObject)
     },

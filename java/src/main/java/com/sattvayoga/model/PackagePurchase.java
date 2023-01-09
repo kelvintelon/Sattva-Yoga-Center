@@ -18,6 +18,8 @@ public class PackagePurchase {
     private boolean is_monthly_renew;
     private BigDecimal discount;
 
+    private String package_description;
+
     public PackagePurchase(int package_purchase_id, int client_id, Timestamp date_purchased, int package_id,
                            boolean is_expired, int classes_remaining, Date activation_date,
                            Date expiration_date, BigDecimal total_amount_paid, boolean is_monthly_renew,
@@ -33,6 +35,36 @@ public class PackagePurchase {
         this.total_amount_paid = total_amount_paid;
         this.is_monthly_renew = is_monthly_renew;
         this.discount = discount;
+    }
+
+    public PackagePurchase(int package_purchase_id, int client_id, Timestamp date_purchased, int package_id,
+                           boolean is_expired, int classes_remaining, Date activation_date,
+                           Date expiration_date, BigDecimal total_amount_paid, boolean is_monthly_renew,
+                           BigDecimal discount, String package_description) {
+        this.package_purchase_id = package_purchase_id;
+        this.client_id = client_id;
+        this.date_purchased = date_purchased;
+        this.package_id = package_id;
+        this.is_expired = is_expired;
+        this.classes_remaining = classes_remaining;
+        this.activation_date = activation_date;
+        this.expiration_date = expiration_date;
+        this.total_amount_paid = total_amount_paid;
+        this.is_monthly_renew = is_monthly_renew;
+        this.discount = discount;
+        this.package_description = package_description;
+    }
+
+    public PackagePurchase() {
+
+    }
+
+    public String getPackage_description() {
+        return package_description;
+    }
+
+    public void setPackage_description(String package_description) {
+        this.package_description = package_description;
     }
 
     public int getPackage_purchase_id() {
