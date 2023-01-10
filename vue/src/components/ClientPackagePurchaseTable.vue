@@ -123,9 +123,9 @@ export default {
                 alert("Succesfully purchased class")
               // call method that updates the client details and also the list of active packages
               this.$root.$refs.A.getActivePurchasePackageTable();
-
-              // update client through mutation
-
+              this.$root.$refs.B.getPackageHistoryTable();
+              // update client.is_new_client to false through mutation
+               this.$store.commit("SET_CLIENT_DETAILS_NEW_CLIENT", false);
             }
           });
       }

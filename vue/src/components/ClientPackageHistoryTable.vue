@@ -3,23 +3,18 @@
     <v-row><br /></v-row>
     <v-row>
       <v-spacer></v-spacer>
-      <h1>Active Packages</h1>
+      <h1>Package History</h1>
       <v-spacer></v-spacer
     ></v-row>
     <br />
 
-    <v-data-table :headers="headers" :items="packages" class="elevation-5">
+    <v-data-table :headers="headers" :items="packageHistoryList" class="elevation-5">
       <template v-slot:top>
         <v-toolbar flat>
-          <v-toolbar-title>Available Packages</v-toolbar-title>
+          <v-toolbar-title>Package History</v-toolbar-title>
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-spacer></v-spacer>
         </v-toolbar>
-      </template>
-      <template v-slot:[`item.actions`]="{ item }">
-        <v-icon small class="mr-2" @click="Remove(item)">
-          mdi-card-plus
-        </v-icon>
       </template>
     </v-data-table>
     <br />
@@ -31,7 +26,7 @@
 import packagePurchaseService from "../services/PackagePurchaseService";
 
 export default {
-  name: "client-active-package-table",
+  name: "client-package-history-table",
   components: {},
   data() {
     return {
@@ -52,9 +47,8 @@ export default {
           value: "classes_remaining",
           sortable: true,
         },
-        { text: "Cancel", value: "actions", sortable: false },
       ],
-      packages: [],
+      packageHistoryList: [],
       packagePurchase: {
         package_purchase_id: "",
         client_id: "",
@@ -72,40 +66,21 @@ export default {
     };
   },
   created() {
-    this.getActivePurchasePackageTable();
+    this.getPackageHistoryTable();
 
-    this.$root.$refs.A = this;
+    this.$root.$refs.B = this;
   },
   methods: {
-    getActivePurchasePackageTable() {
+    getPackageHistoryTable() {
       packagePurchaseService.getUserPurchasedPackages().then((response) => {
         if (response.status == 200) {
-          // focus on if it's expired or not
-
-          this.packages = response.data.filter((item) => { return item.is_expired == false})
-
-          this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
-         
+          this.packageHistoryList = response.data;
+          this.$store.commit("SET_PACKAGE_HISTORY_LIST", response.data);
         } else {
           alert("Error retrieving package information");
         }
       });
-    },
-    Remove(item) {
-      // this will be an update
-    packagePurchaseService.expirePackage(item).then((response) => {
-      if (response.status == 200) {
-        alert("You have canceled this package")
-        this.getActivePurchasePackageTable();
-
-        // call the method to update the purchase history table so it updates the expired column
-        this.$root.$refs.B.getPackageHistoryTable();
-      } else {
-        alert("Error canceling class")
-      }
-    })
-     
-    },
+    }
   },
 };
 </script>
