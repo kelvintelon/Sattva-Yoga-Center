@@ -55,6 +55,10 @@ export default {
         },
         { text: "Purchase Date", value: "date_purchased", sortable: true },
         {
+          text: "Total Cost",
+          value: "total_amount_paid",
+        },
+        {
           text: "Activation Date",
           value: "activation_date",
           sortable: true,
