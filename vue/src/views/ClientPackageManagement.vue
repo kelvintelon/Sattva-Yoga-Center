@@ -10,7 +10,7 @@
         <v-col cols="14">
            <client-package-purchase-table></client-package-purchase-table>
            <client-active-package-table></client-active-package-table>
-           <client-package-history-table></client-package-history-table>
+           <client-purchase-history-table></client-purchase-history-table>
       </v-col>
       </v-row>
     </v-container>
@@ -22,7 +22,7 @@
 import TopHeader from "../components/TopHeader.vue";
 import ClientPackagePurchaseTable from "../components/ClientPackagePurchaseTable.vue";
 import ClientActivePackageTable from "../components/ClientActivePackageTable.vue";
-import ClientPackageHistoryTable from "../components/ClientPackageHistoryTable.vue";
+import ClientPurchaseHistoryTable from "../components/ClientPurchaseHistoryTable.vue";
 
 
 export default {
@@ -31,7 +31,7 @@ export default {
     TopHeader,
     ClientPackagePurchaseTable,
     ClientActivePackageTable,
-    ClientPackageHistoryTable,
+    ClientPurchaseHistoryTable,
   },
 };
 </script>

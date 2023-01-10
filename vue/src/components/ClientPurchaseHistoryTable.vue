@@ -3,7 +3,7 @@
     <v-row><br /></v-row>
     <v-row>
       <v-spacer></v-spacer>
-      <h1>Package History</h1>
+      <h1>Purchase History</h1>
       <v-spacer></v-spacer
     ></v-row>
     <br />
@@ -11,7 +11,7 @@
     <v-data-table :headers="headers" :items="packageHistoryList" class="elevation-5">
       <template v-slot:top>
         <v-toolbar flat>
-          <v-toolbar-title>Package History</v-toolbar-title>
+          <v-toolbar-title>Purchase History</v-toolbar-title>
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-spacer></v-spacer>
         </v-toolbar>
@@ -26,7 +26,7 @@
 import packagePurchaseService from "../services/PackagePurchaseService";
 
 export default {
-  name: "client-package-history-table",
+  name: "client-purchase-history-table",
   components: {},
   data() {
     return {
