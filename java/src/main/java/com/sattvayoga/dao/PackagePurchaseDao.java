@@ -9,4 +9,6 @@ public interface PackagePurchaseDao {
     void createPackagePurchase(PackagePurchase packagePurchase);
 
     List<PackagePurchase> getAllUserPackagePurchases(int userId);
+
+    boolean expirePackage(PackagePurchase packagePurchase);
 }

@@ -17,7 +17,7 @@
         </v-toolbar>
       </template>
       <template v-slot:[`item.actions`]="{ item }">
-        <v-icon small class="mr-2" @click="Purchase(item)">
+        <v-icon small class="mr-2" @click="Remove(item)">
           mdi-card-plus
         </v-icon>
       </template>
@@ -31,7 +31,7 @@
 import packagePurchaseService from "../services/PackagePurchaseService";
 
 export default {
-  name: "client-package-purchase-table",
+  name: "client-active-package-table",
   components: {},
   data() {
     return {
@@ -82,10 +82,10 @@ export default {
         if (response.status == 200) {
           // focus on if it's expired or not
 
-          // this.packages = response.date.filter((item) => { return item.is_expired == false})
+          this.packages = response.data.filter((item) => { return item.is_expired == false})
 
           this.$store.commit("SET_ACTIVE_PACKAGE_LIST", response.data);
-          this.packages = response.data;
+          // this.packages = response.data;
         } else {
           alert("Error retrieving package information");
         }
@@ -93,8 +93,18 @@ export default {
     },
     Remove(item) {
       // this will be an update
+    packagePurchaseService.expirePackage(item).then((response) => {
+      if (response.status == 200) {
+        alert("You have canceled this package")
+        this.getActivePurchasePackageTable();
 
-     item
+        // call the method to update the purchase history table so it updates the expired column
+
+      } else {
+        alert("Error canceling class")
+      }
+    })
+     
     },
   },
 };

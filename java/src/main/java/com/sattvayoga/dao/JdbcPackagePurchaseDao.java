@@ -53,6 +53,13 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         return allUserPackagePurchase;
     }
 
+    @Override
+    public boolean expirePackage(PackagePurchase packagePurchase) {
+        String sql = "UPDATE package_purchase SET is_expired = TRUE " +
+                "WHERE package_purchase_id = ?;";
+        return jdbcTemplate.update(sql, packagePurchase.getPackage_purchase_id())==1;
+    }
+
     // helper
     public String getPackageDescriptionByPackageId(int PackageId) {
         PackageDetails packageDetails = null;

@@ -36,4 +36,9 @@ public class PackagePurchaseController {
     public List<PackagePurchase> getAllUserPackagePurchase(Principal principal) throws SQLException {
         return packagePurchaseDao.getAllUserPackagePurchases(userDao.findIdByUsername(principal.getName()));
     }
+
+    @RequestMapping(value= "/expirePackage", method = RequestMethod.PUT)
+    public void expirePackage(@RequestBody PackagePurchase packagePurchase) {
+        packagePurchaseDao.expirePackage(packagePurchase);
+    }
 }

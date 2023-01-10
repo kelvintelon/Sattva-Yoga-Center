@@ -7,6 +7,8 @@ export default {
     },
     getUserPurchasedPackages() {
         return axios.get('userPackagePurchaseList')
-    }
-
+    },
+    expirePackage(packagePurchaseObject) {
+        return axios.put(`/expirePackage`, packagePurchaseObject)
+    },
 }
