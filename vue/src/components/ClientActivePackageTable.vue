@@ -16,6 +16,18 @@
           <v-spacer></v-spacer>
         </v-toolbar>
       </template>
+      <template v-slot:[`item.is_expired`]="{ item }">
+        <v-simple-checkbox
+          v-model="item.is_expired"
+          disabled
+        ></v-simple-checkbox>
+      </template>
+      <template v-slot:[`item.is_monthly_renew`]="{ item }">
+        <v-simple-checkbox
+          v-model="item.is_monthly_renew"
+          disabled
+        ></v-simple-checkbox>
+      </template>
       <template v-slot:[`item.actions`]="{ item }">
         <v-icon small class="mr-2" @click="Remove(item)">
           mdi-card-plus
@@ -41,16 +53,29 @@ export default {
           align: "start",
           value: "package_description",
         },
-        { text: "Timestamp", value: "date_purchased", sortable: true },
+        { text: "Purchase Date", value: "date_purchased", sortable: true },
         {
-          text: "Classes Remaning",
-          value: "classes_remaining",
+          text: "Activation Date",
+          value: "activation_date",
+          sortable: true,
+        },
+        {
+          text: "Expiration Date",
+          value: "expiration_date",
           sortable: true,
         },
         {
           text: "Classes Remaning",
           value: "classes_remaining",
           sortable: true,
+        },
+        {
+          text: "Expired?",
+          value: "is_expired",
+        },
+        {
+          text: "Monthly Renewal?",
+          value: "is_monthly_renew",
         },
         { text: "Cancel", value: "actions", sortable: false },
       ],
@@ -82,10 +107,11 @@ export default {
         if (response.status == 200) {
           // focus on if it's expired or not
 
-          this.packages = response.data.filter((item) => { return item.is_expired == false})
+          this.packages = response.data.filter((item) => {
+            return item.is_expired == false;
+          });
 
           this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
-         
         } else {
           alert("Error retrieving package information");
         }
@@ -93,18 +119,17 @@ export default {
     },
     Remove(item) {
       // this will be an update
-    packagePurchaseService.expirePackage(item).then((response) => {
-      if (response.status == 200) {
-        alert("You have canceled this package")
-        this.getActivePurchasePackageTable();
+      packagePurchaseService.expirePackage(item).then((response) => {
+        if (response.status == 200) {
+          alert("You have canceled this package");
+          this.getActivePurchasePackageTable();
 
-        // call the method to update the purchase history table so it updates the expired column
-        this.$root.$refs.B.getPackageHistoryTable();
-      } else {
-        alert("Error canceling class")
-      }
-    })
-     
+          // call the method to update the purchase history table so it updates the expired column
+          this.$root.$refs.B.getPackageHistoryTable();
+        } else {
+          alert("Error canceling class");
+        }
+      });
     },
   },
 };
