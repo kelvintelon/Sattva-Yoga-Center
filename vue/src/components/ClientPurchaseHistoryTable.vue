@@ -16,6 +16,18 @@
           <v-spacer></v-spacer>
         </v-toolbar>
       </template>
+       <template v-slot:[`item.is_expired`]="{ item }">
+        <v-simple-checkbox
+          v-model="item.is_expired"
+          disabled
+        ></v-simple-checkbox>
+      </template>
+      <template v-slot:[`item.is_monthly_renew`]="{ item }">
+        <v-simple-checkbox
+          v-model="item.is_monthly_renew"
+          disabled
+        ></v-simple-checkbox>
+        </template>
     </v-data-table>
     <br />
     <br />
@@ -36,16 +48,33 @@ export default {
           align: "start",
           value: "package_description",
         },
-        { text: "Timestamp", value: "date_purchased", sortable: true },
+        { text: "Purchase Date", value: "date_purchased", sortable: true },
         {
-          text: "Classes Remaning",
-          value: "classes_remaining",
+          text: "Total Cost",
+          value: "total_amount_paid",
+        },
+        {
+          text: "Activation Date",
+          value: "activation_date",
+          sortable: true,
+        },
+        {
+          text: "Expiration Date",
+          value: "expiration_date",
           sortable: true,
         },
         {
           text: "Classes Remaning",
           value: "classes_remaining",
           sortable: true,
+        },
+        {
+          text: "Expired?",
+          value: "is_expired",
+        },
+        {
+          text: "Monthly Renewal?",
+          value: "is_monthly_renew",
         },
       ],
       packageHistoryList: [],
