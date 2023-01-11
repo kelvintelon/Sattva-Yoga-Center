@@ -68,12 +68,7 @@
                         label="Gift Card Amount: $"
                         min="10"
                       ></v-text-field>
-                      <v-row justify="center" align="center"
-                        ><v-col cols="10">
-                          <v-btn color="error" class="mr-4" @click="reset">
-                            Reset Form
-                          </v-btn>
-                        </v-col>
+                      <v-row justify="center" align="center">
                         <v-col>
                           <v-btn class="mr-4" type="submit" :disabled="invalid">
                             Purchase
@@ -179,9 +174,9 @@ export default {
     },
     purchasePackage(item) {
       // snack bar alert calls this here if they want to proceed
-      if (Object.keys(item).length != 0) {
-        this.purchaseItem = Object.assign({}, item);
-      }
+      
+      this.purchaseItem = Object.assign({}, item);
+      
       this.packageName = this.purchaseItem.description.toLowerCase();
       this.$root.$refs.A.getActivePurchasePackageTable();
       
@@ -192,15 +187,7 @@ export default {
         alert("You are not a new client, please choose a different package");
       } else {
         // CURRENTLY ACTIVE PURCHASE PREVENTION
-      if (this.$store.state.activePackageList.length < 1) {
-        this.allowPurchase = true;
-      }
-      if (
-        this.$store.state.activePackageList.length >= 1 &&
-        this.allowPurchase == false
-      ) {
-        this.openSnackBarWarning();
-      }
+      
         // GIFT CARD LOGIC
         if (this.packageName.includes("gift")) {
           this.dialog = true;
@@ -209,21 +196,34 @@ export default {
           this.packagePurchase.date_purchased = Date.now();
           this.packagePurchase.package_id = this.purchaseItem.package_id;
           this.packagePurchase.is_expired = false;
+          this.allowPurchase = true;
         } else {
+          if (this.$store.state.activePackageList.length < 1) {
+        this.allowPurchase = true;
+      }
+      if (
+        this.$store.state.activePackageList.length >= 1 &&
+        !this.allowPurchase
+      ) {
+        this.allowPurchase = false;
+        this.openSnackBarWarning();
+      }
           if (this.allowPurchase) {
+            this.packagePurchase.activation_date = "";
+            this.packagePurchase.expiration_date = "";
             // SUBSCRIPTION LOGIC
             if (this.purchaseItem.is_subscription == true) {
-              let newDate = new Date(Date.now());
-              this.packagePurchase.activation_date = newDate;
+              
+              this.packagePurchase.activation_date = new Date(Date.now());
 
               if (this.packageName.includes("one month")) {
                 this.packagePurchase.expiration_date = this.addMonths(
-                  newDate,
+                  new Date(Date.now()),
                   1
                 );
               } else if (this.packageName.includes("six month")) {
                 this.packagePurchase.expiration_date = this.addMonths(
-                  newDate,
+                  new Date(Date.now()),
                   6
                 );
               }
@@ -237,7 +237,7 @@ export default {
             this.packagePurchase.date_purchased = Date.now();
             this.packagePurchase.package_id = this.purchaseItem.package_id;
             this.packagePurchase.is_expired = false;
-
+            
             packagePurchaseService
               .createPackagePurchase(this.packagePurchase)
               .then((response) => {
@@ -262,23 +262,21 @@ export default {
         .createPackagePurchase(this.packagePurchase)
         .then((response) => {
           if (response.status == 201) {
-            alert("Succesfully purchased class");
+            alert("Succesfully purchased gift card");
             // call method that updates the client details and also the list of active packages
             this.$root.$refs.A.getActivePurchasePackageTable();
             this.$root.$refs.B.getPackageHistoryTable();
             // update client.is_new_client to false through mutation
             this.$store.commit("SET_CLIENT_DETAILS_NEW_CLIENT", false);
-            this.reset();
+            this.giftCardCost = 10;
+            this.allowPurchase = false;
             this.close();
           }
         });
     },
-    reset() {
-      this.$refs.form.reset();
-    },
     close() {
       this.dialog = false;
-      this.reset();
+      this.giftCardCost = 10;
     },
     addMonths(date, months) {
       var d = date.getDate();
