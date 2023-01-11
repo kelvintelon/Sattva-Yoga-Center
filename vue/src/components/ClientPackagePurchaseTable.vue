@@ -174,20 +174,20 @@ export default {
     },
     purchasePackage(item) {
       // snack bar alert calls this here if they want to proceed
-      
+
       this.purchaseItem = Object.assign({}, item);
-      
+
       this.packageName = this.purchaseItem.description.toLowerCase();
       this.$root.$refs.A.getActivePurchasePackageTable();
-      
+
       if (
         this.packageName.includes("new") &&
         this.$store.state.clientDetails.is_new_client == false
       ) {
         alert("You are not a new client, please choose a different package");
       } else {
-        // CURRENTLY ACTIVE PURCHASE PREVENTION
-      
+       
+
         // GIFT CARD LOGIC
         if (this.packageName.includes("gift")) {
           this.dialog = true;
@@ -197,23 +197,24 @@ export default {
           this.packagePurchase.package_id = this.purchaseItem.package_id;
           this.packagePurchase.is_expired = false;
           this.allowPurchase = true;
-        } else {
+        } else { 
+          // CURRENTLY ACTIVE PURCHASE PREVENTION
           if (this.$store.state.activePackageList.length < 1) {
-        this.allowPurchase = true;
-      }
-      if (
-        this.$store.state.activePackageList.length >= 1 &&
-        !this.allowPurchase
-      ) {
-        this.allowPurchase = false;
-        this.openSnackBarWarning();
-      }
+            this.allowPurchase = true;
+          }
+          if (
+            this.$store.state.activePackageList.length >= 1 &&
+            !this.allowPurchase
+          ) {
+            this.allowPurchase = false;
+            this.openSnackBarWarning();
+          }
+          // IF PURCHASE IS ALLOWED BY USER 
           if (this.allowPurchase) {
             this.packagePurchase.activation_date = "";
             this.packagePurchase.expiration_date = "";
             // SUBSCRIPTION LOGIC
             if (this.purchaseItem.is_subscription == true) {
-              
               this.packagePurchase.activation_date = new Date(Date.now());
 
               if (this.packageName.includes("one month")) {
@@ -237,7 +238,8 @@ export default {
             this.packagePurchase.date_purchased = Date.now();
             this.packagePurchase.package_id = this.purchaseItem.package_id;
             this.packagePurchase.is_expired = false;
-            this.packagePurchase.classes_remaining = this.purchaseItem.classes_amount;
+            this.packagePurchase.classes_remaining =
+              this.purchaseItem.classes_amount;
             packagePurchaseService
               .createPackagePurchase(this.packagePurchase)
               .then((response) => {
@@ -280,7 +282,7 @@ export default {
     },
     addMonths(date, months) {
       var d = date.getDate();
-      date.setMonth(date.getMonth() + +months);
+      date.setMonth(date.getMonth() + months);
       if (date.getDate() != d) {
         date.setDate(0);
       }
