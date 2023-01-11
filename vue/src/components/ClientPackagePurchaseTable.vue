@@ -237,7 +237,7 @@ export default {
             this.packagePurchase.date_purchased = Date.now();
             this.packagePurchase.package_id = this.purchaseItem.package_id;
             this.packagePurchase.is_expired = false;
-            
+            this.packagePurchase.classes_remaining = this.purchaseItem.classes_amount;
             packagePurchaseService
               .createPackagePurchase(this.packagePurchase)
               .then((response) => {
