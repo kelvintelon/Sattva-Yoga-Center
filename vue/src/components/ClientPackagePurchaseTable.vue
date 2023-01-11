@@ -8,69 +8,95 @@
     ></v-row>
     <br />
 
+    <v-snackbar
+      v-model="snackBarSecondPurchaseWarning"
+      color="red darken-2"
+      elevation="24"
+      :vertical="vertical"
+      shaped
+    >
+      Warning: You Already Have An Active Package
+
+      <template v-slot:action="{ attrs }">
+        <v-btn
+          color="white"
+          text
+          v-bind="attrs"
+          @click="snackBarSecondPurchaseWarning = false"
+          left
+        >
+          Close
+        </v-btn>
+        <v-btn color="white" text v-bind="attrs" @click="allowPurchaseProcess">
+          Continue
+        </v-btn>
+      </template>
+    </v-snackbar>
+
     <v-data-table :headers="headers" :items="packages" class="elevation-5">
       <template v-slot:top>
         <v-toolbar flat>
           <v-toolbar-title>Available Packages</v-toolbar-title>
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-spacer></v-spacer>
-        
 
-      <v-dialog v-model="dialog" max-width="500px">
-        <v-card justify="center">
-          <v-card-title>
-            <span class="text-h5">Gift Card</span>
-          </v-card-title>
-
-          <v-container>
-            <v-row justify="center" style="min-height: 160px">
-              <v-col cols="6">
-                <v-form
-                  ref="form"
-                  height="100"
-                  width="500"
-                  v-model="valid"
-                  lazy-validation
-                  class="class-form mx-auto white"
-                  @submit.prevent="submit"
-                  justify="center"
-                  align="center"
-                >
-                  <v-text-field
-                    v-model="giftCardCost"
-                    class="mt-0 pt-0"
-                    type="number"
-                    style="width: 300px"
-                    label="Gift Card Amount: $"
-                    min="10"
-                  ></v-text-field>
-                  <v-row justify="center" align="center"
-                    ><v-col cols="10">
-                      <v-btn color="error" class="mr-4" @click="reset">
-                        Reset Form
-                      </v-btn>
-                    </v-col>
-                    <v-col>
-                      <v-btn class="mr-4" type="submit" :disabled="invalid">
-                        Purchase
-                      </v-btn></v-col
-                    ></v-row
-                  >
-                </v-form>
-              </v-col>
-            </v-row>
-          </v-container>
-
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="blue darken-1" text @click="close"> Cancel </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-      </v-toolbar>
+          <v-dialog v-model="dialog" max-width="500px">
+            <v-card justify="center">
+              <v-card-title>
+                <span class="text-h5">Gift Card</span>
+              </v-card-title>
+              <!-- Gift Card Form -->
+              <v-container>
+                <v-row justify="center" style="min-height: 160px">
+                  <v-col cols="6">
+                    <v-form
+                      ref="form"
+                      height="100"
+                      width="500"
+                      v-model="valid"
+                      lazy-validation
+                      class="class-form mx-auto white"
+                      @submit.prevent="submit"
+                      justify="center"
+                      align="center"
+                    >
+                      <v-text-field
+                        v-model="giftCardCost"
+                        class="mt-0 pt-0"
+                        type="number"
+                        style="width: 300px"
+                        label="Gift Card Amount: $"
+                        min="10"
+                      ></v-text-field>
+                      <v-row justify="center" align="center"
+                        ><v-col cols="10">
+                          <v-btn color="error" class="mr-4" @click="reset">
+                            Reset Form
+                          </v-btn>
+                        </v-col>
+                        <v-col>
+                          <v-btn class="mr-4" type="submit" :disabled="invalid">
+                            Purchase
+                          </v-btn></v-col
+                        ></v-row
+                      >
+                    </v-form>
+                  </v-col>
+                </v-row>
+              </v-container>
+              <!-- End of Gift Card Form -->
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue darken-1" text @click="close">
+                  Cancel
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        </v-toolbar>
       </template>
       <template v-slot:[`item.actions`]="{ item }">
-        <v-icon small class="mr-2" @click="Purchase(item)">
+        <v-icon small class="mr-2" @click="purchasePackage(item)">
           mdi-card-plus
         </v-icon>
       </template>
@@ -114,10 +140,13 @@ export default {
         discount: "",
         package_description: "",
       },
+      purchaseItem: {},
       dialog: false,
       packageName: {},
       giftCardCost: 10,
-      holdPurchase: false,
+      snackBarSecondPurchaseWarning: false,
+      allowPurchase: false,
+      vertical: true,
     };
   },
   created() {
@@ -140,54 +169,89 @@ export default {
         }
       });
     },
-    Purchase(item) {
-      this.packageName = item.description.toLowerCase();
-
+    openSnackBarWarning() {
+      this.snackBarSecondPurchaseWarning = true;
+    },
+    allowPurchaseProcess() {
+      this.snackBarSecondPurchaseWarning = false;
+      this.allowPurchase = true;
+      this.purchasePackage(this.purchaseItem);
+    },
+    purchasePackage(item) {
+      // snack bar alert calls this here if they want to proceed
+      if (Object.keys(item).length != 0) {
+        this.purchaseItem = Object.assign({}, item);
+      }
+      this.packageName = this.purchaseItem.description.toLowerCase();
+      this.$root.$refs.A.getActivePurchasePackageTable();
+      
       if (
         this.packageName.includes("new") &&
         this.$store.state.clientDetails.is_new_client == false
       ) {
         alert("You are not a new client, please choose a different package");
       } else {
-        // prepare packagePurchase object
-
-        // handle if it's a gift certificate (form)
+        // CURRENTLY ACTIVE PURCHASE PREVENTION
+      if (this.$store.state.activePackageList.length < 1) {
+        this.allowPurchase = true;
+      }
+      if (
+        this.$store.state.activePackageList.length >= 1 &&
+        this.allowPurchase == false
+      ) {
+        this.openSnackBarWarning();
+      }
+        // GIFT CARD LOGIC
         if (this.packageName.includes("gift")) {
           this.dialog = true;
           this.packagePurchase.client_id =
             this.$store.state.clientDetails.client_id;
           this.packagePurchase.date_purchased = Date.now();
-          this.packagePurchase.package_id = item.package_id;
+          this.packagePurchase.package_id = this.purchaseItem.package_id;
           this.packagePurchase.is_expired = false;
         } else {
+          if (this.allowPurchase) {
+            // SUBSCRIPTION LOGIC
+            if (this.purchaseItem.is_subscription == true) {
+              let newDate = new Date(Date.now());
+              this.packagePurchase.activation_date = newDate;
 
-          // Todo: handle if it's a subscription
-          if (item.is_subscription == true) {
-            this.packagePurchase.activation_date = Date.now();
-            // handle logic for expiration date depending if it's a 1 month or 6 month
-
-            // https://codingbeautydev.com/blog/javascript-add-months-to-date/
-          }
-          this.packagePurchase.total_amount_paid = item.package_cost;
-          this.packagePurchase.is_monthly_renew = false;
-
-          this.packagePurchase.client_id = this.$store.state.clientDetails.client_id;
-          this.packagePurchase.date_purchased = Date.now();
-          this.packagePurchase.package_id = item.package_id;
-          this.packagePurchase.is_expired = false;
-
-          packagePurchaseService
-            .createPackagePurchase(this.packagePurchase)
-            .then((response) => {
-              if (response.status == 201) {
-                alert("Succesfully purchased class");
-                // call method that updates the client details and also the list of active packages
-                this.$root.$refs.A.getActivePurchasePackageTable();
-                this.$root.$refs.B.getPackageHistoryTable();
-                // update client.is_new_client to false through mutation
-                this.$store.commit("SET_CLIENT_DETAILS_NEW_CLIENT", false);
+              if (this.packageName.includes("one month")) {
+                this.packagePurchase.expiration_date = this.addMonths(
+                  newDate,
+                  1
+                );
+              } else if (this.packageName.includes("six month")) {
+                this.packagePurchase.expiration_date = this.addMonths(
+                  newDate,
+                  6
+                );
               }
-            });
+            }
+            this.packagePurchase.total_amount_paid =
+              this.purchaseItem.package_cost;
+            this.packagePurchase.is_monthly_renew = false;
+
+            this.packagePurchase.client_id =
+              this.$store.state.clientDetails.client_id;
+            this.packagePurchase.date_purchased = Date.now();
+            this.packagePurchase.package_id = this.purchaseItem.package_id;
+            this.packagePurchase.is_expired = false;
+
+            packagePurchaseService
+              .createPackagePurchase(this.packagePurchase)
+              .then((response) => {
+                if (response.status == 201) {
+                  alert("Succesfully purchased class");
+                  // call method that updates the client details and also the list of active packages
+                  this.$root.$refs.A.getActivePurchasePackageTable();
+                  this.$root.$refs.B.getPackageHistoryTable();
+                  // update client.is_new_client to false through mutation
+                  this.$store.commit("SET_CLIENT_DETAILS_NEW_CLIENT", false);
+                  this.allowPurchase = false;
+                }
+              });
+          }
         }
       }
     },
@@ -215,6 +279,14 @@ export default {
     close() {
       this.dialog = false;
       this.reset();
+    },
+    addMonths(date, months) {
+      var d = date.getDate();
+      date.setMonth(date.getMonth() + +months);
+      if (date.getDate() != d) {
+        date.setDate(0);
+      }
+      return date;
     },
   },
 };
