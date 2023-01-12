@@ -4,7 +4,7 @@
       <router-link
         style="text-decoration: none; color: inherit"
         v-bind:to="{ name: 'home' }"
-      ><img class="logo" src="@/assets/sattva-logo.jpeg" />
+      ><img class="logo" src="@/assets/sattva-logo.png" />
       </router-link>
     </div>
   </div>
