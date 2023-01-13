@@ -193,7 +193,8 @@ export default {
           this.dialog = true;
           this.packagePurchase.client_id =
             this.$store.state.clientDetails.client_id;
-          this.packagePurchase.date_purchased = Date.now();
+            const jsonDate = new Date().toJSON();
+          this.packagePurchase.date_purchased = jsonDate;
           this.packagePurchase.package_id = this.purchaseItem.package_id;
           this.packagePurchase.is_expired = false;
           this.allowPurchase = true;
@@ -215,16 +216,16 @@ export default {
             this.packagePurchase.expiration_date = "";
             // SUBSCRIPTION LOGIC
             if (this.purchaseItem.is_subscription == true) {
-              this.packagePurchase.activation_date = new Date(Date.now());
+              this.packagePurchase.activation_date = new Date();
 
               if (this.packageName.includes("one month")) {
                 this.packagePurchase.expiration_date = this.addMonths(
-                  new Date(Date.now()),
+                  new Date(),
                   1
                 );
               } else if (this.packageName.includes("six month")) {
                 this.packagePurchase.expiration_date = this.addMonths(
-                  new Date(Date.now()),
+                  new Date(),
                   6
                 );
               }
@@ -235,7 +236,8 @@ export default {
 
             this.packagePurchase.client_id =
               this.$store.state.clientDetails.client_id;
-            this.packagePurchase.date_purchased = Date.now();
+              const jsonDate = new Date().toJSON();
+            this.packagePurchase.date_purchased = jsonDate;
             this.packagePurchase.package_id = this.purchaseItem.package_id;
             this.packagePurchase.is_expired = false;
             this.packagePurchase.classes_remaining =

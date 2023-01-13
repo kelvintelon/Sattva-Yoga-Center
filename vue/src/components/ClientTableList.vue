@@ -324,6 +324,7 @@ export default {
         (v) => !!v || "Phone is required",
         (v) => (v && v.length <= 30) || "Name must be less than 30 characters",
       ],
+      
     };
   },
   created() {
@@ -347,8 +348,12 @@ export default {
     getClientTable() {
       clientDetailService.getClientList().then((response) => {
         if (response.status == 200) {
-          this.$store.commit("SET_CLIENT_LIST", response.data);
           this.clientList = response.data;
+           this.clientList.forEach((item) => {
+            item.date_of_entry = new Date(item.date_of_entry);
+          })
+          this.$store.commit("SET_CLIENT_LIST", response.data);
+          
         } else {
           alert("Error retrieving client information");
         }
@@ -399,8 +404,7 @@ export default {
         this.editedItem.state_abbreviation == "" ||
         this.editedItem.zip_code == "" ||
         this.editedItem.phone_number == "" ||
-        this.editedItem.email == "" ||
-        this.editedItem.has_record_of_liability == ""
+        this.editedItem.email == ""
       ) {
         alert("Please fill out your form");
       } else {

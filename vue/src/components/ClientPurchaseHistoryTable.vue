@@ -104,7 +104,10 @@ export default {
       packagePurchaseService.getUserPurchasedPackages().then((response) => {
         if (response.status == 200) {
           this.packageHistoryList = response.data;
-          this.$store.commit("SET_PACKAGE_HISTORY_LIST", response.data);
+          this.packageHistoryList.forEach((item) => {
+            item.date_purchased = new Date(item.date_purchased).toLocaleString();
+          })
+          this.$store.commit("SET_PACKAGE_HISTORY_LIST", this.packageHistoryList);
         } else {
           alert("Error retrieving package information");
         }

@@ -1,25 +1,44 @@
 <template>
   <v-container>
-    <v-row><br></v-row>
+    <v-row><br /></v-row>
     <v-row>
-    <v-spacer></v-spacer>
-    <h1>Sign up for classes</h1>
-    <v-spacer></v-spacer></v-row>
-    <br>
+      <v-spacer></v-spacer>
+      <h1>Sign up for classes</h1>
+      <v-spacer></v-spacer
+    ></v-row>
+    <br />
+    <v-snackbar
+      v-model="snackBarNoPurchaseWarning"
+      color="red darken-2"
+      elevation="24"
+      :vertical="vertical"
+      shaped
+    >
+      Warning: You Need An Active Package
+
+      <template v-slot:action="{ attrs }">
+        <v-btn
+          color="white"
+          text
+          v-bind="attrs"
+          @click="snackBarNoPurchaseWarning = false"
+          left
+        >
+          Close
+        </v-btn>
+        <v-btn color="white" text v-bind="attrs" @click="sendThemToPurchasePackage">
+          Buy a Package
+        </v-btn>
+      </template>
+    </v-snackbar>
     <v-app>
-      
-      <v-data-table
-        :headers="headers"
-        :items="classes"
-        class="elevation-5"
-      >
+      <v-data-table :headers="headers" :items="classes" class="elevation-5">
         <template v-slot:top>
           <v-toolbar flat>
             <v-toolbar-title>Available Classes</v-toolbar-title>
             <v-divider class="mx-4" inset vertical></v-divider>
             <v-spacer></v-spacer>
           </v-toolbar>
-      
         </template>
         <template v-slot:[`item.actions`]="{ item }">
           <v-icon small class="mr-2" @click="SignUp(item)">
@@ -27,8 +46,8 @@
           </v-icon>
         </template>
       </v-data-table>
-      <br>
-      <br>
+      <br />
+      <br />
       <v-data-table
         :headers="clientClassHeaders"
         :items="clientClasses"
@@ -48,14 +67,6 @@
         </template>
       </v-data-table>
     </v-app>
-    
-    
-   
-   
-      
-    
-
-
 
     <!-- <v-btn elevation="5" v-on:click="buyFirstClass()">
       <v-icon> mdi-cart </v-icon> Sign up For Class
@@ -103,6 +114,10 @@ export default {
         client_id: "",
       },
       validSignUp:true,
+      allowSignUp: false,
+      activePackageList: [],
+      snackBarNoPurchaseWarning: false,
+      classSignUpItem: {},
     };
   },
   methods: {
@@ -111,6 +126,31 @@ export default {
       this.classClientSignUp.client_id =
         this.$store.state.clientDetails.client_id;
 
+        // object to hold item passed in just in case
+        this.classSignUpItem = Object.assign({}, item);
+
+        // get active packages from API service request
+        this.$root.$refs.A.getActivePurchasePackageTable();
+
+        // find out if they have at least one active package that's a subscription or a bundle and active
+        this.activePackageList = this.$store.state.activePackageList;
+        
+        if (this.activePackageList.length == 0) {
+          this.allowSignUp = false;
+          this.snackBarNoPurchaseWarning = true;
+        } else {
+          this.activePackageList.forEach((item) => { 
+            
+            // compare todays date and make sure it's less than the expiration date
+            const todaysDate = new Date();
+            const expirationDate = new Date(item.expiration_date);
+            if ( item.classes_remaining > 0 || (todaysDate < expirationDate)) {
+            this.allowSignUp = true;
+          }});
+        }
+
+        // if they have an active package then they are allowed to sign up
+        if (this.allowSignUp) {
         this.clientClasses.forEach((item) => {
           if (item.class_id == this.classClientSignUp.class_id) {
             alert("You have already signed up for this class!");
@@ -120,6 +160,7 @@ export default {
           }
         })
         if (this.validSignUp == true) {
+        
           classDetailService
         .registerForClass(this.classClientSignUp)
         .then((response) => {
@@ -129,6 +170,7 @@ export default {
           }
         });
         }  
+        }
     },
     RemoveClassForClient(item) {
       classDetailService
@@ -160,6 +202,9 @@ export default {
         }
       });
     },
+    sendThemToPurchasePackage() {
+      this.$router.push({ name: "client-package-management" });
+    }
   },
   created() {
     this.getClassTable();

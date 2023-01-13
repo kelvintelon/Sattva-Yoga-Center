@@ -114,7 +114,9 @@ export default {
           this.packages = response.data.filter((item) => {
             return item.is_expired == false;
           });
-
+          this.packages.forEach((item) => {
+            item.date_purchased = new Date(item.date_purchased);
+          })
           this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
         } else {
           alert("Error retrieving package information");
