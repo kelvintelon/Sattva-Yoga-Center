@@ -102,7 +102,7 @@ export default {
   },
   created() {
     this.getActivePurchasePackageTable();
-
+    
     this.$root.$refs.A = this;
   },
   methods: {

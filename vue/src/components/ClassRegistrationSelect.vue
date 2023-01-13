@@ -126,21 +126,26 @@ export default {
       this.classClientSignUp.client_id =
         this.$store.state.clientDetails.client_id;
 
+        this.allowSignUp = false;
+
         // object to hold item passed in just in case
         this.classSignUpItem = Object.assign({}, item);
 
         // get active packages from API service request
-        this.$root.$refs.A.getActivePurchasePackageTable();
+
+        // this.$root.$refs.A.getActivePurchasePackageTable();
+        this.$root.$emit('getActivePackageTable');
 
         // find out if they have at least one active package that's a subscription or a bundle and active
         this.activePackageList = this.$store.state.activePackageList;
         
-        if (this.activePackageList.length == 0) {
+        if (this.$store.state.activePackageList.length == 0) {
           this.allowSignUp = false;
+          
           this.snackBarNoPurchaseWarning = true;
-        } else {
-          this.activePackageList.forEach((item) => { 
-            
+          
+        } else if (this.$store.state.activePackageList.length > 0) {
+          this.$store.state.activePackageList.forEach((item) => { 
             // compare todays date and make sure it's less than the expiration date
             const todaysDate = new Date();
             let expirationDate = new Date(item.expiration_date);
@@ -149,6 +154,10 @@ export default {
             if ( item.classes_remaining > 0 || (todaysDate < expirationDate)) {
             this.allowSignUp = true;
           }});
+          // this here is if they only have a gift certificate or dont have a bundle/subscription
+          if (!this.allowSignUp) {
+            this.snackBarNoPurchaseWarning = true;
+          }
         }
 
         // if they have an active package then they are allowed to sign up
