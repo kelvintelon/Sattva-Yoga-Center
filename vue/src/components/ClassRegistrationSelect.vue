@@ -143,7 +143,9 @@ export default {
             
             // compare todays date and make sure it's less than the expiration date
             const todaysDate = new Date();
-            const expirationDate = new Date(item.expiration_date);
+            let expirationDate = new Date(item.expiration_date);
+            expirationDate.setDate(expirationDate.getDate() + 1)
+            
             if ( item.classes_remaining > 0 || (todaysDate < expirationDate)) {
             this.allowSignUp = true;
           }});
@@ -203,7 +205,9 @@ export default {
       });
     },
     sendThemToPurchasePackage() {
+      this.snackBarNoPurchaseWarning = false;
       this.$router.push({ name: "client-package-management" });
+      
     }
   },
   created() {

@@ -361,11 +361,10 @@ export default {
     deleteItemConfirm() {
       var unique = true;
       this.classes.forEach((item) => {
-        // console.log('class: ' + item.teacher_id);
-        // console.log('teacher: ' + this.editedItem.teacher_id);
+   
         if (item.teacher_id === this.editedItem.teacher_id) {
           unique = false;
-          // console.log(unique);
+ 
         }
       });
 
