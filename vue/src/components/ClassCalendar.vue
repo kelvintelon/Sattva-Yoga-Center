@@ -1,15 +1,7 @@
 <template>
   <div>
-    <v-sheet
-      tile
-      height="54"
-      class="d-flex"
-    >
-      <v-btn
-        icon
-        class="ma-2"
-        @click="$refs.calendar.prev()"
-      >
+    <v-sheet tile height="54" class="d-flex">
+      <v-btn icon class="ma-2" @click="$refs.calendar.prev()">
         <v-icon>mdi-chevron-left</v-icon>
       </v-btn>
       <v-select
@@ -40,11 +32,7 @@
         class="ma-2"
       ></v-select>
       <v-spacer></v-spacer>
-      <v-btn
-        icon
-        class="ma-2"
-        @click="$refs.calendar.next()"
-      >
+      <v-btn icon class="ma-2" @click="$refs.calendar.next()">
         <v-icon>mdi-chevron-right</v-icon>
       </v-btn>
     </v-sheet>
@@ -66,134 +54,99 @@
 
 <script>
 import classDetailService from "../services/ClassDetailService";
+import eventService from "../services/EventService";
 
 export default {
-    name:"class-calendar",
-    components: {},
-     data: () => ({
-      type: 'month',
-      types: ['month', 'week', 'day', '4day'],
-      mode: 'stack',
-      modes: ['stack'],
-      weekday: [0, 1, 2, 3, 4, 5, 6],
-      weekdays: [
-        { text: 'Sun - Sat', value: [0, 1, 2, 3, 4, 5, 6] },
-        // { text: 'Mon - Sun', value: [1, 2, 3, 4, 5, 6, 0] },
-        // { text: 'Mon - Fri', value: [1, 2, 3, 4, 5] },
-        // { text: 'Mon, Wed, Fri', value: [1, 3, 5] },
-      ],
-      value: '',
-      events: [],
-      colors: ['blue', 'indigo', 'deep-purple', 'cyan', 'green', 'orange', 'grey darken-1'],
-      names: ['Meeting', 'Holiday', 'PTO', 'Travel', 'Event', 'Birthday', 'Conference', 'Party'],
-      eventCount: "",
-      classes: [],
-      days: "",
-      allDay: "",
-      firstTimestamp: "",
-      first: "",
-      secondTimestamp: "",
-      second: "",
+  name: "class-calendar",
+  components: {},
+  data: () => ({
+    type: "month",
+    types: ["month", "week", "day", "4day"],
+    mode: "stack",
+    modes: ["stack"],
+    weekday: [0, 1, 2, 3, 4, 5, 6],
+    weekdays: [
+      { text: "Sun - Sat", value: [0, 1, 2, 3, 4, 5, 6] },
+      // { text: 'Mon - Sun', value: [1, 2, 3, 4, 5, 6, 0] },
+      // { text: 'Mon - Fri', value: [1, 2, 3, 4, 5] },
+      // { text: 'Mon, Wed, Fri', value: [1, 3, 5] },
+    ],
+    value: "",
+    events: [],
+    colors: [
+      "blue",
+      "indigo",
+      "deep-purple",
+      "cyan",
+      "green",
+      "orange",
+      "grey darken-1",
+    ],
+    names: [
+      "Meeting",
+      "Holiday",
+      "PTO",
+      "Travel",
+      "Event",
+      "Birthday",
+      "Conference",
+      "Party",
+    ],
+    eventCount: "",
+    classes: [],
+    days: "",
+    allDay: "",
+    firstTimestamp: "",
+    first: "",
+    secondTimestamp: "",
+    second: "",
+    serverEvents: [],
+    eventList: [],
+    eventQuantity: "",
+  }),
+  methods: {
+    getEvents() {
+      // ==============================================  TEMPLATE
       
-    }),
-    methods: {
-      getEvents ({ start, end }) {
-        // const events2 = []
+      // const events = []
+      this.eventQuantity = this.$store.state.eventList.length;
+      
+      // for (let i = 0; i < this.eventQuantity; i++) {
 
-        // const min = new Date(`${start.date}T00:00:00`)
-        // const max = new Date(`${end.date}T23:59:59`)
-        // this.days = (max.getTime() - min.getTime()) / 86400000
+      //   events.push({
+      //     name: this.names[this.rnd(0, this.names.length - 1)],
+      //     start: new Date("2023-01-23T12:00:00.000+00:00"),
+      //     end: new Date("2023-01-23T12:00:00.000+00:00"),
+      //     color: this.colors[this.rnd(0, this.colors.length - 1)],
+      //     timed: true,
+      //   })
+      // }
 
-        // // event count should be total amount of classes. 
-        // this.eventCount = this.rnd(this.days, this.days + 20)
-        // this.eventCount = this.classes.length
+      // this.events = events
 
-        // for (let i = 0; i < this.eventCount; i++) {
+      // ==============================================  TEMPLATE
 
-        //     // edit this (on second thought we might not need this at all)
-        //   this.allDay = this.rnd(0, 3) === 0
+      const events = [];
 
-        //   // edit this
-        //   this.firstTimestamp = this.rnd(min.getTime(), max.getTime())
+      this.serverEvents.forEach((event) => {
+        events.push({
+          name: event.event_name,
+          start: new Date(event.start_time),
+          end: new Date(event.end_time),
+          color: event.color,
+          timed: event.timed,
+        });
+      });
 
-
-        //   this.first = new Date(this.firstTimestamp - (this.firstTimestamp % 900000))
-
-        //   // edit this
-        //   this.secondTimestamp = this.rnd(2, this.allDay ? 288 : 8) * 900000
-
-
-        //   this.second = new Date(this.getTime() + this.secondTimestamp)
-
-        //   events2.push({
-        //       // edit this
-        //     name: this.names[this.rnd(0, this.names.length - 1)],
-        //     // name: this.classes[i].class_description,
-        //     start: this.first,
-        //     end: this.second,
-        //     // edit this
-        //     color: this.colors[this.rnd(0, this.colors.length - 1)],
-        //     timed: !this.allDay,
-        //   })
-        // }
-        //           const allDay = this.rnd(0, 3) === 0
-        //   const firstTimestamp = this.rnd(min.getTime(), max.getTime())
-        //   const first = new Date(firstTimestamp - (firstTimestamp % 900000))
-        //   const secondTimestamp = this.rnd(2, allDay ? 288 : 8) * 900000
-        //   const second = new Date(first.getTime() + secondTimestamp)
-
-        // events2.push({
-        //       // edit this
-        //     name: "Beginner Basic",
-        //     // name: this.classes[i].class_description,
-        //     start: firstTimestamp,
-        //     end: second,
-        //     // edit this
-        //     color: "blue",
-        //     timed: !this.allDay,
-        //   })
-
-        // this.events = events2
-
-        // ==============================================  TEMPLATE
-
-        const events = []
-
-        const min = new Date(`${start.date}T00:00:00`)
-        const max = new Date(`${end.date}T23:59:59`)
-        const days = (max.getTime() - min.getTime()) / 86400000
-        const eventCount = this.rnd(days, days + 20)
-
-        for (let i = 0; i < eventCount; i++) {
-          const allDay = this.rnd(0, 3) === 0
-          const firstTimestamp = this.rnd(min.getTime(), max.getTime())
-          const first = new Date(firstTimestamp - (firstTimestamp % 900000))
-          const secondTimestamp = this.rnd(2, allDay ? 288 : 8) * 900000
-          const second = new Date(first.getTime() + secondTimestamp)
-
-          events.push({
-            name: this.names[this.rnd(0, this.names.length - 1)],
-            start: first,
-            end: second,
-            color: this.colors[this.rnd(0, this.colors.length - 1)],
-            timed: !allDay,
-          })
-        }
-
-        this.events = events
-
-
-
-
-
-      },
-      getEventColor (event) {
-        return event.color
-      },
-      rnd (a, b) {
-        return Math.floor((b - a + 1) * Math.random()) + a
-      },
-      getAllClasses() {
+      this.events = events;
+    },
+    getEventColor(event) {
+      return event.color;
+    },
+    rnd(a, b) {
+      return Math.floor((b - a + 1) * Math.random()) + a;
+    },
+    getAllClasses() {
       classDetailService.getAllClasses().then((response) => {
         if (response.status == 200) {
           this.$store.commit("SET_CLASS_LIST", response.data);
@@ -203,14 +156,24 @@ export default {
         }
       });
     },
-    },
-    created() {
-        this.getAllClasses();
-    },
+    getAllEvents() {
+      eventService.getAllEvents().then((response) => {
+        if (response.status == 200) {
     
-}
+          this.$store.commit("SET_EVENT_LIST", response.data);
+          this.serverEvents = this.$store.state.eventList;
+          this.eventQuantity = this.serverEvents.length
+          this.getEvents();
+        }
+      });
+    },
+  },
+  created() {
+    this.getAllClasses();
+    this.getAllEvents();
+  },
+};
 </script>
 
 <style>
-
 </style>
