@@ -177,6 +177,8 @@ export default {
         .then((response) => {
           if (response.status == 201) {
             // call method that updates the client_class_table
+            // update client.is_new_client to false through mutation
+            this.$store.commit("SET_CLIENT_DETAILS_NEW_CLIENT", false);
             this.getClientClassTable();
           }
         });

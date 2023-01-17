@@ -179,15 +179,15 @@ export default {
 
       this.packageName = this.purchaseItem.description.toLowerCase();
       this.$root.$refs.A.getActivePurchasePackageTable();
-
+      this.$root.$refs.B.getPackageHistoryTable();
+      // TODO: handle new client purchase here
       if (
         this.packageName.includes("new") &&
         this.$store.state.clientDetails.is_new_client == false
       ) {
         alert("You are not a new client, please choose a different package");
-      } else {
-       
-
+      } else { 
+      
         // GIFT CARD LOGIC
         if (this.packageName.includes("gift")) {
           this.dialog = true;
@@ -199,8 +199,9 @@ export default {
           this.packagePurchase.is_expired = false;
           this.allowPurchase = true;
         } else { 
-          // CURRENTLY ACTIVE PURCHASE PREVENTION
+          // CURRENTLY ACTIVE PURCHASE PREVENTION SNACK BAR
           if (this.$store.state.activePackageList.length < 1) {
+            // if they don't have an active package
             this.allowPurchase = true;
           }
           if (
@@ -250,8 +251,7 @@ export default {
                   // call method that updates the client details and also the list of active packages
                   this.$root.$refs.A.getActivePurchasePackageTable();
                   this.$root.$refs.B.getPackageHistoryTable();
-                  // update client.is_new_client to false through mutation
-                  this.$store.commit("SET_CLIENT_DETAILS_NEW_CLIENT", false);
+                  
                   this.allowPurchase = false;
                 }
               });

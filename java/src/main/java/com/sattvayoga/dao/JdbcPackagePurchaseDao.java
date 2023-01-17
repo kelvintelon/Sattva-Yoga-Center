@@ -30,9 +30,6 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 packagePurchase.getTotal_amount_paid(),
                 packagePurchase.isIs_monthly_renew(), packagePurchase.getDiscount());
 
-        String sql2 = "UPDATE client_details SET is_new_client = FALSE WHERE client_id = ?";
-
-        jdbcTemplate.update(sql2, packagePurchase.getClient_id());
     }
 
     @Override

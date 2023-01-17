@@ -12,7 +12,7 @@ public interface ClassDetailsDao {
 
     boolean createClass(ClassDetails classDetails);
 
-    boolean registerForClass(int client_id, int class_id);
+    void registerForClass(int client_id, int class_id);
 
     List<ClassDetails> getAllClasses() throws SQLException;
 

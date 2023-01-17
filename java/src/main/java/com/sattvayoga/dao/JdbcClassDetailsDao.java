@@ -35,10 +35,14 @@ public class JdbcClassDetailsDao implements ClassDetailsDao {
     }
 
     @Override
-    public boolean registerForClass(int client_id, int class_id) {
+    public void registerForClass(int client_id, int class_id) {
         String sql = "INSERT INTO client_class (client_id, class_id) " +
                 "VALUES (?, ?)";
-        return jdbcTemplate.update(sql, client_id, class_id) == 1;
+        jdbcTemplate.update(sql, client_id, class_id);
+
+        String sql2 = "UPDATE client_details SET is_new_client = FALSE WHERE client_id = ?";
+
+        jdbcTemplate.update(sql2, client_id);
     }
 
     @Override
