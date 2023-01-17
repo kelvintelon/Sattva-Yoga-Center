@@ -151,6 +151,7 @@ export default {
             let expirationDate = new Date(item.expiration_date);
             expirationDate.setDate(expirationDate.getDate() + 1)
             
+            // TODO: Handle Gift Card logic here when SQUARE is in place
             if ( item.classes_remaining > 0 || (todaysDate < expirationDate)) {
             this.allowSignUp = true;
           }});

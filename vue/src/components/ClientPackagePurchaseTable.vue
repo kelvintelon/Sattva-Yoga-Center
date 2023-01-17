@@ -248,7 +248,7 @@ export default {
               .then((response) => {
                 if (response.status == 201) {
                   alert("Succesfully purchased class");
-                  // call method that updates the client details and also the list of active packages
+                  // call method that updates the list of active packages
                   this.$root.$refs.A.getActivePurchasePackageTable();
                   this.$root.$refs.B.getPackageHistoryTable();
                   
@@ -260,6 +260,7 @@ export default {
       }
     },
     submit() {
+      // for gift card form
       this.packagePurchase.total_amount_paid = this.giftCardCost;
 
       packagePurchaseService
@@ -267,11 +268,10 @@ export default {
         .then((response) => {
           if (response.status == 201) {
             alert("Succesfully purchased gift card");
-            // call method that updates the client details and also the list of active packages
+            // call method that updates the list of active packages
             this.$root.$refs.A.getActivePurchasePackageTable();
             this.$root.$refs.B.getPackageHistoryTable();
-            // update client.is_new_client to false through mutation
-            this.$store.commit("SET_CLIENT_DETAILS_NEW_CLIENT", false);
+            
             this.giftCardCost = 10;
             this.allowPurchase = false;
             this.close();
