@@ -121,7 +121,7 @@
                           </v-container>
                         </v-menu>
                         <v-select
-                          v-model="classDetails.class_duration"
+                          v-model.number="classDetails.class_duration"
                           :items="durationOptions"
                           :rules="durationRules"
                           label="Duration in minutes"
@@ -282,7 +282,7 @@
                           </v-container>
                         </v-menu>
                         <v-select
-                          v-model="editedItem.class_duration"
+                          v-model.number="editedItem.class_duration"
                           :items="durationOptions"
                           :rules="durationRules"
                           label="Duration in minutes"
@@ -447,7 +447,7 @@ export default {
       defaultItem: {
         class_description: "",
         teacher_id: "",
-        class_duration: 0,
+        class_duration: 60,
         start_time: "",
         is_paid: true,
         is_repeating: true,
@@ -469,7 +469,7 @@ export default {
       classDetails: {
         class_description: "",
         teacher_id: "",
-        class_duration: 0,
+        class_duration: 60,
         start_time: "",
         is_paid: true,
         is_repeating: true,

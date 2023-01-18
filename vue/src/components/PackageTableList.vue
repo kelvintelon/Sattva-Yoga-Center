@@ -52,13 +52,13 @@
                           required
                         ></v-text-field>
                         <v-select
-                          v-model="packageDetails.classes_amount"
+                          v-model.number="packageDetails.classes_amount"
                           :items="classesAmountOptions"
                           label="Amount of Classes"
                           required
                         ></v-select>
                         <v-select
-                          v-model="packageDetails.subscription_duration"
+                          v-model.number="packageDetails.subscription_duration"
                           :items="durationOptions"
                           label="Duration in months"
                           required
@@ -142,13 +142,13 @@
                           required
                         ></v-text-field>
                         <v-select
-                          v-model="editedItem.classes_amount"
+                          v-model.number="editedItem.classes_amount"
                           :items="classesAmountOptions"
                           label="Amount of Classes"
                           required
                         ></v-select>
                         <v-select
-                          v-model="editedItem.subscription_duration"
+                          v-model.number="editedItem.subscription_duration"
                           :items="durationOptions"
                           label="Duration in months"
                           required
