@@ -1,55 +1,101 @@
 <template>
-  <div>
-    <v-sheet tile height="54" class="d-flex">
-      <v-btn icon class="ma-2" @click="$refs.calendar.prev()">
-        <v-icon>mdi-chevron-left</v-icon>
-      </v-btn>
-      <v-select
-        v-model="type"
-        :items="types"
-        dense
-        outlined
-        hide-details
-        class="ma-2"
-        label="type"
-      ></v-select>
-      <v-select
-        v-model="mode"
-        :items="modes"
-        dense
-        outlined
-        hide-details
-        label="event-overlap-mode"
-        class="ma-2"
-      ></v-select>
-      <v-select
-        v-model="weekday"
-        :items="weekdays"
-        dense
-        outlined
-        hide-details
-        label="weekdays"
-        class="ma-2"
-      ></v-select>
-      <v-spacer></v-spacer>
-      <v-btn icon class="ma-2" @click="$refs.calendar.next()">
-        <v-icon>mdi-chevron-right</v-icon>
-      </v-btn>
-    </v-sheet>
-    <v-sheet height="600">
-      <v-calendar
-        ref="calendar"
-        v-model="value"
-        :weekdays="weekday"
-        :type="type"
-        :events="events"
-        :event-overlap-mode="mode"
-        :event-overlap-threshold="30"
-        :event-color="getEventColor"
-        @change="getEvents"
-      ></v-calendar>
-    </v-sheet>
-  </div>
+  <v-container>
+    <v-row class="fill-height">
+      <v-col>
+        <v-sheet tile height="64" class="d-flex">
+          <v-toolbar flat>
+            <v-btn
+              outlined
+              class="mr-4"
+              color="grey darken-2"
+              @click="setToday"
+            >
+              Today
+            </v-btn>
+            <v-btn fab text small color="grey darken-2" @click="prev">
+              <v-icon small> mdi-chevron-left </v-icon>
+            </v-btn>
+            <v-btn fab text small color="grey darken-2" @click="next">
+              <v-icon small> mdi-chevron-right </v-icon>
+            </v-btn>
+            <v-toolbar-title v-if="$refs.calendar">
+              {{ $refs.calendar.title }}
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-menu bottom right>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn outlined color="grey darken-2" v-bind="attrs" v-on="on">
+                  <span>{{ typeToLabel[type] }}</span>
+                  <v-icon right> mdi-menu-down </v-icon>
+                </v-btn>
+              </template>
+              <v-list>
+                <v-list-item @click="type = 'day'">
+                  <v-list-item-title>Day</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="type = 'week'">
+                  <v-list-item-title>Week</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="type = 'month'">
+                  <v-list-item-title>Month</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </v-toolbar>
+        </v-sheet>
+        <v-sheet height="600">
+          <v-calendar
+            ref="calendar"
+            v-model="value"
+            color="primary"
+            :type="type"
+            :events="events"
+            :event-overlap-mode="mode"
+            :event-overlap-threshold="30"
+            :event-color="getEventColor"
+            @change="getEvents"
+            @click:event="showEvent"
+            @click:more="viewWeek"
+            @click:date="viewDay"
+          ></v-calendar>
+          <v-menu
+            v-model="selectedOpen"
+            :close-on-content-click="false"
+            :activator="selectedElement"
+            offset-x
+          >
+            <v-card color="grey lighten-4" min-width="350px" flat>
+              <v-toolbar :color="selectedEvent.color" dark>
+                <v-btn icon>
+                  <v-icon>mdi-pencil</v-icon>
+                </v-btn>
+                <v-toolbar-title v-html="selectedEvent.name"></v-toolbar-title>
+                <v-spacer></v-spacer>
+                <v-btn icon>
+                  <v-icon>mdi-heart</v-icon>
+                </v-btn>
+                <v-btn icon>
+                  <v-icon>mdi-dots-vertical</v-icon>
+                </v-btn>
+              </v-toolbar>
+              <v-card-text>
+                <span>{{new Date(selectedEvent.start).getFullYear()}}-{{new Date(selectedEvent.start).getMonth()+1}}-{{new Date(selectedEvent.start).getDate()}}</span>
+                <br>
+                <span>Starts at: {{new Date(selectedEvent.start).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })}} </span>
+                <br>
+                <span>Ends at: {{new Date(selectedEvent.end).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })}}</span>
+              </v-card-text>
+              <v-card-actions>
+                <v-btn text color="secondary" @click="selectedOpen = false">
+                  Cancel
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-menu>
+        </v-sheet>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
@@ -61,7 +107,7 @@ export default {
   components: {},
   data: () => ({
     type: "month",
-    types: ["month", "week", "day", "4day"],
+    types: ["month", "week", "day"],
     mode: "stack",
     modes: ["stack"],
     weekday: [0, 1, 2, 3, 4, 5, 6],
@@ -92,6 +138,14 @@ export default {
       "Conference",
       "Party",
     ],
+    typeToLabel: {
+      month: "Month",
+      week: "Week",
+      day: "Day",
+    },
+    selectedEvent: {},
+    selectedElement: null,
+    selectedOpen: false,
     eventCount: "",
     classes: [],
     days: "",
@@ -105,12 +159,47 @@ export default {
     eventQuantity: "",
   }),
   methods: {
+    viewDay({ date }) {
+      this.value = date;
+      this.type = "day";
+    },
+    viewWeek({ date }) {
+      this.value = date;
+      this.type = "week";
+    },
+    setToday() {
+      this.value = "";
+    },
+    prev() {
+      this.$refs.calendar.prev();
+    },
+    next() {
+      this.$refs.calendar.next();
+    },
+    showEvent({ nativeEvent, event }) {
+      const open = () => {
+        this.selectedEvent = event;
+        this.selectedElement = nativeEvent.target;
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => (this.selectedOpen = true))
+        );
+      };
+
+      if (this.selectedOpen) {
+        this.selectedOpen = false;
+        requestAnimationFrame(() => requestAnimationFrame(() => open()));
+      } else {
+        open();
+      }
+
+      nativeEvent.stopPropagation();
+    },
     getEvents() {
       // ==============================================  TEMPLATE
-      
+
       // const events = []
       this.eventQuantity = this.$store.state.eventList.length;
-      
+
       // for (let i = 0; i < this.eventQuantity; i++) {
 
       //   events.push({
@@ -159,10 +248,9 @@ export default {
     getAllEvents() {
       eventService.getAllEvents().then((response) => {
         if (response.status == 200) {
-    
           this.$store.commit("SET_EVENT_LIST", response.data);
           this.serverEvents = response.data;
-          
+
           this.getEvents();
         }
       });
@@ -171,6 +259,9 @@ export default {
   created() {
     this.getAllClasses();
     this.getAllEvents();
+  },
+  mounted() {
+    this.$refs.calendar.checkChange();
   },
 };
 </script>
