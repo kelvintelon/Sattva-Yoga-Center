@@ -161,8 +161,8 @@ export default {
         if (response.status == 200) {
     
           this.$store.commit("SET_EVENT_LIST", response.data);
-          this.serverEvents = this.$store.state.eventList;
-          this.eventQuantity = this.serverEvents.length
+          this.serverEvents = response.data;
+          
           this.getEvents();
         }
       });
