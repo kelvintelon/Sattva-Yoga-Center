@@ -2,7 +2,10 @@ package com.sattvayoga.dao;
 
 import com.sattvayoga.model.ClassDetails;
 import com.sattvayoga.model.Event;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.DayOfWeek;
@@ -11,12 +14,31 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-@Component
+@Service
 public class JdbcEventDao implements EventDao {
+
+    private final JdbcTemplate jdbcTemplate;
+
+
+    public JdbcEventDao(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
+    @Override
+    public void createEvent() {
+        Date date = new Date();
+        Timestamp timestamp2 = new Timestamp(date.getTime());
+        String sql = "INSERT INTO events (class_id, event_name, start_time, " +
+                "end_time, color, timed) VALUES (?, ?, ?, ?, ?, ?)";
+        jdbcTemplate.update(sql, 4,
+                "event_test", timestamp2,
+                timestamp2, "blue", false);
+    }
 
     @Override
     public List<Event> createAndGetEvents(List<ClassDetails> classDetails) {
@@ -262,4 +284,6 @@ public class JdbcEventDao implements EventDao {
         }
         return eventList;
     }
+
+
 }

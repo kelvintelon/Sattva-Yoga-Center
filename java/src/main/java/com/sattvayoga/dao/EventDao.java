@@ -9,4 +9,6 @@ public interface EventDao {
 
     List<Event> createAndGetEvents(List<ClassDetails> classDetails);
 
+    void createEvent();
+
 }
