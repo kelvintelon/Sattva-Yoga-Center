@@ -29,6 +29,9 @@
           ></v-text-field>
           <v-text-field
             v-model="user.password"
+            :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
+             :type="show1 ? 'text' : 'password'"            
+            @click:append="show1 = !show1"
             id="password"
             :rules="passwordRules"
             label="Password"
@@ -74,6 +77,7 @@ export default {
         username: "",
         password: "",
       },
+      show1: false,
       userNameRules: [
         (v) => !!v || "Username is required",
         (v) =>

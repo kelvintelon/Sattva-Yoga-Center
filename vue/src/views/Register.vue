@@ -26,6 +26,9 @@
             required
           ></v-text-field>
           <v-text-field
+          :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
+             :type="show1 ? 'text' : 'password'"            
+            @click:append="show1 = !show1"
             v-model="user.password"
             id="password"
             label="Password"
@@ -33,6 +36,9 @@
             required
           ></v-text-field>
           <v-text-field
+          :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
+             :type="show1 ? 'text' : 'password'"            
+            @click:append="show1 = !show1"
             v-model="user.confirmPassword"
             id="confirmPassword"
             label="Confirm Password"
@@ -84,6 +90,7 @@ export default {
   data() {
     return {
       valid: true,
+      show1: false,
       userNameRules: [
         (v) => !!v || "Username is required",
         (v) =>
