@@ -3,7 +3,7 @@
     <v-row>
       <v-col align="center" class="rowClass">Monday</v-col>
     </v-row>
-    <v-row>
+    <v-row class="dayRow">
       <div class="col" v-for="(column, key) in mondayColumns" :key="key">
     <div class="item-container" v-for="(item, key) in column" :key="key">{{item.start_time}}&nbsp;&nbsp; {{item.class_description}}</div>
   </div>
@@ -11,15 +11,15 @@
     <v-row>
       <v-col align="center" class="rowClass">Tuesday</v-col>
     </v-row>
-    <v-row>
-      <div class="col" v-for="(column, key) in tuesdayColumns" :key="key">
+    <v-row class="dayRow">
+      <div class= "col" v-for="(column, key) in tuesdayColumns" :key="key">
     <div class="item-container" v-for="(item, key) in column" :key="key">{{item.start_time}}&nbsp;&nbsp; {{item.class_description}}</div>
   </div>
     </v-row>
     <v-row>
       <v-col align="center" class="rowClass">Wednesday</v-col>
     </v-row>
-    <v-row>
+    <v-row class="dayRow">
       <div class="col" v-for="(column, key) in wednesdayColumns" :key="key">
     <div class="item-container" v-for="(item, key) in column" :key="key">{{item.start_time}}&nbsp;&nbsp; {{item.class_description}}</div>
   </div>
@@ -27,7 +27,7 @@
     <v-row>
       <v-col align="center" class="rowClass">Thursday</v-col>
     </v-row>
-    <v-row>
+    <v-row class="dayRow">
       <div class="col" v-for="(column, key) in thursdayColumns" :key="key">
     <div class="item-container" v-for="(item, key) in column" :key="key">{{item.start_time}}&nbsp;&nbsp; {{item.class_description}}</div>
   </div>
@@ -35,7 +35,7 @@
     <v-row>
       <v-col align="center" class="rowClass">Friday</v-col>
     </v-row>
-    <v-row>
+    <v-row class="dayRow">
       <div class="col" v-for="(column, key) in fridayColumns" :key="key">
     <div class="item-container" v-for="(item, key) in column" :key="key">{{item.start_time}}&nbsp;&nbsp; {{item.class_description}}</div>
   </div>
@@ -43,12 +43,12 @@
     <v-row>
       <v-col align="center" class="rowClass">Saturday</v-col>
     </v-row>
-    <v-row>
+    <v-row class="dayRow">
       <div class="col" v-for="(column, key) in saturdayColumns" :key="key">
     <div class="item-container" v-for="(item, key) in column" :key="key">{{item.start_time}}&nbsp;&nbsp; {{item.class_description}}</div>
   </div>
     </v-row>
-    <v-row>
+    <v-row class="dayRow">
       <v-col align="center" class="rowClass">Sunday</v-col>
     </v-row>
     <v-row>
@@ -56,7 +56,7 @@
     <div class="item-container" v-for="(item, key) in column" :key="key">{{item.start_time}}&nbsp;&nbsp; {{item.class_description}}</div>
   </div>
     </v-row>
-    <v-row>
+    <v-row class="dayRow">
       <v-col align="center">All classes are 1 hour long.</v-col>
     </v-row>
     <v-row>
@@ -518,10 +518,13 @@ export default {
 .rowClass {
   font-size: 20px;
   background: rgb(238, 233, 233);
+ 
 }
 .weekContainer {
   
   border: 1px solid;
 }
-
+.dayRow {
+   border-bottom: 1px solid;
+}
 </style>

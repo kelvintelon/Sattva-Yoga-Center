@@ -62,8 +62,8 @@
                           lazy
                           transition="scale-transition"
                           offset-y
-                          max-width="290px"
-                          min-width="290px"
+                          max-width="330px"
+                          min-width="330px"
                         >
                           <template v-slot:activator="{ on }">
                             <v-text-field
@@ -74,8 +74,10 @@
                               v-on="on"
                             ></v-text-field>
                           </template>
-                          <v-container class="v-date-time-widget-container">
+                          <v-container class="v-date-time-widget-container" fluid>
+                            <br>
                             <v-row>
+                              <br>
                               <v-spacer></v-spacer>
                               <v-btn
                                 fab
@@ -96,6 +98,7 @@
                               >
                               <v-spacer></v-spacer
                             ></v-row>
+                            <br>
                             <v-time-picker
                               v-if="dropDownOpen"
                               v-model="timeModel"
@@ -142,11 +145,11 @@
                           hint="Pick your Days For Class"
                           persistent-hint
                         ></v-select>
-                        <v-checkbox
+                        <!-- <v-checkbox
                           v-model="classDetails.is_repeating"
                           label="Repeat Every Week"
                           required
-                        ></v-checkbox>
+                        ></v-checkbox> -->
                         <v-checkbox
                           v-model="classDetails.is_paid"
                           label="Paid class?"
@@ -303,11 +306,11 @@
                           hint="Pick your Days For Class"
                           persistent-hint
                         ></v-select>
-                        <v-checkbox
+                        <!-- <v-checkbox
                           v-model="editedItem.is_repeating"
                           label="Repeat Every Week"
                           required
-                        ></v-checkbox>
+                        ></v-checkbox> -->
                         <v-checkbox
                           v-model="editedItem.is_paid"
                           label="Paid class?"
@@ -369,12 +372,12 @@
           </v-toolbar>
         </template>
         <!-- CHECK BOX for IS_PAID AND IS_REPEATING -->
-        <template v-slot:[`item.is_repeating`]="{ item }">
+        <!-- <template v-slot:[`item.is_repeating`]="{ item }">
           <v-simple-checkbox
             v-model="item.is_repeating"
             disabled
           ></v-simple-checkbox>
-        </template>
+        </template> -->
         <template v-slot:[`item.is_paid`]="{ item }">
           <v-simple-checkbox
             v-model="item.is_paid"
@@ -423,7 +426,7 @@ export default {
           sortable: false,
         },
         { text: "Class Time", value: "start_time", sortable: false },
-        { text: "Repeat Every Week", value: "is_repeating", sortable: false },
+        // { text: "Repeat Every Week", value: "is_repeating", sortable: false },
         { text: "Selected Days", value: "date_range", sortable: false },
         { text: "Is Paid", value: "is_paid" },
         { text: "Actions", value: "actions", sortable: false },
@@ -436,7 +439,7 @@ export default {
         class_duration: 0,
         start_time: "",
         is_paid: true,
-        is_repeating: "",
+        is_repeating: true,
         date_range: [],
       },
       editedTeacherName: "",
@@ -476,7 +479,7 @@ export default {
         date_range: [],
       },
 
-      selectedTeacherName: "",
+      selectedTeacherName: "Chuck Mallur",
 
       nameRules: [
         (v) => !!v || "Name is required",
@@ -673,6 +676,9 @@ export default {
       if (!this.timeModel) {
         return false;
       }
+      if(this.timeModel == "00:00") {
+        this.timeModel = "12:00"
+      }
       this.selectedTime = this.timeModel + " " + this.meridiam;
       this.displayTime = this.selectedTime;
       this.classDetails.start_time = this.selectedTime;
@@ -681,6 +687,18 @@ export default {
     },
   },
   computed: {
+    calculateTime() {
+      let date = new Date();
+  var hours = date.getHours();
+  var minutes = date.getMinutes();
+  var ampm = hours >= 12 ? 'pm' : 'am';
+  hours = hours % 12;
+  hours = hours ? hours : 12; // the hour '0' should be '12'
+  minutes = minutes < 10 ? '0'+minutes : minutes;
+  var strTime = hours + ':' + minutes + ' ' + ampm;
+  return strTime;
+},
+    
     model: {
       get() {
         return this.value;
