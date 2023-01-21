@@ -62,6 +62,7 @@
                           :items="durationOptions"
                           label="Duration in months"
                           required
+                          @change="onSubscriptionDurationChange"
                         ></v-select>
                         <br />
                         <v-text-field
@@ -72,15 +73,15 @@
                           label="Cost: $"
                           min="10"
                         ></v-text-field>
-
                         <v-checkbox
                           v-model="packageDetails.is_subscription"
-                          label="Subscription?"
+                          label="Is this a Subscription?"
                           required
+                          @change="onSubscriptionBooleanChange"
                         ></v-checkbox>
                         <v-checkbox
                           v-model="packageDetails.is_only_online"
-                          label="Visible Online?"
+                          label="Should this be Visible Online?"
                           required
                         ></v-checkbox>
                         <v-row justify="center" align="center"
@@ -152,6 +153,7 @@
                           :items="durationOptions"
                           label="Duration in months"
                           required
+                          @change="onSubscriptionDurationChange"
                         ></v-select>
                         <br />
                         <v-text-field
@@ -167,6 +169,7 @@
                           v-model="editedItem.is_subscription"
                           label="Subscription?"
                           required
+                          @change="onSubscriptionBooleanChange"
                         ></v-checkbox>
                         <v-checkbox
                           v-model="editedItem.is_only_online"
@@ -299,20 +302,13 @@ export default {
         { text: "Actions", value: "actions", sortable: false },
       ],
       packages: [],
-      durationOptions: [0, 1, 6],
+      durationOptions: [0, 1, 2,3,4,5,6],
       classesAmountOptions: [0, 1, 10, 20],
       editedIndex: -1,
 
       menu3: false,
       menu4: false,
-      defaultItem: {
-        description: "",
-        package_cost: 10,
-        classes_amount: 0,
-        subscription_duration: 0,
-        is_subscription: false,
-        is_only_online: false,
-      },
+
 
       // ====================  this is form stuff vvvv
       editedItem: {
@@ -350,6 +346,30 @@ export default {
     // ==================== this is form stuff vvvv
   },
   methods: {
+    onSubscriptionDurationChange(){
+      if (this.packageDetails.subscription_duration > 0){
+        this.packageDetails.is_subscription = true;
+      } else {
+        this.packageDetails.is_subscription = false;
+      }
+      if (this.editedItem.subscription_duration > 0){
+        this.editedItem.is_subscription = true;
+      } else {
+        this.editedItem.is_subscription = false;
+      }
+    },
+    onSubscriptionBooleanChange(){
+      if (this.packageDetails.is_subscription == true){
+        this.packageDetails.subscription_duration = 1;
+      } else {
+        this.packageDetails.subscription_duration = 0;
+      }
+      if (this.editedItem.is_subscription == true){
+        this.editedItem.subscription_duration = 1;
+      } else {
+        this.editedItem.subscription_duration = 0;
+      }
+    },
     // ==================== this is table stuff vvvv
     getPackageTable() {
       packageDetailService.getAllPackages().then((response) => {
@@ -419,6 +439,9 @@ export default {
 
     submit() {
       this.checkCreateForm();
+      if (this.packageDetails.is_subscription == false) {
+        this.packageDetails.subscription_duration = 0;
+      }
       if (this.createFormIncomplete == false) {
         // after completing the object do the POST REQUEST
         packageDetailService
@@ -437,6 +460,9 @@ export default {
     },
     update() {
       this.checkEditForm();
+      if (this.editedItem.is_subscription == false) {
+        this.editedItem.subscription_duration = 0;
+      }
       if (this.editFormIncomplete == false) {
         // after completing the object do the PUT REQUEST
         packageDetailService.updatePackage(this.editedItem).then((response) => {

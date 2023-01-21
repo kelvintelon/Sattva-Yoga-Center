@@ -218,18 +218,24 @@ export default {
             // SUBSCRIPTION LOGIC
             if (this.purchaseItem.is_subscription == true) {
               this.packagePurchase.activation_date = new Date();
-
-              if (this.packageName.includes("one month")) {
+              
+              if (this.purchaseItem.subscription_duration > 0) {
                 this.packagePurchase.expiration_date = this.addMonths(
                   new Date(),
-                  1
-                );
-              } else if (this.packageName.includes("six month")) {
-                this.packagePurchase.expiration_date = this.addMonths(
-                  new Date(),
-                  6
-                );
+                  this.purchaseItem.subscription_duration);
               }
+
+              // if (this.packageName.includes("one month")) {
+              //   this.packagePurchase.expiration_date = this.addMonths(
+              //     new Date(),
+              //     1
+              //   );
+              // } else if (this.packageName.includes("six month")) {
+              //   this.packagePurchase.expiration_date = this.addMonths(
+              //     new Date(),
+              //     6
+              //   );
+              // }
             }
             this.packagePurchase.total_amount_paid =
               this.purchaseItem.package_cost;
