@@ -48,8 +48,8 @@ class TimerTrigger {
 //        } catch (InterruptedException e) {
 //            // handle here exception
 //        }
-//
-//        System.out.println("Main Thread ending") ;
+
+        System.out.println("Main Thread ending") ;
     }
 
 }
@@ -96,13 +96,10 @@ class WorkerThread extends Thread {
 //            ApplicationContext context =
 //                    new ClassPathXmlApplicationContext("classpath*:/META-INF/spring/applicationContext*.xml");
 
-
-
-
-            AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext("application.properties");
-            EventDao eventDao = context.getBean(JdbcEventDao.class);
-
-            eventDao.createEvent();
+//            AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext("application.properties");
+//            EventDao eventDao = context.getBean(JdbcEventDao.class);
+//
+//            eventDao.createEvent();
 
 
 //            Date date = new Date();
@@ -115,8 +112,9 @@ class WorkerThread extends Thread {
 
             System.out.println("Hello from Worker "+count++);
 
+            // 86400000 ms in a day
             try {
-                sleep(10000);
+                sleep(5000);
             } catch (InterruptedException e) {
                 // handle exception here
             }
