@@ -64,11 +64,15 @@ class TimerTrigger {
 
 }
 
-@RestController
+//@RestController
 class WorkerThread extends Thread {
 
-    @Autowired
+//    @Autowired
     private EventDao eventDao;
+
+    // try an AppConfig file next then work with a Data Source set up.
+
+
 
 //    public WorkerThread(EventDao eventDao) {
 //        this.eventDao = eventDao;
