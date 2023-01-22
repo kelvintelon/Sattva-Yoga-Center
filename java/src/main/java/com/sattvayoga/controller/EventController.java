@@ -5,10 +5,8 @@ import com.sattvayoga.dao.ClientDetailsDao;
 import com.sattvayoga.dao.EventDao;
 import com.sattvayoga.dao.UserDao;
 import com.sattvayoga.model.Event;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -17,21 +15,25 @@ import java.util.List;
 @CrossOrigin
 public class EventController {
 
+    @Autowired
     private ClassDetailsDao classDetailsDao;
+    @Autowired
     private UserDao userDao;
+    @Autowired
     private ClientDetailsDao clientDetailsDao;
+    @Autowired
     private EventDao eventDao;
 
-    public EventController(ClassDetailsDao classDetailsDao, UserDao userDao, ClientDetailsDao clientDetailsDao, EventDao eventDao) {
-        this.classDetailsDao = classDetailsDao;
-        this.userDao = userDao;
-        this.clientDetailsDao = clientDetailsDao;
-        this.eventDao = eventDao;
-    }
+
 
     @RequestMapping(value = "/eventList", method = RequestMethod.GET)
-    public List<Event> getAllEvenets() throws SQLException {
+    public List<Event> getAllEvents() throws SQLException {
         return eventDao.createAndGetEvents(classDetailsDao.getAllClasses());
     }
 
+    // no request body since it's hardcoded
+    @RequestMapping(value = "/createTest", method = RequestMethod.POST)
+    public void createTest() {
+        eventDao.createEvent();
+    }
 }

@@ -22,12 +22,9 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class JdbcEventDao implements EventDao {
 
-    private final JdbcTemplate jdbcTemplate;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
-
-    public JdbcEventDao(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     @Override
     public void createEvent() {
