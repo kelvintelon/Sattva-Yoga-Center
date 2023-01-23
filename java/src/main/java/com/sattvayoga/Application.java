@@ -9,19 +9,15 @@ import com.sattvayoga.controller.EventController;
 import com.sattvayoga.dao.PackageDetailsDao;
 import com.sattvayoga.model.ClassDetails;
 import com.sattvayoga.model.Event;
+import com.sattvayoga.spring.config.AppConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.ApplicationContext;
+
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Controller;
-import org.springframework.stereotype.Repository;
-import org.springframework.stereotype.Service;
+
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.sql.DataSource;
@@ -37,11 +33,12 @@ import java.util.concurrent.TimeUnit;
 
 
 @SpringBootApplication
+@ComponentScan(basePackages = {"com.sattvayoga"})
 public class Application {
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
-//        TimerTrigger.main(args);
+        TimerTrigger.main(args);
     }
 
 }
@@ -68,10 +65,9 @@ class TimerTrigger {
 class WorkerThread extends Thread {
 
 //    @Autowired
-    private EventDao eventDao;
+//    private EventDao eventDao;
 
     // try an AppConfig file next then work with a Data Source set up.
-
 
 
 //    public WorkerThread(EventDao eventDao) {
@@ -108,7 +104,11 @@ class WorkerThread extends Thread {
         int count = 0;
 
         while (true) {
-// logic goes here
+            // TODO: logic goes here
+
+            AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+            EventDao eventDao = context.getBean(EventDao.class);
+
 
             eventDao.createEvent();
 
@@ -120,7 +120,9 @@ class WorkerThread extends Thread {
                 sleep(5000);
             } catch (InterruptedException e) {
                 // handle exception here
-            }
+
+
+                //            EventDao eventDao = new JdbcEventDao();         }
 
 ////            JdbcEventDao eventDao = new JdbcEventDao();
 
@@ -143,6 +145,7 @@ class WorkerThread extends Thread {
 //                    timestamp2, "blue", false);
 
 
+            }
         }
     }
 }
