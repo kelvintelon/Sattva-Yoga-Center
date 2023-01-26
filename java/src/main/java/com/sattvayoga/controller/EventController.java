@@ -28,7 +28,7 @@ public class EventController {
 
     @RequestMapping(value = "/eventList", method = RequestMethod.GET)
     public List<Event> getAllEvents() throws SQLException {
-        return eventDao.createAndGetEvents(classDetailsDao.getAllClasses());
+        return eventDao.getAllEvents();
     }
 
     // no request body since it's hardcoded
