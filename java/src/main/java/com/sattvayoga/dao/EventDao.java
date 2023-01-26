@@ -12,7 +12,7 @@ public interface EventDao {
 
     List<Event> createAndGetEvents(List<ClassDetails> classDetails);
 
-    void createEvent();
+    void createEvent(Event newEvent);
 
     void updateEventServerTask() throws Exception;
 
@@ -23,4 +23,8 @@ public interface EventDao {
     List<ClientDetailsDTO> getClientDetailsByClassId(int ClassId);
 
     List<Event> getAllEvents();
+
+    boolean deleteEvent(int eventId);
+
+    boolean updateEventDetails(Event event);
 }

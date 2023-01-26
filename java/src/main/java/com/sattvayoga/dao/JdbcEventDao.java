@@ -36,14 +36,12 @@ public class JdbcEventDao implements EventDao {
     }
 
     @Override
-    public void createEvent() {
-        Date date = new Date();
-        Timestamp timestamp2 = new Timestamp(date.getTime());
+    public void createEvent(Event newEvent) {
         String sql = "INSERT INTO events (class_id, event_name, start_time, " +
                 "end_time, color, timed) VALUES (?, ?, ?, ?, ?, ?)";
-        jdbcTemplate.update(sql, 4,
-                "event_test", timestamp2,
-                timestamp2, "blue", false);
+        jdbcTemplate.update(sql, newEvent.getClass_id(),
+                newEvent.getEvent_name(), newEvent.getStart_time(),
+                newEvent.getEnd_time(), newEvent.getColor(), newEvent.isTimed());
     }
 
     @Override
@@ -138,11 +136,7 @@ public class JdbcEventDao implements EventDao {
 
                                 // call another method that takes in a Event Object
 
-                                String sql = "INSERT INTO events (class_id, event_name, start_time, " +
-                                        "end_time, color, timed) VALUES (?, ?, ?, ?, ?, ?)";
-                                jdbcTemplate.update(sql, newEvent.getClass_id(),
-                                newEvent.getEvent_name(), newEvent.getStart_time(),
-                                newEvent.getEnd_time(), newEvent.getColor(), newEvent.isTimed());
+                                createEvent(newEvent);
 
                         }
 
@@ -173,11 +167,7 @@ public class JdbcEventDao implements EventDao {
                             newEvent.setStart_time(start);
                             newEvent.setEnd_time(end);
 
-                            String sql = "INSERT INTO events (class_id, event_name, start_time, " +
-                                    "end_time, color, timed) VALUES (?, ?, ?, ?, ?, ?)";
-                            jdbcTemplate.update(sql, newEvent.getClass_id(),
-                                    newEvent.getEvent_name(), newEvent.getStart_time(),
-                                    newEvent.getEnd_time(), newEvent.getColor(), newEvent.isTimed());
+                            createEvent(newEvent);
 
                         }
 
@@ -208,11 +198,7 @@ public class JdbcEventDao implements EventDao {
                             newEvent.setStart_time(start);
                             newEvent.setEnd_time(end);
 
-                            String sql = "INSERT INTO events (class_id, event_name, start_time, " +
-                                    "end_time, color, timed) VALUES (?, ?, ?, ?, ?, ?)";
-                            jdbcTemplate.update(sql, newEvent.getClass_id(),
-                                    newEvent.getEvent_name(), newEvent.getStart_time(),
-                                    newEvent.getEnd_time(), newEvent.getColor(), newEvent.isTimed());
+                            createEvent(newEvent);
 
                         }
 
@@ -243,11 +229,7 @@ public class JdbcEventDao implements EventDao {
                             newEvent.setStart_time(start);
                             newEvent.setEnd_time(end);
 
-                            String sql = "INSERT INTO events (class_id, event_name, start_time, " +
-                                    "end_time, color, timed) VALUES (?, ?, ?, ?, ?, ?)";
-                            jdbcTemplate.update(sql, newEvent.getClass_id(),
-                                    newEvent.getEvent_name(), newEvent.getStart_time(),
-                                    newEvent.getEnd_time(), newEvent.getColor(), newEvent.isTimed());
+                            createEvent(newEvent);
                         }
 
                         if (dateRange[j].equals("Thu") && newDay.equals("THURSDAY")) {
@@ -277,11 +259,7 @@ public class JdbcEventDao implements EventDao {
                             newEvent.setStart_time(start);
                             newEvent.setEnd_time(end);
 
-                            String sql = "INSERT INTO events (class_id, event_name, start_time, " +
-                                    "end_time, color, timed) VALUES (?, ?, ?, ?, ?, ?)";
-                            jdbcTemplate.update(sql, newEvent.getClass_id(),
-                                    newEvent.getEvent_name(), newEvent.getStart_time(),
-                                    newEvent.getEnd_time(), newEvent.getColor(), newEvent.isTimed());
+                            createEvent(newEvent);
                         }
 
                         if (dateRange[j].equals("Fri") && newDay.equals("FRIDAY")) {
@@ -311,11 +289,7 @@ public class JdbcEventDao implements EventDao {
                             newEvent.setStart_time(start);
                             newEvent.setEnd_time(end);
 
-                            String sql = "INSERT INTO events (class_id, event_name, start_time, " +
-                                    "end_time, color, timed) VALUES (?, ?, ?, ?, ?, ?)";
-                            jdbcTemplate.update(sql, newEvent.getClass_id(),
-                                    newEvent.getEvent_name(), newEvent.getStart_time(),
-                                    newEvent.getEnd_time(), newEvent.getColor(), newEvent.isTimed());
+                            createEvent(newEvent);
                         }
 
                         if (dateRange[j].equals("Sat") && newDay.equals("SATURDAY")) {
@@ -345,18 +319,14 @@ public class JdbcEventDao implements EventDao {
                             newEvent.setStart_time(start);
                             newEvent.setEnd_time(end);
 
-                            String sql = "INSERT INTO events (class_id, event_name, start_time, " +
-                                    "end_time, color, timed) VALUES (?, ?, ?, ?, ?, ?)";
-                            jdbcTemplate.update(sql, newEvent.getClass_id(),
-                                    newEvent.getEvent_name(), newEvent.getStart_time(),
-                                    newEvent.getEnd_time(), newEvent.getColor(), newEvent.isTimed());
+                            createEvent(newEvent);
                         }
-                        // add another day to the local date
+
 
                     }
 
                 }
-
+                // add another day to the local date
                 try {
                     theLatestTimestamp = addDays(1, theLatestTimestamp);
                 } catch (EmptyResultDataAccessException e) {
@@ -366,6 +336,33 @@ public class JdbcEventDao implements EventDao {
         }
 
 
+    }
+
+    @Override
+    public boolean deleteEvent(int eventId) {
+        String sql = "BEGIN TRANSACTION;\n" +
+                // TODO: When events_client table is made uncomment this and add another event_id to the update
+//                "\n" +
+//                "DELETE FROM events_client \n" +
+//                "WHERE events_client.event_id = ?;\n" +
+//                "\n" +
+                "DELETE FROM events\n" +
+                "WHERE event_id = ?;\n" +
+                "\n" +
+                "COMMIT TRANSACTION;";
+        return jdbcTemplate.update(sql, eventId)==1;
+    }
+
+    @Override
+    public boolean updateEventDetails(Event event) {
+        String sql = "UPDATE events SET class_id = ? , " +
+                "event_name = ? , " +
+                "start_time = ? , " +
+                "end_time = ? , " +
+                "color = ? , " +
+                "timed = ? " +
+                "WHERE event_id = ?";
+        return jdbcTemplate.update(sql, event.getClass_id(), event.getEvent_name(), event.getStart_time(), event.getEnd_time(), event.getColor(), event.isTimed(), event.getEvent_id())==1;
     }
 
     @Override
@@ -627,10 +624,13 @@ public class JdbcEventDao implements EventDao {
         }
         return eventList;
     }
+
     private Event mapRowToEvent(SqlRowSet rs) {
         Event event = new Event();
         event.setEvent_id(rs.getInt("event_id"));
-        event.setClass_id(rs.getInt("class_id"));
+        if (rs.getInt("class_id") > 0) {
+            event.setClass_id(rs.getInt("class_id"));
+        }
         event.setEvent_name(rs.getString("event_name"));
         event.setStart_time(rs.getTimestamp("start_time"));
         event.setEnd_time(rs.getTimestamp("end_time"));

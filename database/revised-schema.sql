@@ -100,7 +100,7 @@ CREATE TABLE package_purchase
 
 CREATE TABLE events (
 	event_id serial NOT NULL,
-	class_id int NOT NULL,
+	class_id int,
 	event_name varchar(30) NOT NULL,
 	start_time timestamp NOT NULL,
 	end_time timestamp NOT NULL,

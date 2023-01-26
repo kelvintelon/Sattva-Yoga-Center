@@ -4,8 +4,11 @@ import com.sattvayoga.dao.ClassDetailsDao;
 import com.sattvayoga.dao.ClientDetailsDao;
 import com.sattvayoga.dao.EventDao;
 import com.sattvayoga.dao.UserDao;
+import com.sattvayoga.model.ClientDetails;
 import com.sattvayoga.model.Event;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
@@ -31,9 +34,24 @@ public class EventController {
         return eventDao.getAllEvents();
     }
 
-    // no request body since it's hardcoded
-    @RequestMapping(value = "/createTest", method = RequestMethod.POST)
-    public void createTest() {
-        eventDao.createEvent();
+    @PreAuthorize("hasRole('ADMIN')")
+    @ResponseStatus(HttpStatus.CREATED)
+    @RequestMapping(value = "/createEvent", method = RequestMethod.POST)
+    public void createEvent(@RequestBody Event event) {
+        eventDao.createEvent(event);
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value = "/updateEvent", method = RequestMethod.PUT)
+    public void updateEvent (@RequestBody Event event) {
+        eventDao.updateEventDetails(event);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value = "/deleteEvent/{eventId}", method = RequestMethod.DELETE)
+    public void deleteEvent (@PathVariable int eventId) {
+       eventDao.deleteEvent(eventId);
+    }
+
+
 }

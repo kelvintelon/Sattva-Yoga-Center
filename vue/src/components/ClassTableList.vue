@@ -72,6 +72,7 @@
                               prepend-icon="mdi-clock-time-four-outline"
                               readonly
                               v-on="on"
+                              :rules="timeRules"
                             ></v-text-field>
                           </template>
                           <v-container class="v-date-time-widget-container" fluid>
@@ -104,7 +105,7 @@
                               v-model="timeModel"
                               full-width
                               scrollable
-                              :rules="timeRules"
+                              
                               :no-title="true"
                               ampm-in-title
                               ><v-spacer></v-spacer>
@@ -236,6 +237,7 @@
                               prepend-icon="mdi-clock-time-four-outline"
                               readonly
                               v-on="on"
+                              :rules="timeRules"
                             ></v-text-field>
                           </template>
                           <v-container class="v-date-time-widget-container">
@@ -265,7 +267,7 @@
                               v-model="timeModel"
                               full-width
                               scrollable
-                              :rules="timeRules"
+                              
                               :no-title="true"
                               ampm-in-title
                               ><v-spacer></v-spacer>
@@ -502,6 +504,7 @@ export default {
       editFormIncomplete: true,
       meridiam: "",
       selectedTime: "",
+      dateModel: "",
     };
   },
   created() {
@@ -668,9 +671,10 @@ export default {
       }
     },
     confirm() {
-      this.onUpdateDate();
       this.dropDownOpen = false;
-      this.menu4 = false;
+      this.onUpdateDate();
+      
+      this.menu2 = false;
     },
     onUpdateDate() {
       if (!this.timeModel) {
@@ -682,7 +686,7 @@ export default {
       this.selectedTime = this.timeModel + " " + this.meridiam;
       this.displayTime = this.selectedTime;
       this.classDetails.start_time = this.selectedTime;
-      this.editedItem.start_time = this.selectedTime;
+      // this.editedItem.start_time = this.selectedTime;
       this.$emit("input", this.selectedTime);
     },
   },
