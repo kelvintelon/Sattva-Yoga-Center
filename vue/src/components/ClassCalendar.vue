@@ -1,5 +1,29 @@
 <template>
   <v-container>
+    <v-snackbar
+      v-model="snackBarDeleteEventWarning"
+      color="red darken-2"
+      elevation="24"
+      :vertical="vertical"
+      shaped
+    >
+      Warning: Are you sure you want to delete this event?
+
+      <template v-slot:action="{ attrs }">
+        <v-btn
+          color="white"
+          text
+          v-bind="attrs"
+          @click="snackBarDeleteEventWarning = false"
+          left
+        >
+          Close
+        </v-btn>
+        <v-btn color="white" text v-bind="attrs" @click="allowEventDelete">
+          Continue
+        </v-btn>
+      </template>
+    </v-snackbar>
     <v-row class="fill-height">
       <v-col>
         <v-sheet tile height="64" class="d-flex">
@@ -347,10 +371,7 @@
                 <v-toolbar-title v-html="selectedEvent.name"></v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-btn icon>
-                  <v-icon>mdi-heart</v-icon>
-                </v-btn>
-                <v-btn icon>
-                  <v-icon>mdi-dots-vertical</v-icon>
+                  <v-icon @click="confirmDelete">mdi-delete</v-icon>
                 </v-btn>
               </v-toolbar>
               <v-card-text>
@@ -450,6 +471,8 @@ export default {
       day: "Day",
     },
     selectedEvent: {},
+    selectedEventID: "",
+    selectedEventIndex: "",
     selectedElement: null,
     selectedOpen: false,
     eventCount: "",
@@ -479,8 +502,37 @@ export default {
     displayTime2: "",
     meridiam2: "",
     timeModel2: "",
+    snackBarDeleteEventWarning: false,
   }),
   methods: {
+    confirmDelete() {
+      this.snackBarDeleteEventWarning = true;
+    },
+    allowEventDelete() {
+      this.snackBarDeleteEventWarning = false;
+      // find the ID of selected event
+      for (let i = 0; i < this.serverEvents.length; i++) {
+        if (
+         new Date(this.serverEvents[i].start_time).getTime() == new Date(this.selectedEvent.start).getTime() &&
+          new Date(this.serverEvents[i].end_time).getTime() == new Date(this.selectedEvent.end).getTime() &&
+          this.serverEvents[i].event_name == this.selectedEvent.name
+        ) {
+          this.selectedEventID = this.serverEvents[i].event_id;
+          this.selectedEventIndex = i;
+        }
+      }
+
+      // this will eventually be an update instead
+      eventService.deleteEvent(this.selectedEventID).then((response) => {
+        if (response.status == 200) {
+          // remove it from the calendar event list
+          this.events.splice(this.selectedEventIndex,1)
+          alert("Event successfully removed!");
+        } else {
+          alert("Error removing event!");
+        }
+      });
+    },
     viewDay({ date }) {
       this.value = date;
       this.type = "day";

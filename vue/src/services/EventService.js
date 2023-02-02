@@ -9,7 +9,9 @@ export default {
     createEvent(event) {
         return axios.post(`/createEvent`, event)
     },
-    
+    deleteEvent(eventID) {
+        return axios.delete(`/deleteEvent/${eventID}`)
+    },
     
 
 }
