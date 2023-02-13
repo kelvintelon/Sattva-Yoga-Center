@@ -1,5 +1,6 @@
 package com.sattvayoga.controller;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sattvayoga.dao.ClassDetailsDao;
 import com.sattvayoga.dao.ClientDetailsDao;
 import com.sattvayoga.dao.EventDao;
@@ -35,6 +36,11 @@ public class EventController {
         return eventDao.getAllEvents();
     }
 
+    @RequestMapping(value = "/100eventList", method = RequestMethod.GET)
+    public List<Event> getHundredEvents() throws SQLException {
+        return eventDao.getHundredEvents();
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/createEvent", method = RequestMethod.POST)
@@ -54,5 +60,43 @@ public class EventController {
        eventDao.deleteEvent(eventId);
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
+    @RequestMapping(value = "/registerForEvent", method = RequestMethod.POST)
+    public void registerForEvent(@RequestBody ClientEventWrapper clientEvent) {
+
+        // should we have exceptions if the class is already registered
+        // (an exception that means they are already inside the class table)
+
+        eventDao.registerForEvent(clientEvent.getClient_id(),clientEvent.getEvent_id());
+    }
+
+    static class ClientEventWrapper {
+
+        private int client_id;
+        private int event_id;
+
+        ClientEventWrapper(int client_id, int event_id) {
+            this.client_id = client_id;
+            this.event_id = event_id;
+        }
+
+        @JsonProperty("client_id")
+        int getClient_id() {
+            return client_id;
+        }
+
+        void setClient_id(int client_id) {
+            this.client_id = client_id;
+        }
+
+        @JsonProperty("event_id")
+        public int getEvent_id() {
+            return event_id;
+        }
+
+        public void setEvent_id(int event_id) {
+            this.event_id = event_id;
+        }
+    }
 
 }
