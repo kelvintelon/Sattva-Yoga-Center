@@ -81,7 +81,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             packageDetails.setSubscription_duration(rs.getInt("subscription_duration"));
         }
         packageDetails.setIs_subscription(rs.getBoolean("is_subscription"));
-        packageDetails.setIs_only_online(rs.getBoolean("is_only_online"));
+        packageDetails.setIs_visible_online((rs.getBoolean("is_visible_online")));
 
         return packageDetails;
     }

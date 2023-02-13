@@ -12,6 +12,9 @@ export default {
     deleteEvent(eventID) {
         return axios.delete(`/deleteEvent/${eventID}`)
     },
+    updateEvent(event) {
+        return axios.put('/updateEvent', event)
+    }
     
 
 }

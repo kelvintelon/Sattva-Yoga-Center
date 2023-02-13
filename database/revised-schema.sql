@@ -67,7 +67,6 @@ CREATE TABLE client_class
 	CONSTRAINT FK_client_class_class_id FOREIGN KEY (class_id) REFERENCES class_details(class_id)
 );
 
-
 CREATE TABLE package_details
 (
 	package_id			serial			NOT NULL,  
@@ -76,7 +75,7 @@ CREATE TABLE package_details
 	classes_amount		int,
 	subscription_duration	int,
 	is_subscription		boolean 		NOT NULL, 
-	is_only_online		boolean			NOT NULL,
+	is_visible_online		boolean			NOT NULL,
 	CONSTRAINT PK_package_details PRIMARY KEY (package_id)
 );
 
@@ -106,8 +105,9 @@ CREATE TABLE events (
 	end_time timestamp NOT NULL,
 	color varchar(10) NOT NULL,
 	timed boolean NOT NULL,
-	CONSTRAINT PK_event PRIMARY KEY (event_id),
-	CONSTRAINT FK_event_class_id FOREIGN KEY (class_id) REFERENCES class_details (class_id)
+	is_visible_online boolean,
+	CONSTRAINT PK_event PRIMARY KEY (event_id)
+-- 	CONSTRAINT FK_event_class_id FOREIGN KEY (class_id) REFERENCES class_details (class_id)
 );
 
 COMMIT TRANSACTION;

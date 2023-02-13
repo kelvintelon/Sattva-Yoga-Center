@@ -21,12 +21,12 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
     @Override
     public boolean createPackage(PackageDetails packageDetails) {
         String sql = "INSERT INTO package_details (description, package_cost, " +
-                "classes_amount, subscription_duration, is_subscription, is_only_online) VALUES " +
+                "classes_amount, subscription_duration, is_subscription, is_visible_online) VALUES " +
                 "(?, ?, ?, ?, ?, ?)";
 
         return jdbcTemplate.update(sql, packageDetails.getDescription(), packageDetails.getPackage_cost(),
                 packageDetails.getClasses_amount(), packageDetails.getSubscription_duration(),
-                packageDetails.isIs_subscription(), packageDetails.isIs_only_online()) == 1;
+                packageDetails.isIs_subscription(), packageDetails.isIs_visible_online()) == 1;
     }
 
 
@@ -54,12 +54,12 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
                 "classes_amount = ? , " +
                 "subscription_duration = ? , " +
                 "is_subscription = ? , " +
-                "is_only_online = ? " +
+                "is_visible_online = ? " +
                 "WHERE package_id = ?";
         return jdbcTemplate.update(sql, packageDetails.getPackage_id(), packageDetails.getDescription(),
                 packageDetails.getPackage_cost(), packageDetails.getClasses_amount(),
                 packageDetails.getSubscription_duration(), packageDetails.isIs_subscription(),
-                packageDetails.isIs_only_online(), packageDetails.getPackage_id())==1;
+                packageDetails.isIs_visible_online(), packageDetails.getPackage_id())==1;
    }
 
     @Override
@@ -80,7 +80,7 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
     public List<PackageDetails> getAllPublicPackages() {
         List<PackageDetails> allPackages = new ArrayList<>();
 
-        String sql = "SELECT * FROM package_details WHERE is_only_online = TRUE;";
+        String sql = "SELECT * FROM package_details WHERE is_visible_online = TRUE;";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
         while (result.next()) {
             PackageDetails packageDetails = mapRowToPackage(result);
@@ -104,7 +104,7 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
             packageDetails.setSubscription_duration(rs.getInt("subscription_duration"));
         }
         packageDetails.setIs_subscription(rs.getBoolean("is_subscription"));
-        packageDetails.setIs_only_online(rs.getBoolean("is_only_online"));
+        packageDetails.setIs_visible_online(rs.getBoolean("is_visible_online"));
 
         return packageDetails;
     }

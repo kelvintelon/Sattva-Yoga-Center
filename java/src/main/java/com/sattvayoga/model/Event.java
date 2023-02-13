@@ -10,12 +10,13 @@ public class Event {
     private Timestamp end_time;
     private String color;
     private boolean timed;
+    private boolean is_visible_online;
 
     public Event() {
 
     }
 
-    public Event(int event_id, int class_id, String event_name, Timestamp start_time, Timestamp end_time, String color, boolean timed) {
+    public Event(int event_id, int class_id, String event_name, Timestamp start_time, Timestamp end_time, String color, boolean timed, boolean is_visible_online) {
         this.event_id = event_id;
         this.class_id = class_id;
         this.event_name = event_name;
@@ -23,6 +24,7 @@ public class Event {
         this.end_time = end_time;
         this.color = color;
         this.timed = timed;
+        this.is_visible_online = is_visible_online;
     }
 
     public int getEvent_id() {
@@ -79,5 +81,13 @@ public class Event {
 
     public void setTimed(boolean timed) {
         this.timed = timed;
+    }
+
+    public boolean isIs_visible_online() {
+        return is_visible_online;
+    }
+
+    public void setIs_visible_online(boolean is_visible_online) {
+        this.is_visible_online = is_visible_online;
     }
 }
