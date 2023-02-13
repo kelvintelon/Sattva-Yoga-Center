@@ -413,6 +413,26 @@ public class JdbcEventDao implements EventDao {
         jdbcTemplate.update(sql,client_id, event_id);
     }
 
+    @Override
+    public List<Event> getAllClientEvents(int user_id) {
+        List<Event> allClientEvents = new ArrayList<>();
+        String sql = "SELECT events.event_id, class_id, event_name, start_time, end_time, color, timed, is_visible_online FROM events \n" +
+                "JOIN client_event ON events.event_id = client_event.event_id \n" +
+                "JOIN client_details ON client_details.client_id = client_event.client_id \n" +
+                "WHERE user_id = ?";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, user_id);
+        while(result.next()){
+            allClientEvents.add(mapRowToEvent(result));
+        }
+        return allClientEvents;
+    }
+
+    @Override
+    public void deleteEventForClient(int event_id, int client_id) {
+        String sql = "DELETE FROM client_event where event_id = ? and client_id = ?";
+        jdbcTemplate.update(sql, event_id, client_id);
+    }
+
 
     @Override
     public List<Event> createAndGetEvents(List<ClassDetails> classDetails) {

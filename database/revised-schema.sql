@@ -1,6 +1,6 @@
 BEGIN TRANSACTION;
 
-DROP TABLE IF EXISTS users,teacher_details,class_details,client_details,client_class,package_purchase,package_details,events CASCADE;
+DROP TABLE IF EXISTS users,teacher_details,class_details,client_details,client_class,package_purchase,package_details,events,client_event CASCADE;
 
 
 CREATE TABLE users 
@@ -109,6 +109,14 @@ CREATE TABLE events (
 	CONSTRAINT PK_event PRIMARY KEY (event_id)
 -- 	CONSTRAINT FK_event_class_id FOREIGN KEY (class_id) REFERENCES class_details (class_id)
 );
+
+CREATE TABLE client_event (
+	client_id int NOT NULL,
+	event_id int NOT NULL,
+	CONSTRAINT PK_client_event PRIMARY KEY (client_id, event_id),
+	CONSTRAINT FK_client_event_client_id FOREIGN KEY (client_id) REFERENCES client_details (client_id),
+	CONSTRAINT FK_client_event_event_id FOREIGN KEY (event_id) REFERENCES events(event_id)
+)
 
 COMMIT TRANSACTION;
 

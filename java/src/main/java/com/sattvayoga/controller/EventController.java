@@ -5,6 +5,7 @@ import com.sattvayoga.dao.ClassDetailsDao;
 import com.sattvayoga.dao.ClientDetailsDao;
 import com.sattvayoga.dao.EventDao;
 import com.sattvayoga.dao.UserDao;
+import com.sattvayoga.model.ClassDetails;
 import com.sattvayoga.model.ClientDetails;
 import com.sattvayoga.model.Event;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -39,6 +41,18 @@ public class EventController {
     @RequestMapping(value = "/100eventList", method = RequestMethod.GET)
     public List<Event> getHundredEvents() throws SQLException {
         return eventDao.getHundredEvents();
+    }
+
+    @RequestMapping(value= "/clientEventList", method = RequestMethod.GET)
+    public List<Event> getAllClientEvents(Principal principal) throws SQLException {
+        int userId = userDao.findIdByUsername(principal.getName());
+        return eventDao.getAllClientEvents(userId);
+    }
+
+    @RequestMapping(value = "/removeEventForClient/{eventId}", method = RequestMethod.DELETE)
+    public void deleteClassForClient (@PathVariable int eventId ,Principal principal) {
+        ClientDetails clientDetails = clientDetailsDao.findClientByUserId(userDao.findIdByUsername(principal.getName()));
+        eventDao.deleteEventForClient(eventId, clientDetails.getClient_id());
     }
 
     @PreAuthorize("hasRole('ADMIN')")

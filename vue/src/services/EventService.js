@@ -17,7 +17,16 @@ export default {
     },
     updateEvent(event) {
         return axios.put('/updateEvent', event)
+    },
+    registerForEvent(signup) {
+        return axios.post(`/registerForEvent`, signup)
+    },
+    getAllClientEvents(){
+        return axios.get(`/clientEventList`)
+    },
+    removeEventForClient(eventID){
+        return axios.delete(`/removeEventForClient/${eventID}`)
     }
-    
+
 
 }
