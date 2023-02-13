@@ -90,7 +90,7 @@ public class JdbcEventDao implements EventDao {
         // < means that we need to make up for more events to fill the gap between (the last event time we have on file VS a year from this current time)
 
         if (numberValueFromComparison < 0) {
-            System.out.println("It worked");
+            System.out.println("Lacking Future Events... Creating..");
 
             int days = daysBetween(cal1.getTime(), cal2.getTime());
 
