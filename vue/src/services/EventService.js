@@ -4,12 +4,14 @@ export default {
 
 
     getAllEvents() {
-        return axios.get(`/eventList`)
+        return axios.get(`/hundredEventList`)
     },
     createEvent(event) {
         return axios.post(`/createEvent`, event)
     },
-    
+    get100Events() {
+        return axios.get(`/100eventList`)
+    },
     
 
 }

@@ -379,7 +379,24 @@ public class JdbcEventDao implements EventDao {
         return allEvents;
     }
 
+    @Override
+    public List<Event> getHundredEvents() {
+        List<Event> allEvents = new ArrayList<>();
+        String sql = "SELECT * " +
+                "FROM events LIMIT 100; ";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+        while (result.next()) {
+            Event event = mapRowToEvent(result);
+            allEvents.add(event);
+        }
+        return allEvents;
+    }
 
+    @Override
+    public void registerForEvent(int client_id, int event_id) {
+        String sql = "INSERT INTO client_event (client_id, event_id) VALUES (?,?);";
+        jdbcTemplate.update(sql,client_id, event_id);
+    }
 
 
     @Override

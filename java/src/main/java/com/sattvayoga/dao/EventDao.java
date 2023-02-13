@@ -27,4 +27,9 @@ public interface EventDao {
     boolean deleteEvent(int eventId);
 
     boolean updateEventDetails(Event event);
+
+    List<Event> getHundredEvents();
+
+    void registerForEvent(int client_id, int event_id);
+
 }
