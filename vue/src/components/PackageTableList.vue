@@ -80,7 +80,7 @@
                           @change="onSubscriptionBooleanChange"
                         ></v-checkbox>
                         <v-checkbox
-                          v-model="packageDetails.is_only_online"
+                          v-model="packageDetails.is_visible_online"
                           label="Should this be Visible Online?"
                           required
                         ></v-checkbox>
@@ -172,7 +172,7 @@
                           @change="onSubscriptionBooleanChange"
                         ></v-checkbox>
                         <v-checkbox
-                          v-model="editedItem.is_only_online"
+                          v-model="editedItem.is_visible_online"
                           label="Visible Online?"
                           required
                         ></v-checkbox>
@@ -238,9 +238,9 @@
             disabled
           ></v-simple-checkbox>
         </template>
-        <template v-slot:[`item.is_only_online`]="{ item }">
+        <template v-slot:[`item.is_visible_online`]="{ item }">
           <v-simple-checkbox
-            v-model="item.is_only_online"
+            v-model="item.is_visible_online"
             disabled
           ></v-simple-checkbox>
         </template>
@@ -296,7 +296,7 @@ export default {
         { text: "Subscription?", value: "is_subscription", sortable: false },
         {
           text: "Visible Online?",
-          value: "is_only_online",
+          value: "is_visible_online",
           sortable: false,
         },
         { text: "Actions", value: "actions", sortable: false },
@@ -318,7 +318,7 @@ export default {
         classes_amount: 0,
         subscription_duration: 0,
         is_subscription: false,
-        is_only_online: false,
+        is_visible_online: false,
       },
       dropDownOpen: false,
 
@@ -332,7 +332,7 @@ export default {
         classes_amount: 0,
         subscription_duration: 0,
         is_subscription: false,
-        is_only_online: false,
+        is_visible_online: false,
       },
       descriptionRules: [(v) => !!v || "Description is required"],
 

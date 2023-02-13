@@ -11,19 +11,16 @@ public class PackageDetails {
     private int subscription_duration;
     private boolean is_subscription;
 
-    private boolean is_only_online;
+    private boolean is_visible_online;
 
-    public PackageDetails(int package_id, String description,
-                          BigDecimal package_cost, int classes_amount,
-                          boolean is_subscription, int subscription_duration,
-                          boolean is_in_person) {
+    public PackageDetails(int package_id, String description, BigDecimal package_cost, int classes_amount, int subscription_duration, boolean is_subscription, boolean is_visible_online) {
         this.package_id = package_id;
         this.description = description;
         this.package_cost = package_cost;
         this.classes_amount = classes_amount;
-        this.is_subscription = is_subscription;
         this.subscription_duration = subscription_duration;
-        this.is_only_online = is_in_person;
+        this.is_subscription = is_subscription;
+        this.is_visible_online = is_visible_online;
     }
 
     public PackageDetails() {
@@ -77,11 +74,11 @@ public class PackageDetails {
         this.subscription_duration = subscription_duration;
     }
 
-    public boolean isIs_only_online() {
-        return is_only_online;
+    public boolean isIs_visible_online() {
+        return is_visible_online;
     }
 
-    public void setIs_only_online(boolean is_only_online) {
-        this.is_only_online = is_only_online;
+    public void setIs_visible_online(boolean is_visible_online) {
+        this.is_visible_online = is_visible_online;
     }
 }

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.sql.SQLException;
 import java.util.List;
 
+
 @RestController
 @CrossOrigin
 public class EventController {
@@ -60,7 +61,7 @@ public class EventController {
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @RequestMapping(value = "/registerForClass", method = RequestMethod.POST)
+    @RequestMapping(value = "/registerForEvent", method = RequestMethod.POST)
     public void registerForEvent(@RequestBody ClientEventWrapper clientEvent) {
 
         // should we have exceptions if the class is already registered
@@ -88,7 +89,7 @@ public class EventController {
             this.client_id = client_id;
         }
 
-        @JsonProperty("class_id")
+        @JsonProperty("event_id")
         public int getEvent_id() {
             return event_id;
         }

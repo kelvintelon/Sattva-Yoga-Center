@@ -38,10 +38,10 @@ public class JdbcEventDao implements EventDao {
     @Override
     public void createEvent(Event newEvent) {
         String sql = "INSERT INTO events (class_id, event_name, start_time, " +
-                "end_time, color, timed) VALUES (?, ?, ?, ?, ?, ?)";
+                "end_time, color, timed, is_visible_online) VALUES (?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql, newEvent.getClass_id(),
                 newEvent.getEvent_name(), newEvent.getStart_time(),
-                newEvent.getEnd_time(), newEvent.getColor(), newEvent.isTimed());
+                newEvent.getEnd_time(), newEvent.getColor(), newEvent.isTimed(), newEvent.isIs_visible_online());
     }
 
     @Override
@@ -118,6 +118,8 @@ public class JdbcEventDao implements EventDao {
                                 newEvent.setColor("blue");
                                 // set timed (default to true)
                                 newEvent.setTimed(true);
+                                // set visible to true
+                                newEvent.setIs_visible_online(true);
 
                                 LocalDate nextOrSameSun = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
 
@@ -151,6 +153,8 @@ public class JdbcEventDao implements EventDao {
                             newEvent.setColor("blue");
                             // set timed (default to true)
                             newEvent.setTimed(true);
+                            // set visible to true
+                            newEvent.setIs_visible_online(true);
 
                             LocalDate nextOrSameMon = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY));
 
@@ -182,6 +186,8 @@ public class JdbcEventDao implements EventDao {
                             newEvent.setColor("blue");
                             // set timed (default to true)
                             newEvent.setTimed(true);
+                            // set visible to true
+                            newEvent.setIs_visible_online(true);
 
                             LocalDate nextOrSameTue = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.TUESDAY));
 
@@ -213,6 +219,8 @@ public class JdbcEventDao implements EventDao {
                             newEvent.setColor("blue");
                             // set timed (default to true)
                             newEvent.setTimed(true);
+                            // set visible to true
+                            newEvent.setIs_visible_online(true);
 
                             LocalDate nextOrSameWed = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.WEDNESDAY));
 
@@ -243,6 +251,8 @@ public class JdbcEventDao implements EventDao {
                             newEvent.setColor("blue");
                             // set timed (default to true)
                             newEvent.setTimed(true);
+                            // set visible to true
+                            newEvent.setIs_visible_online(true);
 
                             LocalDate nextOrSameThu = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.THURSDAY));
 
@@ -273,6 +283,8 @@ public class JdbcEventDao implements EventDao {
                             newEvent.setColor("blue");
                             // set timed (default to true)
                             newEvent.setTimed(true);
+                            // set visible to true
+                            newEvent.setIs_visible_online(true);
 
                             LocalDate nextOrSameFri = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.FRIDAY));
 
@@ -303,6 +315,8 @@ public class JdbcEventDao implements EventDao {
                             newEvent.setColor("blue");
                             // set timed (default to true)
                             newEvent.setTimed(true);
+                            // set visible to true
+                            newEvent.setIs_visible_online(true);
 
                             LocalDate nextOrSameSat = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY));
 
@@ -360,9 +374,10 @@ public class JdbcEventDao implements EventDao {
                 "start_time = ? , " +
                 "end_time = ? , " +
                 "color = ? , " +
-                "timed = ? " +
+                "timed = ? , " +
+                "is_visible_online = ? " +
                 "WHERE event_id = ?";
-        return jdbcTemplate.update(sql, event.getClass_id(), event.getEvent_name(), event.getStart_time(), event.getEnd_time(), event.getColor(), event.isTimed(), event.getEvent_id())==1;
+        return jdbcTemplate.update(sql, event.getClass_id(), event.getEvent_name(), event.getStart_time(), event.getEnd_time(), event.getColor(), event.isTimed(), event.isIs_visible_online(), event.getEvent_id())==1;
     }
 
     @Override
@@ -653,6 +668,9 @@ public class JdbcEventDao implements EventDao {
         event.setEnd_time(rs.getTimestamp("end_time"));
         event.setColor(rs.getString("color"));
         event.setTimed(rs.getBoolean("timed"));
+
+        event.setIs_visible_online(rs.getBoolean("is_visible_online"));
+
         return event;
     }
     public int daysBetween(Date d1, Date d2) {
@@ -708,6 +726,8 @@ public class JdbcEventDao implements EventDao {
         Long miliseconds = dayToMiliseconds(days);
         return new Timestamp(t1.getTime() + miliseconds);
     }
+
+
     // TODO: Modify the follow so you don't need this in here at some point
     @Override
     public List<ClassDetails> getAllClasses() throws SQLException {
