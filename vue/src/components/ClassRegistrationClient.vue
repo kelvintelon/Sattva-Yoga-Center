@@ -80,9 +80,11 @@
 </template>
 
 <script>
-// import packagePurchaseService from "../services/PackagePurchaseService";
+
 // import classDetailService from "../services/ClassDetailService";
 import eventService from "../services/EventService";
+import packagePurchaseService from "../services/PackagePurchaseService";
+
 
 export default {
   name: "class-registration",
@@ -95,7 +97,7 @@ export default {
           value: "event_name",
           align: "start",
         },
-        { text: "Date", value: "start_time", sortable: false },
+        { text: "Date", value: "date", sortable: false },
         { text: "Start Time", value: "start_time", sortable: false },
         { text: "End Time", value: "end_time", sortable: false },
         { text: "Sign Up", value: "actions", sortable: false },
@@ -106,7 +108,7 @@ export default {
           value: "event_name",
           align: "start",
         },
-        { text: "Date", value: "start_time", sortable: false },
+        { text: "Date", value: "date", sortable: false },
         { text: "Start Time", value: "start_time", sortable: false },
         { text: "End Time", value: "end_time", sortable: false },
         { text: "Cancel Signup", value: "actions", sortable: false },
@@ -122,6 +124,7 @@ export default {
       activePackageList: [],
       snackBarNoPurchaseWarning: false,
       classSignUpItem: {},
+      packages: [],
     };
   },
   methods: {
@@ -136,14 +139,16 @@ export default {
       this.classSignUpItem = Object.assign({}, item);
 
       // get active packages from API service request
+      this.getActivePurchaseServerRequest();
 
-      // this.$root.$refs.A.getActivePurchasePackageTable();
-      this.$root.$emit("getActivePackageTable");
-
-      // find out if they have at least one active package that's a subscription or a bundle and active
-      this.activePackageList = this.$store.state.activePackageList;
-
-      if (this.$store.state.activePackageList.length == 0) {
+      // Don't try these below at home 
+      // this.$root.$refs.A.getActivePurchaseServerRequest();
+      // this.$root.$emit("getActivePurchasePackageTable");
+    },
+    formattingSignUp(){
+        // find out if they have at least one active package that's a subscription or a bundle and active
+        // this.activePackageList = this.$store.state.activePackageList;
+        if (this.$store.state.activePackageList.length == 0) {
         this.allowSignUp = false;
 
         this.snackBarNoPurchaseWarning = true;
@@ -171,7 +176,7 @@ export default {
           if (item.event_id == this.eventClientSignUp.event_id) {
             alert("You have already signed up for this class!");
             this.validSignUp = false;
-          } 
+          }
         });
         if (this.validSignUp == true) {
           eventService
@@ -180,7 +185,7 @@ export default {
               if (response.status == 201) {
                 // call method that updates the client_class_table
                 // update client.is_new_client to false through mutation
-                alert("You have registered for a class")
+                alert("You have registered for a class");
                 this.$store.commit("SET_CLIENT_DETAILS_NEW_CLIENT", false);
                 this.getClientEventTable();
               }
@@ -189,21 +194,41 @@ export default {
       }
     },
     RemoveClassForClient(item) {
-      eventService
-        .removeEventForClient(item.event_id)
-        .then((response) => {
-          if (response.status == 200) {
-            // call method that updates the client_class_table
-            alert("Removed the class from your list")
-            this.getClientEventTable();
-          }
-        });
+      eventService.removeEventForClient(item.event_id).then((response) => {
+        if (response.status == 200) {
+          // call method that updates the client_class_table
+          alert("Removed the class from your list");
+          this.getClientEventTable();
+        }
+      });
     },
     getEventTable() {
       eventService.get100Events().then((response) => {
         if (response.status == 200) {
           this.$store.commit("SET_EVENT_LIST", response.data);
           this.events = response.data;
+          this.events.forEach((each) => {
+            // YYYY-MM-DD format
+            each.date = each.start_time;
+            const [Month, Day, Year] = new Date(each.date)
+              .toLocaleDateString()
+              .split("/");
+            each.date = Year + "-" + Month + "-" + Day;
+            // HH:MM AM/PM format
+            each.start_time = new Date(each.start_time).toLocaleString(
+              "en-US",
+              {
+                hour: "numeric",
+                minute: "numeric",
+                hour12: true,
+              }
+            );
+            each.end_time = new Date(each.end_time).toLocaleString("en-US", {
+              hour: "numeric",
+              minute: "numeric",
+              hour12: true,
+            });
+          });
         } else {
           alert("Error retrieving class information");
         }
@@ -214,6 +239,28 @@ export default {
         if (response.status == 200) {
           this.$store.commit("SET_CLIENT_EVENT_LIST", response.data);
           this.clientEvents = response.data;
+          this.clientEvents.forEach((each) => {
+            // YYYY-MM-DD format
+            each.date = each.start_time;
+            const [Month, Day, Year] = new Date(each.date)
+              .toLocaleDateString()
+              .split("/");
+            each.date = Year + "-" + Month + "-" + Day;
+            // HH:MM AM/PM format
+            each.start_time = new Date(each.start_time).toLocaleString(
+              "en-US",
+              {
+                hour: "numeric",
+                minute: "numeric",
+                hour12: true,
+              }
+            );
+            each.end_time = new Date(each.end_time).toLocaleString("en-US", {
+              hour: "numeric",
+              minute: "numeric",
+              hour12: true,
+            });
+          });
         } else {
           alert("Error retrieving class information");
         }
@@ -222,6 +269,25 @@ export default {
     sendThemToPurchasePackage() {
       this.snackBarNoPurchaseWarning = false;
       this.$router.push({ name: "client-package-management" });
+    },
+    getActivePurchaseServerRequest() {
+      packagePurchaseService.getUserPurchasedPackages().then((response) => {
+        if (response.status == 200) {
+          // focus on if it's expired or not
+
+          this.packages = response.data.filter((item) => {
+            return item.is_expired == false;
+          });
+          this.packages.forEach((item) => {
+            item.date_purchased = new Date(item.date_purchased);
+          });
+          this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
+          this.activePackageList = this.$store.state.activePackageList;
+          this.formattingSignUp()
+        } else {
+          alert("Error retrieving package information");
+        }
+      });
     },
   },
   created() {

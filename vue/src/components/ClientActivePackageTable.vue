@@ -101,12 +101,12 @@ export default {
     };
   },
   created() {
-    this.getActivePurchasePackageTable();
+    this.getActivePurchaseServerRequest();
     
     this.$root.$refs.A = this;
   },
   methods: {
-    getActivePurchasePackageTable() {
+    getActivePurchaseServerRequest() {
       packagePurchaseService.getUserPurchasedPackages().then((response) => {
         if (response.status == 200) {
           // focus on if it's expired or not
@@ -138,6 +138,11 @@ export default {
       });
     },
   },
+  mounted(){
+    this.$root.$on('getActivePurchasePackageTable', () => {
+      this.getActivePurchaseServerRequest();
+    })
+  }
 };
 </script>
 
