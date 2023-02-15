@@ -80,11 +80,9 @@
 </template>
 
 <script>
-
 // import classDetailService from "../services/ClassDetailService";
 import eventService from "../services/EventService";
 import packagePurchaseService from "../services/PackagePurchaseService";
-
 
 export default {
   name: "class-registration",
@@ -141,14 +139,33 @@ export default {
       // get active packages from API service request
       this.getActivePurchaseServerRequest();
 
-      // Don't try these below at home 
+      // Don't try these below at home
       // this.$root.$refs.A.getActivePurchaseServerRequest();
       // this.$root.$emit("getActivePurchasePackageTable");
     },
-    formattingSignUp(){
-        // find out if they have at least one active package that's a subscription or a bundle and active
-        // this.activePackageList = this.$store.state.activePackageList;
-        if (this.$store.state.activePackageList.length == 0) {
+    getActivePurchaseServerRequest() {
+      packagePurchaseService.getUserPurchasedPackages().then((response) => {
+        if (response.status == 200) {
+          // focus on if it's expired or not
+
+          this.packages = response.data.filter((item) => {
+            return item.is_expired == false;
+          });
+          this.packages.forEach((item) => {
+            item.date_purchased = new Date(item.date_purchased);
+          });
+          this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
+          this.activePackageList = this.$store.state.activePackageList;
+          this.formattingSignUp();
+        } else {
+          alert("Error retrieving package information");
+        }
+      });
+    },
+    formattingSignUp() {
+      // find out if they have at least one active package that's a subscription or a bundle and active
+      // this.activePackageList = this.$store.state.activePackageList;
+      if (this.$store.state.activePackageList.length == 0) {
         this.allowSignUp = false;
 
         this.snackBarNoPurchaseWarning = true;
@@ -269,25 +286,6 @@ export default {
     sendThemToPurchasePackage() {
       this.snackBarNoPurchaseWarning = false;
       this.$router.push({ name: "client-package-management" });
-    },
-    getActivePurchaseServerRequest() {
-      packagePurchaseService.getUserPurchasedPackages().then((response) => {
-        if (response.status == 200) {
-          // focus on if it's expired or not
-
-          this.packages = response.data.filter((item) => {
-            return item.is_expired == false;
-          });
-          this.packages.forEach((item) => {
-            item.date_purchased = new Date(item.date_purchased);
-          });
-          this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
-          this.activePackageList = this.$store.state.activePackageList;
-          this.formattingSignUp()
-        } else {
-          alert("Error retrieving package information");
-        }
-      });
     },
   },
   created() {
