@@ -1,5 +1,6 @@
 <template>
   <v-container>
+    <!-- DELETE SNACKBAR -->
     <v-snackbar
       v-model="snackBarDeleteEventWarning"
       color="red darken-2"
@@ -7,7 +8,7 @@
       :vertical="vertical"
       shaped
     >
-      Warning: Are you sure you want to hide this event?
+      Warning: Are you sure you want to delete this event?
 
       <template v-slot:action="{ attrs }">
         <v-btn
@@ -20,6 +21,31 @@
           Close
         </v-btn>
         <v-btn color="white" text v-bind="attrs" @click="allowEventDelete">
+          Continue
+        </v-btn>
+      </template>
+    </v-snackbar>
+    <!-- UPDATE SNACKBAR -->
+    <v-snackbar
+      v-model="snackBarUpdateEventWarning"
+      color="yellow darken-2"
+      elevation="24"
+      :vertical="vertical"
+      shaped
+    >
+      Warning: Edit this event?
+
+      <template v-slot:action="{ attrs }">
+        <v-btn
+          color="white"
+          text
+          v-bind="attrs"
+          @click="snackBarUpdateEventWarning = false"
+          left
+        >
+          Close
+        </v-btn>
+        <v-btn color="white" text v-bind="attrs" @click.prevent="submitUpdate">
           Continue
         </v-btn>
       </template>
@@ -65,8 +91,8 @@
                   <span class="text-h5"> Create Event </span>
                   <v-spacer></v-spacer>
                   <v-btn icon>
-                  <v-icon @click="close">mdi-window-close</v-icon>
-                </v-btn>
+                    <v-icon @click="close" alt="close">mdi-window-close</v-icon>
+                  </v-btn>
                 </v-card-title>
 
                 <!-- START OF CREATE EVENT FORM --->
@@ -91,8 +117,8 @@
                           required
                         ></v-text-field>
                         <!-- DATE PICKER -->
-                        
-                          <v-row>
+
+                        <v-row>
                           <v-col>
                             <v-menu
                               v-model="menu"
@@ -115,16 +141,32 @@
                                 v-model="dates"
                                 multiple
                               ></v-date-picker>
-                            </v-menu>
-                          </v-col><v-col> <v-checkbox v-model="event.is_visible_online" label="Visible Online?" required></v-checkbox></v-col></v-row>
-                          <!-- FIRST TIME PICKER -->
-                         <v-row> <v-col>
-                            <v-select label="Start Time" :items="allTimes" v-model="event.start_time" variant="underlined"></v-select>
+                            </v-menu> </v-col
+                          ><v-col>
+                            <v-checkbox
+                              v-model="event.is_visible_online"
+                              label="Visible Online?"
+                              required
+                            ></v-checkbox></v-col
+                        ></v-row>
+                        <!-- FIRST TIME PICKER -->
+                        <v-row>
+                          <v-col>
+                            <v-select
+                              label="Start Time"
+                              :items="allTimes"
+                              v-model="event.start_time"
+                              variant="underlined"
+                            ></v-select>
                           </v-col>
                           <!-- SECOND TIME PICKER -->
                           <v-col>
-                     
-                            <v-select label="End Time" :items="returnCorrectEndTime" v-model="event.end_time" variant="underlined"></v-select>
+                            <v-select
+                              label="End Time"
+                              :items="returnCorrectEndTime"
+                              v-model="event.end_time"
+                              variant="underlined"
+                            ></v-select>
                           </v-col> </v-row
                         ><v-row>
                           <v-spacer></v-spacer>
@@ -153,7 +195,6 @@
                               ></v-color-picker> </v-menu
                           ></v-col>
                           <v-spacer></v-spacer>
-                         
                         </v-row>
                         <v-row justify="center" align="center"
                           ><v-col cols="10">
@@ -227,11 +268,23 @@
                 </v-btn>
                 <v-toolbar-title v-html="selectedEvent.name"></v-toolbar-title>
                 <v-spacer></v-spacer>
+
+                <v-btn
+                  icon
+                  @click="toggleVisibleEvent(false)"
+                  v-show="toggleVisibilityButton == false"
+                >
+                  <v-icon>mdi-eye-off</v-icon>
+                </v-btn>
+                <v-btn icon @click="toggleVisibleEvent(true)" v-show="toggleVisibilityButton == true">
+                  <v-icon>mdi-eye-check</v-icon>
+                </v-btn>
+
                 <v-btn icon>
-                  <v-icon @click="confirmDelete">mdi-delete</v-icon>
+                  <v-icon @click="closeSelectedCard">mdi-window-close</v-icon>
                 </v-btn>
               </v-toolbar>
-              <v-card-text v-if="showEditForm == false">
+              <v-card-text v-show="!showEditForm">
                 <span
                   >{{ new Date(selectedEvent.start).getFullYear() }}-{{
                     new Date(selectedEvent.start).getMonth() + 1
@@ -261,258 +314,125 @@
                 >
               </v-card-text>
               <!-- UPDATE EVENT FORM -->
-              <v-card-text v-else>
+              <v-card-text v-show="showEditForm">
                 <v-form
-                        ref="form"
-                        height="100"
-                        width="500"
-                        v-model="valid"
-                        lazy-validation
-                        class="class-form mx-auto"
-                        @submit.prevent="submit"
-                        justify="center"
-                        align="center"
+                  ref="form"
+                  height="100"
+                  width="400"
+                  v-model="valid"
+                  lazy-validation
+                  class="class-form mx-auto"
+                  @submit.prevent="submitUpdate"
+                  justify="center"
+                  align="center"
+                >
+                  <v-text-field
+                    v-model="editedEvent.event_name"
+                    :rules="titleRules"
+                    label="Edit title"
+                    required
+                  ></v-text-field>
+                  <!-- DATE PICKER -->
+                  <v-row>
+                    <v-col>
+                      <v-menu
+                        v-model="editMenu"
+                        :close-on-content-click="false"
+                        :nudge-right="40"
+                        transition="scale-transition"
+                        offset-y
+                        min-width="auto"
                       >
-                        <v-text-field
-                          v-model="editedEvent.event_name"
-                          :rules="titleRules"
-                          label="Add title"
-                          required
-                        ></v-text-field>
-                        <!-- DATE PICKER -->
-                        <v-row>
-                          <v-col>
-                            <v-menu
-                              v-model="menu"
-                              :close-on-content-click="false"
-                              :nudge-right="40"
-                              transition="scale-transition"
-                              offset-y
-                              min-width="auto"
-                            >
-                              <template v-slot:activator="{ on, attrs }">
-                                <v-text-field
-                                  v-model="date2"
-                                  :rules="timeRules"
-                                  readonly
-                                  v-bind="attrs"
-                                  v-on="on"
-                                ></v-text-field>
-                              </template>
-                              <v-date-picker
-                                v-model="date2"
-                                @input="menu = false"
-                              ></v-date-picker>
-                            </v-menu>
-                          </v-col>
-                          <!-- FIRST TIME PICKER -->
-                          <v-col>
-                            <!-- <v-menu
-                              ref="menu2"
-                              v-model="dropDownOpen3"
-                              :close-on-content-click="false"
-                              :nudge-right="40"
-                              :return-value.sync="selectedTime"
-                              lazy
-                              transition="scale-transition"
-                              offset-y
-                              max-width="330px"
-                              min-width="330px"
-                            >
-                              <template v-slot:activator="{ on }">
-                                <v-text-field
-                                  v-model="displayTime3"
-                                  :rules="timeRules"
-                                  label="Start Time"
-                                  readonly
-                                  v-on="on"
-                                ></v-text-field>
-                              </template>
-                              <v-container
-                                class="v-date-time-widget-container"
-                                fluid
-                              >
-                                <br />
-                                <v-row>
-                                  <br />
-                                  <v-spacer></v-spacer>
-                                  <v-btn
-                                    fab
-                                    small
-                                    :color="getMeridiamButtonColor('AM')"
-                                    class="btn-am"
-                                    @click="meridiam = 'AM'"
-                                    >AM</v-btn
-                                  >
-                                  <v-spacer></v-spacer>
-                                  <v-btn
-                                    fab
-                                    small
-                                    :color="getMeridiamButtonColor('PM')"
-                                    class="btn-pm"
-                                    @click="meridiam = 'PM'"
-                                    >PM</v-btn
-                                  >
-                                  <v-spacer></v-spacer
-                                ></v-row>
-                                <br />
-                                <v-time-picker
-                                  v-if="dropDownOpen3"
-                                  v-model="timeModel"
-                                  full-width
-                                  scrollable
-                                  :no-title="true"
-                                  ampm-in-title
-                                  ><v-spacer></v-spacer>
-
-                                  <v-btn
-                                    text
-                                    color="primary"
-                                    @click="dropDownOpen3 = false"
-                                  >
-                                    Cancel
-                                  </v-btn>
-                                  <v-btn
-                                    text
-                                    color="primary"
-                                    @click="confirm()"
-                                  >
-                                    OK
-                                  </v-btn></v-time-picker
-                                >
-                                
-                              </v-container>
-                            </v-menu> -->
-                          </v-col>
-                          <!-- SECOND TIME PICKER -->
-                          <v-col>
-                            <!-- <v-menu
-                              ref="menu2"
-                              v-model="dropDownOpen4"
-                              :close-on-content-click="false"
-                              :nudge-right="40"
-                              :return-value.sync="selectedTime2"
-                              lazy
-                              transition="scale-transition"
-                              offset-y
-                              max-width="330px"
-                              min-width="330px"
-                            >
-                              <template v-slot:activator="{ on }">
-                                <v-text-field
-                                  v-model="displayTime4"
-                                  :rules="timeRules"
-                                  label="End Time"
-                                  readonly
-                                  v-on="on"
-                                ></v-text-field>
-                              </template>
-                              <v-container
-                                class="v-date-time-widget-container"
-                                fluid
-                              >
-                                <br />
-                                <v-row>
-                                  <br />
-                                  <v-spacer></v-spacer>
-                                  <v-btn
-                                    fab
-                                    small
-                                    :color="getMeridiamButtonColor2('AM')"
-                                    class="btn-am"
-                                    @click="meridiam2 = 'AM'"
-                                    >AM</v-btn
-                                  >
-                                  <v-spacer></v-spacer>
-                                  <v-btn
-                                    fab
-                                    small
-                                    :color="getMeridiamButtonColor2('PM')"
-                                    class="btn-pm"
-                                    @click="meridiam2 = 'PM'"
-                                    >PM</v-btn
-                                  >
-                                  <v-spacer></v-spacer
-                                ></v-row>
-                                <br />
-                                <v-time-picker
-                                  v-if="dropDownOpen4"
-                                  v-model="timeModel2"
-                                  full-width
-                                  scrollable
-                                  :no-title="true"
-                                  ampm-in-title
-                                  ><v-spacer></v-spacer>
-
-                                  <v-btn
-                                    text
-                                    color="primary"
-                                    @click="dropDownOpen4 = false"
-                                  >
-                                    Cancel
-                                  </v-btn>
-                                  <v-btn
-                                    text
-                                    color="primary"
-                                    @click="confirm2()"
-                                  >
-                                    OK
-                                  </v-btn></v-time-picker
-                                >
-                              
-                              </v-container>
-                            </v-menu> -->
-                          </v-col> </v-row
-                        ><v-row>
-                          <v-spacer></v-spacer>
-                          <!-- COLOR PICKER -->
-                          <v-col cols="3">
-                            <v-menu
-                              v-model="colorPickerMenu2"
-                              :close-on-content-click="false"
-                              :nudge-right="40"
-                              transition="scale-transition"
-                              offset-y
-                              min-width="auto"
-                            >
-                              <template v-slot:activator="{ on, attrs }">
-                                <v-text-field
-                                  label="Color"
-                                  v-model="editedEvent.color"
-                                  readonly
-                                  v-bind="attrs"
-                                  v-on="on"
-                                ></v-text-field>
-                              </template>
-                              <v-color-picker
-                                v-model="editedEvent.color"
-                                hide-inputs
-                              ></v-color-picker> </v-menu
-                          ></v-col>
-                          <v-spacer></v-spacer>
-                          <v-checkbox v-model="editedEvent.is_visible_online" label="Visible Online?" required></v-checkbox>
-                        </v-row>
-                        <v-row justify="center" align="center"
-                          ><v-col cols="10">
-                            <v-btn color="error" class="mr-4" @click="reset">
-                              Reset Form
-                            </v-btn>
-                          </v-col>
-                          <v-col>
-                            <v-btn
-                              class="mr-4"
-                              type="submit"
-                              :disabled="invalid"
-                            >
-                              submit
-                            </v-btn></v-col
-                          ></v-row
-                        >
-                      </v-form>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-text-field
+                            v-model="date2"
+                            :rules="timeRules"
+                            readonly
+                            v-bind="attrs"
+                            v-on="on"
+                          ></v-text-field>
+                        </template>
+                        <v-date-picker
+                          v-model="date2"
+                          @input="editMenu = false"
+                        ></v-date-picker>
+                      </v-menu>
+                    </v-col>
+                    <!-- FIRST TIME PICKER -->
+                    <v-col>
+                     
+                      <v-select
+                        label="Start Time"
+                        :items="allTimes"
+                        v-model="editedEvent.start_time"
+                        variant="underlined"
+                      ></v-select>
+                    </v-col>
+                    <!-- SECOND TIME PICKER -->
+                    <v-col>
+                      
+                      <v-select
+                        label="End Time"
+                        :items="returnCorrectEndTime"
+                        v-model="editedEvent.end_time"
+                        variant="underlined"
+                      ></v-select>
+                    </v-col> </v-row
+                  ><v-row>
+                    <v-spacer></v-spacer>
+                    <!-- COLOR PICKER -->
+                    <v-col cols="3">
+                      <v-menu
+                        v-model="colorPickerMenu2"
+                        :close-on-content-click="false"
+                        :nudge-right="40"
+                        transition="scale-transition"
+                        offset-y
+                        min-width="auto"
+                      >
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-text-field
+                            label="Color"
+                            v-model="editedEvent.color"
+                            readonly
+                            v-bind="attrs"
+                            v-on="on"
+                          ></v-text-field>
+                        </template>
+                        <v-color-picker
+                          v-model="editedEvent.color"
+                          hide-inputs
+                        ></v-color-picker> </v-menu
+                    ></v-col>
+                    <v-spacer></v-spacer>
+                    <v-checkbox
+                      v-model="editedEvent.is_visible_online"
+                      label="Visible Online?"
+                      required
+                    ></v-checkbox>
+                    <v-spacer></v-spacer>
+                  </v-row>
+                  <v-row justify="center" align="center"
+                    ><v-spacer></v-spacer><v-col cols="3">
+                      <v-btn color="error" class="mr-4" @click="reset">
+                        Reset Form
+                      </v-btn>
+                    </v-col>
+                    <v-spacer></v-spacer>
+                    <v-col>
+                      <v-btn class="mr-4" type="submit" :disabled="invalid">
+                        submit
+                      </v-btn></v-col
+                    ><v-spacer></v-spacer></v-row
+                  ><v-spacer></v-spacer>
+                </v-form>
               </v-card-text>
               <v-card-actions>
-                <v-btn text color="secondary" @click="closeCard">
+                <v-btn text color="secondary" @click="closeSelectedCard">
                   Cancel
+                </v-btn>
+                <v-btn icon>
+                  <v-icon @click="confirmDelete">mdi-delete</v-icon>
                 </v-btn>
               </v-card-actions>
             </v-card>
@@ -532,11 +452,108 @@ export default {
   components: {},
   data: () => ({
     type: "month",
-    allTimes: ["12:00 AM", "12:15 AM", "12:30 AM", "12:45 AM", "1:00 AM", "1:15 AM", "1:30 AM", "1:45 AM", "2:00 AM", "2:15 AM", "2:30 AM", "2:45 AM", "3:00 AM", "3:15 AM", "3:30 AM", "3:45 AM", "4:00 AM", "4:15 AM", "4:30 AM", "4:45 AM", "5:00 AM", "5:15 AM", "5:30 AM", "5:45 AM", "6:00 AM", "6:15 AM", "6:30 AM", "6:45 AM", "7:00 AM", "7:15 AM", "7:30 AM", "7:45 AM", "8:00 AM", "8:15 AM", "8:30 AM", "8:45 AM", "9:00 AM", "9:15 AM", "9:30 AM", "9:45 AM", "10:00 AM", "10:15 AM", "10:30 AM", "10:45 AM", "11:00 AM", "11:15 AM", "11:30 AM", "11:45 AM", "12:00 PM", "12:15 PM", "12:30 PM", "12:45 PM", "1:00 PM", "1:15 PM", "1:30 PM", "1:45 PM", "2:00 PM", "2:15 PM", "2:30 PM", "2:45 PM", "3:00 PM", "3:15 PM", "3:30 PM", "3:45 PM", "4:00 PM", "4:15 PM", "4:30 PM", "4:45 PM", "5:00 PM", "5:15 PM", "5:30 PM", "5:45 PM", "6:00 PM", "6:15 PM", "6:30 PM", "6:45 PM", "7:00 PM", "7:15 PM", "7:30 PM", "7:45 PM", "8:00 PM", "8:15 PM", "8:30 PM", "8:45 PM", "9:00 PM", "9:15 PM", "9:30 PM", "9:45 PM", "10:00 PM", "10:15 PM", "10:30 PM", "10:45 PM", "11:00 PM", "11:15 PM", "11:30 PM"],
+    allTimes: [
+      "12:00 AM",
+      "12:15 AM",
+      "12:30 AM",
+      "12:45 AM",
+      "1:00 AM",
+      "1:15 AM",
+      "1:30 AM",
+      "1:45 AM",
+      "2:00 AM",
+      "2:15 AM",
+      "2:30 AM",
+      "2:45 AM",
+      "3:00 AM",
+      "3:15 AM",
+      "3:30 AM",
+      "3:45 AM",
+      "4:00 AM",
+      "4:15 AM",
+      "4:30 AM",
+      "4:45 AM",
+      "5:00 AM",
+      "5:15 AM",
+      "5:30 AM",
+      "5:45 AM",
+      "6:00 AM",
+      "6:15 AM",
+      "6:30 AM",
+      "6:45 AM",
+      "7:00 AM",
+      "7:15 AM",
+      "7:30 AM",
+      "7:45 AM",
+      "8:00 AM",
+      "8:15 AM",
+      "8:30 AM",
+      "8:45 AM",
+      "9:00 AM",
+      "9:15 AM",
+      "9:30 AM",
+      "9:45 AM",
+      "10:00 AM",
+      "10:15 AM",
+      "10:30 AM",
+      "10:45 AM",
+      "11:00 AM",
+      "11:15 AM",
+      "11:30 AM",
+      "11:45 AM",
+      "12:00 PM",
+      "12:15 PM",
+      "12:30 PM",
+      "12:45 PM",
+      "1:00 PM",
+      "1:15 PM",
+      "1:30 PM",
+      "1:45 PM",
+      "2:00 PM",
+      "2:15 PM",
+      "2:30 PM",
+      "2:45 PM",
+      "3:00 PM",
+      "3:15 PM",
+      "3:30 PM",
+      "3:45 PM",
+      "4:00 PM",
+      "4:15 PM",
+      "4:30 PM",
+      "4:45 PM",
+      "5:00 PM",
+      "5:15 PM",
+      "5:30 PM",
+      "5:45 PM",
+      "6:00 PM",
+      "6:15 PM",
+      "6:30 PM",
+      "6:45 PM",
+      "7:00 PM",
+      "7:15 PM",
+      "7:30 PM",
+      "7:45 PM",
+      "8:00 PM",
+      "8:15 PM",
+      "8:30 PM",
+      "8:45 PM",
+      "9:00 PM",
+      "9:15 PM",
+      "9:30 PM",
+      "9:45 PM",
+      "10:00 PM",
+      "10:15 PM",
+      "10:30 PM",
+      "10:45 PM",
+      "11:00 PM",
+      "11:15 PM",
+      "11:30 PM",
+    ],
     date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
       .toISOString()
       .substr(0, 10),
     types: ["month", "week", "day"],
+    date2: "",
     dates: [],
     mode: "stack",
     modes: ["stack"],
@@ -562,7 +579,7 @@ export default {
       end_time: "",
       color: "#3388FF",
       timed: true,
-      is_visible_online: true
+      is_visible_online: true,
     },
     editedEvent: {
       class_id: 0,
@@ -571,7 +588,7 @@ export default {
       end_time: "",
       color: "#3388FF",
       timed: true,
-      is_visible_online: true
+      is_visible_online: true,
     },
     typeToLabel: {
       month: "Month",
@@ -585,12 +602,15 @@ export default {
     classes: [],
     serverEvents: [],
     menu: false,
+    editMenu: false,
     colorPickerMenu1: false,
     colorPickerMenu2: false,
     dialog: false,
     snackBarDeleteEventWarning: false,
+    snackBarUpdateEventWarning: false,
     showEditForm: false,
     createFormIncomplete: true,
+    toggleVisibilityButton: true,
   }),
   methods: {
     checkCreateForm() {
@@ -601,15 +621,16 @@ export default {
         this.dates.length == 0
       ) {
         alert("Please fill out your form");
+        this.createFormIncomplete = true;
       } else {
         this.createFormIncomplete = false;
       }
     },
-    closeCard() {
+    closeSelectedCard() {
       this.selectedOpen = false;
       this.showEditForm = false;
     },
-    showCardEditForm(){
+    showCardEditForm() {
       this.showEditForm = !this.showEditForm;
     },
     confirmDelete() {
@@ -620,28 +641,181 @@ export default {
       // find the ID of selected event
       for (let i = 0; i < this.serverEvents.length; i++) {
         if (
-         new Date(this.serverEvents[i].start_time).getTime() == new Date(this.selectedEvent.start).getTime() &&
-          new Date(this.serverEvents[i].end_time).getTime() == new Date(this.selectedEvent.end).getTime() &&
+          new Date(this.serverEvents[i].start_time).getTime() ==
+            new Date(this.selectedEvent.start).getTime() &&
+          new Date(this.serverEvents[i].end_time).getTime() ==
+            new Date(this.selectedEvent.end).getTime() &&
           this.serverEvents[i].event_name == this.selectedEvent.name
         ) {
           this.selectedEventID = this.serverEvents[i].event_id;
           this.selectedEventIndex = i;
-          this.serverEvents[this.selectedEventIndex].color = "#808080"
-          this.events[this.selectedEventIndex].color = "#808080"
+          // remove from all arrays
+          this.events.splice(this.selectedEventIndex,1);
+          this.serverEvents.splice(this.selectedEventIndex,1);
+        }
+      }
+      // this will eventually be an update instead,
+      eventService
+        .deleteEvent(this.selectedEventID)
+        .then((response) => {
+          if (response.status == 200) {
+            // remove it from the calendar event list
+            // alert("Event successfully deleted!");
+          } else {
+            alert("Error removing event!");
+          }
+        });
+    },
+     confirmUpdate() {
+      this.snackBarUpdateEventWarning = true;
+    },
+    submitUpdate() {
+      this.snackBarupdateEventWarning = false;
+      // find the ID of selected event
+      for (let i = 0; i < this.serverEvents.length; i++) {
+        if (
+          new Date(this.serverEvents[i].start_time).getTime() ==
+            new Date(this.selectedEvent.start).getTime() &&
+          new Date(this.serverEvents[i].end_time).getTime() ==
+            new Date(this.selectedEvent.end).getTime() &&
+          this.serverEvents[i].event_name == this.selectedEvent.name
+        ) {
+          this.selectedEventID = this.serverEvents[i].event_id;
+          this.selectedEventIndex = i;
+
+          if (this.editedEvent.is_visible_online == false) {
+          this.serverEvents[this.selectedEventIndex].color = "#808080";
+          this.events[this.selectedEventIndex].color = "#808080";
+          this.editedEvent.color = "#808080";
+          } else {
+            this.serverEvents[this.selectedEventIndex].color = this.editedEvent.color;
+          this.events[this.selectedEventIndex].color = this.editedEvent.color;
+          }
+
         }
       }
 
       // make sure to format the object like you do in the submit method
 
-      // this will eventually be an update instead, 
-      eventService.updateEvent(this.serverEvents[this.selectedEventIndex]).then((response) => {
-        if (response.status == 200) {
-          // remove it from the calendar event list
-          alert("Event successfully hidden!");
-        } else {
-          alert("Error removing event!");
+      const [time, modifier] = this.event.start_time.split(" ");
+
+        let [hours, minutes] = time.split(":");
+
+        if (hours === "12") {
+          hours = "00";
         }
-      });
+
+    
+
+        if (modifier === "PM") {
+          hours = parseInt(hours, 10) + 12;
+        } else if (hours.length == 1) {
+          hours = "0"+hours;
+        }
+
+        let startTime = `${hours}:${minutes}`;
+
+        const [time2, modifier2] = this.event.end_time.split(" ");
+
+        let [hours2, minutes2] = time2.split(":");
+
+        if (hours2 === "12") {
+          hours2 = "00";
+        }
+
+        if (modifier2 === "PM") {
+          hours2 = parseInt(hours2, 10) + 12;
+        } else if (hours2.length == 1) {
+          hours2 = "0"+hours2;
+        }
+
+        let endTime = `${hours2}:${minutes2}`;
+
+
+          this.editedEvent.start_time = new Date(this.date2 + "T" + startTime);
+          this.editedEvent.end_time = new Date(this.date2 + "T" + endTime);
+      // this will eventually be an update instead,
+      eventService
+        .updateEvent(this.editedEvent)
+        .then((response) => {
+          if (response.status == 200) {
+            // remove it from the calendar event list
+            // alert("Event successfully updated!");
+          } else {
+            alert("Error removing event!");
+          }
+        });
+    },
+    toggleVisibleEvent(value) {
+      this.editedEvent.is_visible_online = value;
+      if (value) {
+        // make it colorful again
+       
+        this.editedEvent.color = "orange"
+        this.events[this.selectedEventIndex].color = "orange"
+        this.serverEvents[this.selectedEventIndex].color = "orange"
+
+        this.toggleVisibilityButton = false;
+      } else {
+        // make it grey
+        
+        this.editedEvent.color = "#808080"
+        this.events[this.selectedEventIndex].color = "#808080"
+        this.serverEvents[this.selectedEventIndex].color = "#808080"
+
+        this.toggleVisibilityButton = true;
+      }
+
+      // make sure to format the object like you do in the submit method
+
+      const [time, modifier] = this.event.start_time.split(" ");
+
+        let [hours, minutes] = time.split(":");
+
+        if (hours === "12") {
+          hours = "00";
+        }
+
+    
+
+        if (modifier === "PM") {
+          hours = parseInt(hours, 10) + 12;
+        } else if (hours.length == 1) {
+          hours = "0"+hours;
+        }
+
+        let startTime = `${hours}:${minutes}`;
+
+        const [time2, modifier2] = this.event.end_time.split(" ");
+
+        let [hours2, minutes2] = time2.split(":");
+
+        if (hours2 === "12") {
+          hours2 = "00";
+        }
+
+        if (modifier2 === "PM") {
+          hours2 = parseInt(hours2, 10) + 12;
+        } else if (hours2.length == 1) {
+          hours2 = "0"+hours2;
+        }
+
+        let endTime = `${hours2}:${minutes2}`;
+
+
+          this.editedEvent.start_time = new Date(this.date2 + "T" + startTime);
+          this.editedEvent.end_time = new Date(this.date2 + "T" + endTime);
+
+       eventService
+        .updateEvent(this.editedEvent)
+        .then((response) => {
+          if (response.status == 200) {
+            // remove it from the calendar event list
+            // alert("Event successfully updated!");
+          } else {
+            alert("Error removing event!");
+          }
+        });
     },
     viewDay({ date }) {
       this.value = date;
@@ -660,24 +834,83 @@ export default {
     next() {
       this.$refs.calendar.next();
     },
-    showEvent ({ nativeEvent, event }) {
-        const open = () => {
-          this.selectedEvent = event
-          this.selectedElement = nativeEvent.target
-          requestAnimationFrame(() => requestAnimationFrame(() => this.selectedOpen = true))
-        }
+    showEvent({ nativeEvent, event }) {
+      const open = () => {
+        this.selectedEvent = event;
+        this.selectedElement = nativeEvent.target;
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => (this.selectedOpen = true))
+        );
 
-        if (this.selectedOpen) {
-          this.selectedOpen = false
-          requestAnimationFrame(() => requestAnimationFrame(() => open()))
-        } else {
-          open()
-        }
+        // LOGIC GOES BELOW HERE
+        
+        this.findsMatch()
+        // LOGIC GOES ABOVE HERE
+      };
 
-        nativeEvent.stopPropagation()
-      },
+      if (this.selectedOpen) {
+        this.selectedOpen = false;
+        requestAnimationFrame(() => requestAnimationFrame(() => open()));
+      } else {
+        open();
+      }
+
+      nativeEvent.stopPropagation();
+
+    },
+    findsMatch() {
+      // let foundMatch = false;
+      this.editedEvent.event_name = this.selectedEvent.name;
+
+        this.date2 = new Date(this.selectedEvent.start)
+          .toISOString()
+          .split("T")[0];
+
+        this.editedEvent.start_time = new Date(
+          this.selectedEvent.start
+        ).toLocaleString("en-US", {
+          hour: "numeric",
+          minute: "numeric",
+          hour12: true,
+        });
+        this.editedEvent.end_time = new Date(
+          this.selectedEvent.end
+        ).toLocaleString("en-US", {
+          hour: "numeric",
+          minute: "numeric",
+          hour12: true,
+        });
+        this.editedEvent.color = this.selectedEvent.color;
+
+        for (let i = 0; i < this.serverEvents.length; i++) {
+          if (
+            new Date(this.serverEvents[i].start_time).getTime() ==
+              new Date(this.selectedEvent.start).getTime() &&
+            new Date(this.serverEvents[i].end_time).getTime() ==
+              new Date(this.selectedEvent.end).getTime() &&
+            this.serverEvents[i].event_name == this.selectedEvent.name
+          ) {
+            // match the event_id
+            this.editedEvent.event_id = this.serverEvents[i].event_id;
+            // match the class id
+            this.editedEvent.class_id = this.serverEvents[i].class_id;
+            // match the visibility boolean
+            this.editedEvent.is_visible_online = this.serverEvents[i].is_visible_online;
+            // log the ID in this variable
+            this.selectedEventID = this.serverEvents[i].event_id;
+            // log the index in this variable
+            this.selectedEventIndex = i;
+            
+            // toggle the eye icon
+            if (!this.serverEvents[i].is_visible_online) {
+              this.toggleVisibilityButton = true      
+            } else {
+              this.toggleVisibilityButton = false      
+            }
+          }
+        }
+    },
     getEvents() {
-
       this.eventQuantity = this.$store.state.eventList.length;
 
       const events = [];
@@ -723,85 +956,92 @@ export default {
       this.reset();
     },
     reset() {
+      // resets a create form
       this.event.start_time = "";
-
+      this.event.event_name = ""
+      this.dates = [];
+      this.event.color = "#3388FF";
+      this.event.is_visible_online = true;
       // dont uncomment the next line, let it stay the computed property
       // this.event.end_time = "";
 
-      this.event.color = "#3388FF";
-      this.event.is_visible_online = true;
+      // resets a edit form
+      this.findsMatch()
     },
     submit() {
-      // check if the form is complete 
-      this.checkCreateForm() 
+      // check if the form is complete
+      this.checkCreateForm();
       if (this.createFormIncomplete == false) {
-        
-      // first grab the AM PM times and turn them into date objects
+        // first grab the AM PM times and turn them into date objects
 
-      const [time, modifier] = this.event.start_time.toString().split(" ");
+        const [time, modifier] = this.event.start_time.split(" ");
 
-      let [hours, minutes] = time.split(":");
+        let [hours, minutes] = time.split(":");
 
-      if (hours === "12") {
-        hours = "00";
-      }
-
-      if (modifier === "PM") {
-        hours = parseInt(hours, 10) + 12;
-      }
-
-      let startTime = `${hours}:${minutes}`;
-      
-
-      const [time2, modifier2] = this.event.end_time.toString().split(" ");
-
-      let [hours2, minutes2] = time2.split(":");
-
-      if (hours2 === "12") {
-        hours2 = "00";
-      }
-
-      if (modifier2 === "PM") {
-        hours2 = parseInt(hours2, 10) + 12;
-      }
-
-      let endTime = `${hours2}:${minutes2}`;
-
-      for (let index = 0; index < this.dates.length; index++) {
-        
-        this.event.start_time = new Date(
-        this.dates[index] + "T" + startTime);
-   
-      this.event.end_time = new Date(
-        this.dates[index] + "T" + endTime);
-        
-
-      // then call the service
-
-      eventService.createEvent(this.event).then((response) => {
-        if (response.status == 201) {
-        
-        // the following condition calls the api service to retrieve all events from DB after the last one
-         if (index+1 == this.dates.length) {
-          this.getAllEvents();
-         }
-          
-        } else {
-          alert("Failed to create event");
+        if (hours === "12") {
+          hours = "00";
         }
-      });
 
-      //end of loop block
-      } 
-          // closes create event dialog
-          this.close();
-      } 
+    
+
+        if (modifier === "PM") {
+          hours = parseInt(hours, 10) + 12;
+        } else if (hours.length == 1) {
+          hours = "0"+hours;
+        }
+
+        let startTime = `${hours}:${minutes}`;
+
+        const [time2, modifier2] = this.event.end_time.split(" ");
+
+        let [hours2, minutes2] = time2.split(":");
+
+        if (hours2 === "12") {
+          hours2 = "00";
+        }
+
+        if (modifier2 === "PM") {
+          hours2 = parseInt(hours2, 10) + 12;
+        } else if (hours2.length == 1) {
+          hours2 = "0"+hours2;
+        }
+
+        let endTime = `${hours2}:${minutes2}`;
+        
+        for (let index = 0; index < this.dates.length; index++) {
+          let chosenDate = this.dates[index];
+          let newStartDate = new Date(chosenDate + "T" + startTime).toJSON();
+          let newEndDate = new Date(chosenDate + "T" + endTime).toJSON();
+          this.event.start_time = newStartDate
+         
+          this.event.end_time = newEndDate;
+          
+          // then call the service
+
+          eventService.createEvent(this.event).then((response) => {
+            if (response.status == 201) {
+              // the following condition calls the api service to retrieve all events from DB after the last one (expensive way)
+            //   alert(index)
+            //   alert(this.dates.length)
+            //   if ((index += 1) == this.dates.length) {
+            //     alert(index+=1)
+                this.getAllEvents();
+              // }
+            } else {
+              alert("Failed to create event");
+            }
+          });
+
+          //end of loop block
+        }
+        // closes create event dialog
+        this.close();
+      }
     },
   },
   created() {
     this.getAllClasses();
     this.getAllEvents();
-
   },
   mounted() {
     this.$refs.calendar.checkChange();
@@ -812,28 +1052,27 @@ export default {
       if (this.event.start_time != "") {
         let datesToReturn = [];
         let foundMatch = false;
-        for (let index = 0; index < this.allTimes.length-1; index++) {
+        for (let index = 0; index < this.allTimes.length - 1; index++) {
           if (this.event.start_time == this.allTimes[index]) {
             foundMatch = true;
           }
           if (foundMatch) {
-            datesToReturn.push(this.allTimes[index+1])
-          }         
+            datesToReturn.push(this.allTimes[index + 1]);
+          }
         }
-        return datesToReturn
+        return datesToReturn;
       } else {
-        return this.allTimes
+        return this.allTimes;
       }
     },
-    dateRangeText () {
+    dateRangeText() {
       if (this.dates.length == 1) {
-        return this.dates.length + " Day Selected"
+        return this.dates.length + " Day Selected";
       } else {
-        return this.dates.length + " Days Selected"
+        return this.dates.length + " Days Selected";
       }
-        
-      },
-  }
+    },
+  },
 };
 </script>
 
