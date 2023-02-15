@@ -253,6 +253,7 @@
             :event-color="getEventColor"
             @change="getEvents"
             @click:event="showEvent"
+           
             @click:more="viewWeek"
             @click:date="viewDay"
           ></v-calendar>
@@ -844,7 +845,7 @@ export default {
           minute: "numeric",
           hour12: true,
         });
-        
+
         // assigns the correct color pulled from what was selected
         this.editedEvent.color = this.selectedEvent.color;
 
@@ -1060,6 +1061,8 @@ export default {
         }
       },
       endDrag () {
+        //  @mouseleave.native="cancelDrag"
+        // this.submitUpdate()
         this.dragTime = null
         this.dragEvent = null
         this.createEvent = null
