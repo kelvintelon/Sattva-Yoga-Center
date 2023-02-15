@@ -613,6 +613,12 @@ export default {
     showEditForm: false,
     createFormIncomplete: true,
     toggleVisibilityButton: true,
+    // UPDATE PROPERTIES BELOW
+    dragEvent: null,
+    dragStart: null,
+    createEvent: null,
+    createStart: null,
+    extendOriginal: null,
   }),
   methods: {
     checkCreateForm() {
@@ -640,12 +646,10 @@ export default {
     },
     allowEventDelete() {
       this.snackBarDeleteEventWarning = false;
-      // find the ID of selected event
 
+      // find the ID of selected event
       this.findsMatch();
 
-      
-    
       eventService
         .deleteEvent(this.selectedEventID)
         .then((response) => {
@@ -819,13 +823,13 @@ export default {
 
     },
     findsMatch() {
-      // let foundMatch = false;
       this.editedEvent.event_name = this.selectedEvent.name;
 
-        this.date2 = new Date(this.selectedEvent.start)
-          .toISOString()
-          .split("T")[0];
+        // finds YYYY-MM-DD format
+        const [selectedMonth, selectedDay, selectedYear] = new Date(this.selectedEvent.start).toLocaleDateString().split("/")
+        this.date2 = selectedYear+"-"+selectedMonth+"-"+selectedDay;
 
+        // converts Date Object to 12:00 AM/PM string
         this.editedEvent.start_time = new Date(
           this.selectedEvent.start
         ).toLocaleString("en-US", {
@@ -840,8 +844,11 @@ export default {
           minute: "numeric",
           hour12: true,
         });
+        
+        // assigns the correct color pulled from what was selected
         this.editedEvent.color = this.selectedEvent.color;
 
+        // begin looping to find match for more information
         for (let i = 0; i < this.serverEvents.length; i++) {
           if (
             new Date(this.serverEvents[i].start_time).getTime() ==
@@ -942,8 +949,6 @@ export default {
           hours = "00";
         }
 
-    
-
         if (modifier === "PM") {
           hours = parseInt(hours, 10) + 12;
         } else if (hours.length == 1) {
@@ -980,13 +985,14 @@ export default {
 
           eventService.createEvent(this.event).then((response) => {
             if (response.status == 201) {
-              // the following condition calls the api service to retrieve all events from DB after the last one (expensive way)
-            //   alert(index)
-            //   alert(this.dates.length)
+       
+            // VERY EXPENSIVE API CALL please optimizie
+                this.getAllEvents();      
+
+            // the following condition calls the api service to retrieve all events from DB after the last one (expensive way))
             //   if ((index += 1) == this.dates.length) {
             //     alert(index+=1)
-                this.getAllEvents();
-              // }
+            // }
             } else {
               alert("Failed to create event");
             }
@@ -998,6 +1004,96 @@ export default {
         this.close();
       }
     },
+    //////////////////////////////DRAG AND UPDATE METHODS BELOW
+   startDrag ({ event, timed }) {
+        if (event && timed) {
+          this.dragEvent = event
+          this.dragTime = null
+          this.extendOriginal = null
+        }
+      },
+      startTime (tms) {
+        const mouse = this.toTime(tms)
+
+        if (this.dragEvent && this.dragTime === null) {
+          const start = this.dragEvent.start
+
+          this.dragTime = mouse - start
+        } else {
+          this.createStart = this.roundTime(mouse)
+          this.createEvent = {
+            name: `Event #${this.events.length}`,
+            color: this.rndElement(this.colors),
+            start: this.createStart,
+            end: this.createStart,
+            timed: true,
+          }
+
+          this.events.push(this.createEvent)
+        }
+      },
+      extendBottom (event) {
+        this.createEvent = event
+        this.createStart = event.start
+        this.extendOriginal = event.end
+      },
+      mouseMove (tms) {
+        const mouse = this.toTime(tms)
+
+        if (this.dragEvent && this.dragTime !== null) {
+          const start = this.dragEvent.start
+          const end = this.dragEvent.end
+          const duration = end - start
+          const newStartTime = mouse - this.dragTime
+          const newStart = this.roundTime(newStartTime)
+          const newEnd = newStart + duration
+
+          this.dragEvent.start = newStart
+          this.dragEvent.end = newEnd
+        } else if (this.createEvent && this.createStart !== null) {
+          const mouseRounded = this.roundTime(mouse, false)
+          const min = Math.min(mouseRounded, this.createStart)
+          const max = Math.max(mouseRounded, this.createStart)
+
+          this.createEvent.start = min
+          this.createEvent.end = max
+        }
+      },
+      endDrag () {
+        this.dragTime = null
+        this.dragEvent = null
+        this.createEvent = null
+        this.createStart = null
+        this.extendOriginal = null
+      },
+      cancelDrag () {
+        if (this.createEvent) {
+          if (this.extendOriginal) {
+            this.createEvent.end = this.extendOriginal
+          } else {
+            const i = this.events.indexOf(this.createEvent)
+            if (i !== -1) {
+              this.events.splice(i, 1)
+            }
+          }
+        }
+
+        this.createEvent = null
+        this.createStart = null
+        this.dragTime = null
+        this.dragEvent = null
+      },
+      roundTime (time, down = true) {
+        const roundTo = 15 // minutes
+        const roundDownTime = roundTo * 60 * 1000
+
+        return down
+          ? time - time % roundDownTime
+          : time + (roundDownTime - (time % roundDownTime))
+      },
+      toTime (tms) {
+        return new Date(tms.year, tms.month - 1, tms.day, tms.hour, tms.minute).getTime()
+      } 
   },
   created() {
     this.getAllClasses();
