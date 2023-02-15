@@ -213,6 +213,7 @@
                           ></v-row
                         >
                       </v-form>
+                      <!-- End of Create Form -->
                     </v-col>
                   </v-row>
                 </v-container>
@@ -255,6 +256,7 @@
             @click:more="viewWeek"
             @click:date="viewDay"
           ></v-calendar>
+          <!-- Show Selected Event -->
           <v-menu
             v-model="selectedOpen"
             :close-on-content-click="false"
@@ -640,30 +642,17 @@ export default {
       this.snackBarDeleteEventWarning = false;
       // find the ID of selected event
 
-      // for (let i = 0; i < this.serverEvents.length; i++) {
-      //   if (
-      //     new Date(this.serverEvents[i].start_time).getTime() ==
-      //       new Date(this.selectedEvent.start).getTime() &&
-      //     new Date(this.serverEvents[i].end_time).getTime() ==
-      //       new Date(this.selectedEvent.end).getTime() &&
-      //     this.serverEvents[i].event_name == this.selectedEvent.name
-      //   ) {
-      //     this.selectedEventID = this.serverEvents[i].event_id;
-      //     this.selectedEventIndex = i;
-      //     // remove from all arrays
-         
-      //   }
-      // }
       this.findsMatch();
+
       
-       this.events.splice(this.selectedEventIndex,1);
-          this.serverEvents.splice(this.selectedEventIndex,1);
-      // this will eventually be an update instead,
+    
       eventService
         .deleteEvent(this.selectedEventID)
         .then((response) => {
           if (response.status == 200) {
-            // remove it from the calendar event list
+
+            this.events.splice(this.selectedEventIndex,1);
+            this.serverEvents.splice(this.selectedEventIndex,1);
             // alert("Event successfully deleted!");
           } else {
             alert("Error removing event!");
@@ -708,8 +697,6 @@ export default {
           hours = "00";
         }
 
-    
-
         if (modifier === "PM") {
           hours = parseInt(hours, 10) + 12;
         } else if (hours.length == 1) {
@@ -744,9 +731,8 @@ export default {
         .updateEvent(this.editedEvent)
         .then((response) => {
           if (response.status == 200) {
-            // remove it from the calendar event list
-            this.getAllEvents()
             // alert("Event successfully updated!");
+            this.getAllEvents()
           } else {
             alert("Error removing event!");
           }
@@ -776,7 +762,7 @@ export default {
 
         this.toggleVisibilityButton = true;
       }
-
+          // find the right times
           this.editedEvent.start_time = this.serverEvents[this.selectedEventIndex].start_time;
           this.editedEvent.end_time = this.serverEvents[this.selectedEventIndex].end_time;
 
