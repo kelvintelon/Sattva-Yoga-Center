@@ -95,7 +95,7 @@ export default {
           value: "event_name",
           align: "start",
         },
-        { text: "Date", value: "start_time", sortable: false },
+        { text: "Date", value: "date", sortable: false },
         { text: "Start Time", value: "start_time", sortable: false },
         { text: "End Time", value: "end_time", sortable: false },
         { text: "Sign Up", value: "actions", sortable: false },
@@ -106,7 +106,7 @@ export default {
           value: "event_name",
           align: "start",
         },
-        { text: "Date", value: "start_time", sortable: false },
+        { text: "Date", value: "date", sortable: false },
         { text: "Start Time", value: "start_time", sortable: false },
         { text: "End Time", value: "end_time", sortable: false },
         { text: "Cancel Signup", value: "actions", sortable: false },
@@ -138,7 +138,8 @@ export default {
       // get active packages from API service request
 
       // this.$root.$refs.A.getActivePurchasePackageTable();
-      this.$root.$emit("getActivePackageTable");
+      // getActivePurchasePackageTable typo ??
+      this.$root.$emit("getActivePurchasePackageTable");
 
       // find out if they have at least one active package that's a subscription or a bundle and active
       this.activePackageList = this.$store.state.activePackageList;
@@ -171,7 +172,7 @@ export default {
           if (item.event_id == this.eventClientSignUp.event_id) {
             alert("You have already signed up for this class!");
             this.validSignUp = false;
-          } 
+          }
         });
         if (this.validSignUp == true) {
           eventService
@@ -180,7 +181,7 @@ export default {
               if (response.status == 201) {
                 // call method that updates the client_class_table
                 // update client.is_new_client to false through mutation
-                alert("You have registered for a class")
+                alert("You have registered for a class");
                 this.$store.commit("SET_CLIENT_DETAILS_NEW_CLIENT", false);
                 this.getClientEventTable();
               }
@@ -189,21 +190,42 @@ export default {
       }
     },
     RemoveClassForClient(item) {
-      eventService
-        .removeEventForClient(item.event_id)
-        .then((response) => {
-          if (response.status == 200) {
-            // call method that updates the client_class_table
-            alert("Removed the class from your list")
-            this.getClientEventTable();
-          }
-        });
+      eventService.removeEventForClient(item.event_id).then((response) => {
+        if (response.status == 200) {
+          // call method that updates the client_class_table
+          alert("Removed the class from your list");
+          this.getClientEventTable();
+        }
+      });
     },
     getEventTable() {
       eventService.get100Events().then((response) => {
         if (response.status == 200) {
           this.$store.commit("SET_EVENT_LIST", response.data);
           this.events = response.data;
+          this.events.forEach((each) => {
+            // YYYY-MM-DD format
+            each.date = each.start_time;
+            const [Month, Day, Year] = new Date(each.date).toLocaleDateString().split("/")
+            each.date = Year+"-"+Month+"-"+Day;
+            // HH:MM AM/PM format
+            each.start_time = new Date(each.start_time).toLocaleString(
+              "en-US",
+              {
+                hour: "numeric",
+                minute: "numeric",
+                hour12: true,
+              }
+            );
+            each.end_time = new Date(each.end_time).toLocaleString(
+              "en-US",
+              {
+                hour: "numeric",
+                minute: "numeric",
+                hour12: true,
+              }
+            );
+          });
         } else {
           alert("Error retrieving class information");
         }
@@ -214,6 +236,29 @@ export default {
         if (response.status == 200) {
           this.$store.commit("SET_CLIENT_EVENT_LIST", response.data);
           this.clientEvents = response.data;
+          this.clientEvents.forEach((each) => {
+            // YYYY-MM-DD format
+            each.date = each.start_time;
+            const [Month, Day, Year] = new Date(each.date).toLocaleDateString().split("/")
+            each.date = Year+"-"+Month+"-"+Day;
+            // HH:MM AM/PM format
+            each.start_time = new Date(each.start_time).toLocaleString(
+              "en-US",
+              {
+                hour: "numeric",
+                minute: "numeric",
+                hour12: true,
+              }
+            );
+            each.end_time = new Date(each.end_time).toLocaleString(
+              "en-US",
+              {
+                hour: "numeric",
+                minute: "numeric",
+                hour12: true,
+              }
+            );
+          });
         } else {
           alert("Error retrieving class information");
         }
