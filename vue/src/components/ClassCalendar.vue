@@ -26,7 +26,7 @@
       </template>
     </v-snackbar>
     <!-- UPDATE SNACKBAR -->
-    <v-snackbar
+    <!-- <v-snackbar
       v-model="snackBarUpdateEventWarning"
       color="yellow darken-2"
       elevation="24"
@@ -49,7 +49,7 @@
           Continue
         </v-btn>
       </template>
-    </v-snackbar>
+    </v-snackbar> -->
     <v-row class="fill-height">
       <v-col>
         <v-sheet tile height="64" class="d-flex">
@@ -639,21 +639,25 @@ export default {
     allowEventDelete() {
       this.snackBarDeleteEventWarning = false;
       // find the ID of selected event
-      for (let i = 0; i < this.serverEvents.length; i++) {
-        if (
-          new Date(this.serverEvents[i].start_time).getTime() ==
-            new Date(this.selectedEvent.start).getTime() &&
-          new Date(this.serverEvents[i].end_time).getTime() ==
-            new Date(this.selectedEvent.end).getTime() &&
-          this.serverEvents[i].event_name == this.selectedEvent.name
-        ) {
-          this.selectedEventID = this.serverEvents[i].event_id;
-          this.selectedEventIndex = i;
-          // remove from all arrays
-          this.events.splice(this.selectedEventIndex,1);
+
+      // for (let i = 0; i < this.serverEvents.length; i++) {
+      //   if (
+      //     new Date(this.serverEvents[i].start_time).getTime() ==
+      //       new Date(this.selectedEvent.start).getTime() &&
+      //     new Date(this.serverEvents[i].end_time).getTime() ==
+      //       new Date(this.selectedEvent.end).getTime() &&
+      //     this.serverEvents[i].event_name == this.selectedEvent.name
+      //   ) {
+      //     this.selectedEventID = this.serverEvents[i].event_id;
+      //     this.selectedEventIndex = i;
+      //     // remove from all arrays
+         
+      //   }
+      // }
+      this.findsMatch();
+      
+       this.events.splice(this.selectedEventIndex,1);
           this.serverEvents.splice(this.selectedEventIndex,1);
-        }
-      }
       // this will eventually be an update instead,
       eventService
         .deleteEvent(this.selectedEventID)
@@ -666,11 +670,8 @@ export default {
           }
         });
     },
-     confirmUpdate() {
-      this.snackBarUpdateEventWarning = true;
-    },
     submitUpdate() {
-      this.snackBarupdateEventWarning = false;
+      
       // find the ID of selected event
       for (let i = 0; i < this.serverEvents.length; i++) {
         if (
@@ -687,9 +688,11 @@ export default {
           this.serverEvents[this.selectedEventIndex].color = "#808080";
           this.events[this.selectedEventIndex].color = "#808080";
           this.editedEvent.color = "#808080";
+          this.toggleVisibilityButton = true;
           } else {
             this.serverEvents[this.selectedEventIndex].color = this.editedEvent.color;
           this.events[this.selectedEventIndex].color = this.editedEvent.color;
+          this.toggleVisibilityButton = false;  
           }
 
         }
@@ -697,7 +700,7 @@ export default {
 
       // make sure to format the object like you do in the submit method
 
-      const [time, modifier] = this.event.start_time.split(" ");
+      const [time, modifier] = this.editedEvent.start_time.split(" ");
 
         let [hours, minutes] = time.split(":");
 
@@ -715,7 +718,7 @@ export default {
 
         let startTime = `${hours}:${minutes}`;
 
-        const [time2, modifier2] = this.event.end_time.split(" ");
+        const [time2, modifier2] = this.editedEvent.end_time.split(" ");
 
         let [hours2, minutes2] = time2.split(":");
 
@@ -730,23 +733,31 @@ export default {
         }
 
         let endTime = `${hours2}:${minutes2}`;
+        let chosenDate = this.date2;
+          let newStartDate = new Date(chosenDate + "T" + startTime).toJSON();
+          let newEndDate = new Date(chosenDate + "T" + endTime).toJSON();
 
-
-          this.editedEvent.start_time = new Date(this.date2 + "T" + startTime);
-          this.editedEvent.end_time = new Date(this.date2 + "T" + endTime);
+          this.editedEvent.start_time = newStartDate;
+          this.editedEvent.end_time = newEndDate;
       // this will eventually be an update instead,
       eventService
         .updateEvent(this.editedEvent)
         .then((response) => {
           if (response.status == 200) {
             // remove it from the calendar event list
+            this.getAllEvents()
             // alert("Event successfully updated!");
           } else {
             alert("Error removing event!");
           }
         });
     },
+    confirmUpdate() {
+      this.snackBarUpdateEventWarning = true;
+    },
     toggleVisibleEvent(value) {
+      this.snackBarupdateEventWarning = false;
+
       this.editedEvent.is_visible_online = value;
       if (value) {
         // make it colorful again
@@ -766,51 +777,14 @@ export default {
         this.toggleVisibilityButton = true;
       }
 
-      // make sure to format the object like you do in the submit method
-
-      const [time, modifier] = this.event.start_time.split(" ");
-
-        let [hours, minutes] = time.split(":");
-
-        if (hours === "12") {
-          hours = "00";
-        }
-
-    
-
-        if (modifier === "PM") {
-          hours = parseInt(hours, 10) + 12;
-        } else if (hours.length == 1) {
-          hours = "0"+hours;
-        }
-
-        let startTime = `${hours}:${minutes}`;
-
-        const [time2, modifier2] = this.event.end_time.split(" ");
-
-        let [hours2, minutes2] = time2.split(":");
-
-        if (hours2 === "12") {
-          hours2 = "00";
-        }
-
-        if (modifier2 === "PM") {
-          hours2 = parseInt(hours2, 10) + 12;
-        } else if (hours2.length == 1) {
-          hours2 = "0"+hours2;
-        }
-
-        let endTime = `${hours2}:${minutes2}`;
-
-
-          this.editedEvent.start_time = new Date(this.date2 + "T" + startTime);
-          this.editedEvent.end_time = new Date(this.date2 + "T" + endTime);
+          this.editedEvent.start_time = this.serverEvents[this.selectedEventIndex].start_time;
+          this.editedEvent.end_time = this.serverEvents[this.selectedEventIndex].end_time;
 
        eventService
         .updateEvent(this.editedEvent)
         .then((response) => {
           if (response.status == 200) {
-            // remove it from the calendar event list
+            this.getAllEvents();
             // alert("Event successfully updated!");
           } else {
             alert("Error removing event!");
