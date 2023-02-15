@@ -32,4 +32,7 @@ public interface EventDao {
 
     void registerForEvent(int client_id, int event_id);
 
+    List<Event> getAllClientEvents(int user_id);
+
+    void deleteEventForClient(int event_id, int client_id);
 }

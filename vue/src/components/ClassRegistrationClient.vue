@@ -54,8 +54,8 @@
       <br />
       <br />
       <v-data-table
-        :headers="clientClassHeaders"
-        :items="clientClasses"
+        :headers="clientEventHeaders"
+        :items="clientEvents"
         class="elevation-5"
       >
         <template v-slot:top>
@@ -81,7 +81,7 @@
 
 <script>
 // import packagePurchaseService from "../services/PackagePurchaseService";
-import classDetailService from "../services/ClassDetailService";
+// import classDetailService from "../services/ClassDetailService";
 import eventService from "../services/EventService";
 
 export default {
@@ -95,24 +95,24 @@ export default {
           value: "event_name",
           align: "start",
         },
+        { text: "Date", value: "start_time", sortable: false },
         { text: "Start Time", value: "start_time", sortable: false },
         { text: "End Time", value: "end_time", sortable: false },
         { text: "Sign Up", value: "actions", sortable: false },
       ],
-      clientClassHeaders: [
+      clientEventHeaders: [
         {
           text: "Class Description",
-          value: "class_description",
+          value: "event_name",
           align: "start",
         },
-        { text: "Teacher", value: "teacher_name" },
-        { text: "Duration (minutes)", value: "class_duration" },
-        { text: "Class Time", value: "start_time", sortable: false },
-        { text: "Days", value: "date_range" },
-        { text: "Remove Me From Class", value: "actions", sortable: false },
+        { text: "Date", value: "start_time", sortable: false },
+        { text: "Start Time", value: "start_time", sortable: false },
+        { text: "End Time", value: "end_time", sortable: false },
+        { text: "Cancel Signup", value: "actions", sortable: false },
       ],
       events: [],
-      clientClasses: [],
+      clientEvents: [],
       eventClientSignUp: {
         event_id: "",
         client_id: "",
@@ -126,7 +126,7 @@ export default {
   },
   methods: {
     SignUp(item) {
-      this.eventClientSignUp.class_id = item.event_id;
+      this.eventClientSignUp.event_id = item.event_id;
       this.eventClientSignUp.client_id =
         this.$store.state.clientDetails.client_id;
 
@@ -167,53 +167,53 @@ export default {
 
       // if they have an active package then they are allowed to sign up
       if (this.allowSignUp) {
-        // this.clientClasses.forEach((item) => {
-        //   if (item.class_id == this.classClientSignUp.class_id) {
-        //     alert("You have already signed up for this class!");
-        //     this.validSignUp = false;
-        //   } else {
-        //     this.validSignUp = true;
-        //   }
-        // });
+        this.clientEvents.forEach((item) => {
+          if (item.event_id == this.eventClientSignUp.event_id) {
+            alert("You have already signed up for this class!");
+            this.validSignUp = false;
+          } 
+        });
         if (this.validSignUp == true) {
-          classDetailService
-            .registerForClass(this.classClientSignUp)
+          eventService
+            .registerForEvent(this.eventClientSignUp)
             .then((response) => {
               if (response.status == 201) {
                 // call method that updates the client_class_table
                 // update client.is_new_client to false through mutation
+                alert("You have registered for a class")
                 this.$store.commit("SET_CLIENT_DETAILS_NEW_CLIENT", false);
-                this.getClientClassTable();
+                this.getClientEventTable();
               }
             });
         }
       }
     },
     RemoveClassForClient(item) {
-      classDetailService
-        .removeClassForClient(item.class_id)
+      eventService
+        .removeEventForClient(item.event_id)
         .then((response) => {
           if (response.status == 200) {
             // call method that updates the client_class_table
-            this.getClientClassTable();
+            alert("Removed the class from your list")
+            this.getClientEventTable();
           }
         });
     },
     getEventTable() {
       eventService.get100Events().then((response) => {
         if (response.status == 200) {
-          this.$store.commit("SET_CLASS_LIST", response.data);
+          this.$store.commit("SET_EVENT_LIST", response.data);
           this.events = response.data;
         } else {
           alert("Error retrieving class information");
         }
       });
     },
-    getClientClassTable() {
-      classDetailService.getAllClientClasses().then((response) => {
+    getClientEventTable() {
+      eventService.getAllClientEvents().then((response) => {
         if (response.status == 200) {
-          this.$store.commit("SET_CLIENT_CLASS_LIST", response.data);
-          this.clientClasses = response.data;
+          this.$store.commit("SET_CLIENT_EVENT_LIST", response.data);
+          this.clientEvents = response.data;
         } else {
           alert("Error retrieving class information");
         }
@@ -226,7 +226,7 @@ export default {
   },
   created() {
     this.getEventTable();
-    this.getClientClassTable();
+    this.getClientEventTable();
   },
 };
 </script>
