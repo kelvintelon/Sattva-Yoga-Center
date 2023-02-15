@@ -448,12 +448,12 @@ export default {
           .createPackage(this.packageDetails)
           .then((response) => {
             if (response.status == 201) {
-              alert("You have created a class!");
+              alert("You have created a package!");
               this.getPackageTable();
               this.reset();
               this.close();
             } else {
-              alert("Error creating a class!");
+              alert("Error creating a package!");
             }
           });
       }
