@@ -35,4 +35,6 @@ public interface EventDao {
     List<Event> getAllClientEvents(int user_id);
 
     void deleteEventForClient(int event_id, int client_id);
+
+    Event getEventByEventId(int eventId);
 }

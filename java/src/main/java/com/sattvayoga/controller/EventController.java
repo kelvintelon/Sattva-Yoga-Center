@@ -56,6 +56,13 @@ public class EventController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value = "/getEventDetailsByEventId/{eventId}", method = RequestMethod.GET)
+    public Event getEventDetailsByEventId (@PathVariable int eventId ) {
+
+        return eventDao.getEventByEventId(eventId);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/createEvent", method = RequestMethod.POST)
     public void createEvent(@RequestBody Event event) {

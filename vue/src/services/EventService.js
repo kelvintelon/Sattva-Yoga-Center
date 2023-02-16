@@ -26,6 +26,9 @@ export default {
     },
     removeEventForClient(eventID){
         return axios.delete(`/removeEventForClient/${eventID}`)
+    },
+    getEventDetailsByEventId(eventID){
+        return axios.get(`getEventDetailsByEventId/${eventID}`)
     }
 
 
