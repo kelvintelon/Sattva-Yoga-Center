@@ -178,7 +178,7 @@ export default {
       this.purchaseItem = Object.assign({}, item);
 
       this.packageName = this.purchaseItem.description.toLowerCase();
-      this.$root.$refs.A.getActivePurchasePackageTable();
+      this.$root.$refs.A.getActivePurchaseServerRequest();
       this.$root.$refs.B.getPackageHistoryTable();
       // TODO: handle new client purchase here
       if (

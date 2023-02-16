@@ -57,6 +57,12 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         return jdbcTemplate.update(sql, packagePurchase.getPackage_purchase_id())==1;
     }
 
+    @Override
+    public boolean decrementByOne(int packagePurchaseId) {
+        String sql= "UPDATE package_purchase SET classes_remaining -= 1 WHERE package_purchase_id = ?";
+        return jdbcTemplate.update(sql, packagePurchaseId)==1;
+    }
+
     // helper
     public String getPackageDescriptionByPackageId(int PackageId) {
         PackageDetails packageDetails = null;

@@ -41,4 +41,9 @@ public class PackagePurchaseController {
     public void expirePackage(@RequestBody PackagePurchase packagePurchase) {
         packagePurchaseDao.expirePackage(packagePurchase);
     }
+
+    @RequestMapping(value= "/decrement/{packagePurchaseId}", method = RequestMethod.PUT)
+    public void decrementByOne(@PathVariable int packagePurchaseId){
+        packagePurchaseDao.decrementByOne(packagePurchaseId);
+    }
 }

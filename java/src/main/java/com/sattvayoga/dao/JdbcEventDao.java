@@ -397,7 +397,7 @@ public class JdbcEventDao implements EventDao {
     @Override
     public List<Event> getHundredEvents() {
         List<Event> allEvents = new ArrayList<>();
-        String sql = "SELECT * FROM events WHERE is_visible_online = true ORDER BY start_time LIMIT 100  ; ";
+        String sql = "SELECT * FROM events WHERE is_visible_online = true AND start_time >= now() ORDER BY start_time LIMIT 100  ; ";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
         while (result.next()) {
             Event event = mapRowToEvent(result);

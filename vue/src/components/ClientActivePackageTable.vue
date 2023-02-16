@@ -128,7 +128,7 @@ export default {
       packagePurchaseService.expirePackage(item).then((response) => {
         if (response.status == 200) {
           alert("You have canceled this package");
-          this.getActivePurchasePackageTable();
+          this.getActivePurchaseServerRequest();
 
           // call the method to update the purchase history table so it updates the expired column
           this.$root.$refs.B.getPackageHistoryTable();

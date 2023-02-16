@@ -11,4 +11,6 @@ public interface PackagePurchaseDao {
     List<PackagePurchase> getAllUserPackagePurchases(int userId);
 
     boolean expirePackage(PackagePurchase packagePurchase);
+
+    boolean decrementByOne(int packagePurchaseId);
 }

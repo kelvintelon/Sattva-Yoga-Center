@@ -6,6 +6,8 @@
         :items="classes"
         class="elevation-5"
         sort-by="class_id"
+        :loading="loading"
+        loading-text="Loading... Please wait"
       >
         <template v-slot:top>
           <v-toolbar flat>
@@ -505,6 +507,7 @@ export default {
       meridiam: "",
       selectedTime: "",
       dateModel: "",
+      loading: true,
     };
   },
   created() {
@@ -531,6 +534,7 @@ export default {
         if (response.status == 200) {
           this.$store.commit("SET_CLASS_LIST", response.data);
           this.classes = response.data;
+          this.loading = false;
         } else {
           alert("Error retrieving class information");
         }
