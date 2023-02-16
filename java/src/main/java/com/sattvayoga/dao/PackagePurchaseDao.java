@@ -13,4 +13,6 @@ public interface PackagePurchaseDao {
     boolean expirePackage(PackagePurchase packagePurchase);
 
     boolean decrementByOne(int packagePurchaseId);
+
+    boolean incrementByOne(int packagePurchaseId);
 }

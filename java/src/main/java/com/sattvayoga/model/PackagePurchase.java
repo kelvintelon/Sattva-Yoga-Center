@@ -10,25 +10,23 @@ public class PackagePurchase {
     private int client_id;
     private Timestamp date_purchased;
     private int package_id;
-    private boolean is_expired;
     private int classes_remaining;
     private Date activation_date;
     private Date expiration_date;
     private BigDecimal total_amount_paid;
     private boolean is_monthly_renew;
     private BigDecimal discount;
-
     private String package_description;
+    private boolean is_subscription;
 
     public PackagePurchase(int package_purchase_id, int client_id, Timestamp date_purchased, int package_id,
-                           boolean is_expired, int classes_remaining, Date activation_date,
+                           int classes_remaining, Date activation_date,
                            Date expiration_date, BigDecimal total_amount_paid, boolean is_monthly_renew,
                            BigDecimal discount) {
         this.package_purchase_id = package_purchase_id;
         this.client_id = client_id;
         this.date_purchased = date_purchased;
         this.package_id = package_id;
-        this.is_expired = is_expired;
         this.classes_remaining = classes_remaining;
         this.activation_date = activation_date;
         this.expiration_date = expiration_date;
@@ -45,7 +43,6 @@ public class PackagePurchase {
         this.client_id = client_id;
         this.date_purchased = date_purchased;
         this.package_id = package_id;
-        this.is_expired = is_expired;
         this.classes_remaining = classes_remaining;
         this.activation_date = activation_date;
         this.expiration_date = expiration_date;
@@ -99,14 +96,6 @@ public class PackagePurchase {
         this.package_id = package_id;
     }
 
-    public boolean isIs_expired() {
-        return is_expired;
-    }
-
-    public void setIs_expired(boolean is_expired) {
-        this.is_expired = is_expired;
-    }
-
     public int getClasses_remaining() {
         return classes_remaining;
     }
@@ -153,5 +142,13 @@ public class PackagePurchase {
 
     public void setDiscount(BigDecimal discount) {
         this.discount = discount;
+    }
+
+    public boolean isIs_subscription() {
+        return is_subscription;
+    }
+
+    public void setIs_subscription(boolean is_subscription) {
+        this.is_subscription = is_subscription;
     }
 }

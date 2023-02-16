@@ -16,12 +16,6 @@
           <v-spacer></v-spacer>
         </v-toolbar>
       </template>
-      <template v-slot:[`item.is_expired`]="{ item }">
-        <v-simple-checkbox
-          v-model="item.is_expired"
-          disabled
-        ></v-simple-checkbox>
-      </template>
       <template v-slot:[`item.is_monthly_renew`]="{ item }">
         <v-simple-checkbox
           v-model="item.is_monthly_renew"
@@ -74,10 +68,6 @@ export default {
           sortable: true,
         },
         {
-          text: "Expired?",
-          value: "is_expired",
-        },
-        {
           text: "Monthly Renewal?",
           value: "is_monthly_renew",
         },
@@ -89,7 +79,6 @@ export default {
         client_id: "",
         date_purchased: "",
         package_id: "",
-        is_expired: "",
         classes_remaining: "",
         activation_date: "",
         expiration_date: "",
@@ -110,9 +99,14 @@ export default {
       packagePurchaseService.getUserPurchasedPackages().then((response) => {
         if (response.status == 200) {
           // focus on if it's expired or not
+          var today = new Date();
+          var dd = String(today.getDate()).padStart(2, '0');
+          var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+          var yyyy = today.getFullYear();
+          today = yyyy + '-' + mm + '-' + dd;
 
           this.packages = response.data.filter((item) => {
-            return item.is_expired == false;
+            return item.expiration_date >= today || item.classes_remaining > 0;
           });
           this.packages.forEach((item) => {
             item.date_purchased = new Date(item.date_purchased);

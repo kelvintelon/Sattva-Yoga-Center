@@ -11,4 +11,10 @@ export default {
     expirePackage(packagePurchaseObject) {
         return axios.put(`/expirePackage`, packagePurchaseObject)
     },
+    decrementByOne(packageId){
+        return axios.put(`/decrement/${packageId}`)
+    },
+    incrementByOne(packageId){
+        return axios.put(`/increment/${packageId}`)
+    }
 }

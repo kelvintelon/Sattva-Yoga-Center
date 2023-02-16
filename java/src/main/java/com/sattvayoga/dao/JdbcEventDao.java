@@ -400,7 +400,7 @@ public class JdbcEventDao implements EventDao {
     @Override
     public List<Event> getHundredEvents() {
         List<Event> allEvents = new ArrayList<>();
-        String sql = "SELECT * FROM events WHERE is_visible_online = true AND start_time >= now() ORDER BY start_time LIMIT 100  ; ";
+        String sql = "SELECT * FROM events WHERE is_visible_online = true AND start_time >= now() ORDER BY start_time LIMIT 200  ; ";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
         while (result.next()) {
             Event event = mapRowToEvent(result);
@@ -450,7 +450,8 @@ public class JdbcEventDao implements EventDao {
         String sql = "SELECT events.event_id, class_id, event_name, start_time, end_time, color, timed, is_visible_online FROM events \n" +
                 "JOIN client_event ON events.event_id = client_event.event_id \n" +
                 "JOIN client_details ON client_details.client_id = client_event.client_id \n" +
-                "WHERE user_id = ?";
+                "WHERE user_id = ? AND start_time > now() " +
+                "ORDER BY events.start_time";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, user_id);
         while (result.next()) {
             allClientEvents.add(mapRowToEvent(result));
