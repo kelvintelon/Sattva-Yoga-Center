@@ -16,6 +16,7 @@ import ClassManagement from '../views/ClassManagement.vue'
 import ClientManagement from '../views/ClientManagement.vue'
 import PackageManagement from '../views/PackageManagement.vue'
 import ClientPackageManagement from '../views/ClientPackageManagement.vue'
+import EventAttendanceDetails from '../views/EventAttendanceDetails.vue'
 
 Vue.use(Router)
 
@@ -148,6 +149,14 @@ const router = new Router({
       path:"/clientPackageManagement",
       name:"client-package-management",
       component: ClientPackageManagement,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path:"/eventDetails/:eventId",
+      name:"event-attendance-details",
+      component: EventAttendanceDetails,
       meta: {
         requiresAuth: true
       }

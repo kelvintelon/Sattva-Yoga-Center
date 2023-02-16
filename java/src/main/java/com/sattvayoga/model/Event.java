@@ -1,6 +1,7 @@
 package com.sattvayoga.model;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 public class Event {
     private int event_id;
@@ -11,6 +12,7 @@ public class Event {
     private String color;
     private boolean timed;
     private boolean is_visible_online;
+    private List<ClientDetails> attendanceList;
 
     public Event() {
 
@@ -25,6 +27,14 @@ public class Event {
         this.color = color;
         this.timed = timed;
         this.is_visible_online = is_visible_online;
+    }
+
+    public List<ClientDetails> getAttendanceList() {
+        return attendanceList;
+    }
+
+    public void setAttendanceList(List<ClientDetails> attendanceList) {
+        this.attendanceList = attendanceList;
     }
 
     public int getEvent_id() {

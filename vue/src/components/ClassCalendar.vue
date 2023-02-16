@@ -437,6 +437,10 @@
                 <v-btn icon>
                   <v-icon @click="confirmDelete">mdi-delete</v-icon>
                 </v-btn>
+                <v-spacer></v-spacer>
+                <v-btn icon>
+                  <v-icon @click="sendToEventDetailsPage">mdi-account-multiple</v-icon>
+                </v-btn>
               </v-card-actions>
             </v-card>
           </v-menu>
@@ -1004,6 +1008,9 @@ export default {
         // closes create event dialog
         this.close();
       }
+    },
+    sendToEventDetailsPage() {
+      this.$router.push({name: "event-attendance-details", params: {eventId: this.selectedEventID}})
     },
     //////////////////////////////DRAG AND UPDATE METHODS BELOW
    startDrag ({ event, timed }) {

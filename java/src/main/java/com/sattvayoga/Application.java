@@ -48,7 +48,7 @@ class WorkerThread extends Thread {
                 System.out.println("ERROR ON EVENT THREAD");;
             }
 
-            System.out.println("Events Created. Thread Initialized at count:  " + ++count);
+            System.out.println("Events Up To Date. Thread Initialized at count:  " + ++count);
 
             // 86400000 ms in a day
             // 604800000 in a week
