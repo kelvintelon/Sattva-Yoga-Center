@@ -135,11 +135,6 @@ export default {
     SignUp(item) {
       this.eventClientSignUp.event_id = item.event_id;
       this.eventClientSignUp.date = item.dateRef;
-      // var signUpDate = new Date(item.dateRef);
-      // var dd = String(signUpDate.getDate()).padStart(2, '0');
-      // var mm = String(signUpDate.getMonth() + 1).padStart(2, '0'); //January is 0!
-      // var yyyy = signUpDate.getFullYear();
-      // this.eventClientSignUp.date = yyyy + '-' + mm + '-' + dd;
       this.eventClientSignUp.client_id =
         this.$store.state.clientDetails.client_id;
 
@@ -249,7 +244,7 @@ export default {
               if (response.status == 201) {
                 if(this.hasSubscriptionPackage == false){
                   packagePurchaseService.decrementByOne(this.quantityPackageIdToDecrement)
-                  alert("-1")
+                  alert("You have used your quantity package. Classes remaining reduced by 1.")
                 }
                 // call method that updates the client_class_table
                 // update client.is_new_client to false through mutation
