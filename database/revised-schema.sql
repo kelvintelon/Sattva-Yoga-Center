@@ -85,7 +85,6 @@ CREATE TABLE package_purchase
 	client_id			int 	  		NOT NULL,
 	package_id			int				NOT NULL,
 	date_purchased		timestamp 		NOT NULL,
-	is_expired			boolean   		NOT NULL,
 	classes_remaining	int,
 	activation_date		date, 
 	expiration_date		date,

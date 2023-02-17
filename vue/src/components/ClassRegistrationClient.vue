@@ -129,6 +129,7 @@ export default {
       quantityPackages: [],
       quantityPackageIdToDecrement: 0,
       initial: 0,
+      initial1: 0,
     };
   },
   methods: {
@@ -196,10 +197,10 @@ export default {
               this.subscriptionPackages = this.$store.state.activePackageList.filter((item)=>{
                 return item.is_subscription;
               })
-              this.initial = this.subscriptionPackages[0];
+              this.initial1 = this.subscriptionPackages[0];
               this.subscriptionPackages.forEach((item)=>{
-                if(item.expiration_date > this.initial.expiration_date){
-                  this.initial = item
+                if(item.expiration_date > this.initial1.expiration_date){
+                  this.initial1 = item
                 }
               })
             }else{
@@ -225,14 +226,16 @@ export default {
 
       // if they have an active package then they are allowed to sign up
       if (this.allowSignUp) {
-        console.log(this.eventClientSignUp.date)
-        console.log(this.initial.expiration_date)
+        // console.log(this.eventClientSignUp.date)
+        // console.log(this.initial1.expiration_date)
+        // console.log(this.eventClientSignUp.date > this.initial1.expiration_date)
+        // console.log(this.hasSubscriptionPackage)
         this.clientEvents.forEach((item) => {
           if (item.event_id == this.eventClientSignUp.event_id) {
             alert("You have already signed up for this class!");
             this.validSignUp = false;
           }
-          if (this.hasSubscriptionPackage && this.eventClientSignUp.date > this.initial.expiration_date){
+          if (this.hasSubscriptionPackage && this.eventClientSignUp.date > this.initial1.expiration_date){
             alert("Error! Your unlimited package will be expired by then.");
             this.validSignUp = false;
           }
@@ -256,15 +259,136 @@ export default {
         }
       }
     },
+
     RemoveClassForClient(item) {
-      eventService.removeEventForClient(item.event_id).then((response) => {
+      this.eventClientSignUp.event_id = item.event_id;
+      this.eventClientSignUp.date = item.dateRef;
+      this.eventClientSignUp.client_id =
+        this.$store.state.clientDetails.client_id;
+
+      this.allowSignUp = false;
+
+      // object to hold item passed in just in case
+      this.classSignUpItem = Object.assign({}, item);
+
+      // get active packages from API service request
+      this.getActivePurchaseServerRequest2();
+
+      // Don't try these below at home
+      // this.$root.$refs.A.getActivePurchaseServerRequest();
+      // this.$root.$emit("getActivePurchasePackageTable");
+    },
+    getActivePurchaseServerRequest2() {
+      packagePurchaseService.getUserPurchasedPackages().then((response) => {
         if (response.status == 200) {
-          // call method that updates the client_class_table
-          alert("Removed the class from your list");
-          this.getClientEventTable();
+          // focus on if it's expired or not
+          var today = new Date();
+          var dd = String(today.getDate()).padStart(2, '0');
+          var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+          var yyyy = today.getFullYear();
+          today = yyyy + '-' + mm + '-' + dd;
+
+          this.packages = response.data.filter((item) => {
+            return item.expiration_date >= today || item.classes_remaining > 0;
+          });
+          this.packages.forEach((item) => {
+            item.date_purchased = new Date(item.date_purchased);
+          });
+          this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
+          this.activePackageList = this.$store.state.activePackageList;
+          this.cancelCheck();
+        } else {
+          alert("Error retrieving package information");
         }
       });
     },
+    cancelCheck(){
+        if (this.$store.state.activePackageList.length == 0) {
+        this.allowSignUp = false;
+
+        this.snackBarNoPurchaseWarning = true;
+      } else if (this.$store.state.activePackageList.length > 0) {
+        this.$store.state.activePackageList.forEach((item) => {
+          // compare todays date and make sure it's less than the expiration date
+          const todaysDate = new Date();
+          let expirationDate = new Date(item.expiration_date);
+          expirationDate.setDate(expirationDate.getDate() + 1);
+
+          // TODO: Handle Gift Card logic here when SQUARE is in place
+          if (item.classes_remaining > 0 || todaysDate < expirationDate) {
+            this.allowSignUp = true;
+            if(item.is_subscription){
+              this.hasSubscriptionPackage = true;
+              this.subscriptionPackages = this.$store.state.activePackageList.filter((item)=>{
+                return item.is_subscription;
+              })
+              this.initial1 = this.subscriptionPackages[0];
+              this.subscriptionPackages.forEach((item)=>{
+                if(item.expiration_date > this.initial1.expiration_date){
+                  this.initial1 = item
+                }
+              })
+            }else{
+              this.quantityPackages = this.$store.state.activePackageList.filter((item)=>{
+                return item.is_subscription == false;
+              })
+              this.initial = this.quantityPackages[0];
+              this.quantityPackages.forEach((item)=>{
+                if(item.date_purchased < this.initial.date_purchased){
+                  this.initial = item
+                }
+              this.quantityPackageIdToIncrement = this.initial.package_purchase_id;
+              })
+            }
+          }
+        });
+
+        // this here is if they only have a gift certificate or dont have a bundle/subscription
+        if (!this.allowSignUp) {
+          this.snackBarNoPurchaseWarning = true;
+        }
+      }
+        if (this.allowSignUp) {
+        // console.log(this.eventClientSignUp.date)
+        // console.log(this.initial1.expiration_date)
+        // console.log(this.eventClientSignUp.date > this.initial1.expiration_date)
+        // console.log(this.hasSubscriptionPackage)
+        if (this.validSignUp == true) {
+      eventService.removeEventForClient(this.eventClientSignUp.event_id).then((response) => {
+        if (response.status == 200) {
+          // call method that updates the client_class_table
+          alert("Removed the class from your list");
+          console.log(this.hasSubscriptionPackage)
+          if(!this.hasSubscriptionPackage){
+            console.log(this.quantityPackageIdToIncrement)
+            packagePurchaseService.incrementByOne(this.quantityPackageIdToIncrement).then((response)=>{
+              if(response.status == 200)
+              alert("+1")
+            })
+          }
+          this.getClientEventTable();
+        }
+      });
+        }
+      }
+    },
+    // RemoveClassForClient(item) {
+    //   eventService.removeEventForClient(item.event_id).then((response) => {
+    //     if (response.status == 200) {
+    //       // call method that updates the client_class_table
+    //       alert("Removed the class from your list");
+    //       if(!this.hasSubscriptionPackage){
+    //         console.log(this.quantityPackageIdToDecrement)
+    //         packagePurchaseService.incrementByOne(this.quantityPackageIdToDecrement).then((response)=>{
+    //           if(response.status == 200)
+    //           alert("+1")
+    //         })
+    //       }
+    //       this.getClientEventTable();
+    //     }
+    //   });
+    // },
+
     getEventTable() {
       eventService.get100Events().then((response) => {
         if (response.status == 200) {
