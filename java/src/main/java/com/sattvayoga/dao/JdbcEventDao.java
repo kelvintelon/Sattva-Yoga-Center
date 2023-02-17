@@ -95,7 +95,6 @@ public class JdbcEventDao implements EventDao {
             // compare the days between (the latest Timestamp in our DB) and (one year from today)
             int days = daysBetween(cal1.getTime(), cal2.getTime());
 
-            // TODO: Loop however many of those days
 
             for (int i = 0; i < days; i++) {
                 // loop through each class
@@ -349,23 +348,21 @@ public class JdbcEventDao implements EventDao {
                 }
             }
         }
-
-
     }
 
     @Override
     public boolean deleteEvent(int eventId) {
         String sql = "BEGIN TRANSACTION;\n" +
-                // TODO: When events_client table is made uncomment this and add another event_id to the update
-//                "\n" +
-//                "DELETE FROM events_client \n" +
-//                "WHERE events_client.event_id = ?;\n" +
-//                "\n" +
+
+                "\n" +
+                "DELETE FROM client_event \n" +
+                "WHERE client_event.event_id = ?;\n" +
+                "\n" +
                 "DELETE FROM events\n" +
                 "WHERE event_id = ?;\n" +
                 "\n" +
                 "COMMIT TRANSACTION;";
-        return jdbcTemplate.update(sql, eventId) == 1;
+        return jdbcTemplate.update(sql, eventId, eventId) == 1;
     }
 
     @Override
