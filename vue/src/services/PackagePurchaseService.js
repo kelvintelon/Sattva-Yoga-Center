@@ -11,4 +11,8 @@ export default {
     expirePackage(packagePurchaseObject) {
         return axios.put(`/expirePackage`, packagePurchaseObject)
     },
+    getUserPurchasedPackagesByUserId(userId) {
+        return axios.get(`userPackagePurchaseList/${userId}`)
+    },
+    
 }
