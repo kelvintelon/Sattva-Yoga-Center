@@ -43,12 +43,17 @@ public class PackagePurchaseController {
     }
 
     @RequestMapping(value= "/expirePackage", method = RequestMethod.PUT)
-    public void expirePackage(@RequestBody PackagePurchase packagePurchase) {
-        packagePurchaseDao.expirePackage(packagePurchase);
+    public boolean expirePackage(@RequestBody PackagePurchase packagePurchase) {
+        return packagePurchaseDao.expirePackage(packagePurchase);
     }
 
     @RequestMapping(value= "/decrement/{packagePurchaseId}", method = RequestMethod.PUT)
-    public void decrementByOne(@PathVariable int packagePurchaseId){
-        packagePurchaseDao.decrementByOne(packagePurchaseId);
+    public boolean decrementByOne(@PathVariable int packagePurchaseId){
+        return packagePurchaseDao.decrementByOne(packagePurchaseId);
+    }
+
+    @RequestMapping(value= "/increment/{packagePurchaseId}", method = RequestMethod.PUT)
+    public boolean incrementByOne(@PathVariable int packagePurchaseId){
+        return packagePurchaseDao.incrementByOne(packagePurchaseId);
     }
 }

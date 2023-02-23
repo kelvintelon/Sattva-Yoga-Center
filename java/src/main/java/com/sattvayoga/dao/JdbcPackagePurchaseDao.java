@@ -21,11 +21,11 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
     @Override
     public void createPackagePurchase(PackagePurchase packagePurchase) {
-        String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, is_expired, " +
+        String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, " +
                 "classes_remaining, activation_date, expiration_date, " +
-                "total_amount_paid, is_monthly_renew,  discount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "total_amount_paid, is_monthly_renew,  discount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql, packagePurchase.getClient_id(), packagePurchase.getDate_purchased(),
-                packagePurchase.getPackage_id(), packagePurchase.isIs_expired(), packagePurchase.getClasses_remaining(),
+                packagePurchase.getPackage_id(), packagePurchase.getClasses_remaining(),
                 packagePurchase.getActivation_date(), packagePurchase.getExpiration_date(),
                 packagePurchase.getTotal_amount_paid(),
                 packagePurchase.isIs_monthly_renew(), packagePurchase.getDiscount());
@@ -37,29 +37,45 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         List<PackagePurchase> allUserPackagePurchase = new ArrayList<>();
         String sql = "SELECT * FROM package_purchase " +
                 "JOIN client_details on client_details.client_id = package_purchase.client_id " +
-                "WHERE client_details.user_id = ?";
+                "WHERE client_details.user_id = ?" ;
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId);
         while (result.next()) {
             PackagePurchase packagePurchase = mapRowToPackagePurchase(result);
 
             // set package description
             packagePurchase.setPackage_description(getPackageDescriptionByPackageId(packagePurchase.getPackage_id()));
-
+            packagePurchase.setIs_subscription(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
             allUserPackagePurchase.add(packagePurchase);
         }
         return allUserPackagePurchase;
     }
 
+    public boolean IsSubscriptionOrNot(int packageId){
+        boolean isSubscription = false;
+        String sql = "SELECT is_subscription from package_details WHERE package_id = ?";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, packageId);
+        if(result.next()){
+            return result.getBoolean("is_subscription");
+        }
+        return isSubscription;
+    }
+
     @Override
     public boolean expirePackage(PackagePurchase packagePurchase) {
-        String sql = "UPDATE package_purchase SET is_expired = TRUE " +
+        String sql = "UPDATE package_purchase SET expiration_date = now() " +
                 "WHERE package_purchase_id = ?;";
         return jdbcTemplate.update(sql, packagePurchase.getPackage_purchase_id())==1;
     }
 
     @Override
     public boolean decrementByOne(int packagePurchaseId) {
-        String sql= "UPDATE package_purchase SET classes_remaining -= 1 WHERE package_purchase_id = ?";
+        String sql= "UPDATE package_purchase SET classes_remaining = classes_remaining - 1 WHERE package_purchase_id = ?";
+        return jdbcTemplate.update(sql, packagePurchaseId)==1;
+    }
+
+    @Override
+    public boolean incrementByOne(int packagePurchaseId) {
+        String sql= "UPDATE package_purchase SET classes_remaining = classes_remaining + 1 WHERE package_purchase_id = ?";
         return jdbcTemplate.update(sql, packagePurchaseId)==1;
     }
 
@@ -98,7 +114,6 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         packagePurchase.setClient_id(rs.getInt("client_id"));
         packagePurchase.setDate_purchased(rs.getTimestamp("date_purchased"));
         packagePurchase.setPackage_id(rs.getInt("package_id"));
-        packagePurchase.setIs_expired(rs.getBoolean("is_expired"));
         if (rs.getInt("classes_remaining") > 0) {
             packagePurchase.setClasses_remaining(rs.getInt("classes_remaining"));
         }
