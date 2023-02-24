@@ -17,6 +17,7 @@ import ClientManagement from '../views/ClientManagement.vue'
 import PackageManagement from '../views/PackageManagement.vue'
 import ClientPackageManagement from '../views/ClientPackageManagement.vue'
 import EventAttendanceDetails from '../views/EventAttendanceDetails.vue'
+import ClientDetailsAdminView from '../views/ClientDetailsAdminView.vue'
 
 Vue.use(Router)
 
@@ -157,6 +158,14 @@ const router = new Router({
       path:"/eventDetails/:eventId",
       name:"event-attendance-details",
       component: EventAttendanceDetails,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path:"/clientDetails/:clientId",
+      name:"client-details-admin-view",
+      component: ClientDetailsAdminView,
       meta: {
         requiresAuth: true
       }

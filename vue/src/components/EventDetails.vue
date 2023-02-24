@@ -26,7 +26,7 @@
             <v-icon> mdi-keyboard-return</v-icon>
           </v-btn> 
           <v-divider class="mx-4" inset vertical></v-divider>
-          <v-toolbar-title>Attendance</v-toolbar-title>
+          <v-toolbar-title>{{event.event_name}}</v-toolbar-title>
           <v-divider class="mx-4" inset vertical></v-divider>
           <span
             >{{ new Date(event.start_time).getFullYear() }}-{{
@@ -150,6 +150,10 @@
           v-model="item.is_on_email_list"
           disabled
         ></v-simple-checkbox>
+      </template>
+      <template v-slot:[`item.actions`]="{ item }">
+        <v-icon small class="mr-2" @click.prevent="sendToUserPageAdminView(item)"> mdi-account-search </v-icon>
+        <v-icon small @click="deleteItem(item)"> mdi-close </v-icon>
       </template>
     </v-data-table>
   </v-container>
@@ -532,6 +536,9 @@ export default {
     },
     sendToCalendarPage() {
       this.$router.push("/classManagement")
+    },
+    sendToUserPageAdminView(object) {
+      this.$router.push({name: "client-details-admin-view", params: {clientId: object.client_id}})
     },
     emailRecipients() {
       this.selectedClientsSignedUp.forEach((item) => {

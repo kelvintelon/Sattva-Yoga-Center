@@ -439,6 +439,10 @@ public class JdbcEventDao implements EventDao {
     public void registerForEvent(int client_id, int event_id) {
         String sql = "INSERT INTO client_event (client_id, event_id) VALUES (?,?);";
         jdbcTemplate.update(sql, client_id, event_id);
+
+        String sql2 = "UPDATE client_details SET is_new_client = FALSE WHERE client_id = ?";
+
+        jdbcTemplate.update(sql2, client_id);
     }
 
     @Override
