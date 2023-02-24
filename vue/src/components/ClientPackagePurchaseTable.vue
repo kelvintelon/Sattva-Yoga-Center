@@ -253,7 +253,7 @@ export default {
               .createPackagePurchase(this.packagePurchase)
               .then((response) => {
                 if (response.status == 201) {
-                  alert("Succesfully purchased class");
+                  alert("Succesfully purchased package");
                   // call method that updates the list of active packages
                   this.$root.$refs.A.getActivePurchasePackageTable();
                   this.$root.$refs.B.getPackageHistoryTable();
