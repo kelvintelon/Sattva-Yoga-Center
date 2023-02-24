@@ -96,6 +96,8 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
             clientDetails.setFull_address(clientDetails.getStreet_address() + " "
                     + clientDetails.getCity() + " " + clientDetails.getState_abbreviation() + " " + clientDetails.getZip_code());
 
+            clientDetails.setQuick_details("("+clientDetails.getClient_id()+")" + " " + clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
+
             allClients.add(clientDetails);
         }
         return allClients;

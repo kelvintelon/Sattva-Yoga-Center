@@ -16,5 +16,8 @@ export default {
     },
     incrementByOne(packageId){
         return axios.put(`/increment/${packageId}`)
-    }
+    },
+    getUserPurchasedPackagesByUserId(userId) {
+        return axios.get(`userPackagePurchaseListByUserId/${userId}`)
+    },
 }

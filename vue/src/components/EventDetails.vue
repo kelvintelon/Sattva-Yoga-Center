@@ -1,181 +1,128 @@
 <template>
   <v-container>
-      
+    <v-snackbar
+      v-model="snackBarNoPurchaseWarning"
+      color="red darken-2"
+      elevation="24"
+      :vertical="vertical"
+      :timeout="timeout"
+      shaped
+    >
+      Warning: Skipping Over Clients Without Active Package
+
+    </v-snackbar>
     <v-data-table
-    :headers="headers"
-    :items="returnListOfClients"
-    sort-by="last_name"
-    class="elevation-1"
-  >
-    <template v-slot:top>
-      <v-toolbar
-        flat
-      >
-        <v-toolbar-title>Attendance</v-toolbar-title>
-        <v-divider
-          class="mx-4"
-          inset
-          vertical
-        ></v-divider>
-        <span
-          >{{ new Date(event.start_time).getFullYear() }}-{{
-            new Date(event.start_time).getMonth() + 1
-          }}-{{ new Date(event.start_time).getDate() }}</span
-        >
-      
-        <v-divider
-          class="mx-4"
-          inset
-          vertical
-        ></v-divider>
-        <span
+      v-model="selectedClientsSignedUp"
+      :headers="headers"
+      :items="returnListOfSignedUpClients"
+      item-key="client_id"
+      sort-by="last_name"
+      show-select
+      class="elevation-1"
+    >
+      <template v-slot:top>
+        <v-toolbar flat>
+          <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on" @click.prevent="sendToCalendarPage">
+            <v-icon> mdi-keyboard-return</v-icon>
+          </v-btn> 
+          <v-divider class="mx-4" inset vertical></v-divider>
+          <v-toolbar-title>Attendance</v-toolbar-title>
+          <v-divider class="mx-4" inset vertical></v-divider>
+          <span
+            >{{ new Date(event.start_time).getFullYear() }}-{{
+              new Date(event.start_time).getMonth() + 1
+            }}-{{ new Date(event.start_time).getDate() }}</span
           >
-          {{
-            new Date(event.start_time).toLocaleString("en-US", {
-              hour: "numeric",
-              minute: "numeric",
-              hour12: true,
-            })
-          }}-
-        </span>
-        
-        <span
+
+          <v-divider class="mx-4" inset vertical></v-divider>
+          <span>
+            {{
+              new Date(event.start_time).toLocaleString("en-US", {
+                hour: "numeric",
+                minute: "numeric",
+                hour12: true,
+              })
+            }}-
+          </span>
+
+          <span>
+            {{
+              new Date(event.end_time).toLocaleString("en-US", {
+                hour: "numeric",
+                minute: "numeric",
+                hour12: true,
+              })
+            }}</span
           >
-          {{
-            new Date(event.end_time).toLocaleString("en-US", {
-              hour: "numeric",
-              minute: "numeric",
-              hour12: true,
-            })
-          }}</span
-        >
-        <v-divider
-          class="mx-4"
-          inset
-          vertical
-        ></v-divider> 
-        <v-btn
-              color="primary"
-              dark
-              class="mb-2"
-              v-bind="attrs"
-              v-on="on"
-            >
-              Edit Event
-            </v-btn>
-        <v-spacer></v-spacer>
-        <v-dialog
-          v-model="dialog"
-          max-width="500px"
-        >
-          <template v-slot:activator="{ on, attrs }">
-            
-            <v-btn
-              color="primary"
-              dark
-              class="mb-2"
-              v-bind="attrs"
-              v-on="on"
-            >
-              Sign up a client
-            </v-btn>
-          
-          </template>
-         <!--  <v-card>
-            <v-card-title>
-              <span class="text-h5">{{ formTitle }}</span>
-            </v-card-title>
-
-            <v-card-text>
-              <v-container>
-                <v-row>
-                  <v-col
-                    cols="12"
-                    sm="6"
-                    md="4"
-                  >
-                    <v-text-field
-                      v-model="editedItem.name"
-                      label="Dessert name"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col
-                    cols="12"
-                    sm="6"
-                    md="4"
-                  >
-                    <v-text-field
-                      v-model="editedItem.calories"
-                      label="Calories"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col
-                    cols="12"
-                    sm="6"
-                    md="4"
-                  >
-                    <v-text-field
-                      v-model="editedItem.fat"
-                      label="Fat (g)"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col
-                    cols="12"
-                    sm="6"
-                    md="4"
-                  >
-                    <v-text-field
-                      v-model="editedItem.carbs"
-                      label="Carbs (g)"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col
-                    cols="12"
-                    sm="6"
-                    md="4"
-                  >
-                    <v-text-field
-                      v-model="editedItem.protein"
-                      label="Protein (g)"
-                    ></v-text-field>
-                  </v-col>
-                </v-row>
-              </v-container>
-            </v-card-text>
-
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn
-                color="blue darken-1"
-                text
-                @click="close"
-              >
-                Cancel
+          <v-divider class="mx-4" inset vertical></v-divider>
+           <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on" @click.prevent="emailRecipients">
+            <v-icon>mdi-order-bool-ascending-variant</v-icon> Email select
+          </v-btn>
+          <v-divider class="mx-4" inset vertical></v-divider>
+           <v-btn color="#9948B6ED" dark class="mb-2" v-bind="attrs" v-on="on" @click.prevent="emailRecipientsFromEmailList">
+            <v-icon>mdi-email-plus</v-icon> EMAIL LIST 
+          </v-btn>
+          <v-spacer></v-spacer>
+          <v-dialog v-model="dialog" max-width="500px">
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
+                Sign up a client
               </v-btn>
-              <v-btn
-                color="blue darken-1"
-                text
-                @click="save"
+            </template>
+            <v-card>
+              <!-- Add a Client Form starts here -->
+              <v-card-title>
+                <span class="text-h5">Add a client</span>
+              </v-card-title>
+
+              <v-card-text>
+                <v-container>
+                  <v-row>
+                    <v-col>
+                      <v-select
+                        label="Choose one or multiple"
+                        :items="returnCorrectClientListToChoose"
+                        v-model="selectedClients"
+                        item-text="quick_details"
+                        return-object
+              
+                        multiple
+                      ></v-select>
+                    </v-col>
+                  </v-row>
+                </v-container>
+              </v-card-text>
+
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue darken-1" text @click="close">
+                  Cancel
+                </v-btn>
+                <v-btn color="blue darken-1" text @click="save"> Save </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+          <!-- For Deleting a client from the roster -->
+          <v-dialog v-model="dialogDelete" max-width="500px">
+            <v-card>
+              <v-card-title class="text-h5"
+                >Are you sure you want to remove this client?</v-card-title
               >
-                Save
-              </v-btn>
-            </v-card-actions>
-          </v-card> -->
-        </v-dialog>
-        <v-dialog v-model="dialogDelete" max-width="500px">
-          <v-card>
-            <v-card-title class="text-h5">Are you sure you want to delete this item?</v-card-title>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
-              <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
-              <v-spacer></v-spacer>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
-      </v-toolbar>
-    </template>
-    <!-- <template v-slot:item.actions="{ item }">
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue darken-1" text @click="closeDelete"
+                  >Cancel</v-btn
+                >
+                <v-btn color="blue darken-1" text @click="deleteItemConfirm"
+                  >OK</v-btn
+                >
+                <v-spacer></v-spacer>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        </v-toolbar>
+      </template>
+      <!-- <template v-slot:item.actions="{ item }">
       <v-icon
         small
         class="mr-2"
@@ -198,36 +145,46 @@
         Reset
       </v-btn>
     </template> -->
-  </v-data-table>
-    
-   
+    <template v-slot:[`item.is_on_email_list`]="{ item }">
+        <v-simple-checkbox
+          v-model="item.is_on_email_list"
+          disabled
+        ></v-simple-checkbox>
+      </template>
+    </v-data-table>
   </v-container>
 </template>
 
 <script>
 import eventService from "../services/EventService";
+import clientDetailService from "../services/ClientDetailService";
+import packagePurchaseService from "../services/PackagePurchaseService";
 
 export default {
   name: "event-details",
 
   data() {
     return {
-      listOfClients: [],
-      event: {},
-      editedEvent: {},
-      date: "",
-      dialog: false,
       dialogDelete: false,
-      editMenu: false,
-      showEditForm: false,
-      colorPickerMenu: false,
-      selectedOpen: true,
-      titleRules: [
-        (v) => !!v || "Title is required",
-        (v) => (v && v.length <= 30) || "Title must be less than 30 characters",
-      ],
-      timeRules: [(v) => !!v || "Time is required"],
-      colorRules: [(v) => !!v || "Color is required"],
+      // Add a client properties
+      allClientsList: [],
+      selectedClients: [],
+      individualClientFromLoop: {},
+      allowSignUp: false,
+      validSignUp: true,
+      snackBarNoPurchaseWarning: false,
+      timeout: 6000,
+      hasSubscriptionPackage: false,
+      subscriptionPackages: [],
+      quantityPackages: [],
+      quantityPackageIdToDecrement: 0,
+      eventClientSignUp: {
+        event_id: "",
+        client_id: "",
+      },
+      dialog: false,
+      packages: [],
+      // Edit event properties
       allTimes: [
         "12:00 AM",
         "12:15 AM",
@@ -325,125 +282,38 @@ export default {
         "11:15 PM",
         "11:30 PM",
       ],
+      editedEvent: {},
+      editMenu: false,
+      titleRules: [
+        (v) => !!v || "Title is required",
+        (v) => (v && v.length <= 30) || "Title must be less than 30 characters",
+      ],
+      timeRules: [(v) => !!v || "Time is required"],
+      colorRules: [(v) => !!v || "Color is required"],
+      showEditForm: false,
+      colorPickerMenu: false,
+      event: {},
+      date: "",
       // Attendance table properties
+      listOfSignedUpClients: [],
       headers: [
+        {text: "Client ID",
+        align: "start",
+        value: "client_id"},
         {
-          text: 'First Name',
-          align: 'start',
-          sortable: false,
-          value: 'first_name',
+          text: "First Name",
+          value: "first_name",
         },
-        { text: 'Last Name', value: 'last_name' },
-       { text: "Active", value: "is_client_active" },
-        { text: "New Client", value: "is_new_client" },
-        { text: "Address", value: "full_address", sortable: false },
+        { text: "Last Name", value: "last_name" },
         { text: "Phone Number", value: "phone_number", sortable: false },
         { text: "Email List", value: "is_on_email_list", sortable: true },
         { text: "Email", value: "email", sortable: false },
-        {
-          text: "Record of Liability",
-          value: "has_record_of_liability",
-          sortable: true,
-        },
-        { text: "Date of Entry", value: "date_of_entry", sortable: true },
         { text: "Actions", value: "actions", sortable: false },
       ],
-      // headers: [
-      //     {
-      //       text: 'Dessert (100g serving)',
-      //       align: 'start',
-      //       sortable: false,
-      //       value: 'name',
-      //     },
-      //     { text: 'Calories', value: 'calories' },
-      //     { text: 'Fat (g)', value: 'fat' },
-      //     { text: 'Carbs (g)', value: 'carbs' },
-      //     { text: 'Protein (g)', value: 'protein' },
-      //     { text: 'Iron (%)', value: 'iron' },
-      //   ],
-        desserts: [
-          {
-            name: 'Frozen Yogurt',
-            calories: 159,
-            fat: 6.0,
-            carbs: 24,
-            protein: 4.0,
-            iron: 1,
-          },
-          {
-            name: 'Ice cream sandwich',
-            calories: 237,
-            fat: 9.0,
-            carbs: 37,
-            protein: 4.3,
-            iron: 1,
-          },
-          {
-            name: 'Eclair',
-            calories: 262,
-            fat: 16.0,
-            carbs: 23,
-            protein: 6.0,
-            iron: 7,
-          },
-          {
-            name: 'Cupcake',
-            calories: 305,
-            fat: 3.7,
-            carbs: 67,
-            protein: 4.3,
-            iron: 8,
-          },
-          {
-            name: 'Gingerbread',
-            calories: 356,
-            fat: 16.0,
-            carbs: 49,
-            protein: 3.9,
-            iron: 16,
-          },
-          {
-            name: 'Jelly bean',
-            calories: 375,
-            fat: 0.0,
-            carbs: 94,
-            protein: 0.0,
-            iron: 0,
-          },
-          {
-            name: 'Lollipop',
-            calories: 392,
-            fat: 0.2,
-            carbs: 98,
-            protein: 0,
-            iron: 2,
-          },
-          {
-            name: 'Honeycomb',
-            calories: 408,
-            fat: 3.2,
-            carbs: 87,
-            protein: 6.5,
-            iron: 45,
-          },
-          {
-            name: 'Donut',
-            calories: 452,
-            fat: 25.0,
-            carbs: 51,
-            protein: 4.9,
-            iron: 22,
-          },
-          {
-            name: 'KitKat',
-            calories: 518,
-            fat: 26.0,
-            carbs: 65,
-            protein: 7,
-            iron: 6,
-          },
-        ],
       editedIndex: -1,
+      // email properties
+      selectedClientsSignedUp: [],
+      emailLink: "https://mail.google.com/mail/u/0/?fs=1&tf=cm&to="
     };
   },
   methods: {
@@ -479,61 +349,230 @@ export default {
       this.showEditForm = !this.showEditForm;
     },
     // Attendance table methods
-    editItem (item) {
-        this.editedIndex = this.desserts.indexOf(item)
-        this.editedItem = Object.assign({}, item)
-        this.dialog = true
-      },
+    editItem(item) {
+      this.editedIndex = this.desserts.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.dialog = true;
+    },
 
-      deleteItem (item) {
-        this.editedIndex = this.desserts.indexOf(item)
-        this.editedItem = Object.assign({}, item)
-        this.dialogDelete = true
-      },
+    deleteItem(item) {
+      this.editedIndex = this.desserts.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.dialogDelete = true;
+    },
 
-      deleteItemConfirm () {
-        this.desserts.splice(this.editedIndex, 1)
-        this.closeDelete()
-      },
+    deleteItemConfirm() {
+      this.desserts.splice(this.editedIndex, 1);
+      this.closeDelete();
+    },
 
-      close () {
-        this.dialog = false
-        this.$nextTick(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
-        })
-      },
+    close() {
+      this.dialog = false;
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
+      });
+    },
 
-      closeDelete () {
-        this.dialogDelete = false
-        this.$nextTick(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
-        })
-      },
+    closeDelete() {
+      this.dialogDelete = false;
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
+      });
+    },
 
-      save () {
-        if (this.editedIndex > -1) {
-          Object.assign(this.desserts[this.editedIndex], this.editedItem)
+    save() {
+
+      for (let index = 0; index < this.selectedClients.length; index++) {
+
+        this.allowSignUp = false;
+
+        // the following line is for testing purposes
+        this.individualClientFromLoop = this.selectedClients[index];
+
+        // first check if the clients have an active package
+        this.findActivePackage(this.individualClientFromLoop);
+
+        // END OF LOOP BLOCK
+      }
+      
+      
+      
+      this.selectedClients = [];
+      this.close();
+    },
+    findActivePackage(object) {
+      packagePurchaseService.getUserPurchasedPackagesByUserId(object.user_id).then((response) => {
+
+        if (response.status == 200) {
+
+
+        // set up your event_client object here to pass through later
+        // TODO: Change the following line
+        // Add the package_purchase_id to the object 
+        this.eventClientSignUp.event_id = this.$route.params.eventId;
+        this.eventClientSignUp.client_id = object.client_id;
+
+
+          // focus on if it's expired or not
+          var today = new Date();
+          var dd = String(today.getDate()).padStart(2, '0');
+          var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+          var yyyy = today.getFullYear();
+          today = yyyy + '-' + mm + '-' + dd;
+
+          this.packages = response.data.filter((item) => {
+            return item.expiration_date >= today || item.classes_remaining > 0;
+          });
+          
+          this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
+
+          // format the sign up and pass along the object
+          this.formattingSignUp(this.eventClientSignUp);
+
+        
+      
         } else {
-          this.desserts.push(this.editedItem)
+          alert("Error retrieving package information");
         }
-        this.close()
-      },
-  },
-  created() {
-    // TODO: Change the following so you can redirect users who stumbled onto this page right here in this moment
+        // END OF ACTIVE PACKAGE REQUEST
+      });
+    },
+    formattingSignUp(object) {
 
-    eventService
+      // find out if they have at least one active package that's a subscription or a bundle and active
+      // this.activePackageList = this.$store.state.activePackageList;
+
+      if (this.$store.state.activePackageList.length == 0) {
+        this.allowSignUp = false;
+
+        this.snackBarNoPurchaseWarning = true;
+      } else if (this.$store.state.activePackageList.length > 0) {
+        this.$store.state.activePackageList.forEach((item) => {
+          // compare todays date and make sure it's less than the expiration date
+          const todaysDate = new Date();
+          let expirationDate = new Date(item.expiration_date);
+          expirationDate.setDate(expirationDate.getDate() + 1);
+
+          // TODO: Handle Gift Card logic here when SQUARE is in place
+          if (item.classes_remaining > 0 || todaysDate < expirationDate) {
+            this.allowSignUp = true;
+            if(item.is_subscription){
+              this.hasSubscriptionPackage = true;
+              this.subscriptionPackages = this.$store.state.activePackageList.filter((item)=>{
+                return item.is_subscription;
+              })
+              this.initial = this.subscriptionPackages[0];
+              this.subscriptionPackages.forEach((item)=>{
+                if(item.expiration_date > this.initial.expiration_date){
+                  this.initial = item
+                }
+              })
+            }else{
+              this.quantityPackages = this.$store.state.activePackageList.filter((item)=>{
+                return item.is_subscription == false;
+              })
+              this.initial = this.quantityPackages[0];
+              this.quantityPackages.forEach((item)=>{
+                if(item.date_purchased < this.initial.date_purchased){
+                  this.initial = item
+                }
+              this.quantityPackageIdToDecrement = this.initial.package_purchase_id;
+              })
+            }
+          }
+        });
+
+        // this here is if they only have a gift certificate or dont have a bundle/subscription
+        if (!this.allowSignUp) {
+          this.snackBarNoPurchaseWarning = true;
+        }
+      }
+
+      // if they have an active package then they are allowed to sign up
+      if (this.allowSignUp) {
+        
+        console.log(this.initial.expiration_date)
+       
+          if (this.hasSubscriptionPackage && this.eventClientSignUp.date > this.initial.expiration_date){
+            alert("Error! Unlimited package will be expired by then for: " + this.individualClientFromLoop.quick_details);
+            this.validSignUp = false;
+          }
+        
+        if (this.validSignUp == true) {
+            
+          eventService
+            .registerForEvent(object)
+            .then((response) => {
+              if (response.status == 201) {
+                if(this.hasSubscriptionPackage == false){
+                  packagePurchaseService.decrementByOne(this.quantityPackageIdToDecrement)
+                  
+                }
+                // add them to the listofSignedUpclients
+              //  this.listOfSignedUpClients.push(this.individualClientFromLoop)
+                this.getEventDetailsCall()
+              }
+            });
+        }
+      }
+    },
+    getAllClients() {
+      clientDetailService.getClientList().then((response) => {
+        if (response.status == 200) {
+          this.allClientsList = response.data;
+
+          this.$store.commit("SET_CLIENT_EVENT_LIST", response.data);
+          
+        } else {
+          alert("Error retrieving client information");
+        }
+      });
+    },
+    sendToCalendarPage() {
+      this.$router.push("/classManagement")
+    },
+    emailRecipients() {
+      this.selectedClientsSignedUp.forEach((item) => {
+        this.emailLink = this.emailLink + item.email + ";"
+      })
+      window.location.href = this.emailLink;
+      this.emailLink = "https://mail.google.com/mail/u/0/?fs=1&tf=cm&to="
+    },
+    emailRecipientsFromEmailList() {
+      this.listOfSignedUpClients.forEach((item) => {
+        if (item.is_on_email_list) {
+          this.emailLink = this.emailLink + item.email + ";"
+        }
+      })
+      window.location.href = this.emailLink;
+      this.emailLink = "https://mail.google.com/mail/u/0/?fs=1&tf=cm&to="
+    },
+    getEventDetailsCall() {
+      eventService
       .getEventDetailsByEventId(this.$route.params.eventId)
       .then((response) => {
         if (response.status == 200) {
           this.event = response.data;
           this.editedEvent = response.data;
           this.formatsIncomingEvent();
-          this.listOfClients = this.event.attendanceList;
+          this.listOfSignedUpClients = this.event.attendanceList;
+          // formats the date to be readable
+          this.getAllClients()
+          this.listOfSignedUpClients.forEach((item) => {
+            item.date_of_entry = new Date(item.date_of_entry);
+          })
+          ;
+          
         }
       });
+    }
+  },
+  created() {
+    // TODO: Change the following so you can redirect users who stumbled onto this page right here in this moment
+
+    this.getEventDetailsCall()
   },
   computed: {
     returnCorrectEndTime() {
@@ -554,21 +593,37 @@ export default {
         return this.allTimes;
       }
     },
-    formTitle () {
-        return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
-      },
-      returnListOfClients() {
-        return this.listOfClients;
-      }
+    returnCorrectClientListToChoose() {
+      let finalizedList = [];
+      for (let index = 0; index < this.allClientsList.length; index++) {
+            let foundMatch = false;
+            this.listOfSignedUpClients.forEach((element) => {
+              
+              if (element.client_id == this.allClientsList[index].client_id) {
+                foundMatch = true;
+              } 
+            }); 
+            if (foundMatch == false) {
+              finalizedList.push(this.allClientsList[index])
+            }
+          }
+          return finalizedList;
+    },
+    formTitle() {
+      return this.editedIndex === -1 ? "New Item" : "Edit Item";
+    },
+    returnListOfSignedUpClients() {
+      return this.listOfSignedUpClients;
+    },
   },
   watch: {
-      dialog (val) {
-        val || this.close()
-      },
-      dialogDelete (val) {
-        val || this.closeDelete()
-      },
+    dialog(val) {
+      val || this.close();
     },
+    dialogDelete(val) {
+      val || this.closeDelete();
+    },
+  },
 };
 </script>
 
