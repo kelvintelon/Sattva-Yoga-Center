@@ -5,7 +5,7 @@
 
       <v-spacer></v-spacer>
 
-      <v-toolbar-title>Sattva Yoga Center</v-toolbar-title>
+      <v-toolbar-title></v-toolbar-title>
 
       <v-spacer></v-spacer>
 
@@ -29,7 +29,7 @@ export default {
 },
 data() {
   return {
-    
+
   }
 },
 created() {

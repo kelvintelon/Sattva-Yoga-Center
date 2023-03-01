@@ -1,7 +1,9 @@
 <template>
   <v-footer app
-      padless
+            padless
             class="d-none d-sm-flex"
+            min-height="100px"
+            color="amber"
   >
     <v-col cols="12" class="">
       {{ new Date().getFullYear() }} <strong>Sattva Yoga Center</strong>
