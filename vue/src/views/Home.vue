@@ -1,18 +1,16 @@
 <template>
-  <v-container>
+  <v-container fluid class="fill-height">
 
- <home-card></home-card>
-
+    hello, world.
   </v-container>
 </template>
 
 <script>
 
-import HomeCard from "../components/HomeCard.vue";
+
 export default {
   name: "home",
   components: {
-    HomeCard,
 
 
   },

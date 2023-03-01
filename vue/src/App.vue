@@ -1,25 +1,23 @@
 <template>
   <v-app>
-    <v-layout>
-      <NavDrawer>
 
-      </NavDrawer>
+      <AppBar/>
       <v-main>
         <router-view/>
       </v-main>
-
-    </v-layout>
+      <AppFooter/>
 
   </v-app>
 </template>
 
 <script>
 
-import NavDrawer from "@/layout/NavDrawer.vue";
+import AppBar from "@/layout/AppBar.vue";
+import AppFooter from "@/layout/AppFooter.vue";
 
 export default {
   name: 'App',
-  components: {NavDrawer},
+  components: {AppFooter, AppBar},
 
   data: () => ({
     //
@@ -28,8 +26,8 @@ export default {
 </script>
 
 <style>
-  @font-face {
-    font-family: "Garamond";
+@font-face {
+  font-family: "Garamond";
 
-  }
+}
 </style>
