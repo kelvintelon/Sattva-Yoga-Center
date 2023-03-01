@@ -1,18 +1,15 @@
 <template>
   <v-app-bar app
-             absolute
-             color="#FFC107"
-             light
-             shrink-on-scroll
+             color="#6A76AB"
+             dark
              prominent
-
-             fade-img-on-scroll
+             src="https://picsum.photos/id/306/1920/?blur=2"
              scroll-target="#scrolling-techniques-3"
   >
     <template v-slot:img="{ props }">
       <v-img
           v-bind="props"
-          gradient="to bottom right, rgba(255, 250, 179), rgba(255,193,7)"
+
       ></v-img>
     </template>
 
