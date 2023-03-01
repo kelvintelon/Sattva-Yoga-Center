@@ -1,8 +1,10 @@
 package com.sattvayoga.controller;
 
+import com.sattvayoga.dao.ClientDetailsDao;
 import com.sattvayoga.dao.PackagePurchaseDao;
 import com.sattvayoga.dao.UserDao;
 import com.sattvayoga.model.ClassDetails;
+import com.sattvayoga.model.ClientDetails;
 import com.sattvayoga.model.PackagePurchase;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,10 +21,12 @@ public class PackagePurchaseController {
 
     private PackagePurchaseDao packagePurchaseDao;
     private UserDao userDao;
+    private ClientDetailsDao clientDetailsDao;
 
-    public PackagePurchaseController(PackagePurchaseDao packagePurchaseDao, UserDao userDao) {
+    public PackagePurchaseController(PackagePurchaseDao packagePurchaseDao, UserDao userDao, ClientDetailsDao clientDetailsDao) {
         this.packagePurchaseDao = packagePurchaseDao;
         this.userDao = userDao;
+        this.clientDetailsDao = clientDetailsDao;
     }
 
     @ResponseStatus(HttpStatus.CREATED)
@@ -38,8 +42,13 @@ public class PackagePurchaseController {
     }
 
     @RequestMapping(value= "/userPackagePurchaseListByUserId/{userId}", method = RequestMethod.GET)
-    public List<PackagePurchase> getAllUserPackagePurchase(@PathVariable int userId) throws SQLException {
+    public List<PackagePurchase> getAllUserPackagePurchaseByUserId(@PathVariable int userId) throws SQLException {
         return packagePurchaseDao.getAllUserPackagePurchases(userId);
+    }
+
+    @RequestMapping(value= "/userPackagePurchaseListByClientId/{clientId}", method = RequestMethod.GET)
+    public List<PackagePurchase> getAllUserPackagePurchaseByClientId(@PathVariable int clientId) throws SQLException {
+        return packagePurchaseDao.getAllUserPackagePurchases(clientDetailsDao.findClientByClientId(clientId).getUser_id());
     }
 
     @RequestMapping(value= "/expirePackage", method = RequestMethod.PUT)

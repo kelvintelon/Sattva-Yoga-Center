@@ -3,12 +3,17 @@
     <v-row><br /></v-row>
     <v-row>
       <v-spacer></v-spacer>
-      <h1>Purchase History</h1>
+      <h1 v-if="$store.state.user.username != 'admin'">Purchase History</h1>
       <v-spacer></v-spacer
     ></v-row>
     <br />
 
-    <v-data-table :headers="headers" :items="packageHistoryList" class="elevation-5">
+    <v-data-table
+      :headers="headers"
+      :items="packageHistoryList"
+      class="elevation-5"
+      sort-by="date_purchased" sort-desc="[true]"
+    >
       <template v-slot:top>
         <v-toolbar flat>
           <v-toolbar-title>Purchase History</v-toolbar-title>
@@ -21,7 +26,7 @@
           v-model="item.is_monthly_renew"
           disabled
         ></v-simple-checkbox>
-        </template>
+      </template>
     </v-data-table>
     <br />
     <br />
@@ -90,18 +95,42 @@ export default {
   },
   methods: {
     getPackageHistoryTable() {
-      packagePurchaseService.getUserPurchasedPackages().then((response) => {
-        if (response.status == 200) {
-          this.packageHistoryList = response.data;
-          this.packageHistoryList.forEach((item) => {
-            item.date_purchased = new Date(item.date_purchased).toLocaleString();
-          })
-          this.$store.commit("SET_PACKAGE_HISTORY_LIST", this.packageHistoryList);
-        } else {
-          alert("Error retrieving package information");
-        }
-      });
-    }
+      if (this.$store.state.user.username == "admin") {
+        packagePurchaseService.getUserPurchasedPackagesByClientId(this.$route.params.clientId).then((response) => {
+          if (response.status == 200) {
+            this.packageHistoryList = response.data;
+            this.packageHistoryList.forEach((item) => {
+              item.date_purchased = new Date(
+                item.date_purchased
+              ).toLocaleString();
+            });
+            this.$store.commit(
+              "SET_PACKAGE_HISTORY_LIST",
+              this.packageHistoryList
+            );
+          } else {
+            alert("Error retrieving package information");
+          }
+        });
+      } else {
+        packagePurchaseService.getUserPurchasedPackages().then((response) => {
+          if (response.status == 200) {
+            this.packageHistoryList = response.data;
+            this.packageHistoryList.forEach((item) => {
+              item.date_purchased = new Date(
+                item.date_purchased
+              ).toLocaleString();
+            });
+            this.$store.commit(
+              "SET_PACKAGE_HISTORY_LIST",
+              this.packageHistoryList
+            );
+          } else {
+            alert("Error retrieving package information");
+          }
+        });
+      }
+    },
   },
 };
 </script>

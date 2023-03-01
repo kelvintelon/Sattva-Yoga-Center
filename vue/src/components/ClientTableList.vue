@@ -192,6 +192,7 @@
           disabled
         ></v-simple-checkbox> </template
       ><template v-slot:[`item.actions`]="{ item }">
+        <v-icon small class="mr-2" @click.prevent="sendToUserPageAdminView(item)"> mdi-account-search </v-icon>
         <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
         <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
       </template>
@@ -331,6 +332,10 @@ export default {
     this.getClientTable();
   },
   methods: {
+    sendToUserPageAdminView(object) {
+      this.$store.commit("SET_CLIENT_DETAILS", object);
+      this.$router.push({name: "client-details-admin-view", params: {clientId: object.client_id}})
+    },
     update() {
       this.checkEditForm();
 

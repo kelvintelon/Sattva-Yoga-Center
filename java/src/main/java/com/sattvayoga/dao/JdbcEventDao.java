@@ -445,13 +445,28 @@ public class JdbcEventDao implements EventDao {
         jdbcTemplate.update(sql2, client_id);
     }
 
+//    @Override
+//    public List<Event> getAllUpcomingClientEvents(int user_id) {
+//        List<Event> allClientEvents = new ArrayList<>();
+//        String sql = "SELECT events.event_id, class_id, event_name, start_time, end_time, color, timed, is_visible_online FROM events \n" +
+//                "JOIN client_event ON events.event_id = client_event.event_id \n" +
+//                "JOIN client_details ON client_details.client_id = client_event.client_id \n" +
+//                "WHERE user_id = ? AND start_time > now() " +
+//                "ORDER BY events.start_time";
+//        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, user_id);
+//        while (result.next()) {
+//            allClientEvents.add(mapRowToEvent(result));
+//        }
+//        return allClientEvents;
+//    }
+
     @Override
-    public List<Event> getAllClientEvents(int user_id) {
+    public List<Event> getAllHistoricalClientEvents(int user_id) {
         List<Event> allClientEvents = new ArrayList<>();
         String sql = "SELECT events.event_id, class_id, event_name, start_time, end_time, color, timed, is_visible_online FROM events \n" +
                 "JOIN client_event ON events.event_id = client_event.event_id \n" +
                 "JOIN client_details ON client_details.client_id = client_event.client_id \n" +
-                "WHERE user_id = ? AND start_time > now() " +
+                "WHERE user_id = ? " +
                 "ORDER BY events.start_time";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, user_id);
         while (result.next()) {

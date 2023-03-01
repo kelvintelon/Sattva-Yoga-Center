@@ -3,12 +3,12 @@
     <v-row><br /></v-row>
     <v-row>
       <v-spacer></v-spacer>
-      <h1>Active Packages</h1>
+      <h1 v-if="$store.state.user.username != 'admin'">Active Packages</h1>
       <v-spacer></v-spacer
     ></v-row>
     <br />
 
-    <v-data-table :headers="headers" :items="packages" class="elevation-5">
+    <v-data-table :headers="headers" :items="packages" class="elevation-5" sort-by="date_purchased" sort-desc="[true]">
       <template v-slot:top>
         <v-toolbar flat>
           <v-toolbar-title>Active Packages</v-toolbar-title>
@@ -95,7 +95,30 @@ export default {
     this.$root.$refs.A = this;
   },
   methods: {
+     
     getActivePurchaseServerRequest() {
+      if (this.$store.state.user.username == "admin") {
+        packagePurchaseService.getUserPurchasedPackagesByClientId(this.$route.params.clientId).then((response) => {
+        if (response.status == 200) {
+          // focus on if it's expired or not
+          var today = new Date();
+          var dd = String(today.getDate()).padStart(2, '0');
+          var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+          var yyyy = today.getFullYear();
+          today = yyyy + '-' + mm + '-' + dd;
+
+          this.packages = response.data.filter((item) => {
+            return (item.expiration_date >= today) || (item.expiration_date == null && item.classes_remaining > 0) || (item.expiration_date >= today && item.classes_remaining > 0);
+          });
+          this.packages.forEach((item) => {
+            item.date_purchased = new Date(item.date_purchased);
+          })
+          this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
+        } else {
+          alert("Error retrieving package information");
+        }
+      })
+     } else { 
       packagePurchaseService.getUserPurchasedPackages().then((response) => {
         if (response.status == 200) {
           // focus on if it's expired or not
@@ -106,7 +129,7 @@ export default {
           today = yyyy + '-' + mm + '-' + dd;
 
           this.packages = response.data.filter((item) => {
-            return item.expiration_date >= today || item.classes_remaining > 0;
+            return (item.expiration_date >= today) || (item.expiration_date == null && item.classes_remaining > 0) || (item.expiration_date >= today && item.classes_remaining > 0);
           });
           this.packages.forEach((item) => {
             item.date_purchased = new Date(item.date_purchased);
@@ -116,6 +139,7 @@ export default {
           alert("Error retrieving package information");
         }
       });
+     }
     },
     Remove(item) {
       // this will be an update

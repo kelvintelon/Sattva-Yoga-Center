@@ -48,6 +48,18 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
     }
 
     @Override
+    public ClientDetails findClientByClientId(int clientId) {
+        String sql = "SELECT * FROM client_details WHERE client_id = ?";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, clientId);
+        ClientDetails clientDetails = new ClientDetails();
+        if (results.next()) {
+            clientDetails = mapRowToClient(results);
+        }
+
+        return clientDetails;
+    }
+
+    @Override
     public boolean updateClientDetails(ClientDetails clientDetails){
         String sql = "UPDATE client_details SET last_name = ? , " +
                 "first_name = ? , " +

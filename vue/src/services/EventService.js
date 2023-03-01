@@ -24,8 +24,14 @@ export default {
     getAllClientEvents(){
         return axios.get(`/clientEventList`)
     },
+    getAllClientEventsByClientId(clientId){
+        return axios.get(`/clientEventListByClientId/${clientId}`)
+    },
     removeEventForClient(eventID){
         return axios.delete(`/removeEventForClient/${eventID}`)
+    },
+    removeEventForClientByClientId(eventID, clientID){
+        return axios.delete(`/removeEventForClient/${eventID}/${clientID}`)
     },
     getEventDetailsByEventId(eventID){
         return axios.get(`getEventDetailsByEventId/${eventID}`)

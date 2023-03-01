@@ -48,6 +48,12 @@ public class ClientDetailsController {
         return clientDetails;
     }
 
+    @RequestMapping(path = "/getClientDetailsByClientId/{clientId}", method = RequestMethod.GET)
+    public ClientDetails getClientDetailsByClientId(@PathVariable int clientId) {
+        return clientDetailsDao.findClientByClientId(clientId);
+    }
+
+
     @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(path = "/clientList", method = RequestMethod.GET)
     public List<ClientDetails> getAllClients() {

@@ -1,5 +1,5 @@
 <template>
-  <v-container class="edit-profile" fill-height fluid>
+  <v-container fill-height fluid>
 
     <top-header></top-header>
 
@@ -23,10 +23,11 @@
 <script>
 import EditProfileForm from "../components/EditProfileForm.vue";
 import TopHeader from "../components/TopHeader.vue";
+import HeaderLogo from "../components/HeaderLogo.vue";
 
 export default {
   name: "edit-profile-page",
-  components: { EditProfileForm, TopHeader },
+  components: { EditProfileForm, TopHeader, HeaderLogo },
 };
 </script>
 

@@ -153,7 +153,7 @@
       </template>
       <template v-slot:[`item.actions`]="{ item }">
         <v-icon small class="mr-2" @click.prevent="sendToUserPageAdminView(item)"> mdi-account-search </v-icon>
-        <v-icon small @click="deleteItem(item)"> mdi-close </v-icon>
+        <v-icon small @click.prevent="RemoveClassForClient(item)"> mdi-close-thick </v-icon>
       </template>
     </v-data-table>
   </v-container>
@@ -317,7 +317,9 @@ export default {
       editedIndex: -1,
       // email properties
       selectedClientsSignedUp: [],
-      emailLink: "https://mail.google.com/mail/u/0/?fs=1&tf=cm&to="
+      emailLink: "https://mail.google.com/mail/u/0/?fs=1&tf=cm&to=",
+      // Delete client from roster properties
+      indexOfClientToBeDeleted: 0,
     };
   },
   methods: {
@@ -353,23 +355,6 @@ export default {
       this.showEditForm = !this.showEditForm;
     },
     // Attendance table methods
-    editItem(item) {
-      this.editedIndex = this.desserts.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialog = true;
-    },
-
-    deleteItem(item) {
-      this.editedIndex = this.desserts.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialogDelete = true;
-    },
-
-    deleteItemConfirm() {
-      this.desserts.splice(this.editedIndex, 1);
-      this.closeDelete();
-    },
-
     close() {
       this.dialog = false;
       this.$nextTick(() => {
@@ -385,7 +370,129 @@ export default {
         this.editedIndex = -1;
       });
     },
+    RemoveClassForClient(item) {
+      this.eventClientSignUp.event_id = item.event_id;
+      this.eventClientSignUp.date = item.dateRef;
+      this.eventClientSignUp.client_id =
+        item.client_id;
 
+      for (let index = 0; index < this.listOfSignedUpClients.length; index++) {
+        if(item.client_id == this.listOfSignedUpClients[index].client_id) {
+            this.indexOfClientToBeDeleted = index;
+        }
+      }
+
+      this.allowSignUp = false;
+
+      // object to hold item passed in just in case
+      this.classSignUpItem = Object.assign({}, item);
+
+      // get active packages from API service request
+      this.getActivePurchaseServerRequest2(item);
+
+      // Don't try these below at home
+      // this.$root.$refs.A.getActivePurchaseServerRequest();
+      // this.$root.$emit("getActivePurchasePackageTable");
+    },
+    getActivePurchaseServerRequest2(object) {
+      packagePurchaseService.getUserPurchasedPackagesByUserId(object.user_id).then((response) => {
+        if (response.status == 200) {
+          // focus on if it's expired or not
+          var today = new Date();
+          var dd = String(today.getDate()).padStart(2, '0');
+          var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+          var yyyy = today.getFullYear();
+          today = yyyy + '-' + mm + '-' + dd;
+
+          this.packages = response.data.filter((item) => {
+            return item.expiration_date >= today || item.classes_remaining > 0;
+          });
+          this.packages.forEach((item) => {
+            item.date_purchased = new Date(item.date_purchased);
+          });
+          this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
+          this.activePackageList = this.$store.state.activePackageList;
+          this.cancelCheck();
+        } else {
+          alert("Error retrieving package information");
+        }
+      });
+    },
+    cancelCheck(){
+        if (this.$store.state.activePackageList.length == 0) {
+        this.allowSignUp = false;
+
+        
+      } else if (this.$store.state.activePackageList.length > 0) {
+        this.$store.state.activePackageList.forEach((item) => {
+          // compare todays date and make sure it's less than the expiration date
+          const todaysDate = new Date();
+          let expirationDate = new Date(item.expiration_date);
+          expirationDate.setDate(expirationDate.getDate() + 1);
+
+          // TODO: Handle Gift Card logic here when SQUARE is in place
+          if (item.classes_remaining > 0 || todaysDate < expirationDate) {
+            this.allowSignUp = true;
+            if(item.is_subscription){
+              this.hasSubscriptionPackage = true;
+              this.subscriptionPackages = this.$store.state.activePackageList.filter((item)=>{
+                return item.is_subscription;
+              })
+              this.initial1 = this.subscriptionPackages[0];
+              this.subscriptionPackages.forEach((item)=>{
+                if(item.expiration_date > this.initial1.expiration_date){
+                  this.initial1 = item
+                }
+              })
+            }else{
+              this.quantityPackages = this.$store.state.activePackageList.filter((item)=>{
+                return item.is_subscription == false;
+              })
+              this.initial = this.quantityPackages[0];
+              this.quantityPackages.forEach((item)=>{
+                if(item.date_purchased < this.initial.date_purchased){
+                  this.initial = item
+                }
+              this.quantityPackageIdToIncrement = this.initial.package_purchase_id;
+              })
+            }
+          }
+        });
+
+        // this here is if they only have a gift certificate or dont have a bundle/subscription
+        if (!this.allowSignUp) {
+          this.snackBarNoPurchaseWarning = true;
+        }
+      }
+        if (this.allowSignUp) {
+        // console.log(this.eventClientSignUp.date)
+        // console.log(this.initial1.expiration_date)
+        // console.log(this.eventClientSignUp.date > this.initial1.expiration_date)
+        // console.log(this.hasSubscriptionPackage)
+        if (this.validSignUp == true) {
+      eventService.removeEventForClientByClientId(this.$route.params.eventId, this.eventClientSignUp.client_id).then((response) => {
+        if (response.status == 200) {
+          // call method that updates the client_class_table
+          
+          
+          if(!this.hasSubscriptionPackage){
+            
+            packagePurchaseService.incrementByOne(this.quantityPackageIdToIncrement).then((response)=>{
+              if(response.status == 200) {
+                alert("Removed Client from Roster") 
+                this.listOfSignedUpClients.splice(this.indexOfClientToBeDeleted,1)
+                } else {
+                  alert("Error removing Client from Roster")
+                }
+              
+            })
+          }
+          this.getClientEventTable();
+        }
+      });
+        }
+      }
+    },
     save() {
 
       for (let index = 0; index < this.selectedClients.length; index++) {
@@ -538,6 +645,7 @@ export default {
       this.$router.push("/classManagement")
     },
     sendToUserPageAdminView(object) {
+      this.$store.commit("SET_CLIENT_DETAILS", object);
       this.$router.push({name: "client-details-admin-view", params: {clientId: object.client_id}})
     },
     emailRecipients() {

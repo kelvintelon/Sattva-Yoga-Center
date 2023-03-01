@@ -43,16 +43,33 @@ public class EventController {
         return eventDao.getHundredEvents();
     }
 
+//    @RequestMapping(value= "/clientEventList", method = RequestMethod.GET)
+//    public List<Event> getAllUpcomingClientEvents(Principal principal) throws SQLException {
+//        int userId = userDao.findIdByUsername(principal.getName());
+//        return eventDao.getAllUpcomingClientEvents(userId);
+//    }
+
     @RequestMapping(value= "/clientEventList", method = RequestMethod.GET)
-    public List<Event> getAllClientEvents(Principal principal) throws SQLException {
+    public List<Event> getAllHistoricalClientEvents(Principal principal) throws SQLException {
         int userId = userDao.findIdByUsername(principal.getName());
-        return eventDao.getAllClientEvents(userId);
+        return eventDao.getAllHistoricalClientEvents(userId);
     }
+
+    @RequestMapping(value= "/clientEventListByClientId/{clientId}", method = RequestMethod.GET)
+    public List<Event> getAllUpcomingClientEventsByClientId(@PathVariable int clientId) throws SQLException {
+        return eventDao.getAllHistoricalClientEvents(clientDetailsDao.findClientByClientId(clientId).getUser_id());
+    }
+
 
     @RequestMapping(value = "/removeEventForClient/{eventId}", method = RequestMethod.DELETE)
     public void deleteClassForClient (@PathVariable int eventId ,Principal principal) {
         ClientDetails clientDetails = clientDetailsDao.findClientByUserId(userDao.findIdByUsername(principal.getName()));
         eventDao.deleteEventForClient(eventId, clientDetails.getClient_id());
+    }
+
+    @RequestMapping(value = "/removeEventForClient/{eventId}/{clientId}", method = RequestMethod.DELETE)
+    public void deleteClassForClientByClientId (@PathVariable int eventId, @PathVariable int clientId) {
+        eventDao.deleteEventForClient(eventId, clientId);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

@@ -57,6 +57,8 @@
         :headers="clientEventHeaders"
         :items="clientEvents"
         class="elevation-5"
+        sort-by="date"
+        :sort-desc="[true]"
       >
         <template v-slot:top>
           <v-toolbar flat>
@@ -69,6 +71,23 @@
           <v-icon small class="mr-2" @click="RemoveClassForClient(item)">
             mdi-close-thick
           </v-icon>
+        </template>
+      </v-data-table>
+      <br />
+      <br />
+      <v-data-table
+        :headers="allClientEventHeaders"
+        :items="allClientEvents"
+        class="elevation-5"
+        sort-by="date"
+        :sort-desc="[true]"
+      >
+        <template v-slot:top>
+          <v-toolbar flat>
+            <v-toolbar-title>Sign Up History</v-toolbar-title>
+            <v-divider class="mx-4" inset vertical></v-divider>
+            <v-spacer></v-spacer>
+          </v-toolbar>
         </template>
       </v-data-table>
     </v-app>
@@ -104,15 +123,26 @@ export default {
         {
           text: "Class Description",
           value: "event_name",
-          align: "start",
+          
         },
-        { text: "Date", value: "date", sortable: false },
+        { text: "Date", value: "date", sortable: true, align: "start", },
         { text: "Start Time", value: "start_time", sortable: false },
         { text: "End Time", value: "end_time", sortable: false },
         { text: "Cancel Signup", value: "actions", sortable: false },
       ],
+      allClientEventHeaders: [
+        {
+          text: "Class Description",
+          value: "event_name",
+        },
+        { text: "Date", value: "date", sortable: true, align: "start", },
+        { text: "Start Time", value: "start_time", sortable: false },
+        { text: "End Time", value: "end_time", sortable: false },
+        
+      ],
       events: [],
       clientEvents: [],
+      allClientEvents: [],
       eventClientSignUp: {
         event_id: "",
         date:"",
@@ -358,9 +388,9 @@ export default {
         if (response.status == 200) {
           // call method that updates the client_class_table
           alert("Removed the class from your list");
-          console.log(this.hasSubscriptionPackage)
+          
           if(!this.hasSubscriptionPackage){
-            console.log(this.quantityPackageIdToIncrement)
+            
             packagePurchaseService.incrementByOne(this.quantityPackageIdToIncrement).then((response)=>{
               if(response.status == 200)
               alert("+1")
@@ -372,22 +402,6 @@ export default {
         }
       }
     },
-    // RemoveClassForClient(item) {
-    //   eventService.removeEventForClient(item.event_id).then((response) => {
-    //     if (response.status == 200) {
-    //       // call method that updates the client_class_table
-    //       alert("Removed the class from your list");
-    //       if(!this.hasSubscriptionPackage){
-    //         console.log(this.quantityPackageIdToDecrement)
-    //         packagePurchaseService.incrementByOne(this.quantityPackageIdToDecrement).then((response)=>{
-    //           if(response.status == 200)
-    //           alert("+1")
-    //         })
-    //       }
-    //       this.getClientEventTable();
-    //     }
-    //   });
-    // },
 
     getEventTable() {
       eventService.get100Events().then((response) => {
@@ -426,16 +440,30 @@ export default {
       eventService.getAllClientEvents().then((response) => {
         if (response.status == 200) {
           this.$store.commit("SET_CLIENT_EVENT_LIST", response.data);
-          this.clientEvents = response.data;
-          this.clientEvents.forEach((each) => {
+          
+          this.allClientEvents = response.data;
+
+          
+
+          var today = new Date();
+          var dd = String(today.getDate()).padStart(2, '0');
+          var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+          var yyyy = today.getFullYear();
+          today = yyyy + '-' + mm + '-' + dd;
+
+          this.clientEvents = this.allClientEvents.filter((item) => {
+            return item.start_time > today;
+          })
+
+          this.allClientEvents.forEach((item) => {
             // YYYY-MM-DD format
-            each.date = each.start_time;
-            const [Month, Day, Year] = new Date(each.date)
+            item.date = item.start_time;
+            let [Month, Day, Year] = new Date(item.date)
               .toLocaleDateString()
               .split("/");
-            each.date = Year + "-" + Month + "-" + Day;
+            item.date = Year + "-" + Month + "-" + Day;
             // HH:MM AM/PM format
-            each.start_time = new Date(each.start_time).toLocaleString(
+            item.start_time = new Date(item.start_time).toLocaleString(
               "en-US",
               {
                 hour: "numeric",
@@ -443,12 +471,15 @@ export default {
                 hour12: true,
               }
             );
-            each.end_time = new Date(each.end_time).toLocaleString("en-US", {
+            item.end_time = new Date(item.end_time).toLocaleString("en-US", {
               hour: "numeric",
               minute: "numeric",
               hour12: true,
             });
           });
+        
+        
+
         } else {
           alert("Error retrieving class information");
         }
