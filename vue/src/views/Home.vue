@@ -1,7 +1,8 @@
 <template>
   <v-container fluid class="fill-height">
-
-    hello, world.
+    <v-card>
+      hello, world.
+    </v-card>
   </v-container>
 </template>
 
