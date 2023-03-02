@@ -112,9 +112,11 @@ CREATE TABLE events (
 CREATE TABLE client_event (
 	client_id int NOT NULL,
 	event_id int NOT NULL,
+	package_purchase_id int NOT NULL,
 	CONSTRAINT PK_client_event PRIMARY KEY (client_id, event_id),
 	CONSTRAINT FK_client_event_client_id FOREIGN KEY (client_id) REFERENCES client_details (client_id),
-	CONSTRAINT FK_client_event_event_id FOREIGN KEY (event_id) REFERENCES events(event_id)
+	CONSTRAINT FK_client_event_event_id FOREIGN KEY (event_id) REFERENCES events(event_id),
+	CONSTRAINT FK_client_event_package_purchase_id FOREIGN KEY (package_purchase_id) REFERENCES package_purchase(package_purchase_id)
 )
 
 COMMIT TRANSACTION;

@@ -13,6 +13,7 @@ public class Event {
     private boolean timed;
     private boolean is_visible_online;
     private List<ClientDetails> attendanceList;
+    private int package_purchase_id;
 
     public Event() {
 
@@ -27,6 +28,14 @@ public class Event {
         this.color = color;
         this.timed = timed;
         this.is_visible_online = is_visible_online;
+    }
+
+    public int getPackage_purchase_id() {
+        return package_purchase_id;
+    }
+
+    public void setPackage_purchase_id(int package_purchase_id) {
+        this.package_purchase_id = package_purchase_id;
     }
 
     public List<ClientDetails> getAttendanceList() {

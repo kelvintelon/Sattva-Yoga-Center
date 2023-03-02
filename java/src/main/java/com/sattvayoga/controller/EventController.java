@@ -105,17 +105,19 @@ public class EventController {
         // should we have exceptions if the class is already registered
         // (an exception that means they are already inside the class table)
 
-        eventDao.registerForEvent(clientEvent.getClient_id(),clientEvent.getEvent_id());
+        eventDao.registerForEvent(clientEvent.getClient_id(),clientEvent.getEvent_id(),clientEvent.getPackage_purchase_id());
     }
 
     static class ClientEventWrapper {
 
         private int client_id;
         private int event_id;
+        private int package_purchase_id;
 
-        ClientEventWrapper(int client_id, int event_id) {
+        ClientEventWrapper(int client_id, int event_id, int package_purchase_id) {
             this.client_id = client_id;
             this.event_id = event_id;
+            this.package_purchase_id = package_purchase_id;
         }
 
         @JsonProperty("client_id")
@@ -134,6 +136,15 @@ public class EventController {
 
         public void setEvent_id(int event_id) {
             this.event_id = event_id;
+        }
+
+        @JsonProperty("package_purchase_id")
+        public int getPackage_purchase_id() {
+            return package_purchase_id;
+        }
+
+        public void setPackage_purchase_id(int package_purchase_id) {
+            this.package_purchase_id = package_purchase_id;
         }
     }
 

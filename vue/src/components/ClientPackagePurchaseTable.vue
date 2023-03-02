@@ -257,7 +257,6 @@ export default {
                   // call method that updates the list of active packages
                   this.$root.$refs.A.getActivePurchasePackageTable();
                   this.$root.$refs.B.getPackageHistoryTable();
-                  
                   this.allowPurchase = false;
                 }
               });

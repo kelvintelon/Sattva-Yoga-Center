@@ -30,7 +30,7 @@ public interface EventDao {
 
     List<Event> getHundredEvents();
 
-    void registerForEvent(int client_id, int event_id);
+    void registerForEvent(int client_id, int event_id, int package_purchase_id);
 
 //    List<Event> getAllUpcomingClientEvents(int user_id);
 

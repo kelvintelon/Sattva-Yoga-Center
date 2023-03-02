@@ -436,9 +436,9 @@ public class JdbcEventDao implements EventDao {
 
 
     @Override
-    public void registerForEvent(int client_id, int event_id) {
-        String sql = "INSERT INTO client_event (client_id, event_id) VALUES (?,?);";
-        jdbcTemplate.update(sql, client_id, event_id);
+    public void registerForEvent(int client_id, int event_id, int package_purchase_id) {
+        String sql = "INSERT INTO client_event (client_id, event_id, package_purchase_id) VALUES (?,?,?);";
+        jdbcTemplate.update(sql, client_id, event_id, package_purchase_id);
 
         String sql2 = "UPDATE client_details SET is_new_client = FALSE WHERE client_id = ?";
 
@@ -463,14 +463,17 @@ public class JdbcEventDao implements EventDao {
     @Override
     public List<Event> getAllHistoricalClientEvents(int user_id) {
         List<Event> allClientEvents = new ArrayList<>();
-        String sql = "SELECT events.event_id, class_id, event_name, start_time, end_time, color, timed, is_visible_online FROM events \n" +
+        Event event = new Event();
+        String sql = "SELECT events.event_id, class_id, event_name, start_time, end_time, color, timed, is_visible_online, package_purchase_id FROM events \n" +
                 "JOIN client_event ON events.event_id = client_event.event_id \n" +
                 "JOIN client_details ON client_details.client_id = client_event.client_id \n" +
                 "WHERE user_id = ? " +
                 "ORDER BY events.start_time";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, user_id);
         while (result.next()) {
-            allClientEvents.add(mapRowToEvent(result));
+            event = mapRowToEvent(result);
+            event.setPackage_purchase_id(result.getInt("package_purchase_id"));
+            allClientEvents.add(event);
         }
         return allClientEvents;
     }
