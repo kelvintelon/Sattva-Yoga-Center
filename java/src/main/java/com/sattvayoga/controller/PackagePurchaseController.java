@@ -61,6 +61,11 @@ public class PackagePurchaseController {
         return packagePurchaseDao.decrementByOne(packagePurchaseId);
     }
 
+    @RequestMapping(value= "/updatePackagePurchase", method = RequestMethod.PUT)
+    public boolean updatePackage(@RequestBody PackagePurchase packagePurchase) {
+        return packagePurchaseDao.updatePackage(packagePurchase);
+    }
+
     @RequestMapping(value= "/increment/{packagePurchaseId}", method = RequestMethod.PUT)
     public boolean incrementByOne(@PathVariable int packagePurchaseId){
         return packagePurchaseDao.incrementByOne(packagePurchaseId);

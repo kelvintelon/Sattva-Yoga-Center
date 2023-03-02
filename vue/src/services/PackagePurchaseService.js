@@ -23,6 +23,8 @@ export default {
     getUserPurchasedPackagesByClientId(clientId) {
         return axios.get(`userPackagePurchaseListByClientId/${clientId}`)
     },
-    
+    updatePackagePurchase(object){
+        return axios.put(`/updatePackagePurchase`, object)
+    },
 
 }
