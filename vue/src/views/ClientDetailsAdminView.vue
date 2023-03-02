@@ -8,7 +8,7 @@
           <v-card align="center" justify="center" >
             {{ clientDetails.first_name }} {{ clientDetails.last_name }} ||
             <v-btn @click.prevent="showEditForm = !showEditForm" outlined color="primary" class="mx-2"
-              ><v-icon dark>
+              >Edit<v-icon dark>
         mdi-pencil
       </v-icon></v-btn
             ></v-card

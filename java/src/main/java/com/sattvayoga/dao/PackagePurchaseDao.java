@@ -15,4 +15,6 @@ public interface PackagePurchaseDao {
     boolean decrementByOne(int packagePurchaseId);
 
     boolean incrementByOne(int packagePurchaseId);
+
+    boolean updatePackage(PackagePurchase packagePurchase);
 }

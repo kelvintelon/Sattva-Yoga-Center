@@ -68,6 +68,13 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     }
 
     @Override
+    public boolean updatePackage(PackagePurchase packagePurchase) {
+        String sql = "UPDATE package_purchase SET date_purchased = ?, classes_remaining = ?, " +
+                "activation_date = ?, expiration_date = ?, is_monthly_renew = ? , discount = ? WHERE package_purchase_id = ?;";
+    return jdbcTemplate.update(sql, packagePurchase.getDate_purchased(), packagePurchase.getClasses_remaining(), packagePurchase.getActivation_date(), packagePurchase.getExpiration_date(), packagePurchase.isIs_monthly_renew(), packagePurchase.getDiscount(), packagePurchase.getPackage_purchase_id() )==1;
+    }
+
+    @Override
     public boolean decrementByOne(int packagePurchaseId) {
         String sql= "UPDATE package_purchase SET classes_remaining = classes_remaining - 1 WHERE package_purchase_id = ?";
         return jdbcTemplate.update(sql, packagePurchaseId)==1;
