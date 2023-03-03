@@ -93,6 +93,10 @@ export default {
     this.getActivePurchaseServerRequest();
     
     this.$root.$refs.A = this;
+
+    if (this.$store.state.user.username == "admin") {
+      this.headers.unshift({ text: "Package ID", value: "package_purchase_id", sortable: false });
+    }
   },
   methods: {
      
@@ -142,6 +146,7 @@ export default {
      }
     },
     Remove(item) {
+      
       // this will be an update
       packagePurchaseService.expirePackage(item).then((response) => {
         if (response.status == 200) {

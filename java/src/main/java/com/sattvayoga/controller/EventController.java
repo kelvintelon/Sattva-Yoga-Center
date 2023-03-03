@@ -80,6 +80,12 @@ public class EventController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value= "/retrievePackagePurchaseId/{eventId}/{clientId}", method = RequestMethod.GET)
+    public int getPackagePurchaseIdByEventIdClientId(@PathVariable int eventId, @PathVariable int clientId) {
+        return eventDao.getPackagePurchaseIdByEventIdClientId(eventId, clientId);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/createEvent", method = RequestMethod.POST)
     public void createEvent(@RequestBody Event event) {

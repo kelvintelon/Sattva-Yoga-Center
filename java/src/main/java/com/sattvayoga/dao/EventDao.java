@@ -39,4 +39,6 @@ public interface EventDao {
     void deleteEventForClient(int event_id, int client_id);
 
     Event getEventByEventId(int eventId);
+
+    int getPackagePurchaseIdByEventIdClientId(int eventId, int clientId);
 }

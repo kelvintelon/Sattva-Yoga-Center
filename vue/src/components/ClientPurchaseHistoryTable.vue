@@ -316,7 +316,9 @@ export default {
 
     if (this.$store.state.user.username == "admin") {
       this.headers.push({ text: "Edit", value: "actions", sortable: false });
+       this.headers.unshift({ text: "Package ID", value: "package_purchase_id", sortable: false });
     }
+    
   },
   methods: {
     getPackageHistoryTable() {

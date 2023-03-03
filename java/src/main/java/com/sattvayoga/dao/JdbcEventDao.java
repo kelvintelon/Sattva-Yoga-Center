@@ -421,6 +421,17 @@ public class JdbcEventDao implements EventDao {
         return event;
     }
 
+    @Override
+    public int getPackagePurchaseIdByEventIdClientId(int eventId, int clientId) {
+        String sql = "SELECT package_purchase_id FROM client_event WHERE event_id = ? AND client_id = ?";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, eventId, clientId);
+        int packageId = 0;
+        if (result.next()) {
+            packageId = result.getInt("package_purchase_id");
+        }
+        return packageId;
+    }
+
     public List<ClientDetails> getAttendanceByEventId(int eventId) {
         List<ClientDetails> listOfAttendance = new ArrayList<>();
 

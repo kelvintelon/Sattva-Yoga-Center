@@ -240,7 +240,7 @@ export default {
             } else {
               this.quantityPackages =
                 this.$store.state.activePackageList.filter((item) => {
-                  return item.is_subscription == false;
+                  return item.is_subscription == false && (item.expiration_date == null || todaysDate < item.expiration_date);
                 });
               this.initial = this.quantityPackages[0];
               this.quantityPackages.forEach((item) => {

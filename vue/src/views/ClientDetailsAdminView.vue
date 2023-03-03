@@ -43,6 +43,8 @@ import ClientActivePackageTable from "../components/ClientActivePackageTable.vue
 import ClientPurchaseHistoryTable from "../components/ClientPurchaseHistoryTable.vue";
 import ClientEventTable from "../components/ClientEventTable.vue";
 import EditProfileForm from "../components/EditProfileForm.vue";
+import clientDetailService from "../services/ClientDetailService";
+
 
 export default {
   name: "client-details-admin-view",
@@ -60,6 +62,13 @@ export default {
     };
   },
   created() {
+    clientDetailService.getClientDetailsByClientId(this.$route.params.clientId).then((response) => {
+        if (response.data.client_id != 0) {
+          this.clientProfile = response.data;
+          this.$store.commit("SET_CLIENT_DETAILS", response.data);
+        }
+      });
+
     this.clientDetails = this.$store.state.clientDetails;
   },
 };

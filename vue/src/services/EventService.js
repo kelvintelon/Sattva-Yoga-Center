@@ -35,6 +35,9 @@ export default {
     },
     getEventDetailsByEventId(eventID){
         return axios.get(`getEventDetailsByEventId/${eventID}`)
+    },
+    retrievePackagePurchaseId(eventId, clientId) {
+        return axios.get(`/retrievePackagePurchaseId/${eventId}/${clientId}`)
     }
 
 

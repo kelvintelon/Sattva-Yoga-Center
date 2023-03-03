@@ -62,8 +62,12 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
     @Override
     public boolean expirePackage(PackagePurchase packagePurchase) {
-        String sql = "UPDATE package_purchase SET expiration_date = current_date - INTEGER '1' " +
+        String sql = "UPDATE package_purchase SET classes_remaining = 0 " +
                 "WHERE package_purchase_id = ?;";
+        if (packagePurchase.isIs_subscription()) {
+            sql = "UPDATE package_purchase SET expiration_date = current_date - INTEGER '1' " +
+                    "WHERE package_purchase_id = ?;";
+        }
         return jdbcTemplate.update(sql, packagePurchase.getPackage_purchase_id())==1;
     }
 
