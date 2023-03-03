@@ -235,7 +235,8 @@ export default {
     this.getClientEventTable();
 
        if (this.$store.state.user.username == "admin") {
-     this.headers.unshift({ text: "Event ID", value: "event_id", sortable: false });
+     this.clientEventHeaders.unshift({ text: "Event ID", value: "event_id", sortable: false });
+     this.allClientEventHeaders.unshift({ text: "Event ID", value: "event_id", sortable: false });
        }
   },
 };
