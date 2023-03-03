@@ -1,12 +1,19 @@
 <template>
   <v-app-bar
     app
-    elevation="1"
-    color="#FFC107"
+    elevation="1"    
+    color="#FFF8E1"
     light
     prominent
     scroll-target="#scrolling-techniques-3"
-  >  
+    famde-img-on-scroll
+  > 
+    <template v-slot:img="{ props }">
+      <v-img
+        v-bind="props"
+        gradient="to bottom left, rgba(255, 236, 179, .7), rgba(255, 193, 7, 1)"
+      ></v-img>
+    </template>
   <v-menu bottom right>
       <template v-slot:activator="{ on, attrs }">
         <v-btn v-bind="attrs" v-on="on" icon tile>

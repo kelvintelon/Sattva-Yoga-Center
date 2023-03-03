@@ -4,7 +4,7 @@
     padless
     class="d-none d-sm-flex"
     min-height="200px"
-    color="#FFECB3"
+    color="#EFEBE9"
   >
     <v-col class="">
       {{ new Date().getFullYear() }} <strong>Sattva Yoga Center</strong>

@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <v-card class="mx-auto my-2 rounded-xl" max-width="900px" min-width="700px">
-      <v-img height="350px" src="@/assets/IMG_5742.jpeg"></v-img>
+      <v-img height="350px" src="@/assets/app-bar-photo.png"></v-img>
       <v-card-title><strong>Welcome</strong></v-card-title>
       <v-card-text>
         <v-row align="center" class="mx-0">
@@ -14,7 +14,7 @@
       <v-card-text>
         <v-chip-group
             v-model="selection"
-            active-class="deep-purple accent-4 white--text"
+            active-class="deep-orange accent-4 white--text"
             column
         >
           <v-chip>5:30PM</v-chip>
@@ -29,13 +29,14 @@
 
       <v-card-actions>
         <v-btn
-            color="deep-purple lighten-2"
+            color="deep-orange lighten-2"
             text
             @click="reserve"
         >
           Reserve
         </v-btn>
       </v-card-actions>
+      <v-card-text>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quis nemo repellat facilis adipisci quod praesentium saepe illo ipsam earum veritatis natus non blanditiis debitis, quos assumenda iure vel tempora id.</v-card-text>
 
     </v-card>
 
