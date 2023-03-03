@@ -100,7 +100,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
     public List<ClientDetails> getAllClients() {
         List<ClientDetails> allClients = new ArrayList<>();
 
-        String sql = "SELECT * FROM client_details;";
+        String sql = "SELECT * FROM client_details ORDER BY client_id;";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
         while(result.next()) {
             ClientDetails clientDetails = mapRowToClient(result);
