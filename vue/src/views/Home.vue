@@ -1,13 +1,11 @@
 <template>
   <v-container>
-    <v-card class="mx-auto my-2" max-width="700px" min-width="700px">
+    <v-card class="mx-auto my-2 rounded-xl" max-width="900px" min-width="700px">
       <v-img height="350px" src="@/assets/IMG_5742.jpeg"></v-img>
-      <v-card-title><strong>namaste.</strong></v-card-title>
+      <v-card-title><strong>Welcome</strong></v-card-title>
       <v-card-text>
         <v-row align="center" class="mx-0">
-          Namas ipsum te dolor sit amet, consectetur adipisicing elit. Accusantium cupiditate debitis delectus dolorum
-          eaque harum ipsa, molestiae molestias mollitia, nesciunt officia perferendis quaerat quam reiciendis, sequi
-          totam vel voluptas voluptates!
+          Sattva has been serving our Dearborn, Michigan community since January 2007. The central focus of our classes is the breath. Our aim is to facilitate a healthy body and a supple mind.
         </v-row>
       </v-card-text>
       <v-divider class="mx-4"></v-divider>

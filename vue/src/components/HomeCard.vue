@@ -23,7 +23,7 @@
     </v-card-text>
 
     <v-divider></v-divider>
-<!--put the following stuff in a grid-->
+
     <v-card-title class="font-weight-bold">Class times</v-card-title>
 
     <v-card-text>

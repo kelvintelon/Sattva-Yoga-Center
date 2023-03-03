@@ -1,30 +1,29 @@
 <template>
-  <v-app-bar app
-             color="#6A76AB"
-             dark
-             prominent
-             src="https://picsum.photos/id/306/1920/?blur=2"
-             scroll-target="#scrolling-techniques-3"
-  >
-    <template v-slot:img="{ props }">
-      <v-img
-          v-bind="props"
+  <v-app-bar
+    app
+    elevation="1"
+    color="#FFC107"
+    light
+    prominent
+    scroll-target="#scrolling-techniques-3"
+  >  
+  <v-menu bottom right>
+      <template v-slot:activator="{ on, attrs }">
+        <v-btn v-bind="attrs" v-on="on" icon tile>
+          <v-icon>mdi-menu</v-icon>
+        </v-btn>
+      </template>
+      <v-list>
+        <v-list-item v-for="(item, i) in items" :key="i">
+          <v-list-item-title>{{ item.link }}</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-menu>
 
-      ></v-img>
-    </template>
-
-    <v-app-bar-nav-icon ></v-app-bar-nav-icon>
 
     <v-toolbar-title>Sattva Yoga Center</v-toolbar-title>
 
     <v-spacer></v-spacer>
-
-
-    <v-btn icon tile>
-      <v-icon>mdi-dots-vertical</v-icon>
-    </v-btn>
-
-
   </v-app-bar>
 </template>
 
@@ -32,17 +31,17 @@
 export default {
   name: "AppBar",
   data() {
-    return {}
+    return {
+      menu: false,
+      items: [{ link: "logout" }],
+    };
   },
   methods: {
     goToLogin() {
-      this.$router.push({name: "login"});
+      this.$router.push({ name: "login" });
     },
-  }
-
-}
+  },
+};
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
