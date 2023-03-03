@@ -25,7 +25,6 @@ CREATE TABLE class_details
 (
     class_id          serial    NOT NULL,
     teacher_id        int       NOT NULL,
---     class_datetime    timestamp,
 	is_repeating	  boolean   NOT NULL,
 	start_time		  text		NOT NULL,
 	date_range		  text[],	
@@ -44,16 +43,16 @@ CREATE TABLE client_details
     first_name              varchar(30) NOT NULL,
     is_client_active        boolean     NOT NULL,
 	is_new_client			boolean		NOT NULL,
-    street_address          varchar(50) NOT NULL,
-    city                    varchar(30) NOT NULL,
-    state_abbreviation      varchar(2)  NOT NULL,
-    zip_code                varchar(12) NOT NULL,
-    phone_number            varchar(15) NOT NULL,
-    is_on_email_list        boolean     NOT NULL,
-    email                   varchar(30) NOT NULL,
-    has_record_of_liability boolean     NOT NULL,
-    date_of_entry           timestamp   NOT NULL,
-	user_id 				int 		NOT NULL,
+    street_address          varchar(50) 
+    city                    varchar(30) 
+    state_abbreviation      varchar(2)  
+    zip_code                varchar(12) 
+    phone_number            varchar(15) 
+    is_on_email_list        boolean     
+    email                   varchar(30) 
+    has_record_of_liability boolean     
+    date_of_entry           timestamp   
+	user_id 				int 		
     CONSTRAINT PK_client_id PRIMARY KEY (client_id),
 	CONSTRAINT FK_client_id_user_id FOREIGN KEY (user_id) REFERENCES users (user_id)
 );
