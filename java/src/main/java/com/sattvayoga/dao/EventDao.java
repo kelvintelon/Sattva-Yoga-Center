@@ -1,9 +1,6 @@
 package com.sattvayoga.dao;
 
-import com.sattvayoga.model.ClassDetails;
-import com.sattvayoga.model.ClientDetailsDTO;
-import com.sattvayoga.model.Event;
-import com.sattvayoga.model.TeacherDetails;
+import com.sattvayoga.model.*;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -41,4 +38,6 @@ public interface EventDao {
     Event getEventByEventId(int eventId);
 
     int getPackagePurchaseIdByEventIdClientId(int eventId, int clientId);
+
+    List<ClientEvent> getRedFlaggedClientByClientId(int clientId);
 }

@@ -409,7 +409,7 @@ export default {
         if (item.redFlag) {
           return 'red'
         } else {
-          return 'green'
+          return 'blue'
         }
 
       },

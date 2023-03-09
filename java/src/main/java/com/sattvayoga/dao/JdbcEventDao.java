@@ -444,16 +444,17 @@ public class JdbcEventDao implements EventDao {
         while (result.next()) {
             ClientDetails clientDetails = mapRowToClient(result);
             // before you add it to the list, include whether they are red-flagged or not
-            clientDetails.setRedFlag(getRedFlaggedClientsInAttendance(eventId,clientDetails.getClient_id()).size() > 0);
+            clientDetails.setRedFlag(getRedFlaggedClientByClientId(clientDetails.getClient_id()).size() > 0);
             listOfAttendance.add(clientDetails);
         }
         return listOfAttendance;
     }
 
-    public List<ClientEvent> getRedFlaggedClientsInAttendance(int eventId, int clientId) {
+    @Override
+    public List<ClientEvent> getRedFlaggedClientByClientId(int clientId) {
         List<ClientEvent> clientEventObjectList = new ArrayList<>();
-        String sql = "SELECT * FROM client_event WHERE event_id = ? AND client_id = ? AND package_purchase_id = 0";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, eventId, clientId);
+        String sql = "SELECT * FROM client_event WHERE client_id = ? AND package_purchase_id = 0";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, clientId);
         while(result.next()) {
             ClientEvent clientEvent = mapRowToClientEvent(result);
             clientEventObjectList.add(clientEvent);
