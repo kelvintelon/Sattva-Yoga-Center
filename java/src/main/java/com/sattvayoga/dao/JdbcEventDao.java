@@ -439,6 +439,8 @@ public class JdbcEventDao implements EventDao {
                 "client_event.client_id = client_details.client_id " +
                 "WHERE client_event.event_id = ?";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, eventId);
+        // TODO: ADD A INSTANCE VARIABLE TO THE OBJECT like "clientDetails.setIsRedFlagged(true)"
+        //  if they have any entries in the client_event table where Package Purchase ID is 0
         while (result.next()) {
             listOfAttendance.add(mapRowToClient(result));
         }

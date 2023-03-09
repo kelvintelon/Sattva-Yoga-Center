@@ -38,7 +38,13 @@ export default {
     },
     retrievePackagePurchaseId(eventId, clientId) {
         return axios.get(`/retrievePackagePurchaseId/${eventId}/${clientId}`)
-    }
+    },
+    removeEventForSelectedClients(listOfClients) {
+        return axios.put('removeEventForSelectedClients', listOfClients)
+    },
+    registerMultipleClientsForEvent(listOfClients) {
+        return axios.post('registerMultipleClientsForEvent', listOfClients)
+    },
 
 
 }

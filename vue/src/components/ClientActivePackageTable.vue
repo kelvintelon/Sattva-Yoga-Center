@@ -22,7 +22,7 @@
           disabled
         ></v-simple-checkbox>
       </template>
-      <template v-slot:[`item.actions`]="{ item }">
+      <template v-slot:[`item.actions`]="{ item }"  v-if="$store.state.user.username == 'admin'">
         <v-icon small class="mr-2" @click="Remove(item)">
           mdi-card-plus
         </v-icon>
@@ -71,7 +71,6 @@ export default {
           text: "Monthly Renewal?",
           value: "is_monthly_renew",
         },
-        { text: "Cancel", value: "actions", sortable: false },
       ],
       packages: [],
       packagePurchase: {
@@ -96,6 +95,7 @@ export default {
 
     if (this.$store.state.user.username == "admin") {
       this.headers.unshift({ text: "Package ID", value: "package_purchase_id", sortable: false });
+       this.headers.push( { text: "Cancel", value: "actions", sortable: false });
     }
   },
   methods: {

@@ -293,6 +293,8 @@ export default {
       if (date.getDate() != d) {
         date.setDate(0);
       }
+      // fixing  fix: (3/3 → 4/2) NOT (3/3 → 4/3)
+      date.setDate(date.getDate()-1);
       return date;
     },
   },

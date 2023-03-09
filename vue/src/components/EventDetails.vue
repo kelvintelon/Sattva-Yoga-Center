@@ -11,7 +11,7 @@
       Warning: Skipping Over Clients Without Active Package
     </v-snackbar>
     <v-data-table
-      v-model="selectedClientsSignedUp"
+      v-model="selectedClientsFromRoster"
       :headers="headers"
       :items="returnListOfSignedUpClients"
       item-key="client_id"
@@ -68,8 +68,9 @@
             v-bind="attrs"
             v-on="on"
             @click.prevent="emailRecipients"
+            title="Email Selected Client(s)"
           >
-            <v-icon>mdi-order-bool-ascending-variant</v-icon> Email select
+            <v-icon>mdi-order-bool-ascending-variant</v-icon>
           </v-btn>
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-btn
@@ -79,8 +80,9 @@
             v-bind="attrs"
             v-on="on"
             @click.prevent="emailRecipientsFromEmailList"
+            title="Email List"
           >
-            <v-icon>mdi-email-plus</v-icon> EMAIL LIST
+            <v-icon>mdi-email-plus</v-icon>
           </v-btn>
           <v-spacer></v-spacer>
           <v-dialog v-model="dialog" max-width="500px">
@@ -178,7 +180,7 @@
         >
           mdi-account-search
         </v-icon>
-        <v-icon small @click.prevent="RemoveClassForClient(item)">
+        <v-icon small @click.prevent="RemoveClassForClient(item)" color="#933">
           mdi-close-thick
         </v-icon>
       </template>
@@ -207,6 +209,7 @@ export default {
       timeout: 6000,
       hasSubscriptionPackage: false,
       subscriptionPackages: [],
+      subscriptionPackageId: 0,
       quantityPackages: [],
       quantityPackageIdToDecrement: 0,
       eventClientSignUp: {
@@ -341,7 +344,7 @@ export default {
       ],
       editedIndex: -1,
       // email properties
-      selectedClientsSignedUp: [],
+      selectedClientsFromRoster: [],
       emailLink: "https://mail.google.com/mail/u/0/?fs=1&tf=cm&to=",
       // Delete client from roster properties
       indexOfClientToBeDeleted: 0,
@@ -396,134 +399,56 @@ export default {
         this.editedIndex = -1;
       });
     },
-    RemoveClassForClient(item) {
-      this.eventClientSignUp.event_id = this.$route.params.eventId;
-      this.eventClientSignUp.date = item.dateRef;
-
-      this.eventClientSignUp.client_id = item.client_id;
-      
-      // retrieve the package_purchase id correctly
-      eventService
-        .retrievePackagePurchaseId(parseInt(this.eventClientSignUp.event_id), parseInt(this.eventClientSignUp.client_id))
-        .then((response) => {
-          if (response.status == 200) {
-            // retrieve the package_purchase id correctly
-            this.eventClientSignUp.package_purchase_id = response.data;
-            for (
-              let index = 0;
-              index < this.listOfSignedUpClients.length;
-              index++
-            ) {
-              if (
-                item.client_id == this.listOfSignedUpClients[index].client_id
-              ) {
-                this.indexOfClientToBeDeleted = index;
-              }
-            }
-
-            this.allowSignUp = false;
-
-            // object to hold item passed in just in case
-            this.classSignUpItem = Object.assign({}, item);
-
-            // get active packages from API service request
-            this.getActivePurchaseServerRequest2(item);
-
-            // Don't try these below at home
-            // this.$root.$refs.A.getActivePurchaseServerRequest();
-            // this.$root.$emit("getActivePurchasePackageTable");
-          }
-        });
-    },
-    getActivePurchaseServerRequest2(object) {
-      packagePurchaseService
-        .getUserPurchasedPackagesByUserId(object.user_id)
-        .then((response) => {
-          if (response.status == 200) {
-            this.allHistoricalPackages = response.data;
-            // focus on if it's expired or not
-            var today = new Date();
-            var dd = String(today.getDate()).padStart(2, "0");
-            var mm = String(today.getMonth() + 1).padStart(2, "0"); //January is 0!
-            var yyyy = today.getFullYear();
-            today = yyyy + "-" + mm + "-" + dd;
-
-            this.packages = response.data.filter((item) => {
-              return (
-                item.expiration_date >= today || item.classes_remaining > 0
-              );
-            });
-            this.packages.forEach((item) => {
-              item.date_purchased = new Date(item.date_purchased);
-            });
-            this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
-            this.activePackageList = this.$store.state.activePackageList;
-            this.cancelCheck();
-          } else {
-            alert("Error retrieving package information");
-          }
-        });
-    },
-    cancelCheck() {
-      let refundPackage = this.allHistoricalPackages.filter((item) => {
-        return (
-          item.package_purchase_id == this.eventClientSignUp.package_purchase_id
-        );
-      });
-      if (refundPackage[0].is_subscription == true) {
-        this.hasSubscriptionPackage = true;
-      }
-      this.allowSignUp = true;
-
-      if (this.allowSignUp) {
-        // console.log(this.eventClientSignUp.date)
-        // console.log(this.initial1.expiration_date)
-        // console.log(this.eventClientSignUp.date > this.initial1.expiration_date)
-        // console.log(this.hasSubscriptionPackage)
-        if (this.validSignUp == true) {
-          eventService
-            .removeEventForClientByClientId(
-              this.$route.params.eventId,
-              this.eventClientSignUp.client_id
-            )
-            .then((response) => {
-              if (response.status == 200) {
-                // call method that updates the client_class_table
-                
-                if (!this.hasSubscriptionPackage) {
-                  packagePurchaseService
-                    .incrementByOne(this.eventClientSignUp.package_purchase_id)
-                    .then((response) => {
-                      if (response.status == 200) {
-                        response
-                        alert("Removed Client from Roster")
-                        this.listOfSignedUpClients.splice(this.indexOfClientToBeDeleted,1)
-                      }
-                    });
-                } else {
-                  alert("Removed Client from Roster")
-                   this.listOfSignedUpClients.splice(this.indexOfClientToBeDeleted,1)
-                }
-                this.getClientEventTable();
-              }
-            });
+    // START OF: REMOVING CLIENT FROM ROSTER
+    RemoveClassForClient(client) {
+      let foundClientObject = false;
+      client.event_id = this.$route.params.eventId;
+      // see if the client object is already selected 
+      for (let j = 0; j < this.selectedClientsFromRoster.length; j++) {
+        this.selectedClientsFromRoster[j].event_id = this.$route.params.eventId;
+        if (this.selectedClientsFromRoster[j].client_id == client.client_id) {
+          foundClientObject = true;
         }
       }
-    },
-    save() {
+      // if it's not selected already then add the client object to the list of selected clients
+      if (!foundClientObject) {
+        this.selectedClientsFromRoster.push(client);
+      }
+      // create a temp array to hold the roster of clients selected, not necessary
+      let temporaryList = this.selectedClientsFromRoster
+      eventService.removeEventForSelectedClients(temporaryList).then((response) => {
+        if (response.status === 200) {
+          alert("Successfully deleted clients from roster")
+          this.getEventDetailsCall();
+          this.selectedClientsFromRoster = [];
+        } else {
+          alert("Error deleting clients from roster")
+        }
+      })// END OF REMOVING CLIENT FROM ROSTER
+    }, 
+    // START OF ADDING CLIENT TO ROSTER
+    save() { 
       for (let index = 0; index < this.selectedClients.length; index++) {
         this.allowSignUp = false;
 
-        // the following line is for testing purposes
-        this.individualClientFromLoop = this.selectedClients[index];
+        this.selectedClients[index].event_id = this.$route.params.eventId;
 
-        // first check if the clients have an active package
-        this.findActivePackage(this.individualClientFromLoop);
+        this.individualClientFromLoop = this.selectedClients[index];
 
         // END OF LOOP BLOCK
       }
+      
+      eventService.registerMultipleClientsForEvent(this.selectedClients).then((response) => {
+        if (response.status == 201) {
+          alert("Successfully added clients to roster")
+          this.getEventDetailsCall();
+          this.selectedClients = [];
+        } else {
+          alert("Error adding clients to roster")
+        }
+      })
 
-      this.selectedClients = [];
+      
       this.close();
     },
     findActivePackage(object) {
@@ -536,6 +461,7 @@ export default {
             // Add the package_purchase_id to the object
             this.eventClientSignUp.event_id = this.$route.params.eventId;
             this.eventClientSignUp.client_id = object.client_id;
+            this.eventClientSignUp.date = object.dateRef
 
             // focus on if it's expired or not
             var today = new Date();
@@ -561,8 +487,8 @@ export default {
         });
     },
     formattingSignUp(object) {
-      // find out if they have at least one active package that's a subscription or a bundle and active
-      // this.activePackageList = this.$store.state.activePackageList;
+      // find out if they have at least one active package that's a subscription or a bundle
+      // and active
 
       if (this.$store.state.activePackageList.length == 0) {
         this.allowSignUp = false;
@@ -571,18 +497,14 @@ export default {
       } else if (this.$store.state.activePackageList.length > 0) {
         this.$store.state.activePackageList.forEach((item) => {
           // compare todays date and make sure it's less than the expiration date
-          var today = new Date();
-          var dd = String(today.getDate()).padStart(2, '0');
-          var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
-          var yyyy = today.getFullYear();
-          today = yyyy + '-' + mm + '-' + dd;
-
+          const todaysDate = new Date();
           let expirationDate = new Date(item.expiration_date);
-
           expirationDate.setDate(expirationDate.getDate() + 1);
 
           // TODO: Handle Gift Card logic here when SQUARE is in place
-          if ((item.classes_remaining > 0 && item.expiration_date == null && item.is_subscription == false) || (today < item.expiration_date && item.is_subscription == true) || (item.expiration_date >= today && item.classes_remaining > 0 && item.is_subscription == false) ) {
+          if (
+            item.classes_remaining > 0 || todaysDate < expirationDate
+          ) {
             this.allowSignUp = true;
             if (item.is_subscription) {
               this.hasSubscriptionPackage = true;
@@ -596,10 +518,16 @@ export default {
                   this.initial = item;
                 }
               });
+              object.package_purchase_id = this.initial.package_purchase_id;
+              this.subscriptionPackageId = this.initial.package_purchase_id;
             } else {
               this.quantityPackages =
                 this.$store.state.activePackageList.filter((item) => {
-                  return item.is_subscription == false && (item.expiration_date == null || today < item.expiration_date);
+                  return (
+                    item.is_subscription == false &&
+                    (item.expiration_date == null ||
+                      todaysDate < item.expiration_date)
+                  );
                 });
               this.initial = this.quantityPackages[0];
               this.quantityPackages.forEach((item) => {
@@ -633,8 +561,13 @@ export default {
           );
           this.validSignUp = false;
         }
+
+        if (this.hasSubscriptionPackage) {
+          object.package_purchase_id = this.subscriptionPackageId;
+        } else {
+          object.package_purchase_id = this.quantityPackageIdToDecrement;
+        }
         
-        object.package_purchase_id = this.quantityPackageIdToDecrement;
         if (this.validSignUp == true) {
           eventService.registerForEvent(object).then((response) => {
             if (response.status == 201) {
@@ -673,7 +606,7 @@ export default {
       });
     },
     emailRecipients() {
-      this.selectedClientsSignedUp.forEach((item) => {
+      this.selectedClientsFromRoster.forEach((item) => {
         this.emailLink = this.emailLink + item.email + ";";
       });
       window.location.href = this.emailLink;

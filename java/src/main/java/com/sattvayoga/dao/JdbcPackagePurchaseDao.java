@@ -1,5 +1,6 @@
 package com.sattvayoga.dao;
 
+import com.sattvayoga.model.Event;
 import com.sattvayoga.model.PackageDetails;
 import com.sattvayoga.model.PackagePurchase;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -7,7 +8,10 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Component
@@ -50,6 +54,23 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         return allUserPackagePurchase;
     }
 
+    @Override
+    public PackagePurchase getPackagePurchaseObjectByPackagePurchaseId(int packagePurchaseId) {
+        PackagePurchase packagePurchase = null;
+        String sql = "SELECT * FROM package_purchase " +
+                "WHERE package_purchase_id = ?" ;
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, packagePurchaseId);
+        if (result.next()) {
+            packagePurchase = mapRowToPackagePurchase(result);
+
+            // set package description
+            packagePurchase.setPackage_description(getPackageDescriptionByPackageId(packagePurchase.getPackage_id()));
+            packagePurchase.setIs_subscription(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
+
+        }
+        return packagePurchase;
+    }
+
     public boolean IsSubscriptionOrNot(int packageId){
         boolean isSubscription = false;
         String sql = "SELECT is_subscription from package_details WHERE package_id = ?";
@@ -88,6 +109,46 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     public boolean incrementByOne(int packagePurchaseId) {
         String sql= "UPDATE package_purchase SET classes_remaining = classes_remaining + 1 WHERE package_purchase_id = ?";
         return jdbcTemplate.update(sql, packagePurchaseId)==1;
+    }
+
+    //helper
+    @Override
+    public PackagePurchase filterPackageList(List<PackagePurchase> packagePurchaseList, Event event) {
+        // set up the one packagePurchase Object to return
+        PackagePurchase packagePurchase = new PackagePurchase();
+        for (int i = 0; i < packagePurchaseList.size(); i++) {
+            PackagePurchase currentPackage = packagePurchaseList.get(i);
+
+            // if they have a subscription make sure the class they are being signed up for is not after their expiration date
+            if (currentPackage.isIs_subscription()) {
+
+                // could check for the expiration date right here as well/
+                // / compare the expiration date to the starting time of the event
+                Timestamp eventTime = event.getStart_time();
+                Date expirationDate = currentPackage.getExpiration_date();
+                Timestamp packageExpiration = new Timestamp(currentPackage.getExpiration_date().getTime());
+
+                // if they have a subscription make sure the class they are being signed up for is not after their expiration date
+
+                //        Integer value 0 if this Timestamp object is equal to given Timestamp object.
+                //        A value less than 0 if this Timestamp object is before the given argument.
+                //        A value greater than 0 if this Timestamp object is after the given argument.
+
+                int numberValueFromComparison = packageExpiration.compareTo(eventTime);
+                if (numberValueFromComparison > 0) {
+                    packagePurchase = currentPackage;
+
+                    return packagePurchase;
+                }
+
+            }
+            else if (!currentPackage.isIs_subscription() && currentPackage.getClasses_remaining() > 0) {
+                packagePurchase = currentPackage;
+                return packagePurchase;
+            }
+        }
+        packagePurchase.setPackage_purchase_id(0);
+        return packagePurchase;
     }
 
     // helper

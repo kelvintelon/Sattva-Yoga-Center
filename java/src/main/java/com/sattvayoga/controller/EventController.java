@@ -1,13 +1,8 @@
 package com.sattvayoga.controller;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sattvayoga.dao.ClassDetailsDao;
-import com.sattvayoga.dao.ClientDetailsDao;
-import com.sattvayoga.dao.EventDao;
-import com.sattvayoga.dao.UserDao;
-import com.sattvayoga.model.ClassDetails;
-import com.sattvayoga.model.ClientDetails;
-import com.sattvayoga.model.Event;
+import com.sattvayoga.dao.*;
+import com.sattvayoga.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,6 +25,8 @@ public class EventController {
     private ClientDetailsDao clientDetailsDao;
     @Autowired
     private EventDao eventDao;
+    @Autowired
+    private PackagePurchaseDao packagePurchaseDao;
 
 
 
@@ -72,6 +69,34 @@ public class EventController {
         eventDao.deleteEventForClient(eventId, clientId);
     }
 
+    @RequestMapping(value = "/removeEventForSelectedClients", method = RequestMethod.PUT)
+    public void deleteClassForMultipleClients (@RequestBody List<ClientEvent> clientEventObjects) {
+
+
+        for (int i = 0; i < clientEventObjects.size(); i++) {
+            int eventId = clientEventObjects.get(i).getEvent_id();
+            int clientId = clientEventObjects.get(i).getClient_id();
+            // TODO: Handle the logic where a client doesn't have a package wherever you have to here
+            PackagePurchase packagePurchase = null;
+
+            // retrieve the package purchase ID that used to sign up, if there is one,
+            int packagePurchaseId = eventDao.getPackagePurchaseIdByEventIdClientId(eventId, clientId);
+            // retrieve the object that finds out if it's a subscription
+            if (packagePurchaseId > 0) {
+                packagePurchaseDao.getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseId);
+            }
+
+            // remove the client from the roster of that specific event, and increment the package if it's a bundle
+            eventDao.deleteEventForClient(eventId, clientId);
+
+            // increment back up if it wasn't a subscription
+            if (packagePurchase != null && !packagePurchase.isIs_subscription()) {
+                packagePurchaseDao.incrementByOne(packagePurchaseId);
+            }
+        }
+
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/getEventDetailsByEventId/{eventId}", method = RequestMethod.GET)
     public Event getEventDetailsByEventId (@PathVariable int eventId ) {
@@ -112,6 +137,40 @@ public class EventController {
         // (an exception that means they are already inside the class table)
 
         eventDao.registerForEvent(clientEvent.getClient_id(),clientEvent.getEvent_id(),clientEvent.getPackage_purchase_id());
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @RequestMapping(value = "/registerMultipleClientsForEvent", method = RequestMethod.POST)
+    public void registerMultipleClientsForEvent(@RequestBody List<ClientEvent> clientEventObjects) {
+
+        // retrieve the event object once
+        Event event = eventDao.getEventByEventId(clientEventObjects.get(0).getEvent_id());
+
+
+
+        for (int i = 0; i < clientEventObjects.size(); i++) {
+            // current clientEvent object
+            ClientEvent clientEvent = clientEventObjects.get(i);
+            // client details
+            ClientDetails clientDetails = clientDetailsDao.findClientByClientId(clientEvent.getClient_id());
+            // user Id
+            int userId = clientDetails.getUser_id();
+            // find active packages for each client/user
+            List<PackagePurchase> allUserPackagePurchase = packagePurchaseDao.getAllUserPackagePurchases(userId);
+            // filter the list of packages to just one
+            PackagePurchase packagePurchase = packagePurchaseDao.filterPackageList(allUserPackagePurchase, event);
+            // finally once you've pinpointed the package, set the package purchase ID into the object
+            if (packagePurchase.getPackage_purchase_id() > 0) {
+                clientEvent.setPackage_purchase_id(packagePurchase.getPackage_purchase_id());
+            }
+
+            // decrement if it's a quantity bundle but register it into the table either way
+            if (!packagePurchase.isIs_subscription()) {
+                packagePurchaseDao.decrementByOne(packagePurchase.getPackage_purchase_id());
+            }
+            eventDao.registerForEvent(clientEvent.getClient_id(),clientEvent.getEvent_id(),clientEvent.getPackage_purchase_id());
+        }
+
     }
 
     static class ClientEventWrapper {
