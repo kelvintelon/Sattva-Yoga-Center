@@ -115,7 +115,9 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     @Override
     public PackagePurchase filterPackageList(List<PackagePurchase> packagePurchaseList, Event event) {
         // set up the one packagePurchase Object to return
-        PackagePurchase packagePurchase = new PackagePurchase();
+        PackagePurchase packagePurchaseQuantity = new PackagePurchase();
+        PackagePurchase packagePurchaseSubscription = new PackagePurchase();
+        boolean hasSubscription = false;
         for (int i = 0; i < packagePurchaseList.size(); i++) {
             PackagePurchase currentPackage = packagePurchaseList.get(i);
 
@@ -136,19 +138,23 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
                 int numberValueFromComparison = packageExpiration.compareTo(eventTime);
                 if (numberValueFromComparison > 0) {
-                    packagePurchase = currentPackage;
-
-                    return packagePurchase;
+                    packagePurchaseSubscription = currentPackage;
+                    hasSubscription = true;
+                    return packagePurchaseSubscription;
                 }
 
             }
             else if (!currentPackage.isIs_subscription() && currentPackage.getClasses_remaining() > 0) {
-                packagePurchase = currentPackage;
-                return packagePurchase;
+                packagePurchaseQuantity = currentPackage;
+
             }
         }
-        packagePurchase.setPackage_purchase_id(0);
-        return packagePurchase;
+
+        if (packagePurchaseQuantity.getPackage_purchase_id() > 0) {
+            return packagePurchaseQuantity;
+        }
+        packagePurchaseSubscription.setPackage_purchase_id(0);
+        return packagePurchaseSubscription;
     }
 
     // helper

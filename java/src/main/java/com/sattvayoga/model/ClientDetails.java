@@ -18,7 +18,7 @@ public class ClientDetails {
     private boolean has_record_of_liability;
     private Timestamp date_of_entry;
     private int user_id;
-
+    private boolean redFlag;
     //helper
     private String full_address;
 
@@ -43,7 +43,7 @@ public class ClientDetails {
         this.user_id = user_id;
     }
 
-    public ClientDetails(int client_id, String last_name, String first_name, boolean is_client_active, boolean is_new_client, String street_address, String city, String state_abbreviation, String zip_code, String phone_number, boolean is_on_email_list, String email, boolean has_record_of_liability, Timestamp date_of_entry, int user_id, String full_address, String quick_details) {
+    public ClientDetails(int client_id, String last_name, String first_name, boolean is_client_active, boolean is_new_client, String street_address, String city, String state_abbreviation, String zip_code, String phone_number, boolean is_on_email_list, String email, boolean has_record_of_liability, Timestamp date_of_entry, int user_id, boolean redFlag, String full_address, String quick_details) {
         this.client_id = client_id;
         this.last_name = last_name;
         this.first_name = first_name;
@@ -59,6 +59,7 @@ public class ClientDetails {
         this.has_record_of_liability = has_record_of_liability;
         this.date_of_entry = date_of_entry;
         this.user_id = user_id;
+        this.redFlag = redFlag;
         this.full_address = full_address;
         this.quick_details = quick_details;
     }
@@ -72,7 +73,13 @@ public class ClientDetails {
         this.first_name = first_name;
     }
 
+    public boolean isRedFlag() {
+        return redFlag;
+    }
 
+    public void setRedFlag(boolean redFlag) {
+        this.redFlag = redFlag;
+    }
 
     public int getClient_id() {
         return client_id;

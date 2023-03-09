@@ -432,6 +432,7 @@ public class JdbcEventDao implements EventDao {
         return packageId;
     }
 
+
     public List<ClientDetails> getAttendanceByEventId(int eventId) {
         List<ClientDetails> listOfAttendance = new ArrayList<>();
 
@@ -439,12 +440,25 @@ public class JdbcEventDao implements EventDao {
                 "client_event.client_id = client_details.client_id " +
                 "WHERE client_event.event_id = ?";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, eventId);
-        // TODO: ADD A INSTANCE VARIABLE TO THE OBJECT like "clientDetails.setIsRedFlagged(true)"
-        //  if they have any entries in the client_event table where Package Purchase ID is 0
+
         while (result.next()) {
-            listOfAttendance.add(mapRowToClient(result));
+            ClientDetails clientDetails = mapRowToClient(result);
+            // before you add it to the list, include whether they are red-flagged or not
+            clientDetails.setRedFlag(getRedFlaggedClientsInAttendance(eventId,clientDetails.getClient_id()).size() > 0);
+            listOfAttendance.add(clientDetails);
         }
         return listOfAttendance;
+    }
+
+    public List<ClientEvent> getRedFlaggedClientsInAttendance(int eventId, int clientId) {
+        List<ClientEvent> clientEventObjectList = new ArrayList<>();
+        String sql = "SELECT * FROM client_event WHERE event_id = ? AND client_id = ? AND package_purchase_id = 0";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, eventId, clientId);
+        while(result.next()) {
+            ClientEvent clientEvent = mapRowToClientEvent(result);
+            clientEventObjectList.add(clientEvent);
+        }
+        return clientEventObjectList;
     }
 
 
@@ -778,6 +792,14 @@ public class JdbcEventDao implements EventDao {
         clientDetails.setDate_of_entry(rs.getTimestamp("date_of_entry"));
         clientDetails.setUser_id(rs.getInt("user_id"));
         return clientDetails;
+    }
+
+    private ClientEvent mapRowToClientEvent(SqlRowSet rs) {
+        ClientEvent clientEvent = new ClientEvent();
+        clientEvent.setEvent_id(rs.getInt("event_id"));
+        clientEvent.setClient_id(rs.getInt("client_id"));
+        clientEvent.setPackage_purchase_id(rs.getInt("package_purchase_id"));
+        return clientEvent;
     }
 
         public int daysBetween(Date d1, Date d2) {

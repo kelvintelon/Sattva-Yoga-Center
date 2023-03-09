@@ -77,20 +77,20 @@ public class EventController {
             int eventId = clientEventObjects.get(i).getEvent_id();
             int clientId = clientEventObjects.get(i).getClient_id();
             // TODO: Handle the logic where a client doesn't have a package wherever you have to here
-            PackagePurchase packagePurchase = null;
+            PackagePurchase packagePurchase = new PackagePurchase();
 
             // retrieve the package purchase ID that used to sign up, if there is one,
             int packagePurchaseId = eventDao.getPackagePurchaseIdByEventIdClientId(eventId, clientId);
             // retrieve the object that finds out if it's a subscription
             if (packagePurchaseId > 0) {
-                packagePurchaseDao.getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseId);
+                packagePurchase = packagePurchaseDao.getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseId);
             }
 
             // remove the client from the roster of that specific event, and increment the package if it's a bundle
             eventDao.deleteEventForClient(eventId, clientId);
 
             // increment back up if it wasn't a subscription
-            if (packagePurchase != null && !packagePurchase.isIs_subscription()) {
+            if (packagePurchase.getPackage_purchase_id() > 0 && !packagePurchase.isIs_subscription()) {
                 packagePurchaseDao.incrementByOne(packagePurchaseId);
             }
         }

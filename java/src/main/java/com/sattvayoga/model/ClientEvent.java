@@ -12,6 +12,9 @@ public class ClientEvent {
         this.package_purchase_id = package_purchase_id;
     }
 
+    public ClientEvent() {
+    }
+
     public int getEvent_id() {
         return event_id;
     }

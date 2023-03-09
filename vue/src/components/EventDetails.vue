@@ -8,7 +8,30 @@
       :timeout="timeout"
       shaped
     >
-      Warning: Skipping Over Clients Without Active Package
+      Roster Warning: Clients Have Been Red Flagged 
+    </v-snackbar>
+    <v-snackbar
+      v-model="snackBarDeleteClientConfirmation"
+      color="red darken-2"
+      elevation="24"
+      :vertical="vertical"
+      shaped
+    >
+      Warning: Delete Red Flagged Client?
+      <template v-slot:action="{ attrs }">
+        <v-btn
+          color="white"
+          text
+          v-bind="attrs"
+          @click="snackBarDeleteClientConfirmation = false"
+          left
+        >
+          Close
+        </v-btn>
+        <v-btn color="white" text v-bind="attrs" @click="allowClientDelete">
+          Continue
+        </v-btn>
+      </template>
     </v-snackbar>
     <v-data-table
       v-model="selectedClientsFromRoster"
@@ -143,29 +166,30 @@
           </v-dialog>
         </v-toolbar>
       </template>
-      <!-- <template v-slot:item.actions="{ item }">
-      <v-icon
-        small
-        class="mr-2"
-        @click="editItem(item)"
+       <template v-slot:[`item.client_id`]="{ item }">
+      <v-chip
+        :color="getColor(item)"
+        dark
       >
-        mdi-pencil
-      </v-icon>
-      <v-icon
-        small
-        @click="deleteItem(item)"
-      >
-        mdi-delete
-      </v-icon>
+        {{ item.client_id }}
+      </v-chip>
     </template>
-    <template v-slot:no-data>
-      <v-btn
-        color="primary"
-        @click="initialize"
+     <template v-slot:[`item.first_name`]="{ item }">
+      <v-chip
+        :color="getColor(item)"
+        dark
       >
-        Reset
-      </v-btn>
-    </template> -->
+        {{ item.first_name }}
+      </v-chip>
+    </template>
+     <template v-slot:[`item.last_name`]="{ item }">
+      <v-chip
+        :color="getColor(item)"
+        dark
+      >
+        {{ item.last_name }}
+      </v-chip>
+    </template>
       <template v-slot:[`item.is_on_email_list`]="{ item }">
         <v-simple-checkbox
           v-model="item.is_on_email_list"
@@ -206,6 +230,7 @@ export default {
       allowSignUp: false,
       validSignUp: true,
       snackBarNoPurchaseWarning: false,
+      snackBarDeleteClientConfirmation: false,
       timeout: 6000,
       hasSubscriptionPackage: false,
       subscriptionPackages: [],
@@ -380,6 +405,14 @@ export default {
         hour12: true,
       });
     },
+    getColor (item) {
+        if (item.redFlag) {
+          return 'red'
+        } else {
+          return 'green'
+        }
+
+      },
     showCardEditForm() {
       this.showEditForm = !this.showEditForm;
     },
@@ -416,6 +449,17 @@ export default {
       }
       // create a temp array to hold the roster of clients selected, not necessary
       let temporaryList = this.selectedClientsFromRoster
+      // let foundRedFlag = false;
+      // for (let index = 0; index < temporaryList.length; index++) {
+      //   if (temporaryList[index].redFlag) {
+      //       foundRedFlag = true;
+      //   }
+      // }
+      // if (foundRedFlag) {
+      //   this.snackBarDeleteClientConfirmation = true;
+      // } else {
+        
+      // }
       eventService.removeEventForSelectedClients(temporaryList).then((response) => {
         if (response.status === 200) {
           alert("Successfully deleted clients from roster")
@@ -425,7 +469,19 @@ export default {
           alert("Error deleting clients from roster")
         }
       })// END OF REMOVING CLIENT FROM ROSTER
+      
     }, 
+    allowClientDelete() {
+      eventService.removeEventForSelectedClients(this.selectedClientsFromRoster).then((response) => {
+        if (response.status === 200) {
+          alert("Successfully deleted clients from roster")
+          this.getEventDetailsCall();
+          this.selectedClientsFromRoster = [];
+        } else {
+          alert("Error deleting clients from roster")
+        }
+      })
+    },
     // START OF ADDING CLIENT TO ROSTER
     save() { 
       for (let index = 0; index < this.selectedClients.length; index++) {
@@ -634,6 +690,9 @@ export default {
             this.getAllClients();
             this.listOfSignedUpClients.forEach((item) => {
               item.date_of_entry = new Date(item.date_of_entry);
+              if (item.redFlag) {
+                this.snackBarNoPurchaseWarning = true;
+              }
             });
           }
         });
