@@ -444,14 +444,14 @@ public class JdbcEventDao implements EventDao {
         while (result.next()) {
             ClientDetails clientDetails = mapRowToClient(result);
             // before you add it to the list, include whether they are red-flagged or not
-            clientDetails.setRedFlag(getRedFlaggedClientByClientId(clientDetails.getClient_id()).size() > 0);
+            clientDetails.setRedFlag(getRedFlaggedClientEventsByClientId(clientDetails.getClient_id()).size() > 0);
             listOfAttendance.add(clientDetails);
         }
         return listOfAttendance;
     }
 
     @Override
-    public List<ClientEvent> getRedFlaggedClientByClientId(int clientId) {
+    public List<ClientEvent> getRedFlaggedClientEventsByClientId(int clientId) {
         List<ClientEvent> clientEventObjectList = new ArrayList<>();
         String sql = "SELECT * FROM client_event WHERE client_id = ? AND package_purchase_id = 0";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, clientId);
@@ -471,6 +471,12 @@ public class JdbcEventDao implements EventDao {
         String sql2 = "UPDATE client_details SET is_new_client = FALSE WHERE client_id = ?";
 
         jdbcTemplate.update(sql2, client_id);
+    }
+
+    @Override
+    public void reconcileClassWithPackageId(int packageId, int eventId, int clientId) {
+        String sql = "UPDATE client_event SET package_purchase_id = ? WHERE event_id = ? AND client_id = ?";
+        jdbcTemplate.update(sql, packageId, eventId, clientId);
     }
 
 //    @Override

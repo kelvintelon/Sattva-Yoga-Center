@@ -45,6 +45,9 @@ export default {
     registerMultipleClientsForEvent(listOfClients) {
         return axios.post('registerMultipleClientsForEvent', listOfClients)
     },
+    reconcileClassesForClient(clientId) {
+        return axios.put(`reconcileClassesForClient/${clientId}`)
+    },
 
 
 }

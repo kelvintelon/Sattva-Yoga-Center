@@ -39,5 +39,7 @@ public interface EventDao {
 
     int getPackagePurchaseIdByEventIdClientId(int eventId, int clientId);
 
-    List<ClientEvent> getRedFlaggedClientByClientId(int clientId);
+    List<ClientEvent> getRedFlaggedClientEventsByClientId(int clientId);
+
+    void reconcileClassWithPackageId(int packageId, int eventId, int clientId);
 }

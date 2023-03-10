@@ -15,7 +15,7 @@
       shaped
       :timeout="timeout"
     >
-      Would You Like To Reconcile Missing Payments git addWith Current Active Package
+      Would You Like To Reconcile Missing Payments With Current Active Package
       <template v-slot:action="{ attrs }">
         <v-btn
           color="white"
@@ -30,6 +30,16 @@
           Continue
         </v-btn>
       </template>
+    </v-snackbar>
+    <v-snackbar v-if="$store.state.user.username == 'admin'"
+      v-model="snackBarReconcilePackagesSuccessful"
+      color="green darken-2"
+      elevation="24"
+      :vertical="vertical"
+      pill
+      
+    >
+      Successfully Reconciled For Missing Payments
     </v-snackbar>
     <v-data-table :headers="headers" :items="packages" class="elevation-5" sort-by="date_purchased" sort-desc="[true]">
       <template v-slot:top>
@@ -97,7 +107,7 @@
 <script>
 import packagePurchaseService from "../services/PackagePurchaseService";
 import packageDetailService from "../services/PackageDetailService";
-
+import eventService from "../services/EventService";
 
 export default {
   name: "client-active-package-table",
@@ -154,6 +164,7 @@ export default {
       selectedPackage: {},
       timeout: -1,
       snackBarReconcilePackages: false,
+      snackBarReconcilePackagesSuccessful: false,
     };
   },
   created() {
@@ -168,6 +179,23 @@ export default {
     }
   },
   methods: {
+    allowClientReconcile() {
+      eventService.reconcileClassesForClient(this.$route.params.clientId).then((response) => {
+        if (response.status == 200) {
+          this.snackBarReconcilePackages = false;
+          alert("Success")
+          this.getActivePurchaseServerRequest();
+          this.$root.$refs.B.getPackageHistoryTable();
+          this.$store.commit("SET_CLIENT_DETAILS_RED_FLAG", false);
+          this.snackBarReconcilePackagesSuccessful = true;
+          
+        } else {
+          this.snackBarReconcilePackages = false;
+          alert("Error Reconciling Classes")
+          this.getActivePurchaseServerRequest();
+        }
+      })
+    },
      getPublicPackagesTable() {
       packageDetailService.getAllPublicPackages().then((response) => {
         if (response.status == 200) {

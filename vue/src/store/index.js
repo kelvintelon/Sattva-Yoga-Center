@@ -75,6 +75,9 @@ export default new Vuex.Store({
     SET_CLIENT_DETAILS_NEW_CLIENT(state, newInformation) {
       state.clientDetails.is_new_client = newInformation;
     },
+    SET_CLIENT_DETAILS_RED_FLAG(state, newInformation) {
+      state.clientDetails.redFlag = newInformation;
+    },
     SET_EVENT_LIST(state, retrievedEventList) {
       state.eventList = retrievedEventList;
     }

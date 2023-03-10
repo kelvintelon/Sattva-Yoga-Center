@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -94,6 +95,51 @@ public class EventController {
                 packagePurchaseDao.incrementByOne(packagePurchaseId);
             }
         }
+
+    }
+
+    @RequestMapping(value = "/reconcileClassesForClient/{clientId}", method = RequestMethod.PUT)
+    public void reconcileClassesForClient(@PathVariable int clientId) {
+        ClientDetails clientDetails = clientDetailsDao.findClientByClientId(clientId);
+        int userId = clientDetails.getUser_id();
+
+
+        // grab the list of client-event objects to update
+        List<ClientEvent> clientEventsList = eventDao.getRedFlaggedClientEventsByClientId(clientId);
+
+        // turn each one into an event object, maybe a list of events to loop through
+        List<Event> eventList = new ArrayList<>();
+
+        for (int i = 0; i < clientEventsList.size(); i++) {
+            Event event = eventDao.getEventByEventId(clientEventsList.get(i).getEvent_id());
+            eventList.add(event);
+        }
+
+        // grab a list of packages
+        List<PackagePurchase> allUserPackagePurchase = packagePurchaseDao.getAllUserPackagePurchases(userId);
+
+        for (int i = 0; i < eventList.size(); i++) {
+            // filter the list of packages to just one
+            PackagePurchase packagePurchase = packagePurchaseDao.filterPackageList(allUserPackagePurchase, eventList.get(i));
+
+            if (packagePurchase.getClasses_remaining() == 0 && !packagePurchase.isIs_subscription()) {
+                //  update the packagePurchase in the database here then leave/break right after
+                packagePurchaseDao.updatePackage(packagePurchase);
+
+                break;
+            }
+            // update each client-event object row individually using the packagePurchase ID
+            eventDao.reconcileClassWithPackageId(packagePurchase.getPackage_id(), eventList.get(i).getEvent_id(), clientId);
+
+            // decrement each time if it's a bundle.
+            if (!packagePurchase.isIs_subscription() && packagePurchase.getClasses_remaining() > 0) {
+                int currentAmountOfClasses = packagePurchase.getClasses_remaining();
+                packagePurchase.setClasses_remaining(currentAmountOfClasses-1);
+                packagePurchaseDao.updatePackage(packagePurchase);
+            }
+
+        }
+
 
     }
 

@@ -125,7 +125,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             if (currentPackage.isIs_subscription()) {
 
                 // could check for the expiration date right here as well/
-                // / compare the expiration date to the starting time of the event
+                // compare the expiration date to the starting time of the event
                 Timestamp eventTime = event.getStart_time();
                 Date expirationDate = currentPackage.getExpiration_date();
                 Timestamp packageExpiration = new Timestamp(currentPackage.getExpiration_date().getTime());
