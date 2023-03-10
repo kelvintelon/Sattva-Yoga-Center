@@ -186,7 +186,7 @@ export default {
           alert("Success")
           this.getActivePurchaseServerRequest();
           this.$root.$refs.B.getPackageHistoryTable();
-          this.$store.commit("SET_CLIENT_DETAILS_RED_FLAG", false);
+          this.$root.$refs.C.getClientDetails();
           this.snackBarReconcilePackagesSuccessful = true;
           
         } else {

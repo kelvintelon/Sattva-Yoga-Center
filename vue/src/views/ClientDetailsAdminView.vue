@@ -3,6 +3,17 @@
     <top-header></top-header>
 
     <v-container>
+      <v-snackbar v-if="$store.state.user.username == 'admin'"
+      v-model="snackBarReconcileWarning"
+      color="blue darken-2"
+      elevation="24"
+      :vertical="vertical"
+      outlined
+      top
+      text
+    >
+      Client Needs Active Package To Reconcile For Classes
+    </v-snackbar>
       <v-row justify="center" align="center">
         <v-col cols="3">
           <v-card align="center" justify="center" >
@@ -59,17 +70,36 @@ export default {
     return {
       showEditForm: false,
       clientDetails: {},
+      snackBarReconcileWarning: false,
     };
+  },
+  methods: {
+    getClientDetails() {
+      clientDetailService.getClientDetailsByClientId(this.$route.params.clientId).then((response) => {
+        if (response.data.client_id != 0) {
+          this.clientDetails = response.data;
+          this.$store.commit("SET_CLIENT_DETAILS", response.data);
+          if (this.clientDetails.redFlag == true) {
+            this.snackBarReconcileWarning = true
+          }
+        }
+      });
+    },
   },
   created() {
     clientDetailService.getClientDetailsByClientId(this.$route.params.clientId).then((response) => {
         if (response.data.client_id != 0) {
-          this.clientProfile = response.data;
+          this.clientDetails = response.data;
           this.$store.commit("SET_CLIENT_DETAILS", response.data);
+          if (this.clientDetails.redFlag == true) {
+            this.snackBarReconcileWarning = true
+          }
         }
       });
 
     this.clientDetails = this.$store.state.clientDetails;
+
+    this.$root.$refs.C = this;
   },
 };
 </script>
