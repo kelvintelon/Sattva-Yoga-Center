@@ -41,7 +41,7 @@
     >
       Successfully Reconciled For Missing Payments
     </v-snackbar>
-    <v-data-table :headers="headers" :items="packages" class="elevation-5" sort-by="date_purchased" sort-desc="[true]">
+    <v-data-table :headers="headers" :items="packages" class="elevation-5" sort-by="date_purchased" sort-desc="[true]" dense>
       <template v-slot:top>
         <v-toolbar flat>
           <v-toolbar-title>Active Packages</v-toolbar-title>
@@ -71,6 +71,39 @@
                         return-object
                         
                       ></v-select>
+                      <v-row >
+                        <v-col>
+                      <v-text-field 
+                          v-if="!showPercentDiscount"
+                          v-model="selectedPackage.discount"
+                          class="mt-0 pt-0"
+                          type="number"
+              
+                          label="Discount: $"
+                          min="0"
+                        ></v-text-field>
+                        <v-text-field 
+                          v-if="showPercentDiscount"
+                          v-model="percentDiscount"
+                          class="mt-0 pt-0"
+                          type="number"
+              
+                          label="Discount: %"
+                          min="0"
+                        ></v-text-field></v-col>
+                        <v-col>
+                        <v-btn @click="showPercentDiscount = true" v-if="!showPercentDiscount"><v-icon>mdi-percent</v-icon></v-btn>
+                        <v-btn @click="showPercentDiscount = false" v-if="showPercentDiscount"><v-icon>mdi-currency-usd</v-icon></v-btn>
+                        </v-col></v-row>
+                      <div class="text--primary"> 
+                        Package Cost: ${{selectedPackage.package_cost}}
+                      </div>
+                      <div class="text--primary"> 
+                        Package Discount: ${{returnDiscount}}
+                      </div>
+                      <div class="text--primary"> 
+                        Total Cost: ${{returnTotal}}
+                      </div>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -95,7 +128,7 @@
       </template>
       <template v-slot:[`item.actions`]="{ item }"  v-if="$store.state.user.username == 'admin'">
         <v-icon small class="mr-2" @click="Remove(item)">
-          mdi-card-plus
+          mdi-close-thick
         </v-icon>
       </template>
     </v-data-table>
@@ -164,6 +197,8 @@ export default {
       selectedPackage: {},
       timeout: -1,
       snackBarReconcilePackages: false,
+      showPercentDiscount: false,
+      percentDiscount: 0,
       snackBarReconcilePackagesSuccessful: false,
     };
   },
@@ -223,7 +258,7 @@ export default {
           today = yyyy + '-' + mm + '-' + dd;
 
           this.packages = response.data.filter((item) => {
-            return (item.expiration_date >= today) || (item.expiration_date == null && item.classes_remaining > 0) || (item.expiration_date >= today && item.classes_remaining > 0);
+            return (item.expiration_date >= today && item.is_subscription) || (item.expiration_date >= today && item.classes_remaining == 0 && item.is_subscription) || (item.expiration_date >= today && item.classes_remaining > 0 && !item.is_subscription);
           });
           this.packages.forEach((item) => {
             item.date_purchased = new Date(item.date_purchased);
@@ -291,7 +326,24 @@ export default {
                   this.selectedPackage.subscription_duration);
               }
           }
-           this.packagePurchase.total_amount_paid =
+           else {
+             this.packagePurchase.expiration_date = this.addMonths(
+                  new Date(),
+                  12);
+           }
+          if (this.showPercentDiscount) { 
+            // if it's a percent
+            let num = this.selectedPackage.package_cost * (1 - (this.percentDiscount/100));
+            this.packagePurchase.discount = num;
+            this.packagePurchase.total_amount_paid =  Math.round(num * 100) / 100;
+          } else if (this.selectedPackage.discount >= 0 && this.selectedPackage.package_cost >= 0){
+            // if it's in dollars
+            this.packagePurchase.discount = this.selectedPackage.discount
+            this.packagePurchase.total_amount_paid = this.selectedPackage.package_cost - this.selectedPackage.discount;
+          } else {
+             this.packagePurchase.total_amount_paid = this.selectedPackage.package_cost
+          }
+           
               this.selectedPackage.package_cost;
             this.packagePurchase.is_monthly_renew = false;
              this.packagePurchase.classes_remaining =
@@ -329,6 +381,31 @@ export default {
     this.$root.$on('getActivePurchasePackageTable', () => {
       this.getActivePurchaseServerRequest();
     })
+  },
+  computed: {
+    returnDiscount() {
+      if (this.showPercentDiscount) {
+        // this.selectedPackage.discount = this.selectedPackage.package_cost * (1-this.percentDiscount);
+        let num = this.selectedPackage.package_cost-(this.selectedPackage.package_cost * (1 - (this.percentDiscount/100)))
+        return Math.round(num * 100) / 100
+      } else if (this.selectedPackage.discount >= 0 && this.selectedPackage.package_cost >= 0){
+         return this.selectedPackage.discount;
+      } else {
+        return 0;
+      }
+     
+    },
+    returnTotal() {
+      if (this.showPercentDiscount) {
+        // this.selectedPackage.discount = this.selectedPackage.package_cost * (1-this.percentDiscount);
+        let num = this.selectedPackage.package_cost * (1 - (this.percentDiscount/100));
+        return Math.round(num * 100) / 100;
+      } else if (this.selectedPackage.discount >= 0 && this.selectedPackage.package_cost >= 0){
+         return this.selectedPackage.package_cost - this.selectedPackage.discount;
+      } else {
+        return this.selectedPackage.package_cost ;
+      }
+    }
   }
 };
 </script>

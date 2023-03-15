@@ -6,6 +6,7 @@
       class="elevation-5"
       sort-by="date"
       :sort-desc="[true]"
+      dense
     >
       <template v-slot:top>
         <v-toolbar flat>
@@ -28,6 +29,7 @@
       class="elevation-5"
       sort-by="date"
       :sort-desc="[true]"
+      dense
     >
       <template v-slot:top>
         <v-toolbar flat>
@@ -35,6 +37,11 @@
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-spacer></v-spacer>
         </v-toolbar>
+      </template>
+       <template v-slot:[`item.actions`]="{ item }" v-if="$store.state.user.username == 'admin'">
+        <v-icon small class="mr-2" @click="RemoveClassForClient(item)">
+          mdi-close-thick
+        </v-icon>
       </template>
     </v-data-table>
   </v-container>
@@ -67,6 +74,7 @@ export default {
         { text: "Date", value: "date", sortable: true, align: "start" },
         { text: "Start Time", value: "start_time", sortable: false },
         { text: "End Time", value: "end_time", sortable: false },
+        
       ],
       events: [],
       clientEvents: [],
@@ -144,7 +152,14 @@ export default {
       this.classSignUpItem = Object.assign({}, item);
 
       // get active packages from API service request
-      this.getActivePurchaseServerRequest2();
+      if (this.eventClientSignUp.package_purchase_id == 0) {
+        this.allowSignUp = true;
+        
+        this.cancelCheck();
+      } else {
+        this.getActivePurchaseServerRequest2();
+      }
+      
     },
     getActivePurchaseServerRequest2() {
       packagePurchaseService
@@ -169,15 +184,7 @@ export default {
             });
             this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
             this.activePackageList = this.$store.state.activePackageList;
-            
-            this.cancelCheck();
-          } else {
-            alert("Error retrieving package information");
-          }
-        });
-    },
-    cancelCheck() {
-      let refundPackage = this.allHistoricalPackages.filter((item) => {
+            let refundPackage = this.allHistoricalPackages.filter((item) => {
         return (
           item.package_purchase_id == this.eventClientSignUp.package_purchase_id
         );
@@ -186,23 +193,33 @@ export default {
         this.hasSubscriptionPackage = true;
       }
       this.allowSignUp = true;
-
-      if (this.allowSignUp) {
+            this.cancelCheck();
+          } else {
+            alert("Error retrieving package information");
+          }
+        });
+    },
+    cancelCheck() {
+      
+      if (this.allowSignUp || this.eventClientSignUp.package_purchase_id == 0) {
+       
         // console.log(this.eventClientSignUp.date)
         // console.log(this.initial1.expiration_date)
         // console.log(this.eventClientSignUp.date > this.initial1.expiration_date)
         // console.log(this.hasSubscriptionPackage)
-        if (this.validSignUp == true) {
+        this.validSignUp = true
+        if (this.validSignUp == true ||  this.eventClientSignUp.package_purchase_id == 0) {
+        
           eventService
             .removeEventForClientByClientId(
               this.eventClientSignUp.event_id,
-              this.eventClientSignUp.client_id
+              this.$route.params.clientId
             )
             .then((response) => {
               if (response.status == 200) {
                 // call method that updates the client_class_table
 
-                if (!this.hasSubscriptionPackage) {
+                if (!this.hasSubscriptionPackage && this.eventClientSignUp.package_purchase_id > 0 ) {
                   packagePurchaseService
                     .incrementByOne(this.eventClientSignUp.package_purchase_id)
                     .then((response) => {
@@ -237,6 +254,7 @@ export default {
        if (this.$store.state.user.username == "admin") {
      this.clientEventHeaders.unshift({ text: "Event ID", value: "event_id", sortable: false });
      this.allClientEventHeaders.unshift({ text: "Event ID", value: "event_id", sortable: false });
+     this.allClientEventHeaders.push({ text: "Remove From History", value: "actions", sortable: false })
        }
   },
 };

@@ -11,7 +11,7 @@
         hide-details
       ></v-text-field>
     </v-card-title>
-    <v-data-table :headers="headers" :items="clientList" :search="search">
+    <v-data-table :headers="headers" :items="clientList" :search="search" dense>
       <template v-slot:top>
         <v-toolbar flat>
           <!-- START OF EDIT CLIENT FORM -->

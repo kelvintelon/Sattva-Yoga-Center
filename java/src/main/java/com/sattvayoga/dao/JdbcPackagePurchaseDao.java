@@ -145,7 +145,17 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
             }
             else if (!currentPackage.isIs_subscription() && currentPackage.getClasses_remaining() > 0) {
-                packagePurchaseQuantity = currentPackage;
+                // compare the expiration date to the starting time of the event
+                Timestamp eventTime = event.getStart_time();
+                Date expirationDate = currentPackage.getExpiration_date();
+                Timestamp packageExpiration = new Timestamp(currentPackage.getExpiration_date().getTime());
+
+                int numberValueFromComparison = packageExpiration.compareTo(eventTime);
+                if (numberValueFromComparison > 0) {
+                    packagePurchaseQuantity = currentPackage;
+
+                    return packagePurchaseQuantity;
+                }
 
             }
         }

@@ -33,7 +33,7 @@
       </template>
     </v-snackbar>
 
-    <v-data-table :headers="headers" :items="packages" class="elevation-5">
+    <v-data-table :headers="headers" :items="packages" class="elevation-5" dense>
       <template v-slot:top>
         <v-toolbar flat>
           <v-toolbar-title>Available Packages</v-toolbar-title>
@@ -249,6 +249,9 @@ export default {
             this.packagePurchase.is_expired = false;
             this.packagePurchase.classes_remaining =
               this.purchaseItem.classes_amount;
+              this.packagePurchase.expiration_date = this.addMonths(
+                  new Date(),
+                  12);
             packagePurchaseService
               .createPackagePurchase(this.packagePurchase)
               .then((response) => {

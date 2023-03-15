@@ -41,6 +41,7 @@
       sort-by="last_name"
       show-select
       class="elevation-1"
+      dense
     >
       <template v-slot:top>
         <v-toolbar flat>

@@ -6,6 +6,7 @@
         :items="packages"
         class="elevation-5"
         sort-by="package_id"
+        dense
       >
         <template v-slot:top>
           <v-toolbar flat>

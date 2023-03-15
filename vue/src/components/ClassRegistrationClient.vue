@@ -37,7 +37,7 @@
       </template>
     </v-snackbar>
     <v-app>
-      <v-data-table :headers="headers" :items="events" class="elevation-5">
+      <v-data-table :headers="headers" :items="events" class="elevation-5" dense>
         <template v-slot:top>
           <v-toolbar flat>
             <v-toolbar-title>All Classes</v-toolbar-title>
@@ -59,6 +59,7 @@
         class="elevation-5"
         sort-by="date"
         :sort-desc="[true]"
+        dense
       >
         <template v-slot:top>
           <v-toolbar flat>
@@ -81,6 +82,7 @@
         class="elevation-5"
         sort-by="date"
         :sort-desc="[true]"
+        dense
       >
         <template v-slot:top>
           <v-toolbar flat>
@@ -324,7 +326,14 @@ export default {
       this.classSignUpItem = Object.assign({}, item);
 
       // get active packages from API service request
-      this.getActivePurchaseServerRequest2();
+      if (item.package_purchase_id == 0) {
+        this.allowSignUp = true;
+        alert("Success")
+        this.cancelCheck();
+      } else {
+        this.getActivePurchaseServerRequest2();
+      }
+      
 
       // Don't try these below at home
       // this.$root.$refs.A.getActivePurchaseServerRequest();
@@ -349,14 +358,7 @@ export default {
           });
           this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
           this.activePackageList = this.$store.state.activePackageList;
-          this.cancelCheck();
-        } else {
-          alert("Error retrieving package information");
-        }
-      });
-    },
-    cancelCheck() {
-        let refundPackage = this.allHistoricalPackages.filter((item) => {
+          let refundPackage = this.allHistoricalPackages.filter((item) => {
           return (
             item.package_purchase_id ==
             this.eventClientSignUp.package_purchase_id
@@ -366,13 +368,21 @@ export default {
           this.hasSubscriptionPackage = true;
         }
         this.allowSignUp = true;
+          this.cancelCheck();
+        } else {
+          alert("Error retrieving package information");
+        }
+      });
+    },
+    cancelCheck() {
+        
 
-      if (this.allowSignUp) {
+      if (this.allowSignUp || this.eventClientSignUp.package_purchase_id == 0) {
         // console.log(this.eventClientSignUp.date)
         // console.log(this.initial1.expiration_date)
         // console.log(this.eventClientSignUp.date > this.initial1.expiration_date)
         // console.log(this.hasSubscriptionPackage)
-        if (this.validSignUp == true) {
+        if (this.validSignUp == true || this.eventClientSignUp.package_purchase_id == 0) {
           eventService
             .removeEventForClient(this.eventClientSignUp.event_id)
             .then((response) => {
@@ -380,11 +390,11 @@ export default {
                 // call method that updates the client_class_table
                 alert("Removed the class from your list");
 
-                if (!this.hasSubscriptionPackage) {
+                if (!this.hasSubscriptionPackage && this.eventClientSignUp.package_purchase_id > 0) {
                   packagePurchaseService
                     .incrementByOne(this.eventClientSignUp.package_purchase_id)
                     .then((response) => {
-                      if (response.status == 200) alert("+1");
+                      if (response.status == 200) alert("Package Incremented +1");
                     });
                 }
                 this.getClientEventTable();

@@ -14,6 +14,7 @@
       class="elevation-5"
       sort-by="date_purchased"
       sort-desc="[true]"
+      dense
     >
       <template v-slot:top>
         <v-toolbar flat>
@@ -316,7 +317,8 @@ export default {
 
     if (this.$store.state.user.username == "admin") {
       this.headers.push({ text: "Edit", value: "actions", sortable: false });
-       this.headers.unshift({ text: "Package ID", value: "package_purchase_id", sortable: false });
+       this.headers.unshift({ text: "Package ID", value: "package_purchase_id" });
+        this.headers.splice(-5, 0, { text: "Discount", value: "discount", sortable: false });
     }
     
   },
