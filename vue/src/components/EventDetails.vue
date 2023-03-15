@@ -8,7 +8,7 @@
       :timeout="timeout"
       shaped
     >
-      Roster Warning: Clients Have Been Red Flagged 
+      Roster Warning: Clients Have Been Red Flagged
     </v-snackbar>
     <v-snackbar
       v-model="snackBarDeleteClientConfirmation"
@@ -118,7 +118,26 @@
             <v-card>
               <!-- Add a Client Form starts here -->
               <v-card-title>
-                <span class="text-h5">Add a client</span>
+                <span class="text-h5">Add Client To Roster</span>
+                <v-spacer></v-spacer>
+                <v-btn
+                  class="mx-2"
+                  fab
+                  dark
+                  color="primary"
+                  @click="showNewClientForm = !showNewClientForm"
+                  v-if="!showNewClientForm"
+                  ><v-icon large>mdi-new-box</v-icon></v-btn
+                >
+                <v-btn
+                  class="mx-2"
+                  fab
+                  dark
+                  color="primary"
+                  @click="showNewClientForm = !showNewClientForm"
+                  v-if="showNewClientForm"
+                  ><v-icon large>mdi-account-multiple-plus</v-icon></v-btn
+                >
               </v-card-title>
 
               <v-card-text>
@@ -126,6 +145,7 @@
                   <v-row>
                     <v-col>
                       <v-select
+                        v-if="!showNewClientForm"
                         label="Choose one or multiple"
                         :items="returnCorrectClientListToChoose"
                         v-model="selectedClients"
@@ -133,6 +153,23 @@
                         return-object
                         multiple
                       ></v-select>
+                      <v-text-field
+                        v-if="showNewClientForm"
+                        v-model="clientDetails.first_name"
+                        :counter="20"
+                        :rules="nameRules"
+                        label="First Name"
+                        required
+                      ></v-text-field>
+
+                      <v-text-field
+                        v-if="showNewClientForm"
+                        v-model="clientDetails.last_name"
+                        :counter="20"
+                        :rules="nameRules"
+                        label="Last Name"
+                        required
+                      ></v-text-field>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -143,7 +180,8 @@
                 <v-btn color="blue darken-1" text @click="close">
                   Cancel
                 </v-btn>
-                <v-btn color="blue darken-1" text @click="save"> Save </v-btn>
+                <v-btn color="blue darken-1" text @click="save" v-if="!showNewClientForm"> Save Client(s)</v-btn>
+                  <v-btn color="blue darken-1" text @click="save" v-if="showNewClientForm"> Save New Client</v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
@@ -167,30 +205,21 @@
           </v-dialog>
         </v-toolbar>
       </template>
-       <template v-slot:[`item.client_id`]="{ item }">
-      <v-chip
-        :color="getColor(item)"
-        dark
-      >
-        {{ item.client_id }}
-      </v-chip>
-    </template>
-     <template v-slot:[`item.first_name`]="{ item }">
-      <v-chip
-        :color="getColor(item)"
-        dark
-      >
-        {{ item.first_name }}
-      </v-chip>
-    </template>
-     <template v-slot:[`item.last_name`]="{ item }">
-      <v-chip
-        :color="getColor(item)"
-        dark
-      >
-        {{ item.last_name }}
-      </v-chip>
-    </template>
+      <template v-slot:[`item.client_id`]="{ item }">
+        <v-chip :color="getColor(item)" dark>
+          {{ item.client_id }}
+        </v-chip>
+      </template>
+      <template v-slot:[`item.first_name`]="{ item }">
+        <v-chip :color="getColor(item)" dark>
+          {{ item.first_name }}
+        </v-chip>
+      </template>
+      <template v-slot:[`item.last_name`]="{ item }">
+        <v-chip :color="getColor(item)" dark>
+          {{ item.last_name }}
+        </v-chip>
+      </template>
       <template v-slot:[`item.is_on_email_list`]="{ item }">
         <v-simple-checkbox
           v-model="item.is_on_email_list"
@@ -375,6 +404,27 @@ export default {
       // Delete client from roster properties
       indexOfClientToBeDeleted: 0,
       allHistoricalPackages: [],
+      // Add a new client
+      showNewClientForm: false,
+      clientDetails: {
+        last_name: "",
+        first_name: "",
+        is_client_active: true,
+        is_new_client: true,
+        street_address: "",
+        city: "",
+        state_abbreviation: "",
+        zip_code: "",
+        phone_number: "",
+        is_on_email_list: false,
+        email: "",
+        has_record_of_liability: false,
+        date_of_entry: "",
+      },
+      nameRules: [
+        (v) => !!v || "Name is required",
+        (v) => (v && v.length <= 30) || "Name must be less than 30 characters",
+      ],
     };
   },
   methods: {
@@ -406,14 +456,13 @@ export default {
         hour12: true,
       });
     },
-    getColor (item) {
-        if (item.redFlag) {
-          return 'red'
-        } else {
-          return 'blue'
-        }
-
-      },
+    getColor(item) {
+      if (item.redFlag) {
+        return "red";
+      } else {
+        return "blue";
+      }
+    },
     showCardEditForm() {
       this.showEditForm = !this.showEditForm;
     },
@@ -437,7 +486,7 @@ export default {
     RemoveClassForClient(client) {
       let foundClientObject = false;
       client.event_id = this.$route.params.eventId;
-      // see if the client object is already selected 
+      // see if the client object is already selected
       for (let j = 0; j < this.selectedClientsFromRoster.length; j++) {
         this.selectedClientsFromRoster[j].event_id = this.$route.params.eventId;
         if (this.selectedClientsFromRoster[j].client_id == client.client_id) {
@@ -449,7 +498,7 @@ export default {
         this.selectedClientsFromRoster.push(client);
       }
       // create a temp array to hold the roster of clients selected, not necessary
-      let temporaryList = this.selectedClientsFromRoster
+      let temporaryList = this.selectedClientsFromRoster;
       // let foundRedFlag = false;
       // for (let index = 0; index < temporaryList.length; index++) {
       //   if (temporaryList[index].redFlag) {
@@ -459,32 +508,35 @@ export default {
       // if (foundRedFlag) {
       //   this.snackBarDeleteClientConfirmation = true;
       // } else {
-        
+
       // }
-      eventService.removeEventForSelectedClients(temporaryList).then((response) => {
-        if (response.status === 200) {
-          alert("Successfully deleted clients from roster")
-          this.getEventDetailsCall();
-          this.selectedClientsFromRoster = [];
-        } else {
-          alert("Error deleting clients from roster")
-        }
-      })// END OF REMOVING CLIENT FROM ROSTER
-      
-    }, 
+      eventService
+        .removeEventForSelectedClients(temporaryList)
+        .then((response) => {
+          if (response.status === 200) {
+            alert("Successfully deleted clients from roster");
+            this.getEventDetailsCall();
+            this.selectedClientsFromRoster = [];
+          } else {
+            alert("Error deleting clients from roster");
+          }
+        }); // END OF REMOVING CLIENT FROM ROSTER
+    },
     allowClientDelete() {
-      eventService.removeEventForSelectedClients(this.selectedClientsFromRoster).then((response) => {
-        if (response.status === 200) {
-          alert("Successfully deleted clients from roster")
-          this.getEventDetailsCall();
-          this.selectedClientsFromRoster = [];
-        } else {
-          alert("Error deleting clients from roster")
-        }
-      })
+      eventService
+        .removeEventForSelectedClients(this.selectedClientsFromRoster)
+        .then((response) => {
+          if (response.status === 200) {
+            alert("Successfully deleted clients from roster");
+            this.getEventDetailsCall();
+            this.selectedClientsFromRoster = [];
+          } else {
+            alert("Error deleting clients from roster");
+          }
+        });
     },
     // START OF ADDING CLIENT TO ROSTER
-    save() { 
+    save() {
       for (let index = 0; index < this.selectedClients.length; index++) {
         this.allowSignUp = false;
 
@@ -494,18 +546,19 @@ export default {
 
         // END OF LOOP BLOCK
       }
-      
-      eventService.registerMultipleClientsForEvent(this.selectedClients).then((response) => {
-        if (response.status == 201) {
-          alert("Successfully added clients to roster")
-          this.getEventDetailsCall();
-          this.selectedClients = [];
-        } else {
-          alert("Error adding clients to roster")
-        }
-      })
 
-      
+      eventService
+        .registerMultipleClientsForEvent(this.selectedClients)
+        .then((response) => {
+          if (response.status == 201) {
+            alert("Successfully added clients to roster");
+            this.getEventDetailsCall();
+            this.selectedClients = [];
+          } else {
+            alert("Error adding clients to roster");
+          }
+        });
+
       this.close();
     },
     findActivePackage(object) {
@@ -518,7 +571,7 @@ export default {
             // Add the package_purchase_id to the object
             this.eventClientSignUp.event_id = this.$route.params.eventId;
             this.eventClientSignUp.client_id = object.client_id;
-            this.eventClientSignUp.date = object.dateRef
+            this.eventClientSignUp.date = object.dateRef;
 
             // focus on if it's expired or not
             var today = new Date();
@@ -559,9 +612,7 @@ export default {
           expirationDate.setDate(expirationDate.getDate() + 1);
 
           // TODO: Handle Gift Card logic here when SQUARE is in place
-          if (
-            item.classes_remaining > 0 || todaysDate < expirationDate
-          ) {
+          if (item.classes_remaining > 0 || todaysDate < expirationDate) {
             this.allowSignUp = true;
             if (item.is_subscription) {
               this.hasSubscriptionPackage = true;
@@ -624,7 +675,7 @@ export default {
         } else {
           object.package_purchase_id = this.quantityPackageIdToDecrement;
         }
-        
+
         if (this.validSignUp == true) {
           eventService.registerForEvent(object).then((response) => {
             if (response.status == 201) {

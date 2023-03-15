@@ -12,7 +12,7 @@
       <h1>Edit Profile</h1>
       <v-text-field
         v-model="clientDetails.first_name"
-        :counter="10"
+        :counter="20"
         :rules="nameRules"
         label="First Name"
         required
@@ -20,7 +20,7 @@
 
       <v-text-field
         v-model="clientDetails.last_name"
-        :counter="10"
+        :counter="20"
         :rules="nameRules"
         label="Last Name"
         required
