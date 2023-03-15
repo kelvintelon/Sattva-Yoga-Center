@@ -99,9 +99,9 @@
                         Package Cost: ${{selectedPackage.package_cost}}
                       </div>
                       <div class="text--primary"> 
-                        Package Discount: ${{returnDiscount}}
+                        Package Discount: -${{returnDiscount}}
                       </div>
-                      <div class="text--primary"> 
+                      <div class="text--primary" style="border-top: 1px solid"> 
                         Total Cost: ${{returnTotal}}
                       </div>
                     </v-col>
