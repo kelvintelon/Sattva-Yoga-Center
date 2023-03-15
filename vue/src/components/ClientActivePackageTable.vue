@@ -187,9 +187,9 @@ export default {
         classes_remaining: "",
         activation_date: "",
         expiration_date: "",
-        total_amount_paid: "",
+        total_amount_paid: 0,
         is_monthly_renew: "",
-        discount: "",
+        discount: 0,
         package_description: "",
       },
       availablePackages: [],
@@ -245,6 +245,8 @@ export default {
     },
     close() {
       this.dialog = false;
+      this.percentDiscount = 0;
+      this.selectedPackage.discount = 0;
     },
     getActivePurchaseServerRequest() {
       if (this.$store.state.user.username == "admin") {
@@ -384,7 +386,7 @@ export default {
   },
   computed: {
     returnDiscount() {
-      if (this.showPercentDiscount) {
+      if (this.showPercentDiscount && this.selectedPackage.package_cost >= 0) {
         // this.selectedPackage.discount = this.selectedPackage.package_cost * (1-this.percentDiscount);
         let num = this.selectedPackage.package_cost-(this.selectedPackage.package_cost * (1 - (this.percentDiscount/100)))
         return Math.round(num * 100) / 100
@@ -396,14 +398,17 @@ export default {
      
     },
     returnTotal() {
-      if (this.showPercentDiscount) {
+      if (this.showPercentDiscount && this.selectedPackage.package_cost >= 0) {
         // this.selectedPackage.discount = this.selectedPackage.package_cost * (1-this.percentDiscount);
+       
         let num = this.selectedPackage.package_cost * (1 - (this.percentDiscount/100));
         return Math.round(num * 100) / 100;
       } else if (this.selectedPackage.discount >= 0 && this.selectedPackage.package_cost >= 0){
          return this.selectedPackage.package_cost - this.selectedPackage.discount;
+      } else if(this.selectedPackage.package_cost >= 0) {
+        return this.selectedPackage.package_cost;
       } else {
-        return this.selectedPackage.package_cost ;
+        return 0;
       }
     }
   }
