@@ -181,7 +181,7 @@
                   Cancel
                 </v-btn>
                 <v-btn color="blue darken-1" text @click="save" v-if="!showNewClientForm"> Save Client(s)</v-btn>
-                  <v-btn color="blue darken-1" text @click="save" v-if="showNewClientForm"> Save New Client</v-btn>
+                  <v-btn color="blue darken-1" text @click="saveNewClient" v-if="showNewClientForm"> Save New Client</v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
@@ -549,6 +549,26 @@ export default {
 
       eventService
         .registerMultipleClientsForEvent(this.selectedClients)
+        .then((response) => {
+          if (response.status == 201) {
+            alert("Successfully added clients to roster");
+            this.getEventDetailsCall();
+            this.selectedClients = [];
+          } else {
+            alert("Error adding clients to roster");
+          }
+        });
+
+      this.close();
+    },
+    saveNewClient() {
+      let newClient = {
+        event_id: this.$route.params.eventId,
+        first_name: this.clientDetails.first_name,
+        last_name: this.clientDetails.last_name
+      }
+      eventService
+        .registerNewClientForEvent(newClient)
         .then((response) => {
           if (response.status == 201) {
             alert("Successfully added clients to roster");

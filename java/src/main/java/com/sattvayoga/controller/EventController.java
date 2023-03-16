@@ -10,8 +10,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 
 @RestController
@@ -186,6 +189,94 @@ public class EventController {
     }
 
     @ResponseStatus(HttpStatus.CREATED)
+    @RequestMapping(value = "/registerNewClientToEvent", method = RequestMethod.POST)
+    public void registerNewClientForEvent(@RequestBody NewClientSignUp newClientSignUp) {
+
+
+
+        int leftLimit = 48; // numeral '0'
+        int rightLimit = 122; // letter 'z'
+        int targetStringLength = 10;
+        Random random = new Random();
+
+        // create password
+        String generatedPassword = random.ints(leftLimit, rightLimit + 1)
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                .limit(targetStringLength)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+
+
+        // create username
+        String generatedUsername = random.ints(leftLimit, rightLimit + 1)
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                .limit(targetStringLength)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+
+        generatedUsername = "user" + generatedUsername;
+
+       // create user with username and password
+        userDao.create(generatedUsername,generatedPassword, "user");
+
+        // retrieve the user ID,
+        YogaUser newUser = userDao.findByUsername(generatedUsername);
+        int userId = newUser.getId();
+
+        ClientDetails clientDetails = new ClientDetails();
+
+        clientDetails.setFirst_name(newClientSignUp.getFirst_name());
+        clientDetails.setLast_name(newClientSignUp.getLast_name());
+        clientDetails.setUser_id(userId);
+
+        Date date = new Date();
+        Timestamp theLatestTimestamp = new Timestamp(date.getTime());
+
+        clientDetails.setDate_of_entry(theLatestTimestamp);
+        // use it to create a client
+        int clientId = clientDetailsDao.createNewClient(clientDetails).getClient_id();
+
+
+        ClientEvent clientEventObj = new ClientEvent();
+
+        // use client ID, event ID, user ID to sign up client,
+        clientEventObj.setPackage_purchase_id(0);
+        clientEventObj.setClient_id(clientId);
+        clientEventObj.setEvent_id(newClientSignUp.event_id);
+
+        List<ClientEvent> clientEventObjects = new ArrayList<>();
+        clientEventObjects.add(clientEventObj);
+
+        // could use registerMultipleClientsForEvent if you pass this single client into a list as a clientEventObject
+        // retrieve the event object once
+        Event event = eventDao.getEventByEventId(clientEventObjects.get(0).getEvent_id());
+
+        for (int i = 0; i < clientEventObjects.size(); i++) {
+            // current clientEvent object
+            ClientEvent clientEvent = clientEventObjects.get(i);
+            // client details
+            ClientDetails clientDetailsObj = clientDetailsDao.findClientByClientId(clientEvent.getClient_id());
+            // user Id
+            int userIdNum = clientDetailsObj.getUser_id();
+            // find active packages for each client/user
+            List<PackagePurchase> allUserPackagePurchase = packagePurchaseDao.getAllUserPackagePurchases(userIdNum);
+            // filter the list of packages to just one
+            PackagePurchase packagePurchase = packagePurchaseDao.filterPackageList(allUserPackagePurchase, event);
+            // finally once you've pinpointed the package, set the package purchase ID into the object
+            if (packagePurchase.getPackage_purchase_id() > 0) {
+                clientEvent.setPackage_purchase_id(packagePurchase.getPackage_purchase_id());
+            }
+
+            // decrement if it's a quantity bundle but register it into the table either way
+            if (!packagePurchase.isIs_subscription()) {
+                packagePurchaseDao.decrementByOne(packagePurchase.getPackage_purchase_id());
+            }
+            eventDao.registerForEvent(clientEvent.getClient_id(),clientEvent.getEvent_id(),clientEvent.getPackage_purchase_id());
+        }
+
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/registerMultipleClientsForEvent", method = RequestMethod.POST)
     public void registerMultipleClientsForEvent(@RequestBody List<ClientEvent> clientEventObjects) {
 
@@ -218,6 +309,8 @@ public class EventController {
         }
 
     }
+
+
 
     static class ClientEventWrapper {
 
@@ -256,6 +349,44 @@ public class EventController {
 
         public void setPackage_purchase_id(int package_purchase_id) {
             this.package_purchase_id = package_purchase_id;
+        }
+    }
+    static class NewClientSignUp {
+        private int event_id;
+        private String first_name;
+        private String last_name;
+
+        public NewClientSignUp() {
+        }
+
+        public NewClientSignUp(int event_id, String first_name, String last_name) {
+            this.event_id = event_id;
+            this.first_name = first_name;
+            this.last_name = last_name;
+        }
+
+        public int getEvent_id() {
+            return event_id;
+        }
+
+        public void setEvent_id(int event_id) {
+            this.event_id = event_id;
+        }
+
+        public String getFirst_name() {
+            return first_name;
+        }
+
+        public void setFirst_name(String first_name) {
+            this.first_name = first_name;
+        }
+
+        public String getLast_name() {
+            return last_name;
+        }
+
+        public void setLast_name(String last_name) {
+            this.last_name = last_name;
         }
     }
 

@@ -47,6 +47,9 @@ public class AuthenticationController {
         
         YogaUser user = userDao.findByUsername(loginDto.getUsername());
 
+        // set activated boolean to true for user in the database
+        userDao.updateUserToActivated(user.getId());
+
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
         return new ResponseEntity<>(new LoginResponse(jwt, user), httpHeaders, HttpStatus.OK);

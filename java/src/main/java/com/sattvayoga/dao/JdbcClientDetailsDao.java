@@ -36,6 +36,16 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
     }
 
     @Override
+    public ClientDetails createNewClient(ClientDetails client) {
+        String sql = "INSERT INTO client_details (last_name, first_name, is_client_active, " +
+                "is_new_client, user_id) VALUES (?, ?, ?, ?, ?) RETURNING client_id";
+        int clientId = jdbcTemplate.queryForObject(sql, Integer.class, client.getLast_name(), client.getFirst_name(),
+                client.isIs_client_active(), client.isIs_new_client(), client.getUser_id());
+        client.setClient_id(clientId);
+        return client;
+    }
+
+    @Override
     public ClientDetails findClientByUserId(int userId) {
         String sql = "SELECT * FROM client_details WHERE user_id = ?";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
