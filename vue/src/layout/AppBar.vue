@@ -1,11 +1,11 @@
 <template>
+  <!-- shrink-on-scroll -->
   <v-app-bar
     app
     elevation="1"
     color="#FBC02D"
     dark
     prominent
-    shrink-on-scroll
     famde-img-on-scroll
     height="150px"
     
