@@ -1,7 +1,7 @@
 <template>
   <v-container>
-    <v-card class="mx-auto my-2 rounded-xl" max-width="900px" min-width="700px">
-      <v-img height="350px" src="@/assets/app-bar-photo.png"></v-img>
+    <v-card class="mx-auto my-2 rounded-xl" max-width="900px" min-width="200px">
+      <v-img height="350px" src="@/assets/yoga-practice-sattva.png"></v-img>
       <v-card-title><strong>Welcome</strong></v-card-title>
       <v-card-text>
         <v-row align="center" class="mx-0">
@@ -26,16 +26,6 @@
           <v-chip>9:00PM</v-chip>
         </v-chip-group>
       </v-card-text>
-
-      <v-card-actions>
-        <v-btn
-            color="deep-orange lighten-2"
-            text
-            @click="reserve"
-        >
-          Reserve
-        </v-btn>
-      </v-card-actions>
       <v-card-text>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quis nemo repellat facilis adipisci quod praesentium saepe illo ipsam earum veritatis natus non blanditiis debitis, quos assumenda iure vel tempora id.</v-card-text>
 
     </v-card>

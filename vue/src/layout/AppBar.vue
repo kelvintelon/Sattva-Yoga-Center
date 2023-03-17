@@ -1,35 +1,32 @@
 <template>
   <v-app-bar
     app
-    elevation="1"    
-    color="#FFF8E1"
-    light
+    elevation="1"
+    color="#FBC02D"
+    dark
     prominent
     scroll-target="#scrolling-techniques-3"
+    shrink-on-scroll
     famde-img-on-scroll
-  > 
+    height="150px"
+    src="https://picsum.photos/id/306/1280/"
+  >
     <template v-slot:img="{ props }">
-      <v-img
-        v-bind="props"
-        gradient="to bottom left, rgba(255, 236, 179, .7), rgba(255, 193, 7, 1)"
-      ></v-img>
+      <v-img v-bind="props"></v-img>
     </template>
-  <v-menu bottom right>
+    <v-menu bottom right>
       <template v-slot:activator="{ on, attrs }">
         <v-btn v-bind="attrs" v-on="on" icon tile>
           <v-icon>mdi-menu</v-icon>
         </v-btn>
       </template>
+      <div></div>
       <v-list>
         <v-list-item v-for="(item, i) in items" :key="i">
           <v-list-item-title>{{ item.link }}</v-list-item-title>
         </v-list-item>
       </v-list>
     </v-menu>
-
-
-    <v-toolbar-title>Sattva Yoga Center</v-toolbar-title>
-
     <v-spacer></v-spacer>
   </v-app-bar>
 </template>
