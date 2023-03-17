@@ -36,9 +36,31 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
     }
 
     @Override
+    public ClientDetails createNewClient(ClientDetails client) {
+        String sql = "INSERT INTO client_details (last_name, first_name, is_client_active, " +
+                "is_new_client, user_id) VALUES (?, ?, ?, ?, ?) RETURNING client_id";
+        int clientId = jdbcTemplate.queryForObject(sql, Integer.class, client.getLast_name(), client.getFirst_name(),
+                client.isIs_client_active(), client.isIs_new_client(), client.getUser_id());
+        client.setClient_id(clientId);
+        return client;
+    }
+
+    @Override
     public ClientDetails findClientByUserId(int userId) {
         String sql = "SELECT * FROM client_details WHERE user_id = ?";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
+        ClientDetails clientDetails = new ClientDetails();
+        if (results.next()) {
+            clientDetails = mapRowToClient(results);
+        }
+
+        return clientDetails;
+    }
+
+    @Override
+    public ClientDetails findClientByClientId(int clientId) {
+        String sql = "SELECT * FROM client_details WHERE client_id = ?";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, clientId);
         ClientDetails clientDetails = new ClientDetails();
         if (results.next()) {
             clientDetails = mapRowToClient(results);
@@ -88,7 +110,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
     public List<ClientDetails> getAllClients() {
         List<ClientDetails> allClients = new ArrayList<>();
 
-        String sql = "SELECT * FROM client_details;";
+        String sql = "SELECT * FROM client_details ORDER BY client_id;";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
         while(result.next()) {
             ClientDetails clientDetails = mapRowToClient(result);

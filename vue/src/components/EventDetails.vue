@@ -8,25 +8,55 @@
       :timeout="timeout"
       shaped
     >
-      Warning: Skipping Over Clients Without Active Package
-
+      Roster Warning: Clients Have Been Red Flagged
+    </v-snackbar>
+    <v-snackbar
+      v-model="snackBarDeleteClientConfirmation"
+      color="red darken-2"
+      elevation="24"
+      :vertical="vertical"
+      shaped
+    >
+      Warning: Delete Red Flagged Client?
+      <template v-slot:action="{ attrs }">
+        <v-btn
+          color="white"
+          text
+          v-bind="attrs"
+          @click="snackBarDeleteClientConfirmation = false"
+          left
+        >
+          Close
+        </v-btn>
+        <v-btn color="white" text v-bind="attrs" @click="allowClientDelete">
+          Continue
+        </v-btn>
+      </template>
     </v-snackbar>
     <v-data-table
-      v-model="selectedClientsSignedUp"
+      v-model="selectedClientsFromRoster"
       :headers="headers"
       :items="returnListOfSignedUpClients"
       item-key="client_id"
       sort-by="last_name"
       show-select
       class="elevation-1"
+      dense
     >
       <template v-slot:top>
         <v-toolbar flat>
-          <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on" @click.prevent="sendToCalendarPage">
+          <v-btn
+            color="primary"
+            dark
+            class="mb-2"
+            v-bind="attrs"
+            v-on="on"
+            @click.prevent="sendToCalendarPage"
+          >
             <v-icon> mdi-keyboard-return</v-icon>
-          </v-btn> 
+          </v-btn>
           <v-divider class="mx-4" inset vertical></v-divider>
-          <v-toolbar-title>{{event.event_name}}</v-toolbar-title>
+          <v-toolbar-title>{{ event.event_name }}</v-toolbar-title>
           <v-divider class="mx-4" inset vertical></v-divider>
           <span
             >{{ new Date(event.start_time).getFullYear() }}-{{
@@ -55,12 +85,28 @@
             }}</span
           >
           <v-divider class="mx-4" inset vertical></v-divider>
-           <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on" @click.prevent="emailRecipients">
-            <v-icon>mdi-order-bool-ascending-variant</v-icon> Email select
+          <v-btn
+            color="primary"
+            dark
+            class="mb-2"
+            v-bind="attrs"
+            v-on="on"
+            @click.prevent="emailRecipients"
+            title="Email Selected Client(s)"
+          >
+            <v-icon>mdi-order-bool-ascending-variant</v-icon>
           </v-btn>
           <v-divider class="mx-4" inset vertical></v-divider>
-           <v-btn color="#9948B6ED" dark class="mb-2" v-bind="attrs" v-on="on" @click.prevent="emailRecipientsFromEmailList">
-            <v-icon>mdi-email-plus</v-icon> EMAIL LIST 
+          <v-btn
+            color="#9948B6ED"
+            dark
+            class="mb-2"
+            v-bind="attrs"
+            v-on="on"
+            @click.prevent="emailRecipientsFromEmailList"
+            title="Email List"
+          >
+            <v-icon>mdi-email-plus</v-icon>
           </v-btn>
           <v-spacer></v-spacer>
           <v-dialog v-model="dialog" max-width="500px">
@@ -72,7 +118,26 @@
             <v-card>
               <!-- Add a Client Form starts here -->
               <v-card-title>
-                <span class="text-h5">Add a client</span>
+                <span class="text-h5">Add Client To Roster</span>
+                <v-spacer></v-spacer>
+                <v-btn
+                  class="mx-2"
+                  fab
+                  dark
+                  color="primary"
+                  @click="showNewClientForm = !showNewClientForm"
+                  v-if="!showNewClientForm"
+                  ><v-icon large>mdi-new-box</v-icon></v-btn
+                >
+                <v-btn
+                  class="mx-2"
+                  fab
+                  dark
+                  color="primary"
+                  @click="showNewClientForm = !showNewClientForm"
+                  v-if="showNewClientForm"
+                  ><v-icon large>mdi-account-multiple-plus</v-icon></v-btn
+                >
               </v-card-title>
 
               <v-card-text>
@@ -80,14 +145,31 @@
                   <v-row>
                     <v-col>
                       <v-select
+                        v-if="!showNewClientForm"
                         label="Choose one or multiple"
                         :items="returnCorrectClientListToChoose"
                         v-model="selectedClients"
                         item-text="quick_details"
                         return-object
-              
                         multiple
                       ></v-select>
+                      <v-text-field
+                        v-if="showNewClientForm"
+                        v-model="clientDetails.first_name"
+                        :counter="20"
+                        :rules="nameRules"
+                        label="First Name"
+                        required
+                      ></v-text-field>
+
+                      <v-text-field
+                        v-if="showNewClientForm"
+                        v-model="clientDetails.last_name"
+                        :counter="20"
+                        :rules="nameRules"
+                        label="Last Name"
+                        required
+                      ></v-text-field>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -98,7 +180,8 @@
                 <v-btn color="blue darken-1" text @click="close">
                   Cancel
                 </v-btn>
-                <v-btn color="blue darken-1" text @click="save"> Save </v-btn>
+                <v-btn color="blue darken-1" text @click="save" v-if="!showNewClientForm"> Save Client(s)</v-btn>
+                  <v-btn color="blue darken-1" text @click="saveNewClient" v-if="showNewClientForm"> Save New Client</v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
@@ -122,38 +205,38 @@
           </v-dialog>
         </v-toolbar>
       </template>
-      <!-- <template v-slot:item.actions="{ item }">
-      <v-icon
-        small
-        class="mr-2"
-        @click="editItem(item)"
-      >
-        mdi-pencil
-      </v-icon>
-      <v-icon
-        small
-        @click="deleteItem(item)"
-      >
-        mdi-delete
-      </v-icon>
-    </template>
-    <template v-slot:no-data>
-      <v-btn
-        color="primary"
-        @click="initialize"
-      >
-        Reset
-      </v-btn>
-    </template> -->
-    <template v-slot:[`item.is_on_email_list`]="{ item }">
+      <template v-slot:[`item.client_id`]="{ item }">
+        <v-chip :color="getColor(item)" dark>
+          {{ item.client_id }}
+        </v-chip>
+      </template>
+      <template v-slot:[`item.first_name`]="{ item }">
+        <v-chip :color="getColor(item)" dark>
+          {{ item.first_name }}
+        </v-chip>
+      </template>
+      <template v-slot:[`item.last_name`]="{ item }">
+        <v-chip :color="getColor(item)" dark>
+          {{ item.last_name }}
+        </v-chip>
+      </template>
+      <template v-slot:[`item.is_on_email_list`]="{ item }">
         <v-simple-checkbox
           v-model="item.is_on_email_list"
           disabled
         ></v-simple-checkbox>
       </template>
       <template v-slot:[`item.actions`]="{ item }">
-        <v-icon small class="mr-2" @click.prevent="sendToUserPageAdminView(item)"> mdi-account-search </v-icon>
-        <v-icon small @click="deleteItem(item)"> mdi-close </v-icon>
+        <v-icon
+          small
+          class="mr-2"
+          @click.prevent="sendToUserPageAdminView(item)"
+        >
+          mdi-account-search
+        </v-icon>
+        <v-icon small @click.prevent="RemoveClassForClient(item)" color="#933">
+          mdi-close-thick
+        </v-icon>
       </template>
     </v-data-table>
   </v-container>
@@ -177,9 +260,11 @@ export default {
       allowSignUp: false,
       validSignUp: true,
       snackBarNoPurchaseWarning: false,
+      snackBarDeleteClientConfirmation: false,
       timeout: 6000,
       hasSubscriptionPackage: false,
       subscriptionPackages: [],
+      subscriptionPackageId: 0,
       quantityPackages: [],
       quantityPackageIdToDecrement: 0,
       eventClientSignUp: {
@@ -301,9 +386,7 @@ export default {
       // Attendance table properties
       listOfSignedUpClients: [],
       headers: [
-        {text: "Client ID",
-        align: "start",
-        value: "client_id"},
+        { text: "Client ID", align: "start", value: "client_id" },
         {
           text: "First Name",
           value: "first_name",
@@ -316,8 +399,32 @@ export default {
       ],
       editedIndex: -1,
       // email properties
-      selectedClientsSignedUp: [],
-      emailLink: "https://mail.google.com/mail/u/0/?fs=1&tf=cm&to="
+      selectedClientsFromRoster: [],
+      emailLink: "https://mail.google.com/mail/u/0/?fs=1&tf=cm&to=",
+      // Delete client from roster properties
+      indexOfClientToBeDeleted: 0,
+      allHistoricalPackages: [],
+      // Add a new client
+      showNewClientForm: false,
+      clientDetails: {
+        last_name: "",
+        first_name: "",
+        is_client_active: true,
+        is_new_client: true,
+        street_address: "",
+        city: "",
+        state_abbreviation: "",
+        zip_code: "",
+        phone_number: "",
+        is_on_email_list: false,
+        email: "",
+        has_record_of_liability: false,
+        date_of_entry: "",
+      },
+      nameRules: [
+        (v) => !!v || "Name is required",
+        (v) => (v && v.length <= 30) || "Name must be less than 30 characters",
+      ],
     };
   },
   methods: {
@@ -349,27 +456,17 @@ export default {
         hour12: true,
       });
     },
+    getColor(item) {
+      if (item.redFlag) {
+        return "red";
+      } else {
+        return "blue";
+      }
+    },
     showCardEditForm() {
       this.showEditForm = !this.showEditForm;
     },
     // Attendance table methods
-    editItem(item) {
-      this.editedIndex = this.desserts.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialog = true;
-    },
-
-    deleteItem(item) {
-      this.editedIndex = this.desserts.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialogDelete = true;
-    },
-
-    deleteItemConfirm() {
-      this.desserts.splice(this.editedIndex, 1);
-      this.closeDelete();
-    },
-
     close() {
       this.dialog = false;
       this.$nextTick(() => {
@@ -385,68 +482,143 @@ export default {
         this.editedIndex = -1;
       });
     },
+    // START OF: REMOVING CLIENT FROM ROSTER
+    RemoveClassForClient(client) {
+      let foundClientObject = false;
+      client.event_id = this.$route.params.eventId;
+      // see if the client object is already selected
+      for (let j = 0; j < this.selectedClientsFromRoster.length; j++) {
+        this.selectedClientsFromRoster[j].event_id = this.$route.params.eventId;
+        if (this.selectedClientsFromRoster[j].client_id == client.client_id) {
+          foundClientObject = true;
+        }
+      }
+      // if it's not selected already then add the client object to the list of selected clients
+      if (!foundClientObject) {
+        this.selectedClientsFromRoster.push(client);
+      }
+      // create a temp array to hold the roster of clients selected, not necessary
+      let temporaryList = this.selectedClientsFromRoster;
+      // let foundRedFlag = false;
+      // for (let index = 0; index < temporaryList.length; index++) {
+      //   if (temporaryList[index].redFlag) {
+      //       foundRedFlag = true;
+      //   }
+      // }
+      // if (foundRedFlag) {
+      //   this.snackBarDeleteClientConfirmation = true;
+      // } else {
 
+      // }
+      eventService
+        .removeEventForSelectedClients(temporaryList)
+        .then((response) => {
+          if (response.status === 200) {
+            alert("Successfully deleted clients from roster");
+            this.getEventDetailsCall();
+            this.selectedClientsFromRoster = [];
+          } else {
+            alert("Error deleting clients from roster");
+          }
+        }); // END OF REMOVING CLIENT FROM ROSTER
+    },
+    allowClientDelete() {
+      eventService
+        .removeEventForSelectedClients(this.selectedClientsFromRoster)
+        .then((response) => {
+          if (response.status === 200) {
+            alert("Successfully deleted clients from roster");
+            this.getEventDetailsCall();
+            this.selectedClientsFromRoster = [];
+          } else {
+            alert("Error deleting clients from roster");
+          }
+        });
+    },
+    // START OF ADDING CLIENT TO ROSTER
     save() {
-
       for (let index = 0; index < this.selectedClients.length; index++) {
-
         this.allowSignUp = false;
 
-        // the following line is for testing purposes
-        this.individualClientFromLoop = this.selectedClients[index];
+        this.selectedClients[index].event_id = this.$route.params.eventId;
 
-        // first check if the clients have an active package
-        this.findActivePackage(this.individualClientFromLoop);
+        this.individualClientFromLoop = this.selectedClients[index];
 
         // END OF LOOP BLOCK
       }
-      
-      
-      
-      this.selectedClients = [];
+
+      eventService
+        .registerMultipleClientsForEvent(this.selectedClients)
+        .then((response) => {
+          if (response.status == 201) {
+            alert("Successfully added clients to roster");
+            this.getEventDetailsCall();
+            this.selectedClients = [];
+          } else {
+            alert("Error adding clients to roster");
+          }
+        });
+
+      this.close();
+    },
+    saveNewClient() {
+      let newClient = {
+        event_id: this.$route.params.eventId,
+        first_name: this.clientDetails.first_name,
+        last_name: this.clientDetails.last_name
+      }
+      eventService
+        .registerNewClientForEvent(newClient)
+        .then((response) => {
+          if (response.status == 201) {
+            alert("Successfully added clients to roster");
+            this.getEventDetailsCall();
+            this.selectedClients = [];
+          } else {
+            alert("Error adding clients to roster");
+          }
+        });
+
       this.close();
     },
     findActivePackage(object) {
-      packagePurchaseService.getUserPurchasedPackagesByUserId(object.user_id).then((response) => {
+      packagePurchaseService
+        .getUserPurchasedPackagesByUserId(object.user_id)
+        .then((response) => {
+          if (response.status == 200) {
+            // set up your event_client object here to pass through later
+            // TODO: Change the following line
+            // Add the package_purchase_id to the object
+            this.eventClientSignUp.event_id = this.$route.params.eventId;
+            this.eventClientSignUp.client_id = object.client_id;
+            this.eventClientSignUp.date = object.dateRef;
 
-        if (response.status == 200) {
+            // focus on if it's expired or not
+            var today = new Date();
+            var dd = String(today.getDate()).padStart(2, "0");
+            var mm = String(today.getMonth() + 1).padStart(2, "0"); //January is 0!
+            var yyyy = today.getFullYear();
+            today = yyyy + "-" + mm + "-" + dd;
 
+            this.packages = response.data.filter((item) => {
+              return (
+                item.expiration_date >= today || item.classes_remaining > 0
+              );
+            });
 
-        // set up your event_client object here to pass through later
-        // TODO: Change the following line
-        // Add the package_purchase_id to the object 
-        this.eventClientSignUp.event_id = this.$route.params.eventId;
-        this.eventClientSignUp.client_id = object.client_id;
+            this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
 
-
-          // focus on if it's expired or not
-          var today = new Date();
-          var dd = String(today.getDate()).padStart(2, '0');
-          var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
-          var yyyy = today.getFullYear();
-          today = yyyy + '-' + mm + '-' + dd;
-
-          this.packages = response.data.filter((item) => {
-            return item.expiration_date >= today || item.classes_remaining > 0;
-          });
-          
-          this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
-
-          // format the sign up and pass along the object
-          this.formattingSignUp(this.eventClientSignUp);
-
-        
-      
-        } else {
-          alert("Error retrieving package information");
-        }
-        // END OF ACTIVE PACKAGE REQUEST
-      });
+            // format the sign up and pass along the object
+            this.formattingSignUp(this.eventClientSignUp);
+          } else {
+            alert("Error retrieving package information");
+          }
+          // END OF ACTIVE PACKAGE REQUEST
+        });
     },
     formattingSignUp(object) {
-
-      // find out if they have at least one active package that's a subscription or a bundle and active
-      // this.activePackageList = this.$store.state.activePackageList;
+      // find out if they have at least one active package that's a subscription or a bundle
+      // and active
 
       if (this.$store.state.activePackageList.length == 0) {
         this.allowSignUp = false;
@@ -462,28 +634,37 @@ export default {
           // TODO: Handle Gift Card logic here when SQUARE is in place
           if (item.classes_remaining > 0 || todaysDate < expirationDate) {
             this.allowSignUp = true;
-            if(item.is_subscription){
+            if (item.is_subscription) {
               this.hasSubscriptionPackage = true;
-              this.subscriptionPackages = this.$store.state.activePackageList.filter((item)=>{
-                return item.is_subscription;
-              })
+              this.subscriptionPackages =
+                this.$store.state.activePackageList.filter((item) => {
+                  return item.is_subscription;
+                });
               this.initial = this.subscriptionPackages[0];
-              this.subscriptionPackages.forEach((item)=>{
-                if(item.expiration_date > this.initial.expiration_date){
-                  this.initial = item
+              this.subscriptionPackages.forEach((item) => {
+                if (item.expiration_date > this.initial.expiration_date) {
+                  this.initial = item;
                 }
-              })
-            }else{
-              this.quantityPackages = this.$store.state.activePackageList.filter((item)=>{
-                return item.is_subscription == false;
-              })
+              });
+              object.package_purchase_id = this.initial.package_purchase_id;
+              this.subscriptionPackageId = this.initial.package_purchase_id;
+            } else {
+              this.quantityPackages =
+                this.$store.state.activePackageList.filter((item) => {
+                  return (
+                    item.is_subscription == false &&
+                    (item.expiration_date == null ||
+                      todaysDate < item.expiration_date)
+                  );
+                });
               this.initial = this.quantityPackages[0];
-              this.quantityPackages.forEach((item)=>{
-                if(item.date_purchased < this.initial.date_purchased){
-                  this.initial = item
+              this.quantityPackages.forEach((item) => {
+                if (item.date_purchased < this.initial.date_purchased) {
+                  this.initial = item;
                 }
-              this.quantityPackageIdToDecrement = this.initial.package_purchase_id;
-              })
+                this.quantityPackageIdToDecrement =
+                  this.initial.package_purchase_id;
+              });
             }
           }
         });
@@ -496,29 +677,38 @@ export default {
 
       // if they have an active package then they are allowed to sign up
       if (this.allowSignUp) {
-        
-        console.log(this.initial.expiration_date)
-       
-          if (this.hasSubscriptionPackage && this.eventClientSignUp.date > this.initial.expiration_date){
-            alert("Error! Unlimited package will be expired by then for: " + this.individualClientFromLoop.quick_details);
-            this.validSignUp = false;
-          }
-        
+        console.log(this.initial.expiration_date);
+
+        if (
+          this.hasSubscriptionPackage &&
+          this.eventClientSignUp.date > this.initial.expiration_date
+        ) {
+          alert(
+            "Error! Unlimited package will be expired by then for: " +
+              this.individualClientFromLoop.quick_details
+          );
+          this.validSignUp = false;
+        }
+
+        if (this.hasSubscriptionPackage) {
+          object.package_purchase_id = this.subscriptionPackageId;
+        } else {
+          object.package_purchase_id = this.quantityPackageIdToDecrement;
+        }
+
         if (this.validSignUp == true) {
-            
-          eventService
-            .registerForEvent(object)
-            .then((response) => {
-              if (response.status == 201) {
-                if(this.hasSubscriptionPackage == false){
-                  packagePurchaseService.decrementByOne(this.quantityPackageIdToDecrement)
-                  
-                }
-                // add them to the listofSignedUpclients
-              //  this.listOfSignedUpClients.push(this.individualClientFromLoop)
-                this.getEventDetailsCall()
+          eventService.registerForEvent(object).then((response) => {
+            if (response.status == 201) {
+              if (this.hasSubscriptionPackage == false) {
+                packagePurchaseService.decrementByOne(
+                  this.quantityPackageIdToDecrement
+                );
               }
-            });
+              // add them to the listofSignedUpclients
+              //  this.listOfSignedUpClients.push(this.individualClientFromLoop)
+              this.getEventDetailsCall();
+            }
+          });
         }
       }
     },
@@ -528,58 +718,62 @@ export default {
           this.allClientsList = response.data;
 
           this.$store.commit("SET_CLIENT_EVENT_LIST", response.data);
-          
         } else {
           alert("Error retrieving client information");
         }
       });
     },
     sendToCalendarPage() {
-      this.$router.push("/classManagement")
+      this.$router.push("/classManagement");
     },
     sendToUserPageAdminView(object) {
-      this.$router.push({name: "client-details-admin-view", params: {clientId: object.client_id}})
+      this.$store.commit("SET_CLIENT_DETAILS", object);
+      this.$router.push({
+        name: "client-details-admin-view",
+        params: { clientId: object.client_id },
+      });
     },
     emailRecipients() {
-      this.selectedClientsSignedUp.forEach((item) => {
-        this.emailLink = this.emailLink + item.email + ";"
-      })
+      this.selectedClientsFromRoster.forEach((item) => {
+        this.emailLink = this.emailLink + item.email + ";";
+      });
       window.location.href = this.emailLink;
-      this.emailLink = "https://mail.google.com/mail/u/0/?fs=1&tf=cm&to="
+      this.emailLink = "https://mail.google.com/mail/u/0/?fs=1&tf=cm&to=";
     },
     emailRecipientsFromEmailList() {
       this.listOfSignedUpClients.forEach((item) => {
         if (item.is_on_email_list) {
-          this.emailLink = this.emailLink + item.email + ";"
+          this.emailLink = this.emailLink + item.email + ";";
         }
-      })
+      });
       window.location.href = this.emailLink;
-      this.emailLink = "https://mail.google.com/mail/u/0/?fs=1&tf=cm&to="
+      this.emailLink = "https://mail.google.com/mail/u/0/?fs=1&tf=cm&to=";
     },
     getEventDetailsCall() {
       eventService
-      .getEventDetailsByEventId(this.$route.params.eventId)
-      .then((response) => {
-        if (response.status == 200) {
-          this.event = response.data;
-          this.editedEvent = response.data;
-          this.formatsIncomingEvent();
-          this.listOfSignedUpClients = this.event.attendanceList;
-          // formats the date to be readable
-          this.getAllClients()
-          this.listOfSignedUpClients.forEach((item) => {
-            item.date_of_entry = new Date(item.date_of_entry);
-          })
-          ;
-          
-        }
-      });
-    }
+        .getEventDetailsByEventId(this.$route.params.eventId)
+        .then((response) => {
+          if (response.status == 200) {
+            this.event = response.data;
+            this.editedEvent = response.data;
+            this.formatsIncomingEvent();
+            this.listOfSignedUpClients = this.event.attendanceList;
+            // formats the date to be readable
+            this.getAllClients();
+            this.listOfSignedUpClients.forEach((item) => {
+              item.date_of_entry = new Date(item.date_of_entry);
+              if (item.redFlag) {
+                this.snackBarNoPurchaseWarning = true;
+              }
+            });
+          }
+        });
+    },
   },
   created() {
     // TODO: Change the following so you can redirect users who stumbled onto this page right here in this moment
 
-    this.getEventDetailsCall()
+    this.getEventDetailsCall();
   },
   computed: {
     returnCorrectEndTime() {
@@ -603,18 +797,17 @@ export default {
     returnCorrectClientListToChoose() {
       let finalizedList = [];
       for (let index = 0; index < this.allClientsList.length; index++) {
-            let foundMatch = false;
-            this.listOfSignedUpClients.forEach((element) => {
-              
-              if (element.client_id == this.allClientsList[index].client_id) {
-                foundMatch = true;
-              } 
-            }); 
-            if (foundMatch == false) {
-              finalizedList.push(this.allClientsList[index])
-            }
+        let foundMatch = false;
+        this.listOfSignedUpClients.forEach((element) => {
+          if (element.client_id == this.allClientsList[index].client_id) {
+            foundMatch = true;
           }
-          return finalizedList;
+        });
+        if (foundMatch == false) {
+          finalizedList.push(this.allClientsList[index]);
+        }
+      }
+      return finalizedList;
     },
     formTitle() {
       return this.editedIndex === -1 ? "New Item" : "Edit Item";

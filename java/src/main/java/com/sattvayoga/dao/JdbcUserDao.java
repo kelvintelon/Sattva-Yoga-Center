@@ -49,6 +49,12 @@ public class JdbcUserDao implements UserDao {
 	}
 
     @Override
+    public void updateUserToActivated(int userId) {
+        String sql = "UPDATE users SET activated = true WHERE user_id = ?";
+        jdbcTemplate.update(sql, userId);
+    }
+
+    @Override
     public List<YogaUser> findAll() {
         List<YogaUser> users = new ArrayList<>();
         String sql = "select * from users";
@@ -76,11 +82,11 @@ public class JdbcUserDao implements UserDao {
 
     @Override
     public boolean create(String username, String password, String role) {
-        String insertUserSql = "insert into users (username,password_hash,role) values (?,?,?)";
+        String insertUserSql = "insert into users (username,password_hash,role,activated) values (?,?,?,?)";
         String password_hash = new BCryptPasswordEncoder().encode(password);
         String ssRole = role.toUpperCase().startsWith("ROLE_") ? role.toUpperCase() : "ROLE_" + role.toUpperCase();
 
-        return jdbcTemplate.update(insertUserSql, username, password_hash, ssRole) == 1;
+        return jdbcTemplate.update(insertUserSql, username, password_hash, ssRole, false) == 1;
 
         // make this a getForObject method returning USER_ID
 

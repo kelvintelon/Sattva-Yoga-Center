@@ -421,6 +421,18 @@ public class JdbcEventDao implements EventDao {
         return event;
     }
 
+    @Override
+    public int getPackagePurchaseIdByEventIdClientId(int eventId, int clientId) {
+        String sql = "SELECT package_purchase_id FROM client_event WHERE event_id = ? AND client_id = ?";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, eventId, clientId);
+        int packageId = 0;
+        if (result.next()) {
+            packageId = result.getInt("package_purchase_id");
+        }
+        return packageId;
+    }
+
+
     public List<ClientDetails> getAttendanceByEventId(int eventId) {
         List<ClientDetails> listOfAttendance = new ArrayList<>();
 
@@ -428,17 +440,33 @@ public class JdbcEventDao implements EventDao {
                 "client_event.client_id = client_details.client_id " +
                 "WHERE client_event.event_id = ?";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, eventId);
+
         while (result.next()) {
-            listOfAttendance.add(mapRowToClient(result));
+            ClientDetails clientDetails = mapRowToClient(result);
+            // before you add it to the list, include whether they are red-flagged or not
+            clientDetails.setRedFlag(getRedFlaggedClientEventsByClientId(clientDetails.getClient_id()).size() > 0);
+            listOfAttendance.add(clientDetails);
         }
         return listOfAttendance;
     }
 
+    @Override
+    public List<ClientEvent> getRedFlaggedClientEventsByClientId(int clientId) {
+        List<ClientEvent> clientEventObjectList = new ArrayList<>();
+        String sql = "SELECT * FROM client_event WHERE client_id = ? AND package_purchase_id = 0";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, clientId);
+        while(result.next()) {
+            ClientEvent clientEvent = mapRowToClientEvent(result);
+            clientEventObjectList.add(clientEvent);
+        }
+        return clientEventObjectList;
+    }
+
 
     @Override
-    public void registerForEvent(int client_id, int event_id) {
-        String sql = "INSERT INTO client_event (client_id, event_id) VALUES (?,?);";
-        jdbcTemplate.update(sql, client_id, event_id);
+    public void registerForEvent(int client_id, int event_id, int package_purchase_id) {
+        String sql = "INSERT INTO client_event (client_id, event_id, package_purchase_id) VALUES (?,?,?);";
+        jdbcTemplate.update(sql, client_id, event_id, package_purchase_id);
 
         String sql2 = "UPDATE client_details SET is_new_client = FALSE WHERE client_id = ?";
 
@@ -446,16 +474,40 @@ public class JdbcEventDao implements EventDao {
     }
 
     @Override
-    public List<Event> getAllClientEvents(int user_id) {
+    public void reconcileClassWithPackageId(int packageId, int eventId, int clientId) {
+        String sql = "UPDATE client_event SET package_purchase_id = ? WHERE event_id = ? AND client_id = ?";
+        jdbcTemplate.update(sql, packageId, eventId, clientId);
+    }
+
+//    @Override
+//    public List<Event> getAllUpcomingClientEvents(int user_id) {
+//        List<Event> allClientEvents = new ArrayList<>();
+//        String sql = "SELECT events.event_id, class_id, event_name, start_time, end_time, color, timed, is_visible_online FROM events \n" +
+//                "JOIN client_event ON events.event_id = client_event.event_id \n" +
+//                "JOIN client_details ON client_details.client_id = client_event.client_id \n" +
+//                "WHERE user_id = ? AND start_time > now() " +
+//                "ORDER BY events.start_time";
+//        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, user_id);
+//        while (result.next()) {
+//            allClientEvents.add(mapRowToEvent(result));
+//        }
+//        return allClientEvents;
+//    }
+
+    @Override
+    public List<Event> getAllHistoricalClientEvents(int user_id) {
         List<Event> allClientEvents = new ArrayList<>();
-        String sql = "SELECT events.event_id, class_id, event_name, start_time, end_time, color, timed, is_visible_online FROM events \n" +
+        Event event = new Event();
+        String sql = "SELECT events.event_id, class_id, event_name, start_time, end_time, color, timed, is_visible_online, package_purchase_id FROM events \n" +
                 "JOIN client_event ON events.event_id = client_event.event_id \n" +
                 "JOIN client_details ON client_details.client_id = client_event.client_id \n" +
-                "WHERE user_id = ? AND start_time > now() " +
+                "WHERE user_id = ? " +
                 "ORDER BY events.start_time";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, user_id);
         while (result.next()) {
-            allClientEvents.add(mapRowToEvent(result));
+            event = mapRowToEvent(result);
+            event.setPackage_purchase_id(result.getInt("package_purchase_id"));
+            allClientEvents.add(event);
         }
         return allClientEvents;
     }
@@ -747,6 +799,14 @@ public class JdbcEventDao implements EventDao {
         clientDetails.setDate_of_entry(rs.getTimestamp("date_of_entry"));
         clientDetails.setUser_id(rs.getInt("user_id"));
         return clientDetails;
+    }
+
+    private ClientEvent mapRowToClientEvent(SqlRowSet rs) {
+        ClientEvent clientEvent = new ClientEvent();
+        clientEvent.setEvent_id(rs.getInt("event_id"));
+        clientEvent.setClient_id(rs.getInt("client_id"));
+        clientEvent.setPackage_purchase_id(rs.getInt("package_purchase_id"));
+        return clientEvent;
     }
 
         public int daysBetween(Date d1, Date d2) {

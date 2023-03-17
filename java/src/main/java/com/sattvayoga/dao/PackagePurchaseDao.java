@@ -1,5 +1,6 @@
 package com.sattvayoga.dao;
 
+import com.sattvayoga.model.Event;
 import com.sattvayoga.model.PackagePurchase;
 
 import java.util.List;
@@ -15,4 +16,10 @@ public interface PackagePurchaseDao {
     boolean decrementByOne(int packagePurchaseId);
 
     boolean incrementByOne(int packagePurchaseId);
+
+    boolean updatePackage(PackagePurchase packagePurchase);
+
+    PackagePurchase getPackagePurchaseObjectByPackagePurchaseId(int packagePurchaseId);
+
+    PackagePurchase filterPackageList(List<PackagePurchase> packagePurchaseList, Event event);
 }

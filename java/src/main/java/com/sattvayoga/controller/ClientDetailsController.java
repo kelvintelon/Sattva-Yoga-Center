@@ -2,6 +2,7 @@ package com.sattvayoga.controller;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sattvayoga.dao.ClientDetailsDao;
+import com.sattvayoga.dao.EventDao;
 import com.sattvayoga.dao.UserDao;
 import com.sattvayoga.model.ClientDetails;
 import org.springframework.http.HttpHeaders;
@@ -21,21 +22,23 @@ public class ClientDetailsController {
 
     private ClientDetailsDao clientDetailsDao;
     private UserDao userDao;
+    private EventDao eventDao;
 
-    public ClientDetailsController(ClientDetailsDao clientDao, UserDao userDao) {
+    public ClientDetailsController(ClientDetailsDao clientDao, UserDao userDao, EventDao eventDao) {
         this.clientDetailsDao = clientDao;
         this.userDao = userDao;
+        this.eventDao = eventDao;
     }
 
     @RequestMapping(value = "/updateClientDetails", method = RequestMethod.PUT)
-    public void updateClientDetails (@RequestBody ClientDetails clientDetails) {
+    public void updateClientDetails(@RequestBody ClientDetails clientDetails) {
 
-            clientDetailsDao.updateClientDetails(clientDetails);
+        clientDetailsDao.updateClientDetails(clientDetails);
 
     }
 
     @RequestMapping(value = "/removeClient/{clientId}", method = RequestMethod.DELETE)
-    public void deleteClient (@PathVariable int clientId) {
+    public void deleteClient(@PathVariable int clientId) {
         clientDetailsDao.deleteClient(clientId);
     }
 
@@ -47,6 +50,14 @@ public class ClientDetailsController {
                                 principal.getName()));
         return clientDetails;
     }
+
+    @RequestMapping(path = "/getClientDetailsByClientId/{clientId}", method = RequestMethod.GET)
+    public ClientDetails getClientDetailsByClientId(@PathVariable int clientId) {
+        ClientDetails clientDetails = clientDetailsDao.findClientByClientId(clientId);
+        clientDetails.setRedFlag(eventDao.getRedFlaggedClientEventsByClientId(clientId).size()>0);
+        return clientDetails;
+    }
+
 
     @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(path = "/clientList", method = RequestMethod.GET)

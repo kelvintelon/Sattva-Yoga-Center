@@ -16,4 +16,8 @@ public interface ClientDetailsDao {
     public List<ClientDetails> getAllClients();
 
     boolean deleteClient(int clientId);
+
+    ClientDetails findClientByClientId(int clientId);
+
+    ClientDetails createNewClient(ClientDetails client);
 }

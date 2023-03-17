@@ -33,7 +33,7 @@
       </template>
     </v-snackbar>
 
-    <v-data-table :headers="headers" :items="packages" class="elevation-5">
+    <v-data-table :headers="headers" :items="packages" class="elevation-5" dense>
       <template v-slot:top>
         <v-toolbar flat>
           <v-toolbar-title>Available Packages</v-toolbar-title>
@@ -249,6 +249,9 @@ export default {
             this.packagePurchase.is_expired = false;
             this.packagePurchase.classes_remaining =
               this.purchaseItem.classes_amount;
+              this.packagePurchase.expiration_date = this.addMonths(
+                  new Date(),
+                  12);
             packagePurchaseService
               .createPackagePurchase(this.packagePurchase)
               .then((response) => {
@@ -257,7 +260,6 @@ export default {
                   // call method that updates the list of active packages
                   this.$root.$refs.A.getActivePurchasePackageTable();
                   this.$root.$refs.B.getPackageHistoryTable();
-                  
                   this.allowPurchase = false;
                 }
               });
@@ -294,6 +296,8 @@ export default {
       if (date.getDate() != d) {
         date.setDate(0);
       }
+      // fixing  fix: (3/3 → 4/2) NOT (3/3 → 4/3)
+      date.setDate(date.getDate()-1);
       return date;
     },
   },

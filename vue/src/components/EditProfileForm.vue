@@ -9,10 +9,10 @@
       justify="center"
       align="center"
     >
-      <h1>Edit Your Profile</h1>
+      <h1>Edit Profile</h1>
       <v-text-field
         v-model="clientDetails.first_name"
-        :counter="10"
+        :counter="20"
         :rules="nameRules"
         label="First Name"
         required
@@ -20,7 +20,7 @@
 
       <v-text-field
         v-model="clientDetails.last_name"
-        :counter="10"
+        :counter="20"
         :rules="nameRules"
         label="Last Name"
         required
@@ -195,26 +195,42 @@ export default {
       this.showAlert = true;
     },
     clickOkay() {
-      this.$router.push("/myProfile");
+      if (this.$store.state.user.username != "admin") {
+        this.$router.push("/myProfile");
+      } else {
+        this.showAlert = false;
+      }
+      
     },
     save() {
-      this.clientDetails = this.$store.state.clientDetails;
+      // I believe it still works without the following line?
+        // this.clientDetails = this.$store.state.clientDetails;
       clientDetailService
         .updateClientDetails(this.clientDetails)
-        .then((response) => {
-          
+        .then((response) => {          
           response
-
           // replace this v-alert with a v-snackbar
           this.displayAlert();
 
-
         });
+
+      
 
     },
   },
   created() {
-    this.clientDetails = this.$store.state.clientDetails;
+    if (this.$store.state.user.username == "admin") {
+      clientDetailService.getClientDetailsByClientId(this.$route.params.clientId).then((response) => {
+         if (response.status == 200) {
+           this.clientDetails = response.data;
+         } else {
+           alert("Error retrieving client information")
+         }
+      })
+    } else {
+      this.clientDetails = this.$store.state.clientDetails;
+    }
+    
   },
 };
 </script>

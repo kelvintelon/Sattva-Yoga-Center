@@ -8,6 +8,7 @@
         sort-by="class_id"
         :loading="loading"
         loading-text="Loading... Please wait"
+        dense
       >
         <template v-slot:top>
           <v-toolbar flat>

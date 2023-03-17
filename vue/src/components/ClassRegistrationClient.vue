@@ -37,7 +37,7 @@
       </template>
     </v-snackbar>
     <v-app>
-      <v-data-table :headers="headers" :items="events" class="elevation-5">
+      <v-data-table :headers="headers" :items="events" class="elevation-5" dense>
         <template v-slot:top>
           <v-toolbar flat>
             <v-toolbar-title>All Classes</v-toolbar-title>
@@ -57,6 +57,9 @@
         :headers="clientEventHeaders"
         :items="clientEvents"
         class="elevation-5"
+        sort-by="date"
+        :sort-desc="[true]"
+        dense
       >
         <template v-slot:top>
           <v-toolbar flat>
@@ -71,6 +74,24 @@
           </v-icon>
         </template>
       </v-data-table>
+      <br />
+      <br />
+      <v-data-table
+        :headers="allClientEventHeaders"
+        :items="allClientEvents"
+        class="elevation-5"
+        sort-by="date"
+        :sort-desc="[true]"
+        dense
+      >
+        <template v-slot:top>
+          <v-toolbar flat>
+            <v-toolbar-title>Sign Up History</v-toolbar-title>
+            <v-divider class="mx-4" inset vertical></v-divider>
+            <v-spacer></v-spacer>
+          </v-toolbar>
+        </template>
+      </v-data-table>
     </v-app>
 
     <!-- <v-btn elevation="5" v-on:click="buyFirstClass()">
@@ -83,6 +104,7 @@
 // import classDetailService from "../services/ClassDetailService";
 import eventService from "../services/EventService";
 import packagePurchaseService from "../services/PackagePurchaseService";
+import clientDetailService from "../services/ClientDetailService";
 
 export default {
   name: "class-registration",
@@ -104,19 +126,29 @@ export default {
         {
           text: "Class Description",
           value: "event_name",
-          align: "start",
         },
-        { text: "Date", value: "date", sortable: false },
+        { text: "Date", value: "date", sortable: true, align: "start" },
         { text: "Start Time", value: "start_time", sortable: false },
         { text: "End Time", value: "end_time", sortable: false },
         { text: "Cancel Signup", value: "actions", sortable: false },
       ],
+      allClientEventHeaders: [
+        {
+          text: "Class Description",
+          value: "event_name",
+        },
+        { text: "Date", value: "date", sortable: true, align: "start" },
+        { text: "Start Time", value: "start_time", sortable: false },
+        { text: "End Time", value: "end_time", sortable: false },
+      ],
       events: [],
       clientEvents: [],
+      allClientEvents: [],
       eventClientSignUp: {
         event_id: "",
-        date:"",
+        date: "",
         client_id: "",
+        package_purchase_id: "",
       },
       validSignUp: true,
       allowSignUp: false,
@@ -124,6 +156,7 @@ export default {
       snackBarNoPurchaseWarning: false,
       classSignUpItem: {},
       packages: [],
+      allHistoricalPackages:[],
       hasSubscriptionPackage: false,
       subscriptionPackages: [],
       quantityPackages: [],
@@ -156,10 +189,10 @@ export default {
         if (response.status == 200) {
           // focus on if it's expired or not
           var today = new Date();
-          var dd = String(today.getDate()).padStart(2, '0');
-          var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+          var dd = String(today.getDate()).padStart(2, "0");
+          var mm = String(today.getMonth() + 1).padStart(2, "0"); //January is 0!
           var yyyy = today.getFullYear();
-          today = yyyy + '-' + mm + '-' + dd;
+          today = yyyy + "-" + mm + "-" + dd;
 
           this.packages = response.data.filter((item) => {
             return item.expiration_date >= today || item.classes_remaining > 0;
@@ -192,28 +225,35 @@ export default {
           // TODO: Handle Gift Card logic here when SQUARE is in place
           if (item.classes_remaining > 0 || todaysDate < expirationDate) {
             this.allowSignUp = true;
-            if(item.is_subscription){
+            if (item.is_subscription) {
               this.hasSubscriptionPackage = true;
-              this.subscriptionPackages = this.$store.state.activePackageList.filter((item)=>{
-                return item.is_subscription;
-              })
+              this.subscriptionPackages =
+                this.$store.state.activePackageList.filter((item) => {
+                  return item.is_subscription;
+                });
               this.initial1 = this.subscriptionPackages[0];
-              this.subscriptionPackages.forEach((item)=>{
-                if(item.expiration_date > this.initial1.expiration_date){
-                  this.initial1 = item
+              this.subscriptionPackages.forEach((item) => {
+                if (item.expiration_date > this.initial1.expiration_date) {
+                  this.initial1 = item;
                 }
-              })
-            }else{
-              this.quantityPackages = this.$store.state.activePackageList.filter((item)=>{
-                return item.is_subscription == false;
-              })
+              });
+              this.eventClientSignUp.package_purchase_id =
+                this.initial1.package_purchase_id;
+            } else {
+              this.quantityPackages =
+                this.$store.state.activePackageList.filter((item) => {
+                  return item.is_subscription == false && (item.expiration_date == null || todaysDate < item.expiration_date);
+                });
               this.initial = this.quantityPackages[0];
-              this.quantityPackages.forEach((item)=>{
-                if(item.date_purchased < this.initial.date_purchased){
-                  this.initial = item
+              this.quantityPackages.forEach((item) => {
+                if (item.date_purchased < this.initial.date_purchased) {
+                  this.initial = item;
                 }
-              this.quantityPackageIdToDecrement = this.initial.package_purchase_id;
-              })
+                this.quantityPackageIdToDecrement =
+                  this.initial.package_purchase_id;
+                this.eventClientSignUp.package_purchase_id =
+                  this.quantityPackageIdToDecrement;
+              });
             }
           }
         });
@@ -235,7 +275,10 @@ export default {
             alert("You have already signed up for this class!");
             this.validSignUp = false;
           }
-          if (this.hasSubscriptionPackage && this.eventClientSignUp.date > this.initial1.expiration_date){
+          if (
+            this.hasSubscriptionPackage &&
+            this.eventClientSignUp.date > this.initial1.expiration_date
+          ) {
             alert("Error! Your unlimited package will be expired by then.");
             this.validSignUp = false;
           }
@@ -245,14 +288,24 @@ export default {
             .registerForEvent(this.eventClientSignUp)
             .then((response) => {
               if (response.status == 201) {
-                if(this.hasSubscriptionPackage == false){
-                  packagePurchaseService.decrementByOne(this.quantityPackageIdToDecrement)
-                  alert("You have used your quantity package. Classes remaining reduced by 1.")
+                if (this.hasSubscriptionPackage == false) {
+                  packagePurchaseService.decrementByOne(
+                    this.quantityPackageIdToDecrement
+                  );
+                  alert(
+                    "You have used your quantity package. Classes remaining reduced by 1."
+                  );
                 }
                 // call method that updates the client_class_table
                 // update client.is_new_client to false through mutation
                 alert("You have registered for a class");
                 this.$store.commit("SET_CLIENT_DETAILS_NEW_CLIENT", false);
+                      clientDetailService.getClientDetailsOfLoggedInUser().then((response) => {
+        if (response.data.client_id != 0) {
+          this.clientProfile = response.data;
+          this.$store.commit("SET_CLIENT_DETAILS", response.data);
+        }
+      });
                 this.getClientEventTable();
               }
             });
@@ -263,6 +316,7 @@ export default {
     RemoveClassForClient(item) {
       this.eventClientSignUp.event_id = item.event_id;
       this.eventClientSignUp.date = item.dateRef;
+      this.eventClientSignUp.package_purchase_id = item.package_purchase_id;
       this.eventClientSignUp.client_id =
         this.$store.state.clientDetails.client_id;
 
@@ -272,7 +326,14 @@ export default {
       this.classSignUpItem = Object.assign({}, item);
 
       // get active packages from API service request
-      this.getActivePurchaseServerRequest2();
+      if (item.package_purchase_id == 0) {
+        this.allowSignUp = true;
+        alert("Success")
+        this.cancelCheck();
+      } else {
+        this.getActivePurchaseServerRequest2();
+      }
+      
 
       // Don't try these below at home
       // this.$root.$refs.A.getActivePurchaseServerRequest();
@@ -281,12 +342,13 @@ export default {
     getActivePurchaseServerRequest2() {
       packagePurchaseService.getUserPurchasedPackages().then((response) => {
         if (response.status == 200) {
+          this.allHistoricalPackages = response.data;
           // focus on if it's expired or not
           var today = new Date();
-          var dd = String(today.getDate()).padStart(2, '0');
-          var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+          var dd = String(today.getDate()).padStart(2, "0");
+          var mm = String(today.getMonth() + 1).padStart(2, "0"); //January is 0!
           var yyyy = today.getFullYear();
-          today = yyyy + '-' + mm + '-' + dd;
+          today = yyyy + "-" + mm + "-" + dd;
 
           this.packages = response.data.filter((item) => {
             return item.expiration_date >= today || item.classes_remaining > 0;
@@ -296,98 +358,51 @@ export default {
           });
           this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
           this.activePackageList = this.$store.state.activePackageList;
+          let refundPackage = this.allHistoricalPackages.filter((item) => {
+          return (
+            item.package_purchase_id ==
+            this.eventClientSignUp.package_purchase_id
+          );
+        });
+        if (refundPackage[0].is_subscription == true) {
+          this.hasSubscriptionPackage = true;
+        }
+        this.allowSignUp = true;
           this.cancelCheck();
         } else {
           alert("Error retrieving package information");
         }
       });
     },
-    cancelCheck(){
-        if (this.$store.state.activePackageList.length == 0) {
-        this.allowSignUp = false;
+    cancelCheck() {
+        
 
-        this.snackBarNoPurchaseWarning = true;
-      } else if (this.$store.state.activePackageList.length > 0) {
-        this.$store.state.activePackageList.forEach((item) => {
-          // compare todays date and make sure it's less than the expiration date
-          const todaysDate = new Date();
-          let expirationDate = new Date(item.expiration_date);
-          expirationDate.setDate(expirationDate.getDate() + 1);
-
-          // TODO: Handle Gift Card logic here when SQUARE is in place
-          if (item.classes_remaining > 0 || todaysDate < expirationDate) {
-            this.allowSignUp = true;
-            if(item.is_subscription){
-              this.hasSubscriptionPackage = true;
-              this.subscriptionPackages = this.$store.state.activePackageList.filter((item)=>{
-                return item.is_subscription;
-              })
-              this.initial1 = this.subscriptionPackages[0];
-              this.subscriptionPackages.forEach((item)=>{
-                if(item.expiration_date > this.initial1.expiration_date){
-                  this.initial1 = item
-                }
-              })
-            }else{
-              this.quantityPackages = this.$store.state.activePackageList.filter((item)=>{
-                return item.is_subscription == false;
-              })
-              this.initial = this.quantityPackages[0];
-              this.quantityPackages.forEach((item)=>{
-                if(item.date_purchased < this.initial.date_purchased){
-                  this.initial = item
-                }
-              this.quantityPackageIdToIncrement = this.initial.package_purchase_id;
-              })
-            }
-          }
-        });
-
-        // this here is if they only have a gift certificate or dont have a bundle/subscription
-        if (!this.allowSignUp) {
-          this.snackBarNoPurchaseWarning = true;
-        }
-      }
-        if (this.allowSignUp) {
+      if (this.allowSignUp || this.eventClientSignUp.package_purchase_id == 0) {
         // console.log(this.eventClientSignUp.date)
         // console.log(this.initial1.expiration_date)
         // console.log(this.eventClientSignUp.date > this.initial1.expiration_date)
         // console.log(this.hasSubscriptionPackage)
-        if (this.validSignUp == true) {
-      eventService.removeEventForClient(this.eventClientSignUp.event_id).then((response) => {
-        if (response.status == 200) {
-          // call method that updates the client_class_table
-          alert("Removed the class from your list");
-          console.log(this.hasSubscriptionPackage)
-          if(!this.hasSubscriptionPackage){
-            console.log(this.quantityPackageIdToIncrement)
-            packagePurchaseService.incrementByOne(this.quantityPackageIdToIncrement).then((response)=>{
-              if(response.status == 200)
-              alert("+1")
-            })
-          }
-          this.getClientEventTable();
-        }
-      });
+        if (this.validSignUp == true || this.eventClientSignUp.package_purchase_id == 0) {
+          eventService
+            .removeEventForClient(this.eventClientSignUp.event_id)
+            .then((response) => {
+              if (response.status == 200) {
+                // call method that updates the client_class_table
+                alert("Removed the class from your list");
+
+                if (!this.hasSubscriptionPackage && this.eventClientSignUp.package_purchase_id > 0) {
+                  packagePurchaseService
+                    .incrementByOne(this.eventClientSignUp.package_purchase_id)
+                    .then((response) => {
+                      if (response.status == 200) alert("Package Incremented +1");
+                    });
+                }
+                this.getClientEventTable();
+              }
+            });
         }
       }
     },
-    // RemoveClassForClient(item) {
-    //   eventService.removeEventForClient(item.event_id).then((response) => {
-    //     if (response.status == 200) {
-    //       // call method that updates the client_class_table
-    //       alert("Removed the class from your list");
-    //       if(!this.hasSubscriptionPackage){
-    //         console.log(this.quantityPackageIdToDecrement)
-    //         packagePurchaseService.incrementByOne(this.quantityPackageIdToDecrement).then((response)=>{
-    //           if(response.status == 200)
-    //           alert("+1")
-    //         })
-    //       }
-    //       this.getClientEventTable();
-    //     }
-    //   });
-    // },
 
     getEventTable() {
       eventService.get100Events().then((response) => {
@@ -426,16 +441,28 @@ export default {
       eventService.getAllClientEvents().then((response) => {
         if (response.status == 200) {
           this.$store.commit("SET_CLIENT_EVENT_LIST", response.data);
-          this.clientEvents = response.data;
-          this.clientEvents.forEach((each) => {
+
+          this.allClientEvents = response.data;
+
+          var today = new Date();
+          var dd = String(today.getDate()).padStart(2, "0");
+          var mm = String(today.getMonth() + 1).padStart(2, "0"); //January is 0!
+          var yyyy = today.getFullYear();
+          today = yyyy + "-" + mm + "-" + dd;
+
+          this.clientEvents = this.allClientEvents.filter((item) => {
+            return item.start_time > today;
+          });
+
+          this.allClientEvents.forEach((item) => {
             // YYYY-MM-DD format
-            each.date = each.start_time;
-            const [Month, Day, Year] = new Date(each.date)
+            item.date = item.start_time;
+            let [Month, Day, Year] = new Date(item.date)
               .toLocaleDateString()
               .split("/");
-            each.date = Year + "-" + Month + "-" + Day;
+            item.date = Year + "-" + Month + "-" + Day;
             // HH:MM AM/PM format
-            each.start_time = new Date(each.start_time).toLocaleString(
+            item.start_time = new Date(item.start_time).toLocaleString(
               "en-US",
               {
                 hour: "numeric",
@@ -443,7 +470,7 @@ export default {
                 hour12: true,
               }
             );
-            each.end_time = new Date(each.end_time).toLocaleString("en-US", {
+            item.end_time = new Date(item.end_time).toLocaleString("en-US", {
               hour: "numeric",
               minute: "numeric",
               hour12: true,
