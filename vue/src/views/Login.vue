@@ -30,32 +30,18 @@
           <v-text-field
             v-model="user.password"
             :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
-             :type="show1 ? 'text' : 'password'"            
+            :type="show1 ? 'text' : 'password'"
             @click:append="show1 = !show1"
             id="password"
             :rules="passwordRules"
             label="Password"
             required
           ></v-text-field>
-          <v-btn v-on:click="goToLogout()"> Register </v-btn>
-          <br />
           <v-btn type="submit">Sign in</v-btn>
-          <div>
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-          </div>
+          <br />
+          <v-btn v-on:click="goToLogout()"> Register </v-btn>
+
+          <div></div>
         </v-form>
       </v-col>
       <v-spacer></v-spacer>
@@ -66,7 +52,6 @@
 <script>
 import HeaderLogo from "../components/HeaderLogo.vue";
 import authService from "../services/AuthService";
-
 
 export default {
   name: "login",
@@ -92,9 +77,7 @@ export default {
       clientProfile: {},
     };
   },
-  created() {
-    
-  },
+  created() {},
   methods: {
     login() {
       authService
@@ -104,7 +87,6 @@ export default {
             this.$store.commit("SET_AUTH_TOKEN", response.data.token);
             this.$store.commit("SET_USER", response.data.user);
             this.$router.push("/loading");
-
           }
         })
         .catch((error) => {

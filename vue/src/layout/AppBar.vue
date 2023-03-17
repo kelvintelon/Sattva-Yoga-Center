@@ -5,12 +5,12 @@
     color="#FBC02D"
     dark
     prominent
-    scroll-target="#scrolling-techniques-3"
     shrink-on-scroll
     famde-img-on-scroll
     height="150px"
-    src="https://picsum.photos/id/306/1280/"
+    
   >
+    
     <template v-slot:img="{ props }">
       <v-img v-bind="props"></v-img>
     </template>
@@ -28,23 +28,28 @@
       </v-list>
     </v-menu>
     <v-spacer></v-spacer>
+    <HeaderLogo/>
+    <v-spacer></v-spacer>
   </v-app-bar>
 </template>
 
 <script>
+import HeaderLogo from '../components/HeaderLogo.vue';
+
 export default {
-  name: "AppBar",
-  data() {
-    return {
-      menu: false,
-      items: [{ link: "logout" }],
-    };
-  },
-  methods: {
-    goToLogin() {
-      this.$router.push({ name: "login" });
+    name: "AppBar",
+    data() {
+        return {
+            menu: false,
+            items: [{ link: "logout" }],
+        };
     },
-  },
+    methods: {
+        goToLogin() {
+            this.$router.push({ name: "login" });
+        },
+    },
+    components: { HeaderLogo }
 };
 </script>
 
