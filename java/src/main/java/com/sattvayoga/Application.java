@@ -1,8 +1,6 @@
 package com.sattvayoga;
 
-import com.sattvayoga.dao.ClassDetailsDao;
 import com.sattvayoga.dao.EventDao;
-import com.sattvayoga.model.ClassDetails;
 import com.sattvayoga.spring.config.AppConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

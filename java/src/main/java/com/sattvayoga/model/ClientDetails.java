@@ -25,6 +25,9 @@ public class ClientDetails {
     //helper
     private String quick_details;
 
+    //helper
+    private String family_name;
+
     public ClientDetails(int client_id, String last_name, String first_name, boolean is_client_active, boolean is_new_client,String street_address, String city, String state_abbreviation, String zip_code, String phone_number, boolean is_on_email_list, String email, boolean has_record_of_liability, Timestamp date_of_entry, int user_id) {
         this.client_id = client_id;
         this.last_name = last_name;
@@ -43,7 +46,7 @@ public class ClientDetails {
         this.user_id = user_id;
     }
 
-    public ClientDetails(int client_id, String last_name, String first_name, boolean is_client_active, boolean is_new_client, String street_address, String city, String state_abbreviation, String zip_code, String phone_number, boolean is_on_email_list, String email, boolean has_record_of_liability, Timestamp date_of_entry, int user_id, boolean redFlag, String full_address, String quick_details) {
+    public ClientDetails(int client_id, String last_name, String first_name, boolean is_client_active, boolean is_new_client, String street_address, String city, String state_abbreviation, String zip_code, String phone_number, boolean is_on_email_list, String email, boolean has_record_of_liability, Timestamp date_of_entry, int user_id, boolean redFlag, String full_address, String quick_details, String family_name) {
         this.client_id = client_id;
         this.last_name = last_name;
         this.first_name = first_name;
@@ -62,6 +65,7 @@ public class ClientDetails {
         this.redFlag = redFlag;
         this.full_address = full_address;
         this.quick_details = quick_details;
+        this.family_name = family_name;
     }
 
     public ClientDetails() {
@@ -215,5 +219,13 @@ public class ClientDetails {
 
     public void setQuick_details(String quick_details) {
         this.quick_details = quick_details;
+    }
+
+    public String getFamily_name() {
+        return family_name;
+    }
+
+    public void setFamily_name(String family_name) {
+        this.family_name = family_name;
     }
 }

@@ -2,7 +2,9 @@
   <v-card>
     <v-card-title>
       Client List
+
       <v-spacer></v-spacer>
+
       <v-text-field
         v-model="search"
         append-icon="mdi-magnify"
@@ -10,8 +12,98 @@
         single-line
         hide-details
       ></v-text-field>
+
+      <v-spacer></v-spacer>
+
+      <v-dialog v-model="dialog2" max-width="500px">
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
+            Add to Shared Group
+          </v-btn>
+        </template>
+        <v-card>
+          <!-- Add a Client Form starts here -->
+          <v-card-title>
+            <span class="text-h5">Add Client To Shared Group</span>
+            <v-spacer></v-spacer>
+            <v-btn
+              class="mx-2"
+              fab
+              dark
+              color="primary"
+              @click="showNewClientForm = !showNewClientForm"
+              v-if="!showNewClientForm"
+              ><v-icon large>mdi-new-box</v-icon></v-btn
+            >
+            <v-btn
+              class="mx-2"
+              fab
+              dark
+              color="primary"
+              @click="showNewClientForm = !showNewClientForm"
+              v-if="showNewClientForm"
+              ><v-icon large>mdi-account-multiple-plus</v-icon></v-btn
+            >
+          </v-card-title>
+
+          <v-card-text>
+            <v-container>
+              <v-row>
+                <v-col>
+                  <v-select
+                    v-if="!showNewClientForm"
+                    label="Choose one or multiple"
+                    :items="familyList"
+                    v-model="selectedFamily"
+                    item-text="quick_details"
+                    return-object
+                  ></v-select>
+                  <v-text-field
+                    v-if="showNewClientForm"
+                    v-model="newFamily"
+                    :counter="30"
+                    :rules="nameRules"
+                    label="New Family Name"
+                    required
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="blue darken-1" text @click="close1"> Cancel </v-btn>
+            <v-btn
+              color="blue darken-1"
+              text
+              @click="save"
+              v-if="!showNewClientForm"
+            >
+              Add to selected family</v-btn
+            >
+            <v-btn
+              color="blue darken-1"
+              text
+              @click="saveNewClient"
+              v-if="showNewClientForm"
+            >
+              Create New Family</v-btn
+            >
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-card-title>
-    <v-data-table :headers="headers" :items="clientList" :search="search" dense>
+    <v-data-table
+      :headers="headers"
+      :items="clientList"
+      item-key="client_id"
+      v-model="selectedClients"
+      sort-by="client_id"
+      :search="search"
+      show-select
+      dense
+    >
       <template v-slot:top>
         <v-toolbar flat>
           <!-- START OF EDIT CLIENT FORM -->
@@ -192,7 +284,13 @@
           disabled
         ></v-simple-checkbox> </template
       ><template v-slot:[`item.actions`]="{ item }">
-        <v-icon small class="mr-2" @click.prevent="sendToUserPageAdminView(item)"> mdi-account-search </v-icon>
+        <v-icon
+          small
+          class="mr-2"
+          @click.prevent="sendToUserPageAdminView(item)"
+        >
+          mdi-account-search
+        </v-icon>
         <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
         <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
       </template>
@@ -205,6 +303,7 @@
 
 <script>
 import clientDetailService from "../services/ClientDetailService";
+import familyService from "../services/FamilyService";
 
 export default {
   data() {
@@ -224,6 +323,7 @@ export default {
         { text: "Phone Number", value: "phone_number", sortable: false },
         { text: "Email List", value: "is_on_email_list", sortable: true },
         { text: "Email", value: "email", sortable: false },
+        { text: "Shared Group", value: "family_name", sortable: true },
         {
           text: "Record of Liability",
           value: "has_record_of_liability",
@@ -325,16 +425,26 @@ export default {
         (v) => !!v || "Phone is required",
         (v) => (v && v.length <= 30) || "Name must be less than 30 characters",
       ],
-      
+      // add family
+      selectedClients: [],
+      showNewClientForm: false,
+      dialog2: false,
+      familyList: [],
+      newFamily: "",
+      selectedFamily: {},
     };
   },
   created() {
     this.getClientTable();
+    this.getFamilyList();
   },
   methods: {
     sendToUserPageAdminView(object) {
       this.$store.commit("SET_CLIENT_DETAILS", object);
-      this.$router.push({name: "client-details-admin-view", params: {clientId: object.client_id}})
+      this.$router.push({
+        name: "client-details-admin-view",
+        params: { clientId: object.client_id },
+      });
     },
     update() {
       this.checkEditForm();
@@ -354,11 +464,10 @@ export default {
       clientDetailService.getClientList().then((response) => {
         if (response.status == 200) {
           this.clientList = response.data;
-           this.clientList.forEach((item) => {
+          this.clientList.forEach((item) => {
             item.date_of_entry = new Date(item.date_of_entry);
-          })
+          });
           this.$store.commit("SET_CLIENT_LIST", response.data);
-          
         } else {
           alert("Error retrieving client information");
         }
@@ -415,6 +524,68 @@ export default {
       } else {
         this.editFormIncomplete = false;
       }
+    },
+
+    //family stuff
+    getFamilyList() {
+      familyService.getFamilyList().then((response) => {
+        if (response.status == 200) {
+          this.familyList = response.data;
+        }
+      });
+    },
+    save() {
+      // check for length > 0 here if bug
+      for (let index = 0; index < this.selectedClients.length; index++) {
+        // this.allowSignUp = false;
+
+        this.selectedClients[index].family_id = this.selectedFamily.family_id;
+
+        // this.individualClientFromLoop = this.selectedClients[index];
+
+        // END OF LOOP BLOCK
+      }
+
+      familyService
+        .addMultipleClientsForFamily(this.selectedClients)
+        .then((response) => {
+          if (response.status == 201) {
+            alert("Successfully added clients to selected family");
+            this.getClientTable();
+            // this.getEventDetailsCall();
+            this.selectedClients = [];
+          } else {
+            alert("Error adding clients to roster");
+          }
+        });
+
+      this.close1();
+    },
+
+    saveNewClient() {
+      for (let index = 0; index < this.selectedClients.length; index++) {
+        this.selectedClients[index].family_name = this.newFamily;
+      }
+      familyService
+        .addMultipleClientsToNewFamily(this.selectedClients)
+        .then((response) => {
+          if (response.status == 201) {
+            alert("Successfully added clients to roster");
+            // this.getEventDetailsCall();
+            this.selectedClients = [];
+          } else {
+            alert("Error adding clients to roster");
+          }
+        });
+
+      this.close1();
+    },
+    close1() {
+      this.dialog2 = false;
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
+      });
     },
   },
 };
