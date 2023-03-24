@@ -37,9 +37,66 @@
             label="Password"
             required
           ></v-text-field>
-          <v-btn v-on:click="goToLogout()"> Register </v-btn>
-          <br />
+          <v-row justify="center">
+    <v-dialog
+      v-model="dialog"
+      persistent
+      max-width="600px"
+    >
+      <template v-slot:activator="{ on, attrs }">
+        <v-btn
+          color="deep-orange lighten-2"
+          dark
+          v-bind="attrs"
+          v-on="on"
+          text
+        >
+          Forgot LOGIN/PASSWORD
+        </v-btn>
+      </template>
+      <v-card>
+        <v-card-title>
+          <span class="text-h5">Enter Email For Reset Link</span>
+        </v-card-title>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              
+              <v-col cols="12">
+                <v-text-field
+                  label="Email*"
+                  v-model="emailToSend"
+                  required
+                  :rules="emailRules"
+                ></v-text-field>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="blue darken-1"
+            text
+            @click="dialog = false"
+          >
+            Close
+          </v-btn>
+          <v-btn
+            color="blue darken-1"
+            text
+            @click="sendEmailLink"
+          >
+            Send
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </v-row>
+          <br>
           <v-btn type="submit">Sign in</v-btn>
+          <br />
+          <v-btn v-on:click="goToLogout()"> Register </v-btn>
           <div>
             <br />
             <br />
@@ -77,6 +134,7 @@ export default {
         username: "",
         password: "",
       },
+      emailToSend: '',
       show1: false,
       userNameRules: [
         (v) => !!v || "Username is required",
@@ -88,8 +146,13 @@ export default {
         (v) =>
           (v && v.length <= 30) || "Password must be less than 30 characters",
       ],
+      emailRules: [
+      (v) => !!v || "E-mail is required",
+      (v) => /.+@.+\..+/.test(v) || "E-mail must be valid",
+    ],
       invalidCredentials: false,
       clientProfile: {},
+      dialog: false,
     };
   },
   created() {
@@ -118,6 +181,30 @@ export default {
     goToLogout() {
       this.$router.push({ name: "register" });
     },
+    sendEmailLink() {
+      if (this.emailToSend.length == 0) {
+        alert("Please Include Your Email")
+      } else {
+        authService.emailResetLink(this.emailToSend).then((response)=> {
+        if (response.status == 200) {
+          
+          alert("Email Reset Link Sent to: " + response.data + "\n" + "Please check Your Spam" + "\n" + "Contact Owner If You Did Not Receive Email")
+          
+        } else {
+          
+          alert("Error sending email")
+        }
+      })
+      .catch((error) => {
+            const response = error.response;
+            this.registrationErrors = true;
+            if (response.status === 400 || response.status === 404) {
+              alert("Error email not found")
+            }
+          });
+      }
+
+    } 
   },
 };
 </script>

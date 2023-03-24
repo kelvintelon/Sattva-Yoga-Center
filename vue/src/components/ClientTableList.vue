@@ -11,7 +11,7 @@
         hide-details
       ></v-text-field>
     </v-card-title>
-    <v-data-table :headers="headers" :items="clientList" :search="search" dense>
+    <v-data-table :headers="headers" :items="clientList" :search="search">
       <template v-slot:top>
         <v-toolbar flat>
           <!-- START OF EDIT CLIENT FORM -->
@@ -20,7 +20,7 @@
               <v-card-title>
                 <span class="text-h5"> Edit Client </span>
               </v-card-title>
-
+              
               <v-container>
                 <v-row justify="center" style="min-height: 160px">
                   <v-col cols="6">
@@ -126,9 +126,17 @@
                           </v-btn>
                         </v-col>
                         <v-col>
+                          <div
+            class="alert alert-danger"
+            role="alert"
+            v-if="emailRegistrationErrors"
+          >
+            {{ emailRegistrationErrorMsg }}
+          </div>
                           <v-btn class="mr-4" type="submit" :disabled="invalid">
                             update
-                          </v-btn></v-col
+                          </v-btn>
+                          </v-col
                         ></v-row
                       >
                     </v-form>
@@ -252,6 +260,8 @@ export default {
         date_of_entry: "",
         user_id: 0,
       },
+       emailRegistrationErrors: false,
+      emailRegistrationErrorMsg: 'There were problems registering with this email.',
       states: [
         "AK",
         "AL",
@@ -346,15 +356,30 @@ export default {
             response;
             this.getClientTable();
             alert("Edit client succesful!");
+            this.clearErrors();
             this.close();
-          });
+          })
+          .catch((error) => {
+              const response = error.response;
+              this.emailRegistrationErrors = true;
+              if (response.status === 400) {
+                this.emailRegistrationErrorMsg = "There were problems updating this user/email. Refresh";
+              }
+            });
       }
+    },
+    clearErrors() {
+      this.emailRegistrationErrors = false;
+      this.emailRegistrationErrorMsg = 'There were problems updating this email.';
     },
     getClientTable() {
       clientDetailService.getClientList().then((response) => {
         if (response.status == 200) {
           this.clientList = response.data;
            this.clientList.forEach((item) => {
+             if (item.full_address.includes("null")) {
+               item.full_address = item.full_address.replaceAll("null", " ")
+             }
             item.date_of_entry = new Date(item.date_of_entry);
           })
           this.$store.commit("SET_CLIENT_LIST", response.data);
@@ -396,9 +421,11 @@ export default {
     close() {
       this.dialog = false;
       this.reset();
+      this.clearErrors();
     },
     reset() {
       this.$refs.form.reset();
+      this.clearErrors();
     },
     checkEditForm() {
       if (

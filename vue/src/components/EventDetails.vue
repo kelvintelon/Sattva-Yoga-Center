@@ -677,7 +677,7 @@ export default {
 
       // if they have an active package then they are allowed to sign up
       if (this.allowSignUp) {
-        console.log(this.initial.expiration_date);
+        
 
         if (
           this.hasSubscriptionPackage &&

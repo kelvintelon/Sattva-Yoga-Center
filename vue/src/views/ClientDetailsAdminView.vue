@@ -14,15 +14,45 @@
     >
       Client Needs Active Package To Reconcile For Classes
     </v-snackbar>
+    <v-snackbar v-if="$store.state.user.username == 'admin'"
+      v-model="snackBarEmailReset"
+      color="red darken-2"
+      elevation="24"
+      :vertical="vertical"
+      outlined
+      top
+      text
+      :timeout="timeout"
+    >
+      Email A Reset Link?
+      <template v-slot:action="{ attrs }">
+        <v-btn
+          color="black"
+          text
+          v-bind="attrs"
+          @click="snackBarEmailReset = false"
+          left
+        >
+          Close
+        </v-btn>
+        <v-btn color="black" text v-bind="attrs" @click="allowEmailReset">
+          Continue
+        </v-btn>
+      </template>
+    </v-snackbar>
       <v-row justify="center" align="center">
-        <v-col cols="3">
+        <v-col cols="5">
           <v-card align="center" justify="center" >
             {{ clientDetails.first_name }} {{ clientDetails.last_name }} ||
             <v-btn @click.prevent="showEditForm = !showEditForm" outlined color="primary" class="mx-2"
               >Edit<v-icon dark>
         mdi-pencil
       </v-icon></v-btn
-            ></v-card
+            >
+            <v-btn @click.prevent="checkForEmail" outlined color="red" class="mx-2"
+              >Reset <v-icon dark>
+        mdi-email-lock
+      </v-icon></v-btn></v-card
           ></v-col
         >
       </v-row>
@@ -30,7 +60,7 @@
     <v-container class="edit-profile" fill-height fluid v-if="showEditForm">
       <v-row justify="center" align="center">
         <v-spacer></v-spacer>
-        <v-col cols="4" justify="center" align="center">
+        <v-col cols="5" justify="center" align="center">
           <v-card
             class="mx-auto my-12 rounded-xl pb-12 pt-12"
             color="gray lighten-4"
@@ -55,6 +85,7 @@ import ClientPurchaseHistoryTable from "../components/ClientPurchaseHistoryTable
 import ClientEventTable from "../components/ClientEventTable.vue";
 import EditProfileForm from "../components/EditProfileForm.vue";
 import clientDetailService from "../services/ClientDetailService";
+import authService from "../services/AuthService";
 
 
 export default {
@@ -71,6 +102,8 @@ export default {
       showEditForm: false,
       clientDetails: {},
       snackBarReconcileWarning: false,
+      snackBarEmailReset: false,
+      timeout: -1,
     };
   },
   methods: {
@@ -84,6 +117,32 @@ export default {
           }
         }
       });
+    },
+    checkForEmail() {
+      if (this.$store.state.clientDetails.email != null) {
+        this.snackBarEmailReset = true
+      } else {
+        alert("This User Does Not Have An Email")
+      }
+    },
+    allowEmailReset() {
+      authService.emailResetLink(this.$store.state.clientDetails.email).then((response)=> {
+        if (response.status == 200) {
+          this.snackBarEmailReset = false;
+          alert("Email Sent to: " + response.data)
+          
+        } else {
+          this.snackBarEmailReset = false;
+          alert("Error sending email")
+        }
+      })
+      .catch((error) => {
+            const response = error.response;
+            this.registrationErrors = true;
+            if (response.status === 400 || response.status === 404) {
+              alert("Error email not found")
+            }
+          });
     },
   },
   created() {
