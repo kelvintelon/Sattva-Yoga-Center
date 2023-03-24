@@ -10,10 +10,10 @@
           <v-spacer></v-spacer>
           <v-btn
             color="primary"
-            @click="checkTokenForResetUsernameAndPassword"
+            @click.prevent="checkTokenForResetUsernameAndPassword"
             v-if="!dialog"
           >
-            Reset Username and Password
+            Reset Login
           </v-btn>
           <v-row justify="center" align="center" v-if="dialog"
             ><v-col justify="center" align="center">
@@ -32,6 +32,7 @@
                     class="alert alert-danger"
                     role="alert"
                     v-if="resetPasswordErrors"
+                    style="color: red"
                   >
                     {{ resetPasswordErrorsMsg }}
                   </div>
@@ -86,10 +87,10 @@
           <v-spacer></v-spacer>
           <v-btn
             color="primary"
-            @click="checkTokenForResetPassword"
+            @click.prevent="checkTokenForResetPassword"
             v-if="!dialog2"
           >
-            Reset Password Only</v-btn
+            Reset Password</v-btn
           >
           <v-row justify="center" align="center" v-if="dialog2"
             ><v-col justify="center" align="center">
@@ -106,6 +107,7 @@
                     class="alert alert-danger"
                     role="alert"
                     v-if="resetPasswordErrors"
+                     style="color: red"
                   >
                     {{ resetPasswordErrorsMsg }}
                   </div>

@@ -15,6 +15,7 @@
             class="alert alert-danger"
             role="alert"
             v-if="registrationErrors"
+             style="color: red"
           >
             {{ registrationErrorMsg }}
           </div>
