@@ -69,6 +69,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         return clientDetails;
     }
 
+
     @Override
     public boolean updateClientDetails(ClientDetails clientDetails){
         String sql = "UPDATE client_details SET last_name = ? , " +
@@ -124,13 +125,34 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
             clientDetails.setQuick_details("("+clientDetails.getClient_id()+")" + " " + clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
 
+            String familyName = getFamilyNameByClientId(clientDetails.getClient_id());
+            clientDetails.setFamily_name(familyName);
             allClients.add(clientDetails);
         }
         return allClients;
     }
 
     public String getFamilyNameByClientId(int clientId){
+        String sql = "SELECT family_name from families \n" +
+                "JOIN client_family ON families.family_id = client_family.family_id \n" +
+                "WHERE client_id = ?";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, clientId);
+        if(result.next()){
+            return result.getString("family_name");
+        }
+        return "";
+    }
 
+    @Override
+    public boolean isEmailDuplicate(String email) {
+        List<ClientDetails> allClientsWithSameEmail = new ArrayList<>();
+        String sql = "SELECT * FROM client_details WHERE email = ?;";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, email);
+        while(result.next()) {
+            ClientDetails clientDetails = mapRowToClient(result);
+            allClientsWithSameEmail.add(clientDetails);
+        }
+        return allClientsWithSameEmail.size() > 0;
     }
 
     private ClientDetails mapRowToClient(SqlRowSet rs) {
@@ -150,9 +172,6 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         clientDetails.setHas_record_of_liability(rs.getBoolean("has_record_of_liability"));
         clientDetails.setDate_of_entry(rs.getTimestamp("date_of_entry"));
         clientDetails.setUser_id(rs.getInt("user_id"));
-        if(rs.getString("family_name") != null){
-            clientDetails.setFamily_name(rs.getString("family_name"));
-        }
         return clientDetails;
     }
 

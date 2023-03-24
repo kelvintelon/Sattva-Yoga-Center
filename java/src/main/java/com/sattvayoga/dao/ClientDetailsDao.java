@@ -20,4 +20,6 @@ public interface ClientDetailsDao {
     ClientDetails findClientByClientId(int clientId);
 
     ClientDetails createNewClient(ClientDetails client);
+
+    boolean isEmailDuplicate(String email);
 }

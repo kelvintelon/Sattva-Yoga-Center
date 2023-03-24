@@ -5,6 +5,8 @@ import com.sattvayoga.dao.ClientDetailsDao;
 import com.sattvayoga.dao.EventDao;
 import com.sattvayoga.dao.UserDao;
 import com.sattvayoga.model.ClientDetails;
+import com.sattvayoga.model.EmailAlreadyExistsException;
+import com.sattvayoga.model.EmailNotFoundException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,10 +35,41 @@ public class ClientDetailsController {
     @RequestMapping(value = "/updateClientDetails", method = RequestMethod.PUT)
     public void updateClientDetails(@RequestBody ClientDetails clientDetails) {
 
-        clientDetailsDao.updateClientDetails(clientDetails);
+        // TODO: Change the following line
+        // look up the email here
+        boolean foundEmail = false;
+        if (clientDetails.getEmail() != null) {
+            foundEmail = clientDetailsDao.isEmailDuplicate(clientDetails.getEmail());
+        }
+
+        if (foundEmail) {
+            throw new EmailAlreadyExistsException();
+        } else {
+            clientDetailsDao.updateClientDetails(clientDetails);
+        }
 
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
+    @RequestMapping(value = "/registerClient", method = RequestMethod.POST)
+    public ResponseEntity<ClientDetailsResponse> registerClient(@RequestBody ClientDetails client) {
+
+        // look up the email here
+        boolean foundEmail = false;
+        if (client.getEmail() != null) {
+            foundEmail = clientDetailsDao.isEmailDuplicate(client.getEmail());
+        }
+
+        if (foundEmail) {
+            throw new EmailAlreadyExistsException();
+        } else {
+            // if we don't want all the hardcoded values passed in from the user we can call the setters and
+            // set them before the following method happens:
+            ClientDetails clientDetails = clientDetailsDao.createClient(client);
+            HttpHeaders httpHeaders = new HttpHeaders();
+            return new ResponseEntity<>(new ClientDetailsResponse(clientDetails.getClient_id(), clientDetails), httpHeaders, HttpStatus.CREATED);
+        }
+    }
     @RequestMapping(value = "/removeClient/{clientId}", method = RequestMethod.DELETE)
     public void deleteClient(@PathVariable int clientId) {
         clientDetailsDao.deleteClient(clientId);
@@ -54,7 +87,7 @@ public class ClientDetailsController {
     @RequestMapping(path = "/getClientDetailsByClientId/{clientId}", method = RequestMethod.GET)
     public ClientDetails getClientDetailsByClientId(@PathVariable int clientId) {
         ClientDetails clientDetails = clientDetailsDao.findClientByClientId(clientId);
-        clientDetails.setRedFlag(eventDao.getRedFlaggedClientEventsByClientId(clientId).size()>0);
+        clientDetails.setRedFlag(eventDao.getRedFlaggedClientEventsByClientId(clientId).size() > 0);
         return clientDetails;
     }
 
@@ -66,20 +99,7 @@ public class ClientDetailsController {
         return clientDetailsDao.getAllClients();
     }
 
-    @ResponseStatus(HttpStatus.CREATED)
-    @RequestMapping(value = "/registerClient", method = RequestMethod.POST)
-    public ResponseEntity<ClientDetailsResponse> registerClient(@RequestBody ClientDetails client) {
 
-        // should we have exceptions if the client is already registered
-        // (an exception that means they are already inside the client table)
-
-
-        // if we don't want all the hardcoded values passed in from the user we can call the setters and
-        // set them before the following method happens:
-        ClientDetails clientDetails = clientDetailsDao.createClient(client);
-        HttpHeaders httpHeaders = new HttpHeaders();
-        return new ResponseEntity<>(new ClientDetailsResponse(clientDetails.getClient_id(), clientDetails), httpHeaders, HttpStatus.CREATED);
-    }
 
     static class ClientDetailsResponse {
 

@@ -17,4 +17,10 @@ public interface UserDao {
     boolean create(String username, String password, String role);
 
     void updateUserToActivated(int userId);
+
+    YogaUser findByEmail(String email);
+
+    void updateUsernameAndPassword(String username, String password, String usernameToUpdate);
+
+    void updatePassword(String password, String usernameToUpdate);
 }

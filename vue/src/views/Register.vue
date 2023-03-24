@@ -15,6 +15,7 @@
             class="alert alert-danger"
             role="alert"
             v-if="registrationErrors"
+             style="color: red"
           >
             {{ registrationErrorMsg }}
           </div>
@@ -45,15 +46,13 @@
             :rules="passwordRules"
             required
           ></v-text-field>
-          <v-btn
+          <v-btn class="btn btn-lg btn-primary btn-block" type="submit">
+            Create New Account
+          </v-btn><br /><v-btn
             class="btn btn-lg btn-primary btn-block"
             v-on:click="goToPage()"
           >
             Have an existing account?
-          </v-btn>
-          <br />
-          <v-btn class="btn btn-lg btn-primary btn-block" type="submit">
-            Create New Account
           </v-btn>
           <div>
             <br />
