@@ -2,7 +2,7 @@
   <v-container>
     <top-header></top-header>
 
-    <v-container>
+    <v-container class="py-7">
       <v-snackbar v-if="$store.state.user.username == 'admin'"
       v-model="snackBarReconcileWarning"
       color="blue darken-2"
@@ -41,10 +41,10 @@
       </template>
     </v-snackbar>
       <v-row justify="center" align="center">
-        <v-col cols="5">
-          <v-card align="center" justify="center" >
+        <v-col cols="5 ">
+          <v-card align="center" justify="center"  class="py-7 d-flex flex-column justify-space-around justify-space-between">
             {{ clientDetails.first_name }} {{ clientDetails.last_name }} ||
-            <v-btn @click.prevent="showEditForm = !showEditForm" outlined color="primary" class="mx-2"
+            <v-btn @click.prevent="showEditForm = !showEditForm" outlined color="primary" class="mx-2 my-3"
               >Edit<v-icon dark>
         mdi-pencil
       </v-icon></v-btn
@@ -72,7 +72,7 @@
         <v-spacer></v-spacer>
       </v-row>
     </v-container>
-    <client-event-table></client-event-table>
+    <client-event-table py-7></client-event-table>
     <client-active-package-table></client-active-package-table>
     <client-purchase-history-table></client-purchase-history-table>
   </v-container>
