@@ -18,6 +18,7 @@ import PackageManagement from '../views/PackageManagement.vue'
 import ClientPackageManagement from '../views/ClientPackageManagement.vue'
 import EventAttendanceDetails from '../views/EventAttendanceDetails.vue'
 import ClientDetailsAdminView from '../views/ClientDetailsAdminView.vue'
+import ResetLinkEmailToken from '../views/ResetLinkEmailToken.vue'
 
 Vue.use(Router)
 
@@ -169,6 +170,13 @@ const router = new Router({
       meta: {
         requiresAuth: true
       }
+    },{
+    path:"/resetLink/:emailToken",
+    name:"reset-link-email-token",
+    component: ResetLinkEmailToken,
+    meta: {
+      requiresAuth: false
+    }
     },
   ]
 })

@@ -10,6 +10,13 @@
       align="center"
     >
       <h1>Set Up Your Profile</h1>
+      <div
+            class="alert alert-danger"
+            role="alert"
+            v-if="emailRegistrationErrors"
+          >
+            {{ emailRegistrationErrorMsg }}
+          </div>
       <v-text-field
         v-model="clientDetails.first_name"
         :counter="10"
@@ -109,6 +116,8 @@ export default {
       date_of_entry: "",
       user_id: 0,
     },
+     emailRegistrationErrors: false,
+      emailRegistrationErrorMsg: 'There were problems registering with this email.',
     nameRules: [
       (v) => !!v || "Name is required",
       (v) => (v && v.length <= 30) || "Name must be less than 30 characters",
@@ -230,9 +239,9 @@ export default {
             })
             .catch((error) => {
               const response = error.response;
-              this.registrationErrors = true;
+              this.emailRegistrationErrors = true;
               if (response.status === 400) {
-                this.registrationErrorMsg = "Bad Request: Validation Errors";
+                this.emailRegistrationErrorMsg = "There were problems registering this user/email.";
               }
             });
         } else {
@@ -240,6 +249,10 @@ export default {
           this.$router.push({ name: "profile-page" });
         }
       }
+    },
+    clearErrors() {
+      this.emailRegistrationErrors = false;
+      this.emailRegistrationErrorMsg = 'There were problems registering this email.';
     },
   },
   created() {},

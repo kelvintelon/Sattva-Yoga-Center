@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.techelevator</groupId>
-    <artifactId>final-capstone-starter</artifactId>
+    <artifactId>sattva-yoga</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
     <properties>
@@ -80,6 +80,17 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -88,6 +99,19 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+
+
+            <plugin>
+            <groupId> com.heroku.sdk </groupId>
+            <artifactId> heroku-maven-plugin </artifactId>
+            <version> 3.0.4 </version>
+            <configuration>
+                <appName> sattva-yoga-app </appName>
+                <processTypes>
+                    <web>java $JAVA_OPTS -Dserver.port=$PORT -cp target/classes:target/dependency/* com.sattvayoga.Application </web>
+                </processTypes>
+            </configuration>
+        </plugin>
         </plugins>
     </build>
 

@@ -69,6 +69,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         return clientDetails;
     }
 
+
     @Override
     public boolean updateClientDetails(ClientDetails clientDetails){
         String sql = "UPDATE client_details SET last_name = ? , " +
@@ -123,6 +124,18 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
             allClients.add(clientDetails);
         }
         return allClients;
+    }
+
+    @Override
+    public boolean isEmailDuplicate(String email) {
+        List<ClientDetails> allClientsWithSameEmail = new ArrayList<>();
+        String sql = "SELECT * FROM client_details WHERE email = ?;";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, email);
+        while(result.next()) {
+            ClientDetails clientDetails = mapRowToClient(result);
+            allClientsWithSameEmail.add(clientDetails);
+        }
+        return allClientsWithSameEmail.size() > 0;
     }
 
     private ClientDetails mapRowToClient(SqlRowSet rs) {

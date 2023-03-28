@@ -62,6 +62,7 @@ export default {
         username: "",
         password: "",
       },
+      emailToSend: '',
       show1: false,
       userNameRules: [
         (v) => !!v || "Username is required",
@@ -73,8 +74,13 @@ export default {
         (v) =>
           (v && v.length <= 30) || "Password must be less than 30 characters",
       ],
+      emailRules: [
+      (v) => !!v || "E-mail is required",
+      (v) => /.+@.+\..+/.test(v) || "E-mail must be valid",
+    ],
       invalidCredentials: false,
       clientProfile: {},
+      dialog: false,
     };
   },
   created() {},
@@ -100,6 +106,30 @@ export default {
     goToLogout() {
       this.$router.push({ name: "register" });
     },
+    sendEmailLink() {
+      if (this.emailToSend.length == 0) {
+        alert("Please Include Your Email")
+      } else {
+        authService.emailResetLink(this.emailToSend).then((response)=> {
+        if (response.status == 200) {
+          
+          alert("Email Reset Link Sent to: " + response.data + "\n" + "Please check Your Spam" + "\n" + "Contact Owner If You Did Not Receive Email")
+          
+        } else {
+          
+          alert("Error sending email")
+        }
+      })
+      .catch((error) => {
+            const response = error.response;
+            this.registrationErrors = true;
+            if (response.status === 400 || response.status === 404) {
+              alert("Error email not found")
+            }
+          });
+      }
+
+    } 
   },
 };
 </script>

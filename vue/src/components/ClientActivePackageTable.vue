@@ -59,7 +59,7 @@
                 <span class="text-h5">Add a package</span>
               </v-card-title>
 
-              <v-card-text>
+              <v-card-title>
                 <v-container>
                   <v-row>
                     <v-col>
@@ -107,7 +107,7 @@
                     </v-col>
                   </v-row>
                 </v-container>
-              </v-card-text>
+              </v-card-title>
 
               <v-card-actions>
                 <v-spacer></v-spacer>
@@ -336,9 +336,9 @@ export default {
           if (this.showPercentDiscount) { 
             // if it's a percent
             let num = this.selectedPackage.package_cost * (1 - (this.percentDiscount/100));
-            this.packagePurchase.discount = num;
+            this.packagePurchase.discount = this.selectedPackage.package_cost - num;
             this.packagePurchase.total_amount_paid =  Math.round(num * 100) / 100;
-          } else if (this.selectedPackage.discount >= 0 && this.selectedPackage.package_cost >= 0){
+          } else if (this.selectedPackage.discount >= 0 && this.selectedPackage.package_cost >= 0 && !this.showPercentDiscount){
             // if it's in dollars
             this.packagePurchase.discount = this.selectedPackage.discount
             this.packagePurchase.total_amount_paid = this.selectedPackage.package_cost - this.selectedPackage.discount;

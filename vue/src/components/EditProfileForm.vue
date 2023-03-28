@@ -10,6 +10,13 @@
       align="center"
     >
       <h1>Edit Profile</h1>
+      <div
+            class="alert alert-danger"
+            role="alert"
+            v-if="emailRegistrationErrors"
+          >
+            {{ emailRegistrationErrorMsg }}
+          </div>
       <v-text-field
         v-model="clientDetails.first_name"
         :counter="20"
@@ -119,6 +126,8 @@ export default {
       date_of_entry: "",
       user_id: 0,
     },
+     emailRegistrationErrors: false,
+      emailRegistrationErrorMsg: 'There were problems registering with this email.',
     showAlert: false,
     nameRules: [
       (v) => !!v || "Name is required",
@@ -195,11 +204,9 @@ export default {
       this.showAlert = true;
     },
     clickOkay() {
-      if (this.$store.state.user.username != "admin") {
-        this.$router.push("/myProfile");
-      } else {
+      
         this.showAlert = false;
-      }
+        this.clearErrors();
       
     },
     save() {
@@ -209,13 +216,24 @@ export default {
         .updateClientDetails(this.clientDetails)
         .then((response) => {          
           response
-          // replace this v-alert with a v-snackbar
+          this.$store.commit("SET_CLIENT_DETAILS", this.clientDetails);
+          this.emailRegistrationErrors = false;
+          // TODO: replace this v-alert with a v-snackbar
           this.displayAlert();
 
-        });
+        })
+        .catch((error) => {
+              const response = error.response;
+              this.emailRegistrationErrors = true;
+              if (response.status === 400) {
+                this.emailRegistrationErrorMsg = "There were problems updating this user/email. Refresh";
+              }
+            });
 
-      
-
+    },
+    clearErrors() {
+      this.emailRegistrationErrors = false;
+      this.emailRegistrationErrorMsg = 'There were problems updating this email.';
     },
   },
   created() {
