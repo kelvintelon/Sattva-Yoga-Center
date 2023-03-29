@@ -13,6 +13,96 @@
           <v-toolbar-title>Upcoming Classes</v-toolbar-title>
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-spacer></v-spacer>
+          <v-dialog
+            v-model="dialog"
+            max-width="500px"
+            v-if="$store.state.user.username == 'admin'"
+          >
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                color="primary"
+                dark
+                class="mb-2"
+                v-bind="attrs"
+                v-on="on"
+                @click="get100Events"
+              >
+                Add a class
+              </v-btn>
+            </template>
+            <v-card>
+              <!-- Add a Class Form starts here -->
+              <v-card-title>
+                <span class="text-h5">Add a class</span>
+              </v-card-title>
+
+              <v-card-title>
+                <v-container>
+                  <v-row>
+                    <v-col>
+                      <v-select
+                        label="Choose one or multiple"
+                        :items="availableClasses"
+                        v-model="selectedClass"
+                        return-object
+                      ></v-select>
+                      <!--<v-row>
+                        <v-col>
+                          <v-text-field
+                            v-if="!showPercentDiscount"
+                            v-model="selectedPackage.discount"
+                            class="mt-0 pt-0"
+                            type="number"
+                            label="Discount: $"
+                            min="0"
+                          ></v-text-field>
+                          <v-text-field
+                            v-if="showPercentDiscount"
+                            v-model="percentDiscount"
+                            class="mt-0 pt-0"
+                            type="number"
+                            label="Discount: %"
+                            min="0"
+                          ></v-text-field
+                        ></v-col>
+                        <v-col>
+                          <v-btn
+                            @click="showPercentDiscount = true"
+                            v-if="!showPercentDiscount"
+                            ><v-icon>mdi-percent</v-icon></v-btn
+                          >
+                          <v-btn
+                            @click="showPercentDiscount = false"
+                            v-if="showPercentDiscount"
+                            ><v-icon>mdi-currency-usd</v-icon></v-btn
+                          >
+                        </v-col></v-row
+                      >
+                      <div class="text--primary">
+                        Package Cost: ${{ selectedPackage.package_cost }}
+                      </div>
+                      <div class="text--primary">
+                        Package Discount: -${{ returnDiscount }}
+                      </div>
+                      <div class="text--primary" style="border-top: 1px solid">
+                        Total Cost: ${{ returnTotal }}
+                      </div> -->
+                    </v-col>
+                  </v-row>
+                </v-container>
+              </v-card-title>
+
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue darken-1" text @click="close">
+                  Cancel
+                </v-btn>
+                <v-btn color="blue darken-1" text @click="addClassForClient">
+                  Save
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
         </v-toolbar>
       </template>
       <template v-slot:[`item.actions`]="{ item }">
@@ -38,7 +128,10 @@
           <v-spacer></v-spacer>
         </v-toolbar>
       </template>
-       <template v-slot:[`item.actions`]="{ item }" v-if="$store.state.user.username == 'admin'">
+      <template
+        v-slot:[`item.actions`]="{ item }"
+        v-if="$store.state.user.username == 'admin'"
+      >
         <v-icon small class="mr-2" @click="RemoveClassForClient(item)">
           mdi-close-thick
         </v-icon>
@@ -74,7 +167,6 @@ export default {
         { text: "Date", value: "date", sortable: true, align: "start" },
         { text: "Start Time", value: "start_time", sortable: false },
         { text: "End Time", value: "end_time", sortable: false },
-        
       ],
       events: [],
       clientEvents: [],
@@ -87,6 +179,9 @@ export default {
       packages: [],
       hasSubscriptionPackage: false,
       activePackageList: [],
+      availableClasses: [],
+      selectedClass: {},
+      dialog: false,
     };
   },
   methods: {
@@ -136,14 +231,24 @@ export default {
           }
         });
     },
+    get100Events() {
+      eventService.get100Events().then((response) => {
+        if (response.status == 200) {
+          this.availableClasses = response.data;
+        }
+      });
+    },
+    close() {
+      this.selectedClass = {};
+      this.dialog = false;
+    },
     RemoveClassForClient(item) {
       this.eventClientSignUp.event_id = item.event_id;
       this.eventClientSignUp.date = item.dateRef;
       // retrieve the package_purchase id correctly
       this.eventClientSignUp.package_purchase_id = item.package_purchase_id;
       this.eventClientSignUp.client_id = this.$route.params.clientId;
-      
-      
+
       // retrieve the package_purchase id correctly
 
       this.allowSignUp = false;
@@ -154,12 +259,11 @@ export default {
       // get active packages from API service request
       if (this.eventClientSignUp.package_purchase_id == 0) {
         this.allowSignUp = true;
-        
+
         this.cancelCheck();
       } else {
         this.getActivePurchaseServerRequest2();
       }
-      
     },
     getActivePurchaseServerRequest2() {
       packagePurchaseService
@@ -185,14 +289,15 @@ export default {
             this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
             this.activePackageList = this.$store.state.activePackageList;
             let refundPackage = this.allHistoricalPackages.filter((item) => {
-        return (
-          item.package_purchase_id == this.eventClientSignUp.package_purchase_id
-        );
-      });
-      if (refundPackage[0].is_subscription == true) {
-        this.hasSubscriptionPackage = true;
-      }
-      this.allowSignUp = true;
+              return (
+                item.package_purchase_id ==
+                this.eventClientSignUp.package_purchase_id
+              );
+            });
+            if (refundPackage[0].is_subscription == true) {
+              this.hasSubscriptionPackage = true;
+            }
+            this.allowSignUp = true;
             this.cancelCheck();
           } else {
             alert("Error retrieving package information");
@@ -200,16 +305,16 @@ export default {
         });
     },
     cancelCheck() {
-      
       if (this.allowSignUp || this.eventClientSignUp.package_purchase_id == 0) {
-       
         // console.log(this.eventClientSignUp.date)
         // console.log(this.initial1.expiration_date)
         // console.log(this.eventClientSignUp.date > this.initial1.expiration_date)
         // console.log(this.hasSubscriptionPackage)
-        this.validSignUp = true
-        if (this.validSignUp == true ||  this.eventClientSignUp.package_purchase_id == 0) {
-        
+        this.validSignUp = true;
+        if (
+          this.validSignUp == true ||
+          this.eventClientSignUp.package_purchase_id == 0
+        ) {
           eventService
             .removeEventForClientByClientId(
               this.eventClientSignUp.event_id,
@@ -219,7 +324,10 @@ export default {
               if (response.status == 200) {
                 // call method that updates the client_class_table
 
-                if (!this.hasSubscriptionPackage && this.eventClientSignUp.package_purchase_id > 0 ) {
+                if (
+                  !this.hasSubscriptionPackage &&
+                  this.eventClientSignUp.package_purchase_id > 0
+                ) {
                   packagePurchaseService
                     .incrementByOne(this.eventClientSignUp.package_purchase_id)
                     .then((response) => {
@@ -251,11 +359,23 @@ export default {
   created() {
     this.getClientEventTable();
 
-       if (this.$store.state.user.username == "admin") {
-     this.clientEventHeaders.unshift({ text: "Event ID", value: "event_id", sortable: false });
-     this.allClientEventHeaders.unshift({ text: "Event ID", value: "event_id", sortable: false });
-     this.allClientEventHeaders.push({ text: "Remove From History", value: "actions", sortable: false })
-       }
+    if (this.$store.state.user.username == "admin") {
+      this.clientEventHeaders.unshift({
+        text: "Event ID",
+        value: "event_id",
+        sortable: false,
+      });
+      this.allClientEventHeaders.unshift({
+        text: "Event ID",
+        value: "event_id",
+        sortable: false,
+      });
+      this.allClientEventHeaders.push({
+        text: "Remove From History",
+        value: "actions",
+        sortable: false,
+      });
+    }
   },
 };
 </script>
