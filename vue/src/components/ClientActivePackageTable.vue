@@ -7,7 +7,8 @@
       <v-spacer></v-spacer
     ></v-row>
     <br />
-    <v-snackbar v-if="$store.state.user.username == 'admin'"
+    <v-snackbar
+      v-if="$store.state.user.username == 'admin'"
       v-model="snackBarReconcilePackages"
       color="red darken-2"
       elevation="24"
@@ -31,23 +32,34 @@
         </v-btn>
       </template>
     </v-snackbar>
-    <v-snackbar v-if="$store.state.user.username == 'admin'"
+    <v-snackbar
+      v-if="$store.state.user.username == 'admin'"
       v-model="snackBarReconcilePackagesSuccessful"
       color="green darken-2"
       elevation="24"
       :vertical="vertical"
       pill
-      
     >
       Successfully Reconciled For Missing Payments
     </v-snackbar>
-    <v-data-table :headers="headers" :items="packages" class="elevation-5" sort-by="date_purchased" sort-desc="[true]" dense>
+    <v-data-table
+      :headers="headers"
+      :items="packages"
+      class="elevation-5"
+      sort-by="date_purchased"
+      sort-desc="[true]"
+      dense
+    >
       <template v-slot:top>
         <v-toolbar flat>
           <v-toolbar-title>Active Packages</v-toolbar-title>
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-spacer></v-spacer>
-          <v-dialog v-model="dialog" max-width="500px"  v-if="$store.state.user.username == 'admin'">
+          <v-dialog
+            v-model="dialog"
+            max-width="500px"
+            v-if="$store.state.user.username == 'admin'"
+          >
             <template v-slot:activator="{ on, attrs }">
               <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
                 Add a package
@@ -69,40 +81,47 @@
                         v-model="selectedPackage"
                         item-text="description"
                         return-object
-                        
                       ></v-select>
-                      <v-row >
+                      <v-row>
                         <v-col>
-                      <v-text-field 
-                          v-if="!showPercentDiscount"
-                          v-model="selectedPackage.discount"
-                          class="mt-0 pt-0"
-                          type="number"
-              
-                          label="Discount: $"
-                          min="0"
-                        ></v-text-field>
-                        <v-text-field 
-                          v-if="showPercentDiscount"
-                          v-model="percentDiscount"
-                          class="mt-0 pt-0"
-                          type="number"
-              
-                          label="Discount: %"
-                          min="0"
-                        ></v-text-field></v-col>
+                          <v-text-field
+                            v-if="!showPercentDiscount"
+                            v-model="selectedPackage.discount"
+                            class="mt-0 pt-0"
+                            type="number"
+                            label="Discount: $"
+                            min="0"
+                          ></v-text-field>
+                          <v-text-field
+                            v-if="showPercentDiscount"
+                            v-model="percentDiscount"
+                            class="mt-0 pt-0"
+                            type="number"
+                            label="Discount: %"
+                            min="0"
+                          ></v-text-field
+                        ></v-col>
                         <v-col>
-                        <v-btn @click="showPercentDiscount = true" v-if="!showPercentDiscount"><v-icon>mdi-percent</v-icon></v-btn>
-                        <v-btn @click="showPercentDiscount = false" v-if="showPercentDiscount"><v-icon>mdi-currency-usd</v-icon></v-btn>
-                        </v-col></v-row>
-                      <div class="text--primary"> 
-                        Package Cost: ${{selectedPackage.package_cost}}
+                          <v-btn
+                            @click="showPercentDiscount = true"
+                            v-if="!showPercentDiscount"
+                            ><v-icon>mdi-percent</v-icon></v-btn
+                          >
+                          <v-btn
+                            @click="showPercentDiscount = false"
+                            v-if="showPercentDiscount"
+                            ><v-icon>mdi-currency-usd</v-icon></v-btn
+                          >
+                        </v-col></v-row
+                      >
+                      <div class="text--primary">
+                        Package Cost: ${{ selectedPackage.package_cost }}
                       </div>
-                      <div class="text--primary"> 
-                        Package Discount: -${{returnDiscount}}
+                      <div class="text--primary">
+                        Package Discount: -${{ returnDiscount }}
                       </div>
-                      <div class="text--primary" style="border-top: 1px solid"> 
-                        Total Cost: ${{returnTotal}}
+                      <div class="text--primary" style="border-top: 1px solid">
+                        Total Cost: ${{ returnTotal }}
                       </div>
                     </v-col>
                   </v-row>
@@ -114,7 +133,9 @@
                 <v-btn color="blue darken-1" text @click="close">
                   Cancel
                 </v-btn>
-                <v-btn color="blue darken-1" text @click="addPackageForClient"> Save </v-btn>
+                <v-btn color="blue darken-1" text @click="addPackageForClient">
+                  Save
+                </v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
@@ -126,7 +147,10 @@
           disabled
         ></v-simple-checkbox>
       </template>
-      <template v-slot:[`item.actions`]="{ item }"  v-if="$store.state.user.username == 'admin'">
+      <template
+        v-slot:[`item.actions`]="{ item }"
+        v-if="$store.state.user.username == 'admin'"
+      >
         <v-icon small class="mr-2" @click="Remove(item)">
           mdi-close-thick
         </v-icon>
@@ -389,22 +413,32 @@ export default {
       if (this.showPercentDiscount && this.selectedPackage.package_cost >= 0) {
         // this.selectedPackage.discount = this.selectedPackage.package_cost * (1-this.percentDiscount);
         let num = this.selectedPackage.package_cost-(this.selectedPackage.package_cost * (1 - (this.percentDiscount/100)))
-        return Math.round(num * 100) / 100
-      } else if (this.selectedPackage.discount >= 0 && this.selectedPackage.package_cost >= 0){
-         return this.selectedPackage.discount;
-      } else {
-        return 0;
+        let math = Math.round(num * 100) / 100;
+        if (this.selectedPackage.package_cost > math) {
+          return math
+        }
+        return 0
+      } else if (this.selectedPackage.discount >= 0 && this.selectedPackage.package_cost >= 0){// TODO: Change the following line
+        if (this.selectedPackage.discount < this.selectedPackage.package_cost ) {
+           return this.selectedPackage.discount;   
+       }
       }
-     
+      return 0;
     },
     returnTotal() {
-      if (this.showPercentDiscount && this.selectedPackage.package_cost >= 0) {
-        // this.selectedPackage.discount = this.selectedPackage.package_cost * (1-this.percentDiscount);
-       
+
+      if (this.showPercentDiscount && this.selectedPackage.package_cost >= 0) { 
         let num = this.selectedPackage.package_cost * (1 - (this.percentDiscount/100));
-        return Math.round(num * 100) / 100;
+        if (num > 0) {
+          return Math.round(num * 100) / 100;
+        }
+        return 0
       } else if (this.selectedPackage.discount >= 0 && this.selectedPackage.package_cost >= 0){
-         return this.selectedPackage.package_cost - this.selectedPackage.discount;
+        let difference = this.selectedPackage.package_cost - this.selectedPackage.discount;
+        if (difference < this.selectedPackage.package_cost && difference > 0) {
+          return difference;
+        }
+         return 0
       } else if(this.selectedPackage.package_cost >= 0) {
         return this.selectedPackage.package_cost;
       } else {

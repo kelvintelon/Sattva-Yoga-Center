@@ -3,7 +3,7 @@
     <v-row justify="center" align="center">
       <v-spacer></v-spacer>
       <v-col cols="4" justify="center" align="center">
-        <header-logo></header-logo>
+        <!-- <header-logo></header-logo> -->
         <v-form
           class="form-register"
           @submit.prevent="register"
@@ -46,14 +46,14 @@
             :rules="passwordRules"
             required
           ></v-text-field>
+          <br />
           <v-btn class="btn btn-lg btn-primary btn-block" type="submit">
             Create New Account
-          </v-btn><br /><v-btn
-            class="btn btn-lg btn-primary btn-block"
-            v-on:click="goToPage()"
-          >
-            Have an existing account?
           </v-btn>
+          <br />
+            
+            <br />
+          <a v-on:click="goToPage()">Already have an account?</a>
           <div>
             <br />
             <br />
@@ -79,12 +79,12 @@
 
 <script>
 import authService from '../services/AuthService';
-import HeaderLogo from "../components/HeaderLogo.vue";
+// import HeaderLogo from "../components/HeaderLogo.vue";
 
 export default {
   name: "register",
   components: {
-    HeaderLogo,
+    // HeaderLogo,
   },
   data() {
     return {

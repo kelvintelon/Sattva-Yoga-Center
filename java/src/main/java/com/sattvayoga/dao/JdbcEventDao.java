@@ -407,6 +407,18 @@ public class JdbcEventDao implements EventDao {
     }
 
     @Override
+    public List<Event> getHundredEventsForUser(String client_id) {
+        List<Event> allEvents = new ArrayList<>();
+        String sql = "SELECT * FROM events WHERE is_visible_online = true AND start_time >= now() ORDER BY start_time LIMIT 200  ; ";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+        while (result.next()) {
+            Event event = mapRowToEvent(result);
+            allEvents.add(event);
+        }
+        return allEvents;
+    }
+
+    @Override
     public Event getEventByEventId(int eventId) {
         Event event = null;
 

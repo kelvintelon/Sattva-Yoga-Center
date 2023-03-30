@@ -30,89 +30,18 @@
           <v-text-field
             v-model="user.password"
             :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
-             :type="show1 ? 'text' : 'password'"            
+            :type="show1 ? 'text' : 'password'"
             @click:append="show1 = !show1"
             id="password"
             :rules="passwordRules"
             label="Password"
             required
           ></v-text-field>
-          <v-row justify="center">
-    <v-dialog
-      v-model="dialog"
-      persistent
-      max-width="600px"
-    >
-      <template v-slot:activator="{ on, attrs }">
-        <v-btn
-          color="deep-orange lighten-2"
-          dark
-          v-bind="attrs"
-          v-on="on"
-          text
-        >
-          Forgot LOGIN/PASSWORD
-        </v-btn>
-      </template>
-      <v-card>
-        <v-card-title>
-          <span class="text-h5">Enter Email For Reset Link</span>
-        </v-card-title>
-        <v-card-text>
-          <v-container>
-            <v-row>
-              
-              <v-col cols="12">
-                <v-text-field
-                  label="Email*"
-                  v-model="emailToSend"
-                  required
-                  :rules="emailRules"
-                ></v-text-field>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            color="blue darken-1"
-            text
-            @click="dialog = false"
-          >
-            Close
-          </v-btn>
-          <v-btn
-            color="blue darken-1"
-            text
-            @click="sendEmailLink"
-          >
-            Send
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </v-row>
-          <br>
           <v-btn type="submit">Sign in</v-btn>
           <br />
           <v-btn v-on:click="goToLogout()"> Register </v-btn>
-          <div>
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-          </div>
+
+          <div></div>
         </v-form>
       </v-col>
       <v-spacer></v-spacer>
@@ -123,7 +52,6 @@
 <script>
 import HeaderLogo from "../components/HeaderLogo.vue";
 import authService from "../services/AuthService";
-
 
 export default {
   name: "login",
@@ -155,9 +83,7 @@ export default {
       dialog: false,
     };
   },
-  created() {
-    
-  },
+  created() {},
   methods: {
     login() {
       authService
@@ -167,7 +93,6 @@ export default {
             this.$store.commit("SET_AUTH_TOKEN", response.data.token);
             this.$store.commit("SET_USER", response.data.user);
             this.$router.push("/loading");
-
           }
         })
         .catch((error) => {
