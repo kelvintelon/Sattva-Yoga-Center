@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <v-card class="mx-auto my-2 rounded-xl" max-width="900px" min-width="200px">
-      <v-img height="350px" src="@/assets/yoga-practice-sattva.png"></v-img>
+      <v-img height="350px" src="@/assets/sattva-interior.jpeg"></v-img>
       <v-card-title><strong>Welcome</strong></v-card-title>
       <v-card-text>
         <v-row align="center" class="mx-0">
