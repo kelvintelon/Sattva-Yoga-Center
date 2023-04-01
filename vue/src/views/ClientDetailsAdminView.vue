@@ -42,7 +42,7 @@
     </v-snackbar>
       <v-row justify="center" align="center">
         <v-col cols="5 ">
-          <v-card align="center" justify="center"  class="py-7 d-flex flex-column justify-space-around justify-space-between">
+          <v-card align="center" justify="center"  class="rounded-xl  py-7 d-flex flex-column justify-space-around justify-space-between">
             {{ clientDetails.first_name }} {{ clientDetails.last_name }} ||
             <v-btn @click.prevent="showEditForm = !showEditForm" outlined color="primary" class="mx-2 my-3"
               >Edit<v-icon dark>
@@ -52,24 +52,36 @@
             <v-btn @click.prevent="checkForEmail" outlined color="red" class="mx-2"
               >Reset <v-icon dark>
         mdi-email-lock
-      </v-icon></v-btn></v-card
+      </v-icon></v-btn>
+      <v-btn
+            color="#9948B6ED"
+            dark
+            class="mx-2 my-3"
+            v-bind="attrs"
+            v-on="on"
+            @click.prevent="emailRecipient"
+            title="Email"
+            outlined
+          >Email
+            <v-icon>mdi-email</v-icon></v-btn></v-card
           ></v-col
         >
       </v-row>
     </v-container>
     <v-container class="edit-profile" fill-height fluid v-if="showEditForm">
       <v-row justify="center" align="center">
-        <v-spacer></v-spacer>
-        <v-col cols="5" justify="center" align="center">
+        
+        <v-col justify="center" align="center" lg="6" md="12">
           <v-card
-            class="mx-auto my-12 rounded-xl pb-12 pt-12"
+            class="rounded-xl mx-auto pb-4"
             color="gray lighten-4"
             min-height="100%"
           >
             <edit-profile-form></edit-profile-form>
+            <v-btn @click="showEditForm = !showEditForm">Close</v-btn>
           </v-card>
         </v-col>
-        <v-spacer></v-spacer>
+       
       </v-row>
     </v-container>
     <client-event-table py-7></client-event-table>
@@ -104,9 +116,19 @@ export default {
       snackBarReconcileWarning: false,
       snackBarEmailReset: false,
       timeout: -1,
+      emailLink: "https://mail.google.com/mail/u/0/?fs=1&tf=cm&to=",
     };
   },
   methods: {
+    emailRecipient() {
+      if (this.$store.state.clientDetails.email.length > 0) {
+        this.emailLink = this.emailLink + this.$store.state.clientDetails.email
+         window.location.href = this.emailLink;
+      } else {
+        alert("User has no email")
+      }
+      
+    },
     getClientDetails() {
       clientDetailService.getClientDetailsByClientId(this.$route.params.clientId).then((response) => {
         if (response.data.client_id != 0) {
@@ -119,7 +141,7 @@ export default {
       });
     },
     checkForEmail() {
-      if (this.$store.state.clientDetails.email != null) {
+      if (this.$store.state.clientDetails.email.length > 0) {
         this.snackBarEmailReset = true
       } else {
         alert("This User Does Not Have An Email")
@@ -146,6 +168,7 @@ export default {
     },
   },
   created() {
+    if (this.$store.state.user.username == 'admin') {
     clientDetailService.getClientDetailsByClientId(this.$route.params.clientId).then((response) => {
         if (response.data.client_id != 0) {
           this.clientDetails = response.data;
@@ -159,6 +182,9 @@ export default {
     this.clientDetails = this.$store.state.clientDetails;
 
     this.$root.$refs.C = this;
+    } else {
+      this.$router.push("/")
+    }
   },
 };
 </script>

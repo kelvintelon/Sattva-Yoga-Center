@@ -5,7 +5,7 @@
       :items="clientEvents"
       class="elevation-5"
       sort-by="date"
-      :sort-desc="[true]"
+      :sort-desc="[false]"
       dense
     >
       <template v-slot:top>
@@ -43,50 +43,11 @@
                       <v-select
                         label="Choose one or multiple"
                         :items="availableClasses"
-                        v-model="selectedClass"
+                        v-model="selectedClasses"
+                        item-text="date"
                         return-object
+                        multiple
                       ></v-select>
-                      <!--<v-row>
-                        <v-col>
-                          <v-text-field
-                            v-if="!showPercentDiscount"
-                            v-model="selectedPackage.discount"
-                            class="mt-0 pt-0"
-                            type="number"
-                            label="Discount: $"
-                            min="0"
-                          ></v-text-field>
-                          <v-text-field
-                            v-if="showPercentDiscount"
-                            v-model="percentDiscount"
-                            class="mt-0 pt-0"
-                            type="number"
-                            label="Discount: %"
-                            min="0"
-                          ></v-text-field
-                        ></v-col>
-                        <v-col>
-                          <v-btn
-                            @click="showPercentDiscount = true"
-                            v-if="!showPercentDiscount"
-                            ><v-icon>mdi-percent</v-icon></v-btn
-                          >
-                          <v-btn
-                            @click="showPercentDiscount = false"
-                            v-if="showPercentDiscount"
-                            ><v-icon>mdi-currency-usd</v-icon></v-btn
-                          >
-                        </v-col></v-row
-                      >
-                      <div class="text--primary">
-                        Package Cost: ${{ selectedPackage.package_cost }}
-                      </div>
-                      <div class="text--primary">
-                        Package Discount: -${{ returnDiscount }}
-                      </div>
-                      <div class="text--primary" style="border-top: 1px solid">
-                        Total Cost: ${{ returnTotal }}
-                      </div> -->
                     </v-col>
                   </v-row>
                 </v-container>
@@ -97,7 +58,7 @@
                 <v-btn color="blue darken-1" text @click="close">
                   Cancel
                 </v-btn>
-                <v-btn color="blue darken-1" text @click="addClassForClient">
+                <v-btn color="blue darken-1" text @click="addClassesForClient">
                   Save
                 </v-btn>
               </v-card-actions>
@@ -105,10 +66,17 @@
           </v-dialog>
         </v-toolbar>
       </template>
-      <template v-slot:[`item.actions`]="{ item }">
+      <template v-slot:[`item.actions`]="{ item }"><v-icon  
+          small
+          class="mr-2"
+          @click.prevent="sendToEventPageAdminView(item)"
+        >
+          mdi-calendar-search
+        </v-icon>
         <v-icon small class="mr-2" @click="RemoveClassForClient(item)">
           mdi-close-thick
         </v-icon>
+         
       </template>
     </v-data-table>
     <br />
@@ -131,11 +99,19 @@
       <template
         v-slot:[`item.actions`]="{ item }"
         v-if="$store.state.user.username == 'admin'"
-      >
+      ><v-icon  
+          small
+          class="mr-2"
+          @click.prevent="sendToEventPageAdminView(item)"
+        >
+          mdi-calendar-search
+        </v-icon> 
         <v-icon small class="mr-2" @click="RemoveClassForClient(item)">
           mdi-close-thick
-        </v-icon>
+        </v-icon>  
+        
       </template>
+
     </v-data-table>
   </v-container>
 </template>
@@ -157,14 +133,14 @@ export default {
         { text: "Date", value: "date", sortable: true, align: "start" },
         { text: "Start Time", value: "start_time", sortable: false },
         { text: "End Time", value: "end_time", sortable: false },
-        { text: "Cancel Signup", value: "actions", sortable: false },
+        { text: "Actions", value: "actions", sortable: false },
       ],
       allClientEventHeaders: [
         {
           text: "Class Description",
           value: "event_name",
         },
-        { text: "Date", value: "date", sortable: true, align: "start" },
+        { text: "Date", value: "date", sortable: true, align: "end" },
         { text: "Start Time", value: "start_time", sortable: false },
         { text: "End Time", value: "end_time", sortable: false },
       ],
@@ -180,11 +156,17 @@ export default {
       hasSubscriptionPackage: false,
       activePackageList: [],
       availableClasses: [],
-      selectedClass: {},
+      selectedClasses: [],
       dialog: false,
     };
   },
   methods: {
+    sendToEventPageAdminView(item){
+      this.$router.push({
+        name: "event-attendance-details",
+        params: { eventId: item.event_id },
+      });
+    },
     getClientEventTable() {
       eventService
         .getAllClientEventsByClientId(this.$route.params.clientId)
@@ -232,15 +214,119 @@ export default {
         });
     },
     get100Events() {
-      eventService.get100Events().then((response) => {
+      eventService.get100EventsForClient(this.$route.params.clientId).then((response) => {
         if (response.status == 200) {
           this.availableClasses = response.data;
+          this.availableClasses.forEach((item) => {
+            // YYYY-MM-DD format
+
+            // let theStartTime = item.start_time;
+
+            item.date = item.start_time;
+            let [Month, Day, Year] = new Date(item.date)
+              .toLocaleDateString()
+              .split("/");
+            item.date = Month + "/" + Day + "/" + Year.substring(Year.length-2);
+
+            // FIND OUT IF ITS TOMORROW
+            const today = new Date();
+            let tomorrow = new Date();
+            tomorrow.setDate(today.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
+
+            // theStartTime.setHours(0,0,0,0)
+            // if (theStartTime.getTime() === tomorrow.getTime()) {
+            //   item.date = "Tomorrow"
+            // }
+
+            // FIND DAY
+            // let currentDay = new Date(item.start_time).toLocaleDateString(
+            //   "en-US",
+            //   { weekday: "long" }
+            // );
+            // +
+              // currentDay.substring(0,3) +
+              // ", " +
+              // " at "
+
+            // HH:MM AM/PM format
+
+            item.date = item.date + " " +
+              item.event_name +
+              " "  +
+              new Date(item.start_time).toLocaleString("en-US", {
+                hour: "numeric",
+                minute: "numeric",
+                hour12: true,
+              });
+
+            item.start_time = new Date(item.start_time).toLocaleString("en-US", {
+                hour: "numeric",
+                minute: "numeric",
+                hour12: true,
+              });
+            item.end_time = new Date(item.end_time).toLocaleString("en-US", {
+              hour: "numeric",
+              minute: "numeric",
+              hour12: true,
+            });
+          });
+          // this.availableClasses.filter((item) => {
+          //   if (this.allClientEvents.length > 0) {
+          //     let foundOne = false;
+          //     for (
+          //       let index = 0;
+          //       index < this.allClientEvents.length;
+          //       index++
+          //     ) {
+          //       if (this.allClientEvents[index].event_id == item.event_id) {
+          //         foundOne = true;
+          //       }
+          //     }
+          //     if (!foundOne) {
+          //       return item;
+          //     }
+          //   } else {
+          //     return item;
+          //   }
+          // });
         }
       });
     },
     close() {
       this.selectedClass = {};
       this.dialog = false;
+    },
+    addClassesForClient() {
+      for (let index = 0; index < this.selectedClasses.length; index++) {
+        
+
+        this.selectedClasses[index].client_id = this.$route.params.clientId;
+
+        for (let index = 0; index < this.availableClasses.length; index++) {
+          // const element = array[index];
+          
+        }
+
+        // END OF LOOP BLOCK
+      }
+      if (this.selectedClasses.length > 0) {
+      eventService
+        .registerMultipleClientsForEvent(this.selectedClasses)
+        .then((response) => {
+          if (response.status == 201) {
+            alert("Successfully added classes to this client");
+            this.getClientEventTable();
+            this.selectedClasses = [];
+          } else {
+            alert("Error adding events to this client");
+          }
+        });
+        this.close();
+    } else {
+      alert("Please select at least one event")
+    }
+
     },
     RemoveClassForClient(item) {
       this.eventClientSignUp.event_id = item.event_id;
@@ -333,7 +419,7 @@ export default {
                     .then((response) => {
                       if (response.status == 200) {
                         response;
-                        alert("Removed Class from your schedule");
+                        alert("Removed Class Successfully");
                         // this.listOfSignedUpClients.splice(
                         //   this.indexOfClientToBeDeleted,
                         //   1
@@ -341,7 +427,7 @@ export default {
                       }
                     });
                 } else {
-                  alert("Removed Class from your schedule");
+                  alert("Removed Class Successfully");
                   // this.listOfSignedUpClients.splice(
                   //   this.indexOfClientToBeDeleted,
                   //   1
@@ -364,14 +450,20 @@ export default {
         text: "Event ID",
         value: "event_id",
         sortable: false,
-      });
+      },
+      );
       this.allClientEventHeaders.unshift({
         text: "Event ID",
         value: "event_id",
         sortable: false,
+      },
+      {
+        text: "Package ID",
+        value: "package_purchase_id",
+        sortable: false,
       });
       this.allClientEventHeaders.push({
-        text: "Remove From History",
+        text: "Actions",
         value: "actions",
         sortable: false,
       });

@@ -127,13 +127,15 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
     }
 
     @Override
-    public boolean isEmailDuplicate(String email) {
+    public boolean isEmailDuplicate(int clientId, String email) {
         List<ClientDetails> allClientsWithSameEmail = new ArrayList<>();
         String sql = "SELECT * FROM client_details WHERE email = ?;";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, email);
         while(result.next()) {
             ClientDetails clientDetails = mapRowToClient(result);
-            allClientsWithSameEmail.add(clientDetails);
+           if (clientDetails.getClient_id() != clientId) {
+               allClientsWithSameEmail.add(clientDetails);
+            }
         }
         return allClientsWithSameEmail.size() > 0;
     }

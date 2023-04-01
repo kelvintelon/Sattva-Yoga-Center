@@ -1,22 +1,26 @@
 <template>
-  <div class="client-form-template">
+<v-container>
+  <v-row>
+    <v-col sm="12">
     <v-form
       ref="form"
       v-model="valid"
       lazy-validation
       class="client-form"
       @submit.prevent="save()"
-      justify="center"
-      align="center"
+      
+
     >
-      <h1>Edit Profile</h1>
-      <div
-            class="alert alert-danger"
-            role="alert"
-            v-if="emailRegistrationErrors"
-          >
-            {{ emailRegistrationErrorMsg }}
-          </div>
+    <v-container>
+       <v-row justify="center"
+      align="center"><v-col justify="center"
+      align="center">
+      <h1 style="color: orange">Edit Profile</h1>
+      </v-col>
+      <!-- // TODO: Fix the code here -->
+      <v-col cols="12" md="12" justify="center"
+      align="center">
+
       <v-text-field
         v-model="clientDetails.first_name"
         :counter="20"
@@ -24,7 +28,7 @@
         label="First Name"
         required
       ></v-text-field>
-
+</v-col></v-row>
       <v-text-field
         v-model="clientDetails.last_name"
         :counter="20"
@@ -79,7 +83,14 @@
         label="E-mail"
         required
       ></v-text-field>
-
+      <div
+            class="alert alert-danger"
+            role="alert"
+            v-if="emailRegistrationErrors"
+            style="color: red"
+          >
+            {{ emailRegistrationErrorMsg }}
+          </div>
       <v-checkbox
         v-model="clientDetails.is_on_email_list"
         label="Stay on Email List?"
@@ -99,8 +110,11 @@
       >
         Save Edits
       </v-btn>
+      </v-container>
     </v-form>
-  </div>
+    </v-col>
+  </v-row>
+    </v-container>
 </template>
 
 <script>
@@ -226,7 +240,7 @@ export default {
               const response = error.response;
               this.emailRegistrationErrors = true;
               if (response.status === 400) {
-                this.emailRegistrationErrorMsg = "There were problems updating this user/email. Refresh";
+                this.emailRegistrationErrorMsg = "Could not update. Email is already being used by an account";
               }
             });
 
@@ -255,12 +269,7 @@ export default {
 
 
 <style scoped>
-.client-form-template {
-  display: flex;
-  justify-content: center;
-}
 
-.client-form {
-  width: 40%;
-}
+
+
 </style>

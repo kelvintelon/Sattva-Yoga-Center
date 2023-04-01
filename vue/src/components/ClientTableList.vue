@@ -16,14 +16,14 @@
         <v-toolbar flat>
           <!-- START OF EDIT CLIENT FORM -->
           <v-dialog v-model="dialog" max-width="500px">
-            <v-card justify="center">
-              <v-card-title>
-                <span class="text-h5"> Edit Client </span>
+            <v-card justify="center" align="center">
+              <v-card-title justify="center" align="center">
+                <span class="text-h5" align="center"> Edit Client </span>
               </v-card-title>
               
               <v-container>
                 <v-row justify="center" style="min-height: 160px">
-                  <v-col cols="6">
+                  <v-col cols="11">
                     <v-form
                       ref="form"
                       height="100"
@@ -37,7 +37,7 @@
                     >
                       <v-text-field
                         v-model="editedItem.first_name"
-                        :counter="10"
+                        :counter="20"
                         :rules="nameRules"
                         label="First Name"
                         required
@@ -45,7 +45,7 @@
 
                       <v-text-field
                         v-model="editedItem.last_name"
-                        :counter="10"
+                        :counter="20"
                         :rules="nameRules"
                         label="Last Name"
                         required
@@ -120,16 +120,13 @@
                       ></v-checkbox>
 
                       <v-row justify="center" align="center"
-                        ><v-col cols="10">
-                          <v-btn color="error" class="mr-4" @click="reset">
-                            Reset Form
-                          </v-btn>
-                        </v-col>
-                        <v-col>
+                        >
+                        <v-col justify="center" align="center">
                           <div
             class="alert alert-danger"
             role="alert"
             v-if="emailRegistrationErrors"
+            style="color: red"
           >
             {{ emailRegistrationErrorMsg }}
           </div>
@@ -137,7 +134,12 @@
                             update
                           </v-btn>
                           </v-col
-                        ></v-row
+                        >
+                        <v-col cols="10" justify="center" align="center">
+                          <v-btn color="error" class="mr-4" @click="reset">
+                            Reset Form
+                          </v-btn>
+                        </v-col></v-row
                       >
                     </v-form>
                   </v-col>
@@ -363,7 +365,7 @@ export default {
               const response = error.response;
               this.emailRegistrationErrors = true;
               if (response.status === 400) {
-                this.emailRegistrationErrorMsg = "There were problems updating this user/email. Refresh";
+                this.emailRegistrationErrorMsg = "Could not update. Email is already being used by an account";
               }
             });
       }
@@ -430,13 +432,7 @@ export default {
     checkEditForm() {
       if (
         this.editedItem.last_name == "" ||
-        this.editedItem.first_name == "" ||
-        this.editedItem.street_address == "" ||
-        this.editedItem.city == "" ||
-        this.editedItem.state_abbreviation == "" ||
-        this.editedItem.zip_code == "" ||
-        this.editedItem.phone_number == "" ||
-        this.editedItem.email == ""
+        this.editedItem.first_name == ""
       ) {
         alert("Please fill out your form");
       } else {

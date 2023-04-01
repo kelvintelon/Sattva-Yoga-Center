@@ -39,7 +39,7 @@ public class ClientDetailsController {
         // look up the email here
         boolean foundEmail = false;
         if (clientDetails.getEmail() != null) {
-            foundEmail = clientDetailsDao.isEmailDuplicate(clientDetails.getEmail());
+            foundEmail = clientDetailsDao.isEmailDuplicate(clientDetails.getClient_id(),clientDetails.getEmail());
         }
 
         if (foundEmail) {
@@ -57,7 +57,7 @@ public class ClientDetailsController {
         // look up the email here
         boolean foundEmail = false;
         if (client.getEmail() != null) {
-            foundEmail = clientDetailsDao.isEmailDuplicate(client.getEmail());
+            foundEmail = clientDetailsDao.isEmailDuplicate(0,client.getEmail());
         }
 
         if (foundEmail) {

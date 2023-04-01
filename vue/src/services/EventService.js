@@ -12,6 +12,9 @@ export default {
     get100Events() {
         return axios.get(`/100eventList`)
     },
+    get100EventsForClient(clientId) {
+        return axios.get(`/100eventList/${clientId}`)
+    },
     deleteEvent(eventID) {
         return axios.delete(`/deleteEvent/${eventID}`)
     },

@@ -44,6 +44,11 @@ public class EventController {
         return eventDao.getHundredEvents();
     }
 
+    @RequestMapping(value = "/100eventList/{clientId}", method = RequestMethod.GET)
+    public List<Event> getHundredEventsForClient(@PathVariable int clientId) throws SQLException {
+        return eventDao.getHundredEventsForUser(clientId);
+    }
+
 //    @RequestMapping(value= "/clientEventList", method = RequestMethod.GET)
 //    public List<Event> getAllUpcomingClientEvents(Principal principal) throws SQLException {
 //        int userId = userDao.findIdByUsername(principal.getName());

@@ -546,7 +546,7 @@ export default {
 
         // END OF LOOP BLOCK
       }
-
+    if (this.selectedClients.length > 0) {
       eventService
         .registerMultipleClientsForEvent(this.selectedClients)
         .then((response) => {
@@ -558,8 +558,10 @@ export default {
             alert("Error adding clients to roster");
           }
         });
-
-      this.close();
+        this.close();
+    } else {
+      alert("Please select at least one client")
+    }
     },
     saveNewClient() {
       let newClient = {

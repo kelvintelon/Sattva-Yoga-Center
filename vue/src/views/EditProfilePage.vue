@@ -5,7 +5,7 @@
 
     <v-row justify="center" align="center">
       <v-spacer></v-spacer>
-      <v-col cols="4" justify="center" align="center">
+      <v-col >
         <v-card
           class="mx-auto my-12 rounded-xl pb-12 pt-12"
           color="gray lighten-4"
