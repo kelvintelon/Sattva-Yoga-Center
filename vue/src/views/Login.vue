@@ -3,9 +3,17 @@
     <v-row justify="center" align="center">
       <v-spacer></v-spacer>
       <v-col cols="4" justify="center" align="center">
-        <header-logo></header-logo>
+        <!-- <header-logo></header-logo> -->
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        
         <v-form class="form-signin" @submit.prevent="login">
-          <h1 class="h3 mb-3 font-weight-normal">Please Sign In</h1>
+          <h1 class="h3 mb-3 font-weight-normal">Please sign in.</h1>
           <div
             class="alert alert-danger"
             role="alert"
@@ -18,7 +26,7 @@
             role="alert"
             v-if="this.$route.query.registration"
           >
-            Thank you for registering, please sign in.
+            Thank you for registering! Please sign in.
           </div>
           <v-text-field
             v-model="user.username"
@@ -39,7 +47,18 @@
           ></v-text-field>
           <v-btn type="submit">Sign in</v-btn>
           <br />
-          <v-btn v-on:click="goToLogout()"> Register </v-btn>
+          <a v-on:click="goToLogout()"> Don't have an account? Click here to register. </a>
+          <br>
+          <br>
+          <br>
+          <br>
+          <br>
+          <br>
+          <br>
+          <br>
+          <br>
+          <br>
+          <br>
 
           <div></div>
         </v-form>
@@ -50,12 +69,12 @@
 </template>
 
 <script>
-import HeaderLogo from "../components/HeaderLogo.vue";
+// import HeaderLogo from "../components/HeaderLogo.vue";
 import authService from "../services/AuthService";
 
 export default {
   name: "login",
-  components: { HeaderLogo },
+  components: {  },
   data() {
     return {
       user: {

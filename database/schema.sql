@@ -119,5 +119,19 @@ CREATE TABLE client_event (
 	--CONSTRAINT FK_client_event_package_purchase_id FOREIGN KEY (package_purchase_id) REFERENCES package_purchase(package_purchase_id)
 );
 
+CREATE TABLE families (
+	family_id serial NOT NULL,
+	family_name varchar(30) NOT NULL,
+	CONSTRAINT PK_family PRIMARY KEY (family_id)
+);
+
+CREATE TABLE client_family(
+	client_id int NOT NULL,
+	family_id int NOT NULL,
+	CONSTRAINT PK_client_family PRIMARY KEY (client_id,family_id),
+	CONSTRAINT FK_client_family_client_id FOREIGN KEY (client_id) REFERENCES client_details (client_id),
+	CONSTRAINT FK_client_family_family_id FOREIGN KEY (family_id) REFERENCES families (family_id)
+);
+
 COMMIT TRANSACTION;
 

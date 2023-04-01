@@ -2,12 +2,12 @@
   <v-footer
     
     padless
-    
+    light
     min-height="200px"
-    color="#FBC02D"
+    color="#FFF8E1"
   >
     <v-col class="">
-      this is the new footer
+      Sattva Yoga Center
     </v-col>
   </v-footer>
 </template>

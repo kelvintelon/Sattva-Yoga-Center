@@ -112,6 +112,10 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         List<ClientDetails> allClients = new ArrayList<>();
 
         String sql = "SELECT * FROM client_details ORDER BY client_id;";
+//        String sql= "SELECT * FROM client_details \n" +
+//                "JOIN client_family ON client_details.client_id = client_family.client_id \n" +
+//                "JOIN families ON families.family_id = client_family.family_id \n" +
+//                "ORDER BY client_details.client_id;";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
         while(result.next()) {
             ClientDetails clientDetails = mapRowToClient(result);
@@ -121,9 +125,22 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
             clientDetails.setQuick_details("("+clientDetails.getClient_id()+")" + " " + clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
 
+            String familyName = getFamilyNameByClientId(clientDetails.getClient_id());
+            clientDetails.setFamily_name(familyName);
             allClients.add(clientDetails);
         }
         return allClients;
+    }
+
+    public String getFamilyNameByClientId(int clientId){
+        String sql = "SELECT family_name from families \n" +
+                "JOIN client_family ON families.family_id = client_family.family_id \n" +
+                "WHERE client_id = ?";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, clientId);
+        if(result.next()){
+            return result.getString("family_name");
+        }
+        return "";
     }
 
     @Override

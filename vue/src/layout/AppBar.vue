@@ -3,7 +3,7 @@
   <v-app-bar
     app
     elevation="1"
-    color="#FBC02D"
+    color="#F9A825"
     dark
     prominent
     famde-img-on-scroll
@@ -14,7 +14,7 @@
     <template v-slot:img="{ props }">
       <v-img v-bind="props"></v-img>
     </template>
-    <v-menu bottom right>
+    <v-menu offset-y bottom right>
       <template v-slot:activator="{ on, attrs }">
         <v-btn v-bind="attrs" v-on="on" icon tile>
           <v-icon>mdi-menu</v-icon>
@@ -22,12 +22,12 @@
       </template>
       <div></div>
       <v-list>
-        <v-list-item v-for="(item, i) in items" :key="i">
-          <v-list-item-title>{{ item.link }}</v-list-item-title>
-        </v-list-item>
+        <v-list-item v-for="(link) in links" :key="link.text" router :to="link.route">
+          <v-list-item-title>Login</v-list-item-title>
+         </v-list-item>
       </v-list>
     </v-menu>
-    <v-spacer></v-spacer>
+    
     <HeaderLogo/>
     <v-spacer></v-spacer>
   </v-app-bar>
@@ -41,7 +41,9 @@ export default {
     data() {
         return {
             menu: false,
-            items: [{ link: "logout" }],
+            links: [
+              { text: '  Login  ', route: '/login'},
+            ]
         };
     },
     methods: {
