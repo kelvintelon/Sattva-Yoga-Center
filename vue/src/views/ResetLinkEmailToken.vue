@@ -149,10 +149,64 @@
           ></v-row>
           <v-spacer></v-spacer
         ></v-row>
+        <br><br>
+          <v-row justify="center">
+    <v-dialog
+      v-model="dialog3"
+      persistent
+      max-width="600px"
+    >
+      <template v-slot:activator="{ on, attrs }">
+        <v-btn
+          color="deep-orange lighten-2"
+          dark
+          v-bind="attrs"
+          v-on="on"
+          @click="sendEmailTokenRetrieveUsername"
+        >
+          Retrieve Username
+        </v-btn>
+      </template>
+      <v-card>
+        <v-card-title>
+          <span class="text-h5">Please This Username</span>
+        </v-card-title>
+        <v-card-text>
+          <v-container>
+            <v-row>
+
+              <v-col cols="12">
+                 <span class="text-h4" style="color: blue">{{this.retrievedUsername}}</span>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="blue darken-1"
+            text
+            @click="dialog3 = false"
+          >
+            Close
+          </v-btn>
+          <v-btn
+            color="blue darken-1"
+            text
+            @click="showResetPassword"
+          >
+            Would You Like To Reset password?
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </v-row>
       </v-col>
       <v-spacer></v-spacer>
     </v-row>
     <v-row></v-row>
+    <br>
+    <br>
   </v-container>
 </template>
 
@@ -176,6 +230,7 @@ export default {
         confirmPassword: "",
         token: "",
       },
+      retrievedUsername: "",
       show1: false,
       userNameRules: [
         (v) => !!v || "Username is required",
@@ -191,18 +246,32 @@ export default {
       clientProfile: {},
       dialog: false,
       dialog2: false,
+      dialog3: false,
       resetPasswordErrors: false,
       resetPasswordErrorsMsg: "",
     };
   },
   created() {
+    this.$router.replace(`${this.$route.path}?token=${this.$route.query.token}`)
     // call method to validate token
     this.checkTokenForValidation();
   },
   methods: {
+    showResetPassword() {
+      this.dialog3 = false;
+      this.dialog2 = true;
+    },
+    sendEmailTokenRetrieveUsername() {
+      authService.sendEmailTokenRetrieveUsername(this.$route.query.token)
+      .then((response) => {
+        if (response.status == 200) {
+          this.retrievedUsername = response.data;
+        }
+      })
+    },
     checkTokenForValidation() {
       authService
-        .checkIfTokenIsValid(this.$route.params.emailToken)
+        .checkIfTokenIsValid(this.$route.query.token)
         .then((response) => {
           if (response.status == 200) {
             if (response.data == "Invalid JWT") {
@@ -216,7 +285,7 @@ export default {
     },
     checkTokenForResetUsernameAndPassword() {
       authService
-        .checkIfTokenIsValid(this.$route.params.emailToken)
+        .checkIfTokenIsValid(this.$route.query.token)
         .then((response) => {
           if (response.status == 200) {
             if (response.data == "Invalid JWT") {
@@ -232,7 +301,7 @@ export default {
     },
     checkTokenForResetPassword() {
       authService
-        .checkIfTokenIsValid(this.$route.params.emailToken)
+        .checkIfTokenIsValid(this.$route.query.token)
         .then((response) => {
           if (response.status == 200) {
             if (response.data == "Invalid JWT") {
@@ -252,7 +321,7 @@ export default {
         this.resetPasswordErrorsMsg =
           "Password & Confirm Password do not match.";
       } else {
-        this.user.token = this.$route.params.emailToken;
+        this.user.token = this.$route.query.token;
         authService
           .resetUsernameAndPassword(this.user)
           .then((response) => {
@@ -276,7 +345,7 @@ export default {
         this.resetPasswordErrorsMsg =
           "Password & Confirm Password do not match.";
       } else {
-        this.passwordObject.token = this.$route.params.emailToken;
+        this.passwordObject.token = this.$route.query.token;
         authService
           .resetPassword(this.passwordObject)
           .then((response) => {

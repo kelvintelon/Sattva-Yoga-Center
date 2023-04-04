@@ -20,6 +20,8 @@ export default {
   },
   resetPassword(passwordObject) {
     return axios.put('resetPassword', passwordObject)
-  }
-
+  },
+  sendEmailTokenRetrieveUsername(emailToken) {
+  return axios.get(`/getUsernameFromEmailToken/${emailToken}`)
+  },
 }

@@ -171,7 +171,8 @@ const router = new Router({
         requiresAuth: true
       }
     },{
-    path:"/resetLink/:emailToken",
+    path: "/resetLink",
+    query:":emailToken",
     name:"reset-link-email-token",
     component: ResetLinkEmailToken,
     meta: {

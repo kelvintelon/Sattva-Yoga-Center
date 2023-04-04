@@ -78,6 +78,11 @@
         </v-icon>
          
       </template>
+      <template v-slot:[`item.event_id`]="{ item }">
+        <v-chip :color="getColor(item)" dark>
+          {{ item.event_id }}
+        </v-chip>
+      </template>
     </v-data-table>
     <br />
     <br />
@@ -111,7 +116,16 @@
         </v-icon>  
         
       </template>
-
+      <template v-slot:[`item.event_id`]="{ item }">
+        <v-chip :color="getColor(item)" dark>
+          {{ item.event_id }}
+        </v-chip>
+      </template>
+      <template v-slot:[`item.package_purchase_id`]="{ item }">
+        <v-chip :color="getColor(item)" dark>
+          {{ item.package_purchase_id }}
+        </v-chip>
+      </template>
     </v-data-table>
   </v-container>
 </template>
@@ -161,6 +175,13 @@ export default {
     };
   },
   methods: {
+    getColor(item) {
+      if (item.package_purchase_id == 0) {
+        return "red";
+      } else {
+        return "blue";
+      }
+    },
     sendToEventPageAdminView(item){
       this.$router.push({
         name: "event-attendance-details",
