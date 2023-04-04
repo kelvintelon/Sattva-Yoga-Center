@@ -3,6 +3,7 @@ package com.sattvayoga.controller;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sattvayoga.dao.ClassDetailsDao;
 import com.sattvayoga.dao.ClientDetailsDao;
+import com.sattvayoga.dao.EventDao;
 import com.sattvayoga.dao.UserDao;
 import com.sattvayoga.model.ClassDetails;
 import com.sattvayoga.model.ClientDetails;
@@ -23,11 +24,13 @@ public class ClassDetailsController {
     private ClassDetailsDao classDetailsDao;
     private UserDao userDao;
     private ClientDetailsDao clientDetailsDao;
+    private EventDao eventDao;
 
-    public ClassDetailsController(ClassDetailsDao classDetailsDao, UserDao userDao, ClientDetailsDao clientDetailsDao) {
+    public ClassDetailsController(ClassDetailsDao classDetailsDao, UserDao userDao, ClientDetailsDao clientDetailsDao, EventDao eventDao) {
         this.classDetailsDao = classDetailsDao;
         this.userDao = userDao;
         this.clientDetailsDao = clientDetailsDao;
+        this.eventDao = eventDao;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -72,6 +75,15 @@ public class ClassDetailsController {
     @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value= "/updateClass", method = RequestMethod.PUT)
     public void updateClass(@RequestBody ClassDetails classDetails) {
+
+        // find the original class object
+        ClassDetails originalClass = classDetailsDao.getClassByClassId(classDetails.getClass_id());
+
+
+        // then apply the changes with the new class object information
+        // eventDao.updateEventsByClass(originalClass, classDetails);
+
+        // finally, update the class itself
         classDetailsDao.updateClass(classDetails);
     }
 

@@ -13,10 +13,7 @@ import java.sql.Array;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
@@ -378,6 +375,66 @@ public class JdbcEventDao implements EventDao {
         return jdbcTemplate.update(sql, event.getClass_id(), event.getEvent_name(), event.getStart_time(),
                 event.getEnd_time(), event.getColor(), event.isTimed(),
                 event.isIs_visible_online(), event.getEvent_id()) == 1;
+    }
+
+    @Override
+    public void updateEventsByClass(ClassDetails originalClass, ClassDetails updatedClass) {
+        // find all Event objects with the same start time, end time, and class_id
+
+        String sql = "SELECT * FROM events WHERE start_time >= now() AND class_id = ? ; ";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql,originalClass.getClass_id());
+        while (result.next()) {
+            Event event = mapRowToEvent(result);
+
+            Timestamp startTimeStamp = event.getStart_time();
+            Timestamp endTimeStamp = event.getEnd_time();
+
+            LocalDateTime startTimeDate = startTimeStamp.toLocalDateTime();
+            LocalDateTime endTimeDate = endTimeStamp.toLocalDateTime();
+
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
+
+            String startTimeString = dateTimeFormatter.format(startTimeDate);
+            String originalClassStartTime = originalClass.getStart_time();
+
+            LocalDateTime nextHourEndTime = startTimeDate.plusHours(1);
+
+            String actualEndTimeString = dateTimeFormatter.format(endTimeDate);
+            String expectedEndTimeString = dateTimeFormatter.format(nextHourEndTime);
+
+            // check for same start-time and end-time
+            if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString)) {
+                //just update it while you're here.
+
+                // TODO: Caution
+                // Maybe make sure no event has the same timestamps already so that you don't double book
+
+                // TODO: More Caution...
+                // What if you change the days selected?
+
+                // TODO: Possible Next step
+                // pull the new start-time and end-time timestamps that you're going to update to
+
+
+//                String updateString = "UPDATE events SET class_id = ? , " +
+//                        "event_name = ? , " +
+//                        "start_time = ? , " +
+//                        "end_time = ? , " +
+//                        "color = ? , " +
+//                        "timed = ? , " +
+//                        "is_visible_online = ? " +
+//                        "WHERE event_id = ?";
+//                jdbcTemplate.update(updateString, event.getClass_id(), event.getEvent_name(), event.getStart_time(),
+//                        event.getEnd_time(), event.getColor(), event.isTimed(),
+//                        event.isIs_visible_online(), event.getEvent_id());
+
+
+            }
+
+
+
+        }
+
     }
 
     @Override

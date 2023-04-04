@@ -27,4 +27,6 @@ public interface ClassDetailsDao {
     boolean deleteClassForClient(int classId, int userId);
 
     boolean deleteClass(int classId);
+
+    ClassDetails getClassByClassId(int classId);
 }

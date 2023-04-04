@@ -158,7 +158,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                         packagePurchaseQuantity = currentPackage;
                         hasQuantity = true;
                     }
-                    
+
 
                 }
 

@@ -44,4 +44,6 @@ public interface EventDao {
     List<ClientEvent> getRedFlaggedClientEventsByClientId(int clientId);
 
     void reconcileClassWithPackageId(int packageId, int eventId, int clientId);
+
+    void updateEventsByClass(ClassDetails originalClass, ClassDetails updatedClass);
 }
