@@ -338,6 +338,7 @@ export default {
           if (response.status == 201) {
             alert("Successfully added classes to this client");
             this.getClientEventTable();
+            this.$root.$refs.A.getActivePurchaseServerRequest();
             this.selectedClasses = [];
           } else {
             alert("Error adding events to this client");

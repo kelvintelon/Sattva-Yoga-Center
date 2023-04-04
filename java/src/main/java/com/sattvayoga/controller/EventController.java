@@ -137,7 +137,7 @@ public class EventController {
                 break;
             }
             // update each client-event object row individually using the packagePurchase ID
-            eventDao.reconcileClassWithPackageId(packagePurchase.getPackage_id(), eventList.get(i).getEvent_id(), clientId);
+            eventDao.reconcileClassWithPackageId(packagePurchase.getPackage_purchase_id(), eventList.get(i).getEvent_id(), clientId);
 
             // decrement each time if it's a bundle.
             if (!packagePurchase.isIs_subscription() && packagePurchase.getClasses_remaining() > 0) {
