@@ -352,18 +352,20 @@ export default {
 
           if (this.packages.length > 0) {
             
-            
+            let foundSubscription = false;
             // loop to find another package that is a subscription 
             for (let index = 0; index < this.packages.length; index++) {
               if(this.packages[index].is_subscription && this.selectedPackage.is_subscription){
-                
+                foundSubscription = true;
                  // use that expiration date to create the activation date and expiration date of the new subscription
                  let formatDate = this.packages[index].expiration_date;
                  formatDate = formatDate.replaceAll("-","/")
-                 alert(formatDate)
+                 
                 let newActivationDate = new Date(formatDate);
+               
                 newActivationDate = newActivationDate.setDate(newActivationDate.getDate() + 1);
                 this.packagePurchase.activation_date = new Date(newActivationDate);
+               
                 this.packagePurchase.expiration_date = this.addMonths(
                   new Date(newActivationDate),
                   this.selectedPackage.subscription_duration);
@@ -377,7 +379,7 @@ export default {
             this.packagePurchase.expiration_date = this.addMonths(
                   new Date(),
                   12);
-            } else {
+            } else if (!foundSubscription) {
               this.packagePurchase.activation_date = new Date();
             if (this.selectedPackage.subscription_duration > 0) {
                 this.packagePurchase.expiration_date = this.addMonths(
