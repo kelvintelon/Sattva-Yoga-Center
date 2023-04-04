@@ -195,10 +195,12 @@ export default {
           today = yyyy + "-" + mm + "-" + dd;
 
           this.packages = response.data.filter((item) => {
-            return item.expiration_date >= today || item.classes_remaining > 0;
+            // return item.expiration_date >= today || item.classes_remaining > 0;
+            return (item.is_subscription && item.expiration_date)|| (!item.is_subscription && item.expiration_date >= today && item.classes_remaining>0);
           });
           this.packages.forEach((item) => {
             item.date_purchased = new Date(item.date_purchased);
+            item.expiration_date = new Date(item.expiration_date);
           });
           this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
           this.activePackageList = this.$store.state.activePackageList;
@@ -242,7 +244,7 @@ export default {
             } else {
               this.quantityPackages =
                 this.$store.state.activePackageList.filter((item) => {
-                  return item.is_subscription == false && (item.expiration_date == null || todaysDate < item.expiration_date);
+                  return item.is_subscription == false && (item.expiration_date == null || todaysDate < item.expiration_date)&& item.classes_remaining > 0;
                 });
               this.initial = this.quantityPackages[0];
               this.quantityPackages.forEach((item) => {
@@ -270,6 +272,7 @@ export default {
         // console.log(this.initial1.expiration_date)
         // console.log(this.eventClientSignUp.date > this.initial1.expiration_date)
         // console.log(this.hasSubscriptionPackage)
+        // console.log(this.eventClientSignUp)
         this.clientEvents.forEach((item) => {
           if (item.event_id == this.eventClientSignUp.event_id) {
             alert("You have already signed up for this class!");
@@ -295,6 +298,9 @@ export default {
                   alert(
                     "You have used your quantity package. Classes remaining reduced by 1."
                   );
+
+
+
                 }
                 // call method that updates the client_class_table
                 // update client.is_new_client to false through mutation

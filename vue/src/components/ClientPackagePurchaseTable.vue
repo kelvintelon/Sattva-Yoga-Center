@@ -249,9 +249,11 @@ export default {
             this.packagePurchase.is_expired = false;
             this.packagePurchase.classes_remaining =
               this.purchaseItem.classes_amount;
+            if(this.purchaseItem.is_subscription == false){
               this.packagePurchase.expiration_date = this.addMonths(
                   new Date(),
                   12);
+            }
             packagePurchaseService
               .createPackagePurchase(this.packagePurchase)
               .then((response) => {
