@@ -379,7 +379,7 @@ export default {
             this.packagePurchase.expiration_date = this.addMonths(
                   new Date(),
                   12);
-            } else if (!foundSubscription) {
+            } else if (!foundSubscription && this.selectedPackage.is_subscription) {
               this.packagePurchase.activation_date = new Date();
             if (this.selectedPackage.subscription_duration > 0) {
                 this.packagePurchase.expiration_date = this.addMonths(
