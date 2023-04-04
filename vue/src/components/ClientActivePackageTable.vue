@@ -246,6 +246,8 @@ export default {
           this.getActivePurchaseServerRequest();
           this.$root.$refs.B.getPackageHistoryTable();
           this.$root.$refs.C.getClientDetails();
+          this.$root.$refs.D.getClientEventTable();
+          this.$root.$refs.E.getEventDetailsCall();
           this.snackBarReconcilePackagesSuccessful = true;
           
         } else {
@@ -383,7 +385,7 @@ export default {
                   // call method that updates the list of active packages
                   this.getActivePurchaseServerRequest();
                   this.$root.$refs.B.getPackageHistoryTable();
-                  
+                 
                   this.selectedPackage = {};
                   this.packagePurchase = {};
                   this.close();

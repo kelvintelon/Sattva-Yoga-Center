@@ -776,6 +776,7 @@ export default {
     // TODO: Change the following so you can redirect users who stumbled onto this page right here in this moment
 
     this.getEventDetailsCall();
+    this.$root.$refs.E = this;
   },
   computed: {
     returnCorrectEndTime() {

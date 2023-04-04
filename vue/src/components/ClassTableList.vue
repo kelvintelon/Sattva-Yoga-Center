@@ -55,8 +55,16 @@
                           label="Teacher Names"
                           required
                         ></v-select>
+                       
+                      <v-select
+                        label="Start Time"
+                        :items="allTimes"
+                        v-model="classDetails.start_time"
+                        variant="underlined"
+                      ></v-select>
+                    
                         <!-- START OF TIME PICKER -->
-                        <v-menu
+                        <!-- <v-menu
                           ref="menu"
                           v-model="dropDownOpen"
                           :close-on-content-click="false"
@@ -123,10 +131,10 @@
                               <v-btn text color="primary" @click="confirm()">
                                 OK
                               </v-btn></v-time-picker
-                            >
-                            <!-- END OF TIME PICKER -->
+                            > 
+                          
                           </v-container>
-                        </v-menu>
+                        </v-menu> --> <!-- END OF TIME PICKER -->
                         <v-select
                           v-model.number="classDetails.class_duration"
                           :items="durationOptions"
@@ -220,8 +228,14 @@
                           label="Teacher Names"
                           required
                         ></v-select>
+                        <v-select
+                        label="Start Time"
+                        :items="allTimes"
+                        v-model="editedItem.start_time"
+                        variant="underlined"
+                      ></v-select>
                         <!-- START OF TIME PICKER -->
-                        <v-menu
+                        <!-- <v-menu
                           ref="menu"
                           v-model="menu4"
                           :close-on-content-click="false"
@@ -285,10 +299,10 @@
                               <v-btn text color="primary" @click="confirm()">
                                 OK
                               </v-btn></v-time-picker
-                            >
-                            <!-- END OF TIME PICKER -->
+                            > 
+                            
                           </v-container>
-                        </v-menu>
+                        </v-menu> --> <!-- END OF TIME PICKER -->
                         <v-select
                           v-model.number="editedItem.class_duration"
                           :items="durationOptions"
@@ -357,7 +371,7 @@
             <v-dialog v-model="dialogDelete" max-width="500px">
               <v-card>
                 <v-card-title class="text-h5"
-                  >Are you sure you want to delete this class?</v-card-title
+                  >Sure you want to delete this class?</v-card-title
                 >
                 <v-card-title class="text-h6"
                   >This will delete the class sign up list as well</v-card-title
@@ -418,6 +432,103 @@ export default {
       dialog: false,
       dialog2: false,
       dialogDelete: false,
+      allTimes: [
+      "12:00 AM",
+      "12:15 AM",
+      "12:30 AM",
+      "12:45 AM",
+      "1:00 AM",
+      "1:15 AM",
+      "1:30 AM",
+      "1:45 AM",
+      "2:00 AM",
+      "2:15 AM",
+      "2:30 AM",
+      "2:45 AM",
+      "3:00 AM",
+      "3:15 AM",
+      "3:30 AM",
+      "3:45 AM",
+      "4:00 AM",
+      "4:15 AM",
+      "4:30 AM",
+      "4:45 AM",
+      "5:00 AM",
+      "5:15 AM",
+      "5:30 AM",
+      "5:45 AM",
+      "6:00 AM",
+      "6:15 AM",
+      "6:30 AM",
+      "6:45 AM",
+      "7:00 AM",
+      "7:15 AM",
+      "7:30 AM",
+      "7:45 AM",
+      "8:00 AM",
+      "8:15 AM",
+      "8:30 AM",
+      "8:45 AM",
+      "9:00 AM",
+      "9:15 AM",
+      "9:30 AM",
+      "9:45 AM",
+      "10:00 AM",
+      "10:15 AM",
+      "10:30 AM",
+      "10:45 AM",
+      "11:00 AM",
+      "11:15 AM",
+      "11:30 AM",
+      "11:45 AM",
+      "12:00 PM",
+      "12:15 PM",
+      "12:30 PM",
+      "12:45 PM",
+      "1:00 PM",
+      "1:15 PM",
+      "1:30 PM",
+      "1:45 PM",
+      "2:00 PM",
+      "2:15 PM",
+      "2:30 PM",
+      "2:45 PM",
+      "3:00 PM",
+      "3:15 PM",
+      "3:30 PM",
+      "3:45 PM",
+      "4:00 PM",
+      "4:15 PM",
+      "4:30 PM",
+      "4:45 PM",
+      "5:00 PM",
+      "5:15 PM",
+      "5:30 PM",
+      "5:45 PM",
+      "6:00 PM",
+      "6:15 PM",
+      "6:30 PM",
+      "6:45 PM",
+      "7:00 PM",
+      "7:15 PM",
+      "7:30 PM",
+      "7:45 PM",
+      "8:00 PM",
+      "8:15 PM",
+      "8:30 PM",
+      "8:45 PM",
+      "9:00 PM",
+      "9:15 PM",
+      "9:30 PM",
+      "9:45 PM",
+      "10:00 PM",
+      "10:15 PM",
+      "10:30 PM",
+      "10:45 PM",
+      "11:00 PM",
+      "11:15 PM",
+      "11:30 PM",
+    ],
       headers: [
         { text: "Class ID", align: "start", sortable: true, value: "class_id" },
         {

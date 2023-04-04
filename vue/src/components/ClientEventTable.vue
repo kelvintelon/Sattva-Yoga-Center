@@ -466,6 +466,8 @@ export default {
   created() {
     this.getClientEventTable();
 
+    this.$root.$refs.D = this;
+
     if (this.$store.state.user.username == "admin") {
       this.clientEventHeaders.unshift({
         text: "Event ID",

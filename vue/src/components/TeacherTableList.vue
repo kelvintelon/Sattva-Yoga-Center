@@ -168,6 +168,12 @@
     <template v-slot:no-data>
       <v-btn color="primary" @click="initialize"> Reset </v-btn>
     </template>
+    <template v-slot:[`item.is_teacher_active`]="{ item }">
+        <v-simple-checkbox
+          v-model="item.is_teacher_active"
+          disabled
+        ></v-simple-checkbox>
+      </template>
   </v-data-table>
 </template>
 
