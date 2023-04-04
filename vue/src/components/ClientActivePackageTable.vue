@@ -27,7 +27,7 @@
         >
           Close
         </v-btn>
-        <v-btn color="white" text v-bind="attrs" @click="allowClientReconcile">
+        <v-btn color="white" text v-bind="attrs" @click.prevent="allowClientReconcile">
           Continue
         </v-btn>
       </template>
@@ -133,7 +133,7 @@
                 <v-btn color="blue darken-1" text @click="close">
                   Cancel
                 </v-btn>
-                <v-btn color="blue darken-1" text @click="addPackageForClient">
+                <v-btn color="blue darken-1" text @click.prevent="addPackageForClient">
                   Save
                 </v-btn>
               </v-card-actions>
@@ -346,7 +346,49 @@ export default {
           this.packagePurchase.date_purchased = jsonDate;
           this.packagePurchase.package_id = this.selectedPackage.package_id;
           this.packagePurchase.is_expired = false;
-          if (this.selectedPackage.is_subscription) {
+
+         
+          // if you're buying a subscription and there's a subscription that's active
+
+          if (this.packages.length > 0) {
+            
+            
+            // loop to find another package that is a subscription 
+            for (let index = 0; index < this.packages.length; index++) {
+              if(this.packages[index].is_subscription && this.selectedPackage.is_subscription){
+                
+                 // use that expiration date to create the activation date and expiration date of the new subscription
+                 let formatDate = this.packages[index].expiration_date;
+                 formatDate = formatDate.replaceAll("-","/")
+                 alert(formatDate)
+                let newActivationDate = new Date(formatDate);
+                newActivationDate = newActivationDate.setDate(newActivationDate.getDate() + 1);
+                this.packagePurchase.activation_date = new Date(newActivationDate);
+                this.packagePurchase.expiration_date = this.addMonths(
+                  new Date(newActivationDate),
+                  this.selectedPackage.subscription_duration);
+              }
+              
+            }
+            
+            // what to do if you don't find a subscription
+            if (!this.selectedPackage.is_subscription) {
+             
+            this.packagePurchase.expiration_date = this.addMonths(
+                  new Date(),
+                  12);
+            } else {
+              this.packagePurchase.activation_date = new Date();
+            if (this.selectedPackage.subscription_duration > 0) {
+                this.packagePurchase.expiration_date = this.addMonths(
+                  new Date(),
+                  this.selectedPackage.subscription_duration);
+              }
+            }
+            
+          }
+
+          if (this.selectedPackage.is_subscription && this.packages.length == 0) {
             this.packagePurchase.activation_date = new Date();
             if (this.selectedPackage.subscription_duration > 0) {
                 this.packagePurchase.expiration_date = this.addMonths(
@@ -354,11 +396,12 @@ export default {
                   this.selectedPackage.subscription_duration);
               }
           }
-           else {
+           if (!(this.selectedPackage.is_subscription) && this.packages.length == 0) {
              this.packagePurchase.expiration_date = this.addMonths(
                   new Date(),
                   12);
            }
+
           if (this.showPercentDiscount) { 
             // if it's a percent
             let num = this.selectedPackage.package_cost * (1 - (this.percentDiscount/100));
@@ -372,7 +415,7 @@ export default {
              this.packagePurchase.total_amount_paid = this.selectedPackage.package_cost
           }
            
-              this.selectedPackage.package_cost;
+            //  this.selectedPackage.package_cost;
             this.packagePurchase.is_monthly_renew = false;
              this.packagePurchase.classes_remaining =
               this.selectedPackage.classes_amount;
@@ -385,7 +428,8 @@ export default {
                   // call method that updates the list of active packages
                   this.getActivePurchaseServerRequest();
                   this.$root.$refs.B.getPackageHistoryTable();
-                 
+                  this.$root.$refs.D.getClientEventTable();
+                  this.$root.$refs.E.getEventDetailsCall();
                   this.selectedPackage = {};
                   this.packagePurchase = {};
                   this.close();

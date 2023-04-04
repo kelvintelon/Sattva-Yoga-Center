@@ -315,7 +315,7 @@ export default {
       });
     },
     close() {
-      this.selectedClass = {};
+      this.selectedClasses = [];
       this.dialog = false;
     },
     addClassesForClient() {
