@@ -432,7 +432,7 @@ export default {
                   this.getActivePurchaseServerRequest();
                   this.$root.$refs.B.getPackageHistoryTable();
                   this.$root.$refs.D.getClientEventTable();
-                  this.$root.$refs.E.getEventDetailsCall();
+                 
                   this.selectedPackage = {};
                   this.packagePurchase = {};
                   this.close();

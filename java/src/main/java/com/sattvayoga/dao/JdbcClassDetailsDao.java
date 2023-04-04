@@ -68,6 +68,21 @@ public class JdbcClassDetailsDao implements ClassDetailsDao {
     }
 
     @Override
+    public ClassDetails getClassByClassId(int classId) {
+        String sql = "SELECT * FROM class_details WHERE class_id = ?;";
+        ClassDetails classDetails = new ClassDetails();
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql,classId);
+        if (result.next()) {
+            try {
+                classDetails = mapRowToClass(result);
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+        return classDetails;
+    }
+
+    @Override
     public List<ClassDetails> getAllClientClasses(int userId) throws SQLException {
         List<ClassDetails> allClientClass = new ArrayList<>();
         String sql = "SELECT class_details.class_id, teacher_id, class_duration, is_paid, class_description, " +

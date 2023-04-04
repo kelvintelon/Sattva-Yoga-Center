@@ -339,6 +339,9 @@ export default {
             alert("Successfully added classes to this client");
             this.getClientEventTable();
             this.$root.$refs.A.getActivePurchaseServerRequest();
+            this.$root.$refs.B.getPackageHistoryTable();
+            this.$root.$refs.C.getClientDetails();
+
             this.selectedClasses = [];
           } else {
             alert("Error adding events to this client");

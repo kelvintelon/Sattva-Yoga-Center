@@ -117,6 +117,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         // set up the one packagePurchase Object to return
         PackagePurchase packagePurchaseQuantity = new PackagePurchase();
         PackagePurchase packagePurchaseSubscription = new PackagePurchase();
+        int classAmount = 100;
         boolean hasQuantity = false;
         for (int i = 0; i < packagePurchaseList.size(); i++) {
             PackagePurchase currentPackage = packagePurchaseList.get(i);
@@ -152,8 +153,12 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
                 int numberValueFromComparison = packageExpiration.compareTo(eventTime);
                 if (numberValueFromComparison > 0) {
-                    packagePurchaseQuantity = currentPackage;
-                    hasQuantity = true;
+                    if (currentPackage.getClasses_remaining() < classAmount) {
+                        classAmount = currentPackage.getClasses_remaining();
+                        packagePurchaseQuantity = currentPackage;
+                        hasQuantity = true;
+                    }
+
 
                 }
 
