@@ -28,6 +28,9 @@ public class ClientDetails {
     //helper
     private String family_name;
 
+    //HELPER
+    private String username;
+
     public ClientDetails(int client_id, String last_name, String first_name, boolean is_client_active, boolean is_new_client,String street_address, String city, String state_abbreviation, String zip_code, String phone_number, boolean is_on_email_list, String email, boolean has_record_of_liability, Timestamp date_of_entry, int user_id) {
         this.client_id = client_id;
         this.last_name = last_name;
@@ -227,5 +230,13 @@ public class ClientDetails {
 
     public void setFamily_name(String family_name) {
         this.family_name = family_name;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }

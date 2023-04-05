@@ -43,7 +43,7 @@
       <v-row justify="center" align="center">
         <v-col cols="5 ">
           <v-card align="center" justify="center"  class="rounded-xl  py-7 d-flex flex-column justify-space-around justify-space-between">
-            {{ clientDetails.first_name }} {{ clientDetails.last_name }} ||
+          <span class="text-h5" style="color: blue">{{ clientDetails.first_name }} {{ clientDetails.last_name }} </span>  Username: {{clientDetails.username}} 
             <v-btn @click.prevent="showEditForm = !showEditForm" outlined color="primary" class="mx-2 my-3"
               >Edit<v-icon dark>
         mdi-pencil

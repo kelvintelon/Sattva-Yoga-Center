@@ -412,6 +412,43 @@ public class JdbcEventDao implements EventDao {
                 // TODO: More Caution...
                 // What if you change the days selected?
 
+                // there are 7 possible days
+                // there will always be at least one
+
+                // TODO:
+                // Find out what day this event is.
+
+
+                // *ORIGINAL* DATE RANGE IS TUE,THUR
+
+                // TODO: Let's say it's Tuesday, let's change all the Tuesdays
+
+                // NEW DATE RANGE IS MON,WED,FRI
+
+                // TODO:
+                //  -CHECK IF CURRENT DAY IS WITHIN NEW DATE RANGE
+                //  -   IF IT'S NOT -> THEN CHECK THE NEXT DAY
+
+                // 1. loop through new date range: start on MON
+                // loop through the original date range for a matching day first (less work maybe?):
+                // if it can't find it thenstarts ON *MON*
+                // UPDATE THE TIMES FOR MONDAY
+
+                // TODO: loop through the new date range first
+
+                // TODO:
+                //  -whittle down the original date range,
+                //  -delete/update/or add more events if needed
+                //  -
+                //
+
+
+
+
+
+                // should I store the current date range into datastructures?
+
+
                 // TODO: Possible Next step
                 // pull the new start-time and end-time timestamps that you're going to update to
 

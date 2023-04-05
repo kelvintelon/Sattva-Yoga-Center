@@ -2,7 +2,31 @@
   <v-card>
     <v-card-title>
       Client List
-
+       <v-divider class="mx-4" inset vertical></v-divider>
+          <v-btn
+            color="primary"
+            dark
+            class="mb-2"
+            v-bind="attrs"
+            v-on="on"
+            @click.prevent="emailRecipients"
+            title="Email Selected Client(s)"
+          >
+            <v-icon>mdi-order-bool-ascending-variant</v-icon>
+            <v-icon>mdi-email</v-icon>
+          </v-btn>
+          <v-divider class="mx-4" inset vertical></v-divider>
+          <v-btn
+            color="#9948B6ED"
+            dark
+            class="mb-2"
+            v-bind="attrs"
+            v-on="on"
+            @click.prevent="emailRecipientsFromEmailList"
+            title="Email List"
+          >
+            <v-icon>mdi-email-plus</v-icon>
+          </v-btn>
       <v-spacer></v-spacer>
 
       <v-text-field
@@ -12,6 +36,7 @@
         single-line
         hide-details
       ></v-text-field>
+      
 
       <v-spacer></v-spacer>
 
@@ -444,6 +469,7 @@ export default {
       familyList: [],
       newFamily: "",
       selectedFamily: {},
+      emailLink: "https://mail.google.com/mail/u/0/?fs=1&tf=cm&to=",
     };
   },
   created() {
@@ -457,6 +483,28 @@ export default {
         name: "client-details-admin-view",
         params: { clientId: object.client_id },
       });
+    },
+    emailRecipients() {
+      if (this.selectedClients.length > 0) {
+      this.selectedClients.forEach((item) => {
+        this.emailLink = this.emailLink + item.email + ";";
+      });
+      // window.location.href = this.emailLink;
+      window.open(this.emailLink, '_blank').focus();
+      this.emailLink = "https://mail.google.com/mail/u/0/?fs=1&tf=cm&to=";
+      } else {
+        alert("Please select at least one user to email")
+      }
+    },
+    emailRecipientsFromEmailList() {
+      this.clientList.forEach((item) => {
+        if (item.is_on_email_list) {
+          this.emailLink = this.emailLink + item.email + ";";
+        }
+      });
+      // window.location.href = this.emailLink;
+      window.open(this.emailLink, '_blank').focus();
+      this.emailLink = "https://mail.google.com/mail/u/0/?fs=1&tf=cm&to=";
     },
     update() {
       this.checkEditForm();
