@@ -95,6 +95,7 @@
             title="Email Selected Client(s)"
           >
             <v-icon>mdi-order-bool-ascending-variant</v-icon>
+            <v-icon>mdi-email</v-icon>
           </v-btn>
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-btn
@@ -736,11 +737,16 @@ export default {
       });
     },
     emailRecipients() {
+       if (this.selectedClientsFromRoster.length > 0) {
       this.selectedClientsFromRoster.forEach((item) => {
         this.emailLink = this.emailLink + item.email + ";";
       });
-      window.location.href = this.emailLink;
+      // window.location.href = this.emailLink;
+      window.open(this.emailLink, '_blank').focus();
       this.emailLink = "https://mail.google.com/mail/u/0/?fs=1&tf=cm&to=";
+      } else {
+        alert("Please select at least one user to email")
+      }
     },
     emailRecipientsFromEmailList() {
       this.listOfSignedUpClients.forEach((item) => {
@@ -748,7 +754,8 @@ export default {
           this.emailLink = this.emailLink + item.email + ";";
         }
       });
-      window.location.href = this.emailLink;
+      // window.location.href = this.emailLink;
+      window.open(this.emailLink, '_blank').focus();
       this.emailLink = "https://mail.google.com/mail/u/0/?fs=1&tf=cm&to=";
     },
     getEventDetailsCall() {

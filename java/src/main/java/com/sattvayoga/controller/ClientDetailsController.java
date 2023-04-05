@@ -87,6 +87,7 @@ public class ClientDetailsController {
     @RequestMapping(path = "/getClientDetailsByClientId/{clientId}", method = RequestMethod.GET)
     public ClientDetails getClientDetailsByClientId(@PathVariable int clientId) {
         ClientDetails clientDetails = clientDetailsDao.findClientByClientId(clientId);
+        clientDetails.setUsername(userDao.getUserById(clientDetails.getUser_id()).getUsername());
         clientDetails.setRedFlag(eventDao.getRedFlaggedClientEventsByClientId(clientId).size() > 0);
         return clientDetails;
     }
