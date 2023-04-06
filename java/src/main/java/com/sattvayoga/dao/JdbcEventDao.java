@@ -1,12 +1,9 @@
 package com.sattvayoga.dao;
 
 import com.sattvayoga.model.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
 import java.sql.Array;
@@ -383,11 +380,19 @@ public class JdbcEventDao implements EventDao {
 
         String sql = "SELECT * FROM events WHERE start_time >= now() AND class_id = ? ; ";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql,originalClass.getClass_id());
+
+
+
         while (result.next()) {
+            // PULL THE EVENT
             Event event = mapRowToEvent(result);
 
+            // check this current event and compare if it has the same start-time and end-time as the original
+            // filtering it down so that we don't accidentally change any events that weren't exact matches
+            // CONVERSION ROUTINE TO EXTRACT THE HOUR AND MINUTES am/pm (e.g. "06:00 am")
             Timestamp startTimeStamp = event.getStart_time();
             Timestamp endTimeStamp = event.getEnd_time();
+
 
             LocalDateTime startTimeDate = startTimeStamp.toLocalDateTime();
             LocalDateTime endTimeDate = endTimeStamp.toLocalDateTime();
@@ -396,20 +401,116 @@ public class JdbcEventDao implements EventDao {
 
             String startTimeString = dateTimeFormatter.format(startTimeDate);
             String originalClassStartTime = originalClass.getStart_time();
+            String updatedClassStartTime = updatedClass.getStart_time();
 
-            LocalDateTime nextHourEndTime = startTimeDate.plusHours(1);
+            LocalDateTime nextHourEndTime = startTimeDate;
+
+            int originalClassDuration = originalClass.getClass_duration();
+            int updatedClassDuration = updatedClass.getClass_duration();
+            // GRAB THE CORRECT "06:30" END TIME  If it's not an hour
+            if (originalClassDuration != 60) {
+              nextHourEndTime = startTimeDate.plusMinutes(originalClassDuration);
+            } else {
+                nextHourEndTime = startTimeDate.plusHours(1);
+            }
 
             String actualEndTimeString = dateTimeFormatter.format(endTimeDate);
             String expectedEndTimeString = dateTimeFormatter.format(nextHourEndTime);
 
-            // check for same start-time and end-time
+            // Check if This event had already been updated thus it isn't an exact match and something to change across the board
+
             if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString)) {
                 //just update it while you're here.
 
-                // TODO: Caution
+                // Happy Path: The date range never changed
+
+                // CREATE YOUR PROPERTIES
+
+                String[] originalDateRangeArray = originalClass.getDate_range();
+                String[] updateDateRangeArray = updatedClass.getDate_range();
+
+                // check the size first
+
+                int sizeOfUpdatedClassDateRange = updateDateRangeArray.length;
+                int sizeOfOriginalClassDateRange = originalDateRangeArray.length;
+                boolean sameDateRange = true;
+                if(sizeOfOriginalClassDateRange == sizeOfUpdatedClassDateRange) {
+                    // compare to see if they have the same days
+
+                    for (int i = 0; i < updateDateRangeArray.length; i++) {
+                        boolean foundMatch = false;
+                        for (int j = 0; j < originalDateRangeArray.length; j++) {
+                            if (updateDateRangeArray[i] == originalDateRangeArray[j]) {
+                                foundMatch = true;
+                            }
+                        }
+                        if (!foundMatch) {
+                            sameDateRange = false;
+                        }
+                    }
+                }
+
+                // Check if They have the same start time and have the same duration, which means there's nothing to change time-wise
+
+                boolean sameTimes = false;
+                if (startTimeString.equals(updatedClassStartTime) && (originalClassDuration==updatedClassDuration)) {
+                    sameTimes = true;
+                }
+
+
+                if (sameDateRange && !sameTimes) {
+                    //TODO: ONLY CHANGE THE HOUR OF THE TIMESTAMP BECAUSE THEY KEPT THE EXACT SAME DATE RANGE
+
+                } else {
+                    // CREATE YOUR PROPERTIES
+
+                    // A date range to keep track
+                    String[] dayRange = new String[]{"Mon","Tue","Wed","Thu","Fri","Sat","Sun"};
+
+                    // TODO: sort it immediately since you have to.
+
+                    // A map
+                    Map<String, String> originalClassDateRange = new HashMap<>(ArrayToMapDateRange(originalDateRangeArray));
+
+                    // A set
+                    Set<String> updatedClassDateRange = new HashSet<>(Arrays.asList(updateDateRangeArray));
+                    Iterator<String> it = updatedClassDateRange.iterator();
+
+                    // TODO: See if the map with the updated Date Range contains the currentDay as a key
+
+                    if (originalClassDuration != 60) {
+                        // TODO:  do something special for minutes
+
+                    }
+
+                    //TODO:  do something special for an hour
+
+
+                }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                // TODO: MAKE SURE YOU DO THIS ONE
                 // Maybe make sure no event has the same timestamps already so that you don't double book
 
-                // TODO: More Caution...
+
+                // TODO: Thinking through my thoughts...
                 // What if you change the days selected?
 
                 // there are 7 possible days
@@ -472,6 +573,15 @@ public class JdbcEventDao implements EventDao {
 
         }
 
+    }
+
+    private Map<String, String> ArrayToMapDateRange(String[] originalDateRangeArray) {
+        Map<String, String> originalClassDateRange = new HashMap<>();
+        for (int i = 0; i < originalDateRangeArray.length; i++) {
+            String day = originalDateRangeArray[i];
+            originalClassDateRange.put(day,"");
+        }
+        return originalClassDateRange;
     }
 
     @Override

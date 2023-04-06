@@ -81,7 +81,7 @@ public class ClassDetailsController {
 
 
         // then apply the changes with the new class object information
-        // eventDao.updateEventsByClass(originalClass, classDetails);
+         eventDao.updateEventsByClass(originalClass, classDetails);
 
         // finally, update the class itself
         classDetailsDao.updateClass(classDetails);
@@ -92,9 +92,6 @@ public class ClassDetailsController {
     public void deleteClass (@PathVariable int classId) {
         classDetailsDao.deleteClass(classId);
     }
-
-
-
 
 
     static class ClientClassWrapper {
