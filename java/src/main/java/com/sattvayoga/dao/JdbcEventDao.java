@@ -4,6 +4,7 @@ import com.sattvayoga.model.*;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.security.core.parameters.P;
 
 import javax.sql.DataSource;
 import java.sql.Array;
@@ -379,13 +380,15 @@ public class JdbcEventDao implements EventDao {
         // find all Event objects with the same start time, end time, and class_id
 
         String sql = "SELECT * FROM events WHERE start_time >= now() AND class_id = ? ; ";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql,originalClass.getClass_id());
-
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, originalClass.getClass_id());
 
 
         while (result.next()) {
             // PULL THE EVENT
             Event event = mapRowToEvent(result);
+            event.setAttendanceList(getAttendanceByEventId(event.getEvent_id()));
+
+
 
             // check this current event and compare if it has the same start-time and end-time as the original
             // filtering it down so that we don't accidentally change any events that weren't exact matches
@@ -394,32 +397,35 @@ public class JdbcEventDao implements EventDao {
             Timestamp endTimeStamp = event.getEnd_time();
 
 
-            LocalDateTime startTimeDate = startTimeStamp.toLocalDateTime();
-            LocalDateTime endTimeDate = endTimeStamp.toLocalDateTime();
+            LocalDateTime startTimeLocalDate = startTimeStamp.toLocalDateTime();
+            LocalDateTime endTimeLocalDate = endTimeStamp.toLocalDateTime();
+
+            DayOfWeek currentDayOfWeek = startTimeLocalDate.getDayOfWeek();
+            String currentDay = currentDayOfWeek.toString().substring(0, 3);
 
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
 
-            String startTimeString = dateTimeFormatter.format(startTimeDate);
+            String startTimeString = dateTimeFormatter.format(startTimeLocalDate);
             String originalClassStartTime = originalClass.getStart_time();
             String updatedClassStartTime = updatedClass.getStart_time();
 
-            LocalDateTime nextHourEndTime = startTimeDate;
+            LocalDateTime nextHourEndTime = startTimeLocalDate;
 
             int originalClassDuration = originalClass.getClass_duration();
             int updatedClassDuration = updatedClass.getClass_duration();
             // GRAB THE CORRECT "06:30" END TIME  If it's not an hour
             if (originalClassDuration != 60) {
-              nextHourEndTime = startTimeDate.plusMinutes(originalClassDuration);
+                nextHourEndTime = startTimeLocalDate.plusMinutes(originalClassDuration);
             } else {
-                nextHourEndTime = startTimeDate.plusHours(1);
+                nextHourEndTime = startTimeLocalDate.plusHours(1);
             }
 
-            String actualEndTimeString = dateTimeFormatter.format(endTimeDate);
+            String actualEndTimeString = dateTimeFormatter.format(endTimeLocalDate);
             String expectedEndTimeString = dateTimeFormatter.format(nextHourEndTime);
 
             // Check if This event had already been updated thus it isn't an exact match and something to change across the board
 
-            if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString)) {
+            if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && event.isIs_visible_online()) {
                 //just update it while you're here.
 
                 // Happy Path: The date range never changed
@@ -434,9 +440,11 @@ public class JdbcEventDao implements EventDao {
                 int sizeOfUpdatedClassDateRange = updateDateRangeArray.length;
                 int sizeOfOriginalClassDateRange = originalDateRangeArray.length;
                 boolean sameDateRange = true;
-                if(sizeOfOriginalClassDateRange == sizeOfUpdatedClassDateRange) {
+                boolean sameSize = false;
+                String largerRange = "None";
+                if (sizeOfOriginalClassDateRange == sizeOfUpdatedClassDateRange) {
                     // compare to see if they have the same days
-
+                    sameSize = true;
                     for (int i = 0; i < updateDateRangeArray.length; i++) {
                         boolean foundMatch = false;
                         for (int j = 0; j < originalDateRangeArray.length; j++) {
@@ -448,138 +456,371 @@ public class JdbcEventDao implements EventDao {
                             sameDateRange = false;
                         }
                     }
+                } else {
+                    if (sizeOfOriginalClassDateRange > sizeOfUpdatedClassDateRange) {
+                        largerRange = "Original";
+                    } else {
+                        largerRange = "Updated";
+                    }
                 }
 
                 // Check if They have the same start time and have the same duration, which means there's nothing to change time-wise
 
                 boolean sameTimes = false;
-                if (startTimeString.equals(updatedClassStartTime) && (originalClassDuration==updatedClassDuration)) {
+                if (startTimeString.equals(updatedClassStartTime) && (originalClassDuration == updatedClassDuration)) {
                     sameTimes = true;
                 }
 
 
                 if (sameDateRange && !sameTimes) {
-                    //TODO: ONLY CHANGE THE HOUR OF THE TIMESTAMP BECAUSE THEY KEPT THE EXACT SAME DATE RANGE
+                    // FOR THIS CONDITION BLOCK ONLY CHANGE THE HOURS OF THE START AND END TIMESTAMPS
+                    // BECAUSE THEY KEPT THE EXACT SAME DATE RANGE
+
+                    // empty event Object
+                    Event newEvent = new Event();
+                    // set event ID
+                    newEvent.setEvent_id(event.getEvent_id());
+                    // set class ID
+                    newEvent.setClass_id(updatedClass.getClass_id());
+                    // set name
+                    newEvent.setEvent_name(updatedClass.getClass_description());
+                    // set color (default to blue)
+                    newEvent.setColor("blue");
+                    // set timed (default to true)
+                    newEvent.setTimed(true);
+                    // set visible to true
+                    newEvent.setIs_visible_online(true);
+
+                    // Process to Prepare the new startTime/endTime timestamps for the updated event
+                    LocalDate startTimeDate = startTimeStamp.toInstant().atZone(ZoneId.of("America/New_York")).toLocalDate();
+
+                    // Use that assigned Day to update this event for the next assigned day
+                    DayOfWeek assignedDayOfWeek = getDayOfWeekByString(currentDay);
+
+                    // finds the same or next date object at the assigned day
+                    LocalDate nextOrSameAssignedDay = startTimeDate.with(TemporalAdjusters.nextOrSame(assignedDayOfWeek));
+
+                    String startTimeStampBuilder = "";
+                    String month = String.valueOf(nextOrSameAssignedDay.getMonthValue());
+                    String day = String.valueOf(nextOrSameAssignedDay.getDayOfMonth());
+                    String year = String.valueOf(nextOrSameAssignedDay.getYear());
+
+                    String time = LocalTime.parse(updatedClass.getStart_time(), DateTimeFormatter.ofPattern("hh:mm a", Locale.US)).format(DateTimeFormatter.ofPattern("HH:mm"));
+                    startTimeStampBuilder += year + "-" + month + "-" + day + " " + time.substring(0, 5) + ":00.00";
+
+                    Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
+                    Timestamp end = new Timestamp(start.getTime());
+
+                    if (updatedClassDuration != 60) {
+                        end = new Timestamp(start.getTime() + TimeUnit.MINUTES.toMillis(updatedClassDuration));
+                    } else {
+                        end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
+                    }
+
+                    // startTime and endTime are prepared here
+                    newEvent.setStart_time(start);
+                    newEvent.setEnd_time(end);
+
+                    // Maybe make sure no event has the same timestamps already so that you don't double book
+                    boolean checkForExistingEventWithStartTime = isThereExistingEventWithStartTime(newEvent);
+
+                    if (!checkForExistingEventWithStartTime) {
+                        updateEventDetails(newEvent);
+                    }
+
 
                 } else if (!sameDateRange && !sameTimes) {
                     // CREATE YOUR PROPERTIES
 
                     // A date range to keep track
-                    String[] dayRange = new String[]{"Mon","Tue","Wed","Thu","Fri","Sat","Sun"};
+                    String[] dayRange = new String[]{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
 
-                    // TODO: sort it immediately since you have to.
+                    // sort it immediately since you have to.
+                    int newPosition = 0;
+                    int originalPosition = 0;
 
-                    // A map
-                    Map<String, String> originalClassDateRange = new HashMap<>(ArrayToMapDateRange(originalDateRangeArray));
+                    // sort the dayRange to keep track
+                    String[] orderedDayRange = new String[dayRange.length];
 
-                    // A set
-                    Set<String> updatedClassDateRange = new HashSet<>(Arrays.asList(updateDateRangeArray));
-                    Iterator<String> it = updatedClassDateRange.iterator();
-
-                    // TODO: See if the map with the updated Date Range contains the currentDay as a key
-
-                    if (originalClassDuration != 60) {
-                        // TODO:  do something special for minutes
+                    boolean madeOnePass = false;
+                    for (int i = 0; i < dayRange.length; i++) {
+                        if (dayRange[i].equals(currentDay)) {
+                            orderedDayRange[newPosition] = dayRange[i];
+                            originalPosition = i;
+                            newPosition++;
+                        }
+                        if (i > originalPosition) {
+                            orderedDayRange[newPosition] = dayRange[i];
+                        }
+                        // once you get to the end, if the originalPosition was not zero then loop through the remaining positions
+                        if ((originalPosition > 0) && (i == dayRange.length - 1) && (newPosition != dayRange.length - 1)) {
+                            madeOnePass = true;
+                            i = -1;
+                        }
+                        if (madeOnePass && newPosition != dayRange.length - 1 && i >= 0 && i < originalPosition) {
+                            orderedDayRange[newPosition] = dayRange[i];
+                        }
 
                     }
 
-                    //TODO:  do something special for an hour
+                    // A map
+
+                    //Map<String, String> originalClassDateRangeMap = new HashMap<>(ArrayToMapDateRange(originalDateRangeArray));
+                    Map<String, String> updatedClassDateRangeMap = new HashMap<>(ArrayToMapDateRange(updateDateRangeArray));
 
 
+                    // A set
+                    //Set<String> updatedClassDateRangeSet = new HashSet<>(Arrays.asList(updateDateRangeArray));
+                    Set<String> originalClassDateRangeSet = new HashSet<>(Arrays.asList(originalDateRangeArray));
+
+                    //Iterator<String> it = updatedClassDateRangeSet.iterator();
+
+                    //  Go through the values of the Map and Set, just one quick pass,
+                    //  where you make another put into the map for existing matching values
+                    //  but what if one of them is bigger than the other?
+
+                    if (sameSize) {
+                        // loop through either map or set
+                        for (String day : updatedClassDateRangeMap.keySet()) {
+                            if (originalClassDateRangeSet.contains(day)) {
+                                updatedClassDateRangeMap.put(day, day);
+                            }
+                        }
+                    } else if (largerRange.equals("Original")) {
+                        // loop through the original (map)
+                        for (String day : originalClassDateRangeSet) {
+                            if (updatedClassDateRangeMap.containsKey(day)) {
+                                updatedClassDateRangeMap.put(day, day);
+                            }
+                        }
+
+                    } else if (largerRange.equals("Updated")) {
+                        // loop through the updated (set)
+                        for (String day : updatedClassDateRangeMap.keySet()) {
+                            if (originalClassDateRangeSet.contains(day)) {
+                                updatedClassDateRangeMap.put(day, day);
+                            }
+                        }
+                    }
+
+
+                    // See if the map with the updated Date Range contains the currentDay as a key
+
+                    if (updatedClassDateRangeMap.containsKey(currentDay)) {
+                        // Use that value in the map to create the new event
+
+                        // empty event Object
+                        Event newEvent = new Event();
+                        // set event ID
+                        newEvent.setEvent_id(event.getEvent_id());
+                        // set class ID
+                        newEvent.setClass_id(updatedClass.getClass_id());
+                        // set name
+                        newEvent.setEvent_name(updatedClass.getClass_description());
+                        // set color (default to blue)
+                        newEvent.setColor("blue");
+                        // set timed (default to true)
+                        newEvent.setTimed(true);
+                        // set visible to true
+                        newEvent.setIs_visible_online(true);
+
+                        // Process to Prepare the new startTime/endTime timestamps for the updated event
+                        LocalDate startTimeDate = startTimeStamp.toInstant().atZone(ZoneId.of("America/New_York")).toLocalDate();
+
+                        // Use that assigned Day to update this event for the next assigned day
+                        DayOfWeek assignedDayOfWeek = getDayOfWeekByString(currentDay);
+
+                        // finds the same or next date object at the assigned day
+                        LocalDate nextOrSameAssignedDay = startTimeDate.with(TemporalAdjusters.nextOrSame(assignedDayOfWeek));
+
+                        String startTimeStampBuilder = "";
+                        String month = String.valueOf(nextOrSameAssignedDay.getMonthValue());
+                        String day = String.valueOf(nextOrSameAssignedDay.getDayOfMonth());
+                        String year = String.valueOf(nextOrSameAssignedDay.getYear());
+
+                        String time = LocalTime.parse(updatedClass.getStart_time(), DateTimeFormatter.ofPattern("hh:mm a", Locale.US)).format(DateTimeFormatter.ofPattern("HH:mm"));
+                        startTimeStampBuilder += year + "-" + month + "-" + day + " " + time.substring(0, 5) + ":00.00";
+
+                        Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
+                        Timestamp end = new Timestamp(start.getTime());
+
+                        if (updatedClassDuration != 60) {
+                            end = new Timestamp(start.getTime() + TimeUnit.MINUTES.toMillis(updatedClassDuration));
+                        } else {
+                            end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
+                        }
+
+                        // startTime and endTime are prepared here
+                        newEvent.setStart_time(start);
+                        newEvent.setEnd_time(end);
+
+                        // Maybe make sure no event has the same timestamps already so that you don't double book
+                        boolean checkForExistingEventWithStartTime = isThereExistingEventWithStartTime(newEvent);
+
+                        if (!checkForExistingEventWithStartTime) {
+                            updateEventDetails(newEvent);
+                        }
+
+
+                    } else {
+                        // Loop through and see if the map has any slots open where the value is an empty stirng
+                        boolean foundEmptySlot = false;
+                        String assignedDay = "";
+                        for (String day : updatedClassDateRangeMap.keySet()) {
+                            String currentValue = updatedClassDateRangeMap.get(day);
+                            if (currentValue.equals("")) {
+                                foundEmptySlot = true;
+                                assignedDay = day;
+                                updatedClassDateRangeMap.put(day, currentDay);
+                            }
+                        }
+
+                        // Delete it only if we cant switch it to another day and there's no attendance
+                        // Find out if this event has an attendance
+                        if (!foundEmptySlot && event.getAttendanceList().size() == 0) {
+                            deleteEvent(event.getEvent_id());
+                        } else if (foundEmptySlot && !(assignedDay.equals("") && updatedClassDateRangeMap.get(assignedDay).equals(currentDay))) {
+
+
+                            // empty event Object
+                            Event newEvent = new Event();
+                            // set event ID
+                            newEvent.setEvent_id(event.getEvent_id());
+                            // set class ID
+                            newEvent.setClass_id(updatedClass.getClass_id());
+                            // set name
+                            newEvent.setEvent_name(updatedClass.getClass_description());
+                            // set color (default to blue)
+                            newEvent.setColor("blue");
+                            // set timed (default to true)
+                            newEvent.setTimed(true);
+                            // set visible to true
+                            newEvent.setIs_visible_online(true);
+
+
+                            // Process to Prepare the new startTime/endTime timestamps for the updated event
+                            LocalDate startTimeDate = startTimeStamp.toInstant().atZone(ZoneId.of("America/New_York")).toLocalDate();
+
+                            // Use that assigned Day to update this event for the next assigned day
+                            DayOfWeek assignedDayOfWeek = getDayOfWeekByString(assignedDay);
+
+                            // finds the next date object at the assigned day
+                            LocalDate nextOrSameAssignedDay = startTimeDate.with(TemporalAdjusters.nextOrSame(assignedDayOfWeek));
+
+                            String startTimeStampBuilder = "";
+                            String month = String.valueOf(nextOrSameAssignedDay.getMonthValue());
+                            String day = String.valueOf(nextOrSameAssignedDay.getDayOfMonth());
+                            String year = String.valueOf(nextOrSameAssignedDay.getYear());
+
+                            String time = LocalTime.parse(updatedClass.getStart_time(), DateTimeFormatter.ofPattern("hh:mm a", Locale.US)).format(DateTimeFormatter.ofPattern("HH:mm"));
+                            startTimeStampBuilder += year + "-" + month + "-" + day + " " + time.substring(0, 5) + ":00.00";
+
+                            Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
+                            Timestamp end = new Timestamp(start.getTime());
+
+                            if (updatedClassDuration != 60) {
+                                end = new Timestamp(start.getTime() + TimeUnit.MINUTES.toMillis(updatedClassDuration));
+                            } else {
+                                end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
+                            }
+
+                            // startTime and endTime are prepared here
+                            newEvent.setStart_time(start);
+                            newEvent.setEnd_time(end);
+
+                            // Maybe make sure no event has the same timestamps already so that you don't double book
+                            boolean checkForExistingEventWithStartTime = isThereExistingEventWithStartTime(newEvent);
+
+                            if (!checkForExistingEventWithStartTime) {
+                                updateEventDetails(newEvent);
+                            }
+
+                        }
+
+                    }
+
+                }
+                // Remember to Update the rest of the event since the Timestamps match
+
+                // empty event Object
+                Event newEvent = new Event();
+                // set event ID
+                newEvent.setEvent_id(event.getEvent_id());
+                // set class ID
+                newEvent.setClass_id(updatedClass.getClass_id());
+                // set name
+                newEvent.setEvent_name(updatedClass.getClass_description());
+                // set color (default to blue)
+                newEvent.setColor("blue");
+                // set timed (default to true)
+                newEvent.setTimed(true);
+                // set visible to true
+                newEvent.setIs_visible_online(true);
+
+                // startTime and endTime are prepared here
+                newEvent.setStart_time(event.getStart_time());
+                newEvent.setEnd_time(event.getEnd_time());
+
+                // Maybe make sure no event has the same timestamps already so that you don't double book
+                boolean checkForExistingEventWithStartTime = isThereExistingEventWithStartTime(newEvent);
+
+                if (!checkForExistingEventWithStartTime) {
+                    updateEventDetails(newEvent);
                 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                // TODO: MAKE SURE YOU DO THIS ONE
-                // Maybe make sure no event has the same timestamps already so that you don't double book
-
-
-                // TODO: Thinking through my thoughts...
-                // What if you change the days selected?
-
-                // there are 7 possible days
-                // there will always be at least one
-
-                // TODO:
-                // Find out what day this event is.
-
-
-                // *ORIGINAL* DATE RANGE IS TUE,THUR
-
-                // TODO: Let's say it's Tuesday, let's change all the Tuesdays
-
-                // NEW DATE RANGE IS MON,WED,FRI
-
-                // TODO:
-                //  -CHECK IF CURRENT DAY IS WITHIN NEW DATE RANGE
-                //  -   IF IT'S NOT -> THEN CHECK THE NEXT DAY
-
-                // 1. loop through new date range: start on MON
-                // loop through the original date range for a matching day first (less work maybe?):
-                // if it can't find it thenstarts ON *MON*
-                // UPDATE THE TIMES FOR MONDAY
-
-                // TODO: loop through the new date range first
-
-                // TODO:
-                //  -whittle down the original date range,
-                //  -delete/update/or add more events if needed
-                //  -
-                //
-
-
-
-
-
-                // should I store the current date range into datastructures?
-
-
-                // TODO: Possible Next step
-                // pull the new start-time and end-time timestamps that you're going to update to
-
-                // TODO: Remember to Update the rest of the event since the Timestamps match
-//                String updateString = "UPDATE events SET class_id = ? , " +
-//                        "event_name = ? , " +
-//                        "start_time = ? , " +
-//                        "end_time = ? , " +
-//                        "color = ? , " +
-//                        "timed = ? , " +
-//                        "is_visible_online = ? " +
-//                        "WHERE event_id = ?";
-//                jdbcTemplate.update(updateString, event.getClass_id(), event.getEvent_name(), event.getStart_time(),
-//                        event.getEnd_time(), event.getColor(), event.isTimed(),
-//                        event.isIs_visible_online(), event.getEvent_id());
-
-
-            }
-
+            } // No more logic past this point
 
 
         }
 
     }
 
+    // helper method
+    private boolean isThereExistingEventWithStartTime(Event newEvent) {
+        String sql = "SELECT * FROM events WHERE start_time = ?;";
+        List<Event> checkForExistingEventList = new ArrayList<>();
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql,newEvent.getStart_time());
+        while (result.next()) {
+            Event event = mapRowToEvent(result);
+
+            checkForExistingEventList.add(event);
+        }
+        return checkForExistingEventList.size() > 0;
+    }
+
+    // helper method
+    private DayOfWeek getDayOfWeekByString(String assignedDay) {
+        if (assignedDay.equals("Sun")) {
+            return DayOfWeek.SUNDAY;
+        }
+        else if (assignedDay.equals("Mon")) {
+            return DayOfWeek.MONDAY;
+        }
+        else if (assignedDay.equals("Tue")) {
+            return DayOfWeek.TUESDAY;
+        }
+        else if (assignedDay.equals("Wed")) {
+            return DayOfWeek.WEDNESDAY;
+        }
+        else if (assignedDay.equals("Thu")) {
+            return DayOfWeek.THURSDAY;
+        }
+        else if (assignedDay.equals("Fri")) {
+            return DayOfWeek.FRIDAY;
+        }
+        else if (assignedDay.equals("Sat")) {
+            return DayOfWeek.SATURDAY;
+        }
+        return null;
+    }
+
+    // helper method
     private Map<String, String> ArrayToMapDateRange(String[] originalDateRangeArray) {
         Map<String, String> originalClassDateRange = new HashMap<>();
         for (int i = 0; i < originalDateRangeArray.length; i++) {
             String day = originalDateRangeArray[i];
-            originalClassDateRange.put(day,"");
+            originalClassDateRange.put(day, "");
         }
         return originalClassDateRange;
     }
@@ -671,7 +912,7 @@ public class JdbcEventDao implements EventDao {
         List<ClientEvent> clientEventObjectList = new ArrayList<>();
         String sql = "SELECT * FROM client_event WHERE client_id = ? AND package_purchase_id = 0";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, clientId);
-        while(result.next()) {
+        while (result.next()) {
             ClientEvent clientEvent = mapRowToClientEvent(result);
             clientEventObjectList.add(clientEvent);
         }
@@ -979,7 +1220,6 @@ public class JdbcEventDao implements EventDao {
     }
 
 
-
     private Event mapRowToEvent(SqlRowSet rs) {
         Event event = new Event();
         event.setEvent_id(rs.getInt("event_id"));
@@ -1025,7 +1265,7 @@ public class JdbcEventDao implements EventDao {
         return clientEvent;
     }
 
-        public int daysBetween(Date d1, Date d2) {
+    public int daysBetween(Date d1, Date d2) {
         return (int) ((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
     }
 
