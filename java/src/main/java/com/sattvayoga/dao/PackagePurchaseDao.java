@@ -22,4 +22,6 @@ public interface PackagePurchaseDao {
     PackagePurchase getPackagePurchaseObjectByPackagePurchaseId(int packagePurchaseId);
 
     PackagePurchase filterPackageList(List<PackagePurchase> packagePurchaseList, Event event);
+
+    List<PackagePurchase> getAllSharedActiveQuantityPackages(int client_id);
 }

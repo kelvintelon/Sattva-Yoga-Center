@@ -161,6 +161,7 @@ export default {
       snackBarNoPurchaseWarning: false,
       classSignUpItem: {},
       packages: [],
+      sharedPackages: [],
       allHistoricalPackages: [],
       hasSubscriptionPackage: false,
       subscriptionPackages: [],
@@ -168,6 +169,7 @@ export default {
       quantityPackageIdToDecrement: 0,
       initial: 0,
       initial1: 0,
+      freeloading: false,
     };
   },
   methods: {
@@ -220,13 +222,23 @@ export default {
           alert("Error retrieving package information");
         }
       });
+      packagePurchaseService
+        .getAllSharedActiveQuantityPackages()
+        .then((response) => {
+          if (response.status == 200) {
+            this.sharedPackages = response.data;
+          }
+          this.$store.commit("SET_SHARED_PACKAGE_LIST", this.sharedPackages);
+        });
     },
     formattingSignUp() {
       // find out if they have at least one active package that's a subscription or a bundle and active
       // this.activePackageList = this.$store.state.activePackageList;
-      if (this.$store.state.activePackageList.length == 0) {
+      if (
+        this.$store.state.activePackageList.length == 0 &&
+        this.$store.state.sharedPackages.length == 0
+      ) {
         this.allowSignUp = false;
-
         this.snackBarNoPurchaseWarning = true;
       } else if (this.$store.state.activePackageList.length > 0) {
         this.$store.state.activePackageList.forEach((item) => {
@@ -281,6 +293,13 @@ export default {
         if (!this.allowSignUp) {
           this.snackBarNoPurchaseWarning = true;
         }
+      } else if (this.$store.state.sharedPackages.length > 0) {
+        this.allowSignUp = true;
+        this.eventClientSignUp.package_purchase_id =
+          this.$store.state.sharedPackages[0].package_purchase_id;
+        this.quantityPackageIdToDecrement =
+          this.$store.state.sharedPackages[0].package_purchase_id;
+        this.freeloading = true;
       }
 
       // if they have an active package then they are allowed to sign up
@@ -303,6 +322,10 @@ export default {
             this.validSignUp = false;
           }
         });
+        if (this.freeloading) {
+          alert("You will use up packages shared by the group");
+        }
+
         if (this.validSignUp == true) {
           eventService
             .registerForEvent(this.eventClientSignUp)
@@ -312,6 +335,8 @@ export default {
                   packagePurchaseService.decrementByOne(
                     this.quantityPackageIdToDecrement
                   );
+                  this.freeloading = false;
+                  this.quantityPackageIdToDecrement = "";
                   alert(
                     "You have used your quantity package. Classes remaining reduced by 1."
                   );
@@ -372,7 +397,13 @@ export default {
           today = yyyy + "-" + mm + "-" + dd;
 
           this.packages = response.data.filter((item) => {
-            return item.expiration_date >= today || item.classes_remaining > 0;
+            // return item.expiration_date >= today || item.classes_remaining > 0;
+            return (
+              (item.is_subscription && item.expiration_date) ||
+              (!item.is_subscription &&
+                item.expiration_date >= today &&
+                item.classes_remaining > 0)
+            );
           });
           this.packages.forEach((item) => {
             item.date_purchased = new Date(item.date_purchased);
@@ -385,8 +416,11 @@ export default {
               this.eventClientSignUp.package_purchase_id
             );
           });
-          if (refundPackage[0].is_subscription == true) {
-            this.hasSubscriptionPackage = true;
+          console.log(refundPackage);
+          if (refundPackage.length > 0) {
+            if (refundPackage[0].is_subscription == true) { //Kelvin did i break your code?
+              this.hasSubscriptionPackage = true;
+            }
           }
           this.allowSignUp = true;
           this.cancelCheck();
@@ -397,10 +431,7 @@ export default {
     },
     cancelCheck() {
       if (this.allowSignUp || this.eventClientSignUp.package_purchase_id == 0) {
-        // console.log(this.eventClientSignUp.date)
-        // console.log(this.initial1.expiration_date)
-        // console.log(this.eventClientSignUp.date > this.initial1.expiration_date)
-        // console.log(this.hasSubscriptionPackage)
+        console.log(this.hasSubscriptionPackage);
         if (
           this.validSignUp == true ||
           this.eventClientSignUp.package_purchase_id == 0
@@ -411,7 +442,6 @@ export default {
               if (response.status == 200) {
                 // call method that updates the client_class_table
                 alert("Removed the class from your list");
-
                 if (
                   !this.hasSubscriptionPackage &&
                   this.eventClientSignUp.package_purchase_id > 0
@@ -423,6 +453,7 @@ export default {
                         alert("Package Incremented +1");
                     });
                 }
+                this.hasSubscriptionPackage = false;
                 this.getClientEventTable();
               }
             });

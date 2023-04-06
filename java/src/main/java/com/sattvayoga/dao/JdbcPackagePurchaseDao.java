@@ -175,6 +175,24 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         return packagePurchaseSubscription;
     }
 
+    @Override
+    public List<PackagePurchase> getAllSharedActiveQuantityPackages(int client_id) {
+        List<PackagePurchase> packages = new ArrayList<>();
+        String sql = "SELECT package_purchase.*\n" +
+                "from package_purchase\n" +
+                "JOIN client_family ON package_purchase.client_id = client_family.client_id\n" +
+                "WHERE client_family.family_id = \n" +
+                "(select family_id from client_family where client_family.client_id = ?) \n" +
+                "AND client_family.client_id != ?\n" +
+                "AND classes_remaining > 0 \n" +
+                "ORDER BY expiration_date;";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, client_id,client_id);
+        while(result.next()){
+            packages.add(mapRowToPackagePurchase(result));
+        }
+        return packages;
+    }
+
     // helper
     public String getPackageDescriptionByPackageId(int PackageId) {
         PackageDetails packageDetails = null;

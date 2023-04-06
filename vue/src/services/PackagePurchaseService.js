@@ -26,5 +26,8 @@ export default {
     updatePackagePurchase(object){
         return axios.put(`/updatePackagePurchase`, object)
     },
+    getAllSharedActiveQuantityPackages(){
+        return axios.get('getAllSharedActiveQuantityPackages')
+    },
 
 }
