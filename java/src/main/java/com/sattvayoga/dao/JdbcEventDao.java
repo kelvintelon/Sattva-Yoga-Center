@@ -461,7 +461,7 @@ public class JdbcEventDao implements EventDao {
                 if (sameDateRange && !sameTimes) {
                     //TODO: ONLY CHANGE THE HOUR OF THE TIMESTAMP BECAUSE THEY KEPT THE EXACT SAME DATE RANGE
 
-                } else {
+                } else if (!sameDateRange && !sameTimes) {
                     // CREATE YOUR PROPERTIES
 
                     // A date range to keep track
@@ -553,7 +553,7 @@ public class JdbcEventDao implements EventDao {
                 // TODO: Possible Next step
                 // pull the new start-time and end-time timestamps that you're going to update to
 
-
+                // TODO: Remember to Update the rest of the event since the Timestamps match
 //                String updateString = "UPDATE events SET class_id = ? , " +
 //                        "event_name = ? , " +
 //                        "start_time = ? , " +
