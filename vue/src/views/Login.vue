@@ -3,7 +3,6 @@
     <v-row justify="center" align="center">
       <v-spacer></v-spacer>
       <v-col cols="4" justify="center" align="center">
-        <!-- <header-logo></header-logo> -->
         <br>
         <br>
         <br>
