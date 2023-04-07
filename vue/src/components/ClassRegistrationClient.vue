@@ -192,9 +192,10 @@ export default {
       // this.$root.$emit("getActivePurchasePackageTable");
     },
     getActivePurchaseServerRequest() {
-
+      
       packagePurchaseService.getUserPurchasedPackages().then((response) => {
         if (response.status == 200) {
+          this.thwin();
           // focus on if it's expired or not
           var today = new Date();
           var dd = String(today.getDate()).padStart(2, "0");
@@ -223,6 +224,8 @@ export default {
           alert("Error retrieving package information");
         }
       });
+    },
+    thwin() {
       packagePurchaseService
         .getAllSharedActiveQuantityPackages()
         .then((response) => {
@@ -300,7 +303,7 @@ export default {
           this.snackBarNoPurchaseWarning = true;
         }
       } else if (this.$store.state.sharedPackages.length > 0) {
-        if(this.$store.state.sharedPackages[0].classes_remaining>0){
+        if (this.$store.state.sharedPackages[0].classes_remaining > 0) {
           this.allowSignUp = true;
         }
         this.eventClientSignUp.package_purchase_id =
@@ -331,7 +334,9 @@ export default {
           }
         });
         if (this.freeloading) {
-          alert("You will use up packages shared by the group");
+          if(confirm("You will use up packages shared by the group")== false){
+            this.validSignUp == false;
+          }
         }
 
         if (this.validSignUp == true) {
@@ -343,6 +348,7 @@ export default {
                   packagePurchaseService.decrementByOne(
                     this.quantityPackageIdToDecrement
                   );
+                  this.thwin();
                   this.freeloading = false;
                   this.quantityPackageIdToDecrement = "";
                   alert(
@@ -361,6 +367,7 @@ export default {
                       this.$store.commit("SET_CLIENT_DETAILS", response.data);
                     }
                   });
+                  this.getEventTable();
                 this.getClientEventTable();
               }
             });
@@ -463,6 +470,7 @@ export default {
                 }
                 this.hasSubscriptionPackage = false;
                 this.getClientEventTable();
+                this.getEventTable();
               }
             });
         }
@@ -470,7 +478,7 @@ export default {
     },
 
     getEventTable() {
-      eventService.get100Events().then((response) => {
+      eventService.get100EventsForClient(this.$store.state.clientDetails.client_id).then((response) => {
         if (response.status == 200) {
           this.$store.commit("SET_EVENT_LIST", response.data);
           this.events = response.data;
