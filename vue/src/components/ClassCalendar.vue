@@ -775,10 +775,12 @@ export default {
       }
 
       let endTime = `${hours2}:${minutes2}`;
-      let chosenDate = this.date2;
-      let newStartDate = new Date(chosenDate + "T" + startTime).toJSON();
-      let newEndDate = new Date(chosenDate + "T" + endTime).toJSON();
 
+      let chosenDate = this.date2;
+      let newStartDate = new Date(chosenDate + " " + startTime).toJSON();
+      let newEndDate = new Date(chosenDate + " " + endTime).toJSON();
+      // alert(newStartDate)
+      // alert(newEndDate)
       this.editedEvent.start_time = newStartDate;
       this.editedEvent.end_time = newEndDate;
       // this will eventually be an update instead,
@@ -1164,6 +1166,8 @@ export default {
   created() {
     this.getAllClasses();
     this.getAllEvents();
+
+    this.$root.$refs.Z = this;
   },
   mounted() {
     this.$refs.calendar.checkChange();
