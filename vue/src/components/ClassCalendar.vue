@@ -1164,6 +1164,8 @@ export default {
   created() {
     this.getAllClasses();
     this.getAllEvents();
+
+    this.$root.$refs.Z = this;
   },
   mounted() {
     this.$refs.calendar.checkChange();

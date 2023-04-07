@@ -222,7 +222,7 @@
                         align="center"
                       >
                         <v-select
-                          v-model="editedTeacherName"
+                          v-model="editedItem.editedTeacherName"
                           item-value="editedTeacherName"
                           :items="teacherNames"
                           :rules="[(v) => !!v || 'Name is required']"
@@ -769,6 +769,7 @@ export default {
             alert("You have updated a class!");
             this.getClassTable();
             this.close2();
+            this.$root.$refs.Z.getAllEvents();
           } else {
             alert("Error updating a class!");
           }
