@@ -402,7 +402,6 @@ public class JdbcEventDao implements EventDao {
             event.setAttendanceList(getAttendanceByEventId(event.getEvent_id()));
 
 
-
             // check this current event and compare if it has the same start-time and end-time as the original
             // filtering it down so that we don't accidentally change any events that weren't exact matches
             // CONVERSION ROUTINE TO EXTRACT THE HOUR AND MINUTES am/pm (e.g. "06:00 am")
@@ -466,6 +465,7 @@ public class JdbcEventDao implements EventDao {
                         }
                     }
                 } else {
+                    sameDateRange = false;
                     if (sizeOfOriginalClassDateRange > sizeOfUpdatedClassDateRange) {
                         largerRange = "Original";
                     } else {
@@ -478,6 +478,69 @@ public class JdbcEventDao implements EventDao {
                 boolean sameTimes = false;
                 if (startTimeString.equals(updatedClassStartTime) && (originalClassDuration == updatedClassDuration)) {
                     sameTimes = true;
+                }
+
+                // CREATE YOUR PROPERTIES
+
+                // A date range to keep track
+                String[] dayRange = new String[]{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
+
+                // sort it immediately since you have to.
+                int newPosition = 0;
+                int originalPosition = 0;
+
+                // sort the dayRange to keep track
+                String[] orderedDayRange = new String[dayRange.length];
+
+                boolean madeOnePass = false;
+                for (int i = 0; i < dayRange.length; i++) {
+                    if (dayRange[i].equals(currentDay)) {
+                        orderedDayRange[newPosition] = dayRange[i];
+                        originalPosition = i;
+                        newPosition++;
+                    }
+                    if (i > originalPosition) {
+                        orderedDayRange[newPosition] = dayRange[i];
+                    }
+                    // once you get to the end, if the originalPosition was not zero then loop through the remaining positions
+                    if ((originalPosition > 0) && (i == dayRange.length - 1) && (newPosition != dayRange.length - 1)) {
+                        madeOnePass = true;
+                        i = -1;
+                    }
+                    if (madeOnePass && newPosition != dayRange.length - 1 && i >= 0 && i < originalPosition) {
+                        orderedDayRange[newPosition] = dayRange[i];
+                    }
+
+                }
+
+                //Iterator<String> it = updatedClassDateRangeSet.iterator();
+
+                //  Go through the values of the Map and Set, just one quick pass,
+                //  where you make another "put" into the map for existing matching values
+                //  but what if one of them is bigger than the other?
+
+                if (sameSize) {
+                    // loop through either map or set
+                    for (String day : updatedClassDateRangeMap.keySet()) {
+                        if (originalClassDateRangeSet.contains(day)) {
+                            updatedClassDateRangeMap.put(day, day);
+                        }
+                    }
+                } else if (largerRange.equals("Original")) {
+                    // loop through the original (map)
+                    for (String day : originalClassDateRangeSet) {
+                        if (updatedClassDateRangeMap.containsKey(day)) {
+                            updatedClassDateRangeMap.put(day, day);
+                        }
+                    }
+
+                } else if (largerRange.equals("Updated")) {
+                    // loop through the updated (set)
+                    for (String day : updatedClassDateRangeMap.keySet()) {
+                        if (originalClassDateRangeSet.contains(day)) {
+                            updatedClassDateRangeMap.put(day, day);
+                        }
+                    }
                 }
 
 
@@ -538,71 +601,7 @@ public class JdbcEventDao implements EventDao {
                     }
 
 
-                } else if (!sameDateRange && !sameTimes) {
-                    // CREATE YOUR PROPERTIES
-
-                    // A date range to keep track
-                    String[] dayRange = new String[]{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
-
-                    // sort it immediately since you have to.
-                    int newPosition = 0;
-                    int originalPosition = 0;
-
-                    // sort the dayRange to keep track
-                    String[] orderedDayRange = new String[dayRange.length];
-
-                    boolean madeOnePass = false;
-                    for (int i = 0; i < dayRange.length; i++) {
-                        if (dayRange[i].equals(currentDay)) {
-                            orderedDayRange[newPosition] = dayRange[i];
-                            originalPosition = i;
-                            newPosition++;
-                        }
-                        if (i > originalPosition) {
-                            orderedDayRange[newPosition] = dayRange[i];
-                        }
-                        // once you get to the end, if the originalPosition was not zero then loop through the remaining positions
-                        if ((originalPosition > 0) && (i == dayRange.length - 1) && (newPosition != dayRange.length - 1)) {
-                            madeOnePass = true;
-                            i = -1;
-                        }
-                        if (madeOnePass && newPosition != dayRange.length - 1 && i >= 0 && i < originalPosition) {
-                            orderedDayRange[newPosition] = dayRange[i];
-                        }
-
-                    }
-
-
-
-                    //Iterator<String> it = updatedClassDateRangeSet.iterator();
-
-                    //  Go through the values of the Map and Set, just one quick pass,
-                    //  where you make another put into the map for existing matching values
-                    //  but what if one of them is bigger than the other?
-
-                    if (sameSize) {
-                        // loop through either map or set
-                        for (String day : updatedClassDateRangeMap.keySet()) {
-                            if (originalClassDateRangeSet.contains(day)) {
-                                updatedClassDateRangeMap.put(day, day);
-                            }
-                        }
-                    } else if (largerRange.equals("Original")) {
-                        // loop through the original (map)
-                        for (String day : originalClassDateRangeSet) {
-                            if (updatedClassDateRangeMap.containsKey(day)) {
-                                updatedClassDateRangeMap.put(day, day);
-                            }
-                        }
-
-                    } else if (largerRange.equals("Updated")) {
-                        // loop through the updated (set)
-                        for (String day : updatedClassDateRangeMap.keySet()) {
-                            if (originalClassDateRangeSet.contains(day)) {
-                                updatedClassDateRangeMap.put(day, day);
-                            }
-                        }
-                    }
+                } else if (!sameDateRange) {
 
 
                     // See if the map with the updated Date Range contains the currentDay as a key
@@ -860,8 +859,10 @@ public class JdbcEventDao implements EventDao {
                             newEvent.setStart_time(start);
                             newEvent.setEnd_time(end);
 
-
-                            createEvent(newEvent);
+                            boolean alreadyExists = isThereExistingEventWithStartTime(newEvent);
+                            if (!alreadyExists) {
+                                createEvent(newEvent);
+                            }
 
                         }
                         // add another day to the local date
@@ -882,22 +883,13 @@ public class JdbcEventDao implements EventDao {
             }
         }
 
-
-
-
-
-
-
-
-
-
     }
 
     // helper method
     private boolean isThereExistingEventWithStartTime(Event newEvent) {
-        String sql = "SELECT * FROM events WHERE start_time = ?;";
+        String sql = "SELECT * FROM events WHERE start_time = ? AND end_time = ?;";
         List<Event> checkForExistingEventList = new ArrayList<>();
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql,newEvent.getStart_time());
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql,newEvent.getStart_time(), newEvent.getEnd_time());
         while (result.next()) {
             Event event = mapRowToEvent(result);
 

@@ -225,9 +225,9 @@
                           v-model="editedItem.editedTeacherName"
                           item-value="editedTeacherName"
                           :items="teacherNames"
-                          :rules="[(v) => !!v || 'Name is required']"
+                          
                           label="Teacher Names"
-                          required
+                         
                         ></v-select>
                         <v-select
                           label="Start Time"
