@@ -29,14 +29,13 @@
     </v-menu>
     
     <HeaderLogo/>
-   
     <v-spacer></v-spacer>
-
+    <LoginButton/>
   </v-app-bar>
 </template>
 
 <script>
-
+import LoginButton from '../components/LoginButton.vue';
 import HeaderLogo from '../components/HeaderLogo.vue';
 
 
@@ -64,7 +63,7 @@ export default {
     watch: {
       
     },
-    components: { HeaderLogo }
+    components: { HeaderLogo, LoginButton }
 };
 </script>
 

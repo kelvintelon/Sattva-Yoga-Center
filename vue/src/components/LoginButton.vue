@@ -1,8 +1,8 @@
 <template>
   <div class="login-button">
-    <v-btn elevation="5" v-on:click="goToLogin()">
+    <v-btn-text elevation="0" v-on:click="goToLogin()">
       <v-icon> mdi-login-variant </v-icon> Login
-    </v-btn>
+    </v-btn-text>
   </div>
 </template>
 
