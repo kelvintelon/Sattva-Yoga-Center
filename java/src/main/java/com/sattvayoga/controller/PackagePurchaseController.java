@@ -51,6 +51,13 @@ public class PackagePurchaseController {
         return packagePurchaseDao.getAllUserPackagePurchases(clientDetailsDao.findClientByClientId(clientId).getUser_id());
     }
 
+    @GetMapping(path="/getAllSharedActiveQuantityPackages")
+    public List<PackagePurchase> getAllSharedActiveQuantityPackages(Principal principal){
+        int userId = userDao.findIdByUsername(principal.getName());
+        int clientId = clientDetailsDao.findClientByUserId(userId).getClient_id();
+        return packagePurchaseDao.getAllSharedActiveQuantityPackages(clientId);
+    }
+
     @RequestMapping(value= "/expirePackage", method = RequestMethod.PUT)
     public boolean expirePackage(@RequestBody PackagePurchase packagePurchase) {
         return packagePurchaseDao.expirePackage(packagePurchase);
