@@ -50,17 +50,7 @@
       persistent
       max-width="600px"
     >
-      <template v-slot:activator="{ on, attrs }">
-        <v-btn
-          color="deep-orange lighten-2"
-          dark
-          v-bind="attrs"
-          v-on="on"
-          text
-        >
-          Forgot LOGIN/PASSWORD
-        </v-btn>
-      </template>
+  
       <v-card>
         <v-card-title>
           <span class="text-h5">Enter Email For Reset Link</span>
@@ -98,6 +88,17 @@
           </v-btn>
         </v-card-actions>
       </v-card>
+      <template v-slot:activator="{ on, attrs }">
+        <v-btn
+          color="deep-orange lighten-2"
+          dark
+          v-bind="attrs"
+          v-on="on"
+          text
+        >
+          Forgot LOGIN/PASSWORD
+        </v-btn>
+      </template>
     </v-dialog>
   </v-row>
           <br>
