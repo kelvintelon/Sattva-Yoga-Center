@@ -310,7 +310,8 @@ export default {
           today = yyyy + '-' + mm + '-' + dd;
 
           this.packages = response.data.filter((item) => {
-            return (item.expiration_date >= today) || (item.expiration_date == null && item.classes_remaining > 0) || (item.expiration_date >= today && item.classes_remaining > 0);
+            // return (item.expiration_date >= today) || (item.expiration_date == null && item.classes_remaining > 0) || (item.expiration_date >= today && item.classes_remaining > 0);
+            return (item.is_subscription && item.expiration_date)|| (!item.is_subscription && item.expiration_date >= today && item.classes_remaining>0);
           });
           this.packages.forEach((item) => {
             item.date_purchased = new Date(item.date_purchased);

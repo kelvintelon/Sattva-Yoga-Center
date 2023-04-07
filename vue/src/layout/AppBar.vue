@@ -23,18 +23,21 @@
       <div></div>
       <v-list>
         <v-list-item v-for="(link) in links" :key="link.text" router :to="link.route">
-          <v-list-item-title>Login</v-list-item-title>
+        {{ link.text }}          
          </v-list-item>
       </v-list>
     </v-menu>
     
     <HeaderLogo/>
     <v-spacer></v-spacer>
+    <LoginButton/>
   </v-app-bar>
 </template>
 
 <script>
+import LoginButton from '../components/LoginButton.vue';
 import HeaderLogo from '../components/HeaderLogo.vue';
+
 
 export default {
     name: "AppBar",
@@ -42,7 +45,12 @@ export default {
         return {
             menu: false,
             links: [
-              { text: '  Login  ', route: '/login'},
+              { text: 'Home', route: '/'},
+              { text: 'Class Management', route: '/classManagement'},
+              { text: 'Client Details', route: '/clientDetails/:clientId'},
+              { text: 'Client Management', route: '/clientManagement'},
+              { text: 'Package Management', route: '/packageManagement'},
+              { text: 'Event Details', route: '/eventDetails/:eventId'},             
             ]
         };
     },
@@ -51,7 +59,10 @@ export default {
             this.$router.push({ name: "login" });
         },
     },
-    components: { HeaderLogo }
+    watch: {
+      
+    },
+    components: { HeaderLogo, LoginButton }
 };
 </script>
 

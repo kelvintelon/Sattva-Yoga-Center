@@ -30,6 +30,7 @@ export default new Vuex.Store({
     activePackageList: [],
     packageHistoryList: [],
     eventList: [],
+    sharedPackages: [],
   },
   mutations: {
     SET_AUTH_TOKEN(state, token) {
@@ -80,6 +81,9 @@ export default new Vuex.Store({
     },
     SET_EVENT_LIST(state, retrievedEventList) {
       state.eventList = retrievedEventList;
+    },
+    SET_SHARED_PACKAGE_LIST(state, retrievedSharedPackagesList){
+      state.sharedPackages = retrievedSharedPackagesList;
     }
   }
 })
