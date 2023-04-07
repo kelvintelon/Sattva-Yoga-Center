@@ -192,6 +192,7 @@ export default {
       // this.$root.$emit("getActivePurchasePackageTable");
     },
     getActivePurchaseServerRequest() {
+
       packagePurchaseService.getUserPurchasedPackages().then((response) => {
         if (response.status == 200) {
           // focus on if it's expired or not
@@ -204,7 +205,7 @@ export default {
           this.packages = response.data.filter((item) => {
             // return item.expiration_date >= today || item.classes_remaining > 0;
             return (
-              (item.is_subscription && item.expiration_date) ||
+              (item.is_subscription && item.expiration_date >= today) ||
               (!item.is_subscription &&
                 item.expiration_date >= today &&
                 item.classes_remaining > 0)
@@ -258,7 +259,7 @@ export default {
                 });
               this.initial1 = this.subscriptionPackages[0];
               this.subscriptionPackages.forEach((item) => {
-                if (item.expiration_date > this.initial1.expiration_date) {
+                if (item.expiration_date < this.initial1.expiration_date) {
                   this.initial1 = item;
                 }
               });
@@ -287,6 +288,11 @@ export default {
               });
             }
           }
+          // final package_id is always the subscription package with the earliest exp date.
+          if (this.hasSubscriptionPackage) {
+            this.eventClientSignUp.package_purchase_id =
+              this.initial1.package_purchase_id;
+          }
         });
 
         // this here is if they only have a gift certificate or dont have a bundle/subscription
@@ -294,7 +300,9 @@ export default {
           this.snackBarNoPurchaseWarning = true;
         }
       } else if (this.$store.state.sharedPackages.length > 0) {
-        this.allowSignUp = true;
+        if(this.$store.state.sharedPackages[0].classes_remaining>0){
+          this.allowSignUp = true;
+        }
         this.eventClientSignUp.package_purchase_id =
           this.$store.state.sharedPackages[0].package_purchase_id;
         this.quantityPackageIdToDecrement =
@@ -399,7 +407,7 @@ export default {
           this.packages = response.data.filter((item) => {
             // return item.expiration_date >= today || item.classes_remaining > 0;
             return (
-              (item.is_subscription && item.expiration_date) ||
+              (item.is_subscription && item.expiration_date >= today) ||
               (!item.is_subscription &&
                 item.expiration_date >= today &&
                 item.classes_remaining > 0)
@@ -418,7 +426,7 @@ export default {
           });
           console.log(refundPackage);
           if (refundPackage.length > 0) {
-            if (refundPackage[0].is_subscription == true) { //Kelvin did i break your code?
+            if (refundPackage[0].is_subscription == true) {
               this.hasSubscriptionPackage = true;
             }
           }
