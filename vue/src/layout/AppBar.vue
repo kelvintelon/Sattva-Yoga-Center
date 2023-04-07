@@ -45,7 +45,6 @@ export default {
         return {
             menu: false,
             links: [
-              // { text: '  Login  ', route: '/login'},
               { text: 'Home', route: '/'},
               { text: 'Class Management', route: '/classManagement'},
               { text: 'Client Details', route: '/clientDetails/:clientId'},
