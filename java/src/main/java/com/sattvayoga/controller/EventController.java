@@ -167,14 +167,28 @@ public class EventController {
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/createEvent", method = RequestMethod.POST)
-    public void createEvent(@RequestBody Event event) {
-        eventDao.createEvent(event);
+    public String createEvent(@RequestBody Event event) {
+        // TODO: Make this into an exception thrown
+        if (eventDao.isThereExistingEventWithStartTime(event)) {
+            return "Fail";
+        } else {
+            eventDao.createEvent(event);
+        }
+        return "Success";
+
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/updateEvent", method = RequestMethod.PUT)
-    public void updateEvent (@RequestBody Event event) {
-        eventDao.updateEventDetails(event);
+    public String updateEvent (@RequestBody Event event) {
+        // TODO: Make this into an exception thrown
+        if (eventDao.isThereExistingEventWithStartTime(event)) {
+            return "Fail";
+        } else {
+            eventDao.updateEventDetails(event);
+        }
+
+        return "Success";
     }
 
     @PreAuthorize("hasRole('ADMIN')")

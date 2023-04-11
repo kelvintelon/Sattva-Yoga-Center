@@ -46,4 +46,6 @@ public interface EventDao {
     void reconcileClassWithPackageId(int packageId, int eventId, int clientId);
 
     void updateEventsByClass(ClassDetails originalClass, ClassDetails updatedClass);
+
+    boolean isThereExistingEventWithStartTime(Event newEvent);
 }

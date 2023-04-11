@@ -362,6 +362,7 @@ public class JdbcEventDao implements EventDao {
 
     @Override
     public boolean updateEventDetails(Event event) {
+
         String sql = "UPDATE events SET class_id = ? , " +
                 "event_name = ? , " +
                 "start_time = ? , " +
@@ -886,10 +887,11 @@ public class JdbcEventDao implements EventDao {
     }
 
     // helper method
-    private boolean isThereExistingEventWithStartTime(Event newEvent) {
-        String sql = "SELECT * FROM events WHERE start_time = ? AND end_time = ?;";
+    @Override
+    public boolean isThereExistingEventWithStartTime(Event newEvent) {
+        String sql = "SELECT * FROM events WHERE start_time = ? AND end_time = ? AND event_name = ? AND color = ?;";
         List<Event> checkForExistingEventList = new ArrayList<>();
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql,newEvent.getStart_time(), newEvent.getEnd_time());
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql,newEvent.getStart_time(), newEvent.getEnd_time(), newEvent.getEvent_name(), newEvent.getColor());
         while (result.next()) {
             Event event = mapRowToEvent(result);
 
