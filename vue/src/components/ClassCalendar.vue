@@ -707,8 +707,8 @@ export default {
 
       eventService.deleteEvent(this.selectedEventID).then((response) => {
         if (response.status == 200) {
-          this.events.splice(this.selectedEventIndex, 1);
-          this.serverEvents.splice(this.selectedEventIndex, 1);
+          this.events.splice(this.selectedEventID, 1);
+          this.serverEvents.splice(this.selectedEventID, 1);
           // alert("Event successfully deleted!");
         } else {
           alert("Error removing event!");
@@ -716,6 +716,7 @@ export default {
       });
     },
     submitUpdate() {
+      this.findsMatch();
       // find the ID of selected event
       for (let i = 0; i < this.serverEvents.length; i++) {
         if (
@@ -726,17 +727,17 @@ export default {
           this.serverEvents[i].event_name == this.selectedEvent.name
         ) {
           this.selectedEventID = this.serverEvents[i].event_id;
-          this.selectedEventIndex = i;
+          this.selectedEventID = i;
 
           if (this.editedEvent.is_visible_online == false) {
-            this.serverEvents[this.selectedEventIndex].color = "#808080";
-            this.events[this.selectedEventIndex].color = "#808080";
+            this.serverEvents[this.selectedEventID].color = "#808080";
+            this.events[this.selectedEventID].color = "#808080";
             this.editedEvent.color = "#808080";
             this.toggleVisibilityButton = true;
           } else {
-            this.serverEvents[this.selectedEventIndex].color =
+            this.serverEvents[this.selectedEventID].color =
               this.editedEvent.color;
-            this.events[this.selectedEventIndex].color = this.editedEvent.color;
+            this.events[this.selectedEventID].color = this.editedEvent.color;
             this.toggleVisibilityButton = false;
           }
         }
@@ -787,7 +788,17 @@ export default {
       eventService.updateEvent(this.editedEvent).then((response) => {
         if (response.status == 200) {
           // alert("Event successfully updated!");
-          this.getAllEvents();
+          if (response.data=="Fail") {
+            alert("Double Book Error. Failed to Update. Change event name")
+            this.closeSelectedCard();
+            this.findsMatch();
+          } else {
+            alert("Successly updated")
+            this.findsMatch();
+            this.closeSelectedCard();
+            this.getAllEvents();
+          }
+          
         } else {
           alert("Error removing event!");
         }
@@ -798,33 +809,44 @@ export default {
     },
     toggleVisibleEvent(value) {
       this.snackBarupdateEventWarning = false;
-
+      this.findsMatch();
+      
       this.editedEvent.is_visible_online = value;
       if (value) {
         // make it colorful again
-
+      
         this.editedEvent.color = "orange";
-        this.events[this.selectedEventIndex].color = "orange";
-        this.serverEvents[this.selectedEventIndex].color = "orange";
-
+        this.events[this.selectedEventID].color = "orange";
+        this.serverEvents[this.selectedEventID].color = "orange";
+        this.selectedEvent.color = "orange";
         this.toggleVisibilityButton = false;
       } else {
         // make it grey
-
+       
         this.editedEvent.color = "#808080";
-        this.events[this.selectedEventIndex].color = "#808080";
-        this.serverEvents[this.selectedEventIndex].color = "#808080";
-
+        // this.events[this.selectedEventID].color = "#808080";
+        // this.serverEvents[this.selectedEventID].color = "#808080";
+        this.selectedEvent.color = "#808080";
         this.toggleVisibilityButton = true;
       }
       // find the right times
       this.editedEvent.start_time =
-        this.serverEvents[this.selectedEventIndex].start_time;
+        this.serverEvents[this.selectedEventID].start_time;
       this.editedEvent.end_time =
-        this.serverEvents[this.selectedEventIndex].end_time;
+        this.serverEvents[this.selectedEventID].end_time;
 
       eventService.updateEvent(this.editedEvent).then((response) => {
         if (response.status == 200) {
+          if (response.data=="Fail") {
+            alert("Double Book Error. Failed to Create. Change event name")
+            this.closeSelectedCard();
+            
+          } else {
+            alert("Successly updated")
+            this.closeSelectedCard();
+            this.getAllEvents();
+            
+          }
           this.getAllEvents();
           // alert("Event successfully updated!");
         } else {
@@ -921,12 +943,14 @@ export default {
           // log the ID in this variable
           this.selectedEventID = this.serverEvents[i].event_id;
           // log the index in this variable
-          this.selectedEventIndex = i;
+          this.selectedEventID = i;
 
           // toggle the eye icon
           if (!this.serverEvents[i].is_visible_online) {
+           
             this.toggleVisibilityButton = true;
           } else {
+            
             this.toggleVisibilityButton = false;
           }
         }
@@ -1030,8 +1054,8 @@ export default {
 
         for (let index = 0; index < this.dates.length; index++) {
           let chosenDate = this.dates[index];
-          let newStartDate = new Date(chosenDate + "T" + startTime).toJSON();
-          let newEndDate = new Date(chosenDate + "T" + endTime).toJSON();
+          let newStartDate = new Date(chosenDate + " " + startTime).toJSON();
+          let newEndDate = new Date(chosenDate + " " + endTime).toJSON();
           this.event.start_time = newStartDate;
 
           this.event.end_time = newEndDate;
@@ -1041,7 +1065,15 @@ export default {
           eventService.createEvent(this.event).then((response) => {
             if (response.status == 201) {
               // VERY EXPENSIVE API CALL please optimizie
-              this.getAllEvents();
+
+               if (response.data=="Fail") {
+            alert("Double Book Error. Failed to Create. Change event name")
+            this.closeSelectedCard();
+          } else {
+            alert("Successly updated")
+            this.closeSelectedCard();
+            this.getAllEvents();
+          }
 
               // the following condition calls the api service to retrieve all events from DB after the last one (expensive way))
               //   if ((index += 1) == this.dates.length) {
