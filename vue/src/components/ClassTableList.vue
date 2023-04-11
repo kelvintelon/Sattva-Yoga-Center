@@ -745,6 +745,7 @@ export default {
             // this.$store.state.classList.push(this.classDetails);
             this.getClassTable();
             this.reset();
+            this.$root.$refs.Z.getAllEvents();
             this.close();
           } else {
             alert("Error creating a class!");

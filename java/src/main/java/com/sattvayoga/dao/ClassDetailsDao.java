@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface ClassDetailsDao {
 
-    boolean createClass(ClassDetails classDetails);
+    int createClass(ClassDetails classDetails);
 
     void registerForClass(int client_id, int class_id);
 

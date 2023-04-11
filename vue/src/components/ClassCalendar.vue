@@ -631,7 +631,7 @@ export default {
       day: "Day",
     },
     selectedEvent: {},
-    selectedEventID: "",
+    selectedEventIndex: "",
     selectedElement: null,
     selectedOpen: false,
     classes: [],
@@ -678,13 +678,15 @@ export default {
       this.showEditForm = !this.showEditForm;
     },
     getEventDetailsCallBeforeDeleting() {
+      
       eventService
-        .getEventDetailsByEventId(this.selectedEventID)
+        .getEventDetailsByEventId(this.serverEvents[this.selectedEventIndex].event_id)
         .then((response) => {
           if (response.status == 200) {
             this.locatedEvent = response.data;
 
             this.listOfSignedUpClients = this.locatedEvent.attendanceList;
+           
             if (this.listOfSignedUpClients.length > 0) {
               this.snackBarDeleteEventWarning = true;
             } else {
@@ -696,19 +698,19 @@ export default {
     confirmDelete() {
       // 1. create a new snackbar to let the admin know
       // they can't delete an event without an empty roster
-
+      this.findsMatch();
       this.getEventDetailsCallBeforeDeleting();
     },
     allowEventDelete() {
       this.snackBarDeleteEventWarning = false;
-
+      this.snackBarDeleteEventConfirmation = false;
       // find the ID of selected event
       this.findsMatch();
 
-      eventService.deleteEvent(this.selectedEventID).then((response) => {
+      eventService.deleteEvent(this.serverEvents[this.selectedEventIndex].event_id).then((response) => {
         if (response.status == 200) {
-          this.events.splice(this.selectedEventID, 1);
-          this.serverEvents.splice(this.selectedEventID, 1);
+          this.events.splice(this.selectedEventIndex, 1);
+          this.serverEvents.splice(this.selectedEventIndex, 1);
           // alert("Event successfully deleted!");
         } else {
           alert("Error removing event!");
@@ -726,18 +728,18 @@ export default {
             new Date(this.selectedEvent.end).getTime() &&
           this.serverEvents[i].event_name == this.selectedEvent.name
         ) {
-          this.selectedEventID = this.serverEvents[i].event_id;
-          this.selectedEventID = i;
+          this.selectedEventIndex = this.serverEvents[i].event_id;
+          this.selectedEventIndex = i;
 
           if (this.editedEvent.is_visible_online == false) {
-            this.serverEvents[this.selectedEventID].color = "#808080";
-            this.events[this.selectedEventID].color = "#808080";
+            this.serverEvents[this.selectedEventIndex].color = "#808080";
+            this.events[this.selectedEventIndex].color = "#808080";
             this.editedEvent.color = "#808080";
             this.toggleVisibilityButton = true;
           } else {
-            this.serverEvents[this.selectedEventID].color =
+            this.serverEvents[this.selectedEventIndex].color =
               this.editedEvent.color;
-            this.events[this.selectedEventID].color = this.editedEvent.color;
+            this.events[this.selectedEventIndex].color = this.editedEvent.color;
             this.toggleVisibilityButton = false;
           }
         }
@@ -816,24 +818,24 @@ export default {
         // make it colorful again
       
         this.editedEvent.color = "orange";
-        this.events[this.selectedEventID].color = "orange";
-        this.serverEvents[this.selectedEventID].color = "orange";
+        this.events[this.selectedEventIndex].color = "orange";
+        this.serverEvents[this.selectedEventIndex].color = "orange";
         this.selectedEvent.color = "orange";
         this.toggleVisibilityButton = false;
       } else {
         // make it grey
        
         this.editedEvent.color = "#808080";
-        // this.events[this.selectedEventID].color = "#808080";
-        // this.serverEvents[this.selectedEventID].color = "#808080";
+        // this.events[this.selectedEventIndex].color = "#808080";
+        // this.serverEvents[this.selectedEventIndex].color = "#808080";
         this.selectedEvent.color = "#808080";
         this.toggleVisibilityButton = true;
       }
       // find the right times
       this.editedEvent.start_time =
-        this.serverEvents[this.selectedEventID].start_time;
+        this.serverEvents[this.selectedEventIndex].start_time;
       this.editedEvent.end_time =
-        this.serverEvents[this.selectedEventID].end_time;
+        this.serverEvents[this.selectedEventIndex].end_time;
 
       eventService.updateEvent(this.editedEvent).then((response) => {
         if (response.status == 200) {
@@ -941,9 +943,9 @@ export default {
           this.editedEvent.is_visible_online =
             this.serverEvents[i].is_visible_online;
           // log the ID in this variable
-          this.selectedEventID = this.serverEvents[i].event_id;
+          this.selectedEventIndex = this.serverEvents[i].event_id;
           // log the index in this variable
-          this.selectedEventID = i;
+          this.selectedEventIndex = i;
 
           // toggle the eye icon
           if (!this.serverEvents[i].is_visible_online) {
@@ -1093,7 +1095,7 @@ export default {
     sendToEventDetailsPage() {
       this.$router.push({
         name: "event-attendance-details",
-        params: { eventId: this.selectedEventID },
+        params: { eventId: this.serverEvents[this.selectedEventIndex].event_id },
       });
     },
     //////////////////////////////DRAG AND UPDATE METHODS BELOW

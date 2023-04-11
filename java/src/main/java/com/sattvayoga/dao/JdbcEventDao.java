@@ -37,6 +37,299 @@ public class JdbcEventDao implements EventDao {
     }
 
     @Override
+    public void createNewEventsFromClass(ClassDetails classDetails) throws Exception {
+
+        Date date = new Date();
+        Timestamp theLatestTimestamp = new Timestamp(date.getTime());
+        Calendar cal1 = new GregorianCalendar();
+        Calendar cal2 = new GregorianCalendar();
+
+        LocalDate latestDate = theLatestTimestamp.toLocalDateTime().toLocalDate();
+        cal1.set(latestDate.getYear(), latestDate.getMonthValue(), latestDate.getDayOfMonth());
+
+        LocalDate todayNextYear = LocalDate.now().plusWeeks(52).plusDays(1);
+
+        // Figure out what day it is (e.g. Monday, Tuesday, Wednesday)
+
+        DayOfWeek dayOfWeek = todayNextYear.getDayOfWeek();
+
+        todayNextYear = getLocalDate(todayNextYear, dayOfWeek);
+
+        String startTimeStampBuilder = getStartTimeStampBuilder(todayNextYear);
+
+
+        cal2.set(todayNextYear.getYear(), todayNextYear.getMonthValue(), todayNextYear.getDayOfMonth());
+
+        Timestamp OneYearFromToday = Timestamp.valueOf(startTimeStampBuilder);
+
+        int days = daysBetween(cal1.getTime(), cal2.getTime());
+
+        for (int i = 0; i < days; i++) {
+
+            String[] dateRange = classDetails.getDate_range();
+
+            for (int j = 0; j < dateRange.length; j++) {
+                LocalDate startTimeDate = theLatestTimestamp.toInstant().atZone(ZoneId.of("America/New_York")).toLocalDate();
+                DayOfWeek newDayOfWeek = startTimeDate.getDayOfWeek();
+                String newDay = newDayOfWeek.toString();
+                if (dateRange[j].equals("Sun") && newDay.equals("SUNDAY")) {
+                    // empty event Object
+                    Event newEvent = new Event();
+                    // set class ID
+                    newEvent.setClass_id(classDetails.getClass_id());
+                    // set name
+                    newEvent.setEvent_name(classDetails.getClass_description());
+                    // set color (default to blue)
+                    newEvent.setColor("blue");
+                    // set timed (default to true)
+                    newEvent.setTimed(true);
+                    // set visible to true
+                    newEvent.setIs_visible_online(true);
+
+                    LocalDate nextOrSameSun = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+
+                    startTimeStampBuilder = "";
+                    String month = String.valueOf(nextOrSameSun.getMonthValue());
+                    String day = String.valueOf(nextOrSameSun.getDayOfMonth());
+                    String year = String.valueOf(nextOrSameSun.getYear());
+
+                    String time = LocalTime.parse(classDetails.getStart_time(), DateTimeFormatter.ofPattern("hh:mm a", Locale.US)).format(DateTimeFormatter.ofPattern("HH:mm"));
+                    startTimeStampBuilder += year + "-" + month + "-" + day + " " + time.substring(0, 5) + ":00.00";
+
+                    Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
+                    Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
+                    newEvent.setStart_time(start);
+                    newEvent.setEnd_time(end);
+
+                    // call another method that takes in a Event Object
+
+                    boolean alreadyExists = isThereExistingEventWithStartTime(newEvent);
+                    if (!alreadyExists) {
+                        createEvent(newEvent);
+                    }
+                }
+
+                if (dateRange[j].equals("Mon") && newDay.equals("MONDAY")) {
+                    // empty event Object
+                    Event newEvent = new Event();
+                    // set class ID
+                    newEvent.setClass_id(classDetails.getClass_id());
+                    // set name
+                    newEvent.setEvent_name(classDetails.getClass_description());
+                    // set color (default to blue)
+                    newEvent.setColor("blue");
+                    // set timed (default to true)
+                    newEvent.setTimed(true);
+                    // set visible to true
+                    newEvent.setIs_visible_online(true);
+
+                    LocalDate nextOrSameMon = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY));
+
+                    startTimeStampBuilder = "";
+                    String month = String.valueOf(nextOrSameMon.getMonthValue());
+                    String day = String.valueOf(nextOrSameMon.getDayOfMonth());
+                    String year = String.valueOf(nextOrSameMon.getYear());
+
+                    String time = LocalTime.parse(classDetails.getStart_time(), DateTimeFormatter.ofPattern("hh:mm a", Locale.US)).format(DateTimeFormatter.ofPattern("HH:mm"));
+                    startTimeStampBuilder += year + "-" + month + "-" + day + " " + time + ":00.0";
+
+                    Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
+                    Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
+                    newEvent.setStart_time(start);
+                    newEvent.setEnd_time(end);
+
+                    boolean alreadyExists = isThereExistingEventWithStartTime(newEvent);
+                    if (!alreadyExists) {
+                        createEvent(newEvent);
+                    }
+                }
+
+                if (dateRange[j].equals("Tue") && newDay.equals("TUESDAY")) {
+                    // empty event Object
+                    Event newEvent = new Event();
+                    // set class ID
+                    newEvent.setClass_id(classDetails.getClass_id());
+                    // set name
+                    newEvent.setEvent_name(classDetails.getClass_description());
+                    // set color (default to blue)
+                    newEvent.setColor("blue");
+                    // set timed (default to true)
+                    newEvent.setTimed(true);
+                    // set visible to true
+                    newEvent.setIs_visible_online(true);
+
+                    LocalDate nextOrSameTue = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.TUESDAY));
+
+                    startTimeStampBuilder = "";
+                    String month = String.valueOf(nextOrSameTue.getMonthValue());
+                    String day = String.valueOf(nextOrSameTue.getDayOfMonth());
+                    String year = String.valueOf(nextOrSameTue.getYear());
+
+                    String time = LocalTime.parse(classDetails.getStart_time(), DateTimeFormatter.ofPattern("hh:mm a", Locale.US)).format(DateTimeFormatter.ofPattern("HH:mm"));
+                    startTimeStampBuilder += year + "-" + month + "-" + day + " " + time + ":00.0";
+
+                    Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
+                    Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
+                    newEvent.setStart_time(start);
+                    newEvent.setEnd_time(end);
+
+                    boolean alreadyExists = isThereExistingEventWithStartTime(newEvent);
+                    if (!alreadyExists) {
+                        createEvent(newEvent);
+                    }
+                }
+
+                if (dateRange[j].equals("Wed") && newDay.equals("WEDNESDAY")) {
+                    // empty event Object
+                    Event newEvent = new Event();
+                    // set class ID
+                    newEvent.setClass_id(classDetails.getClass_id());
+                    // set name
+                    newEvent.setEvent_name(classDetails.getClass_description());
+                    // set color (default to blue)
+                    newEvent.setColor("blue");
+                    // set timed (default to true)
+                    newEvent.setTimed(true);
+                    // set visible to true
+                    newEvent.setIs_visible_online(true);
+
+                    LocalDate nextOrSameWed = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.WEDNESDAY));
+
+                    startTimeStampBuilder = "";
+                    String month = String.valueOf(nextOrSameWed.getMonthValue());
+                    String day = String.valueOf(nextOrSameWed.getDayOfMonth());
+                    String year = String.valueOf(nextOrSameWed.getYear());
+
+                    String time = LocalTime.parse(classDetails.getStart_time(), DateTimeFormatter.ofPattern("hh:mm a", Locale.US)).format(DateTimeFormatter.ofPattern("HH:mm"));
+                    startTimeStampBuilder += year + "-" + month + "-" + day + " " + time + ":00.0";
+
+                    Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
+                    Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
+                    newEvent.setStart_time(start);
+                    newEvent.setEnd_time(end);
+
+                    boolean alreadyExists = isThereExistingEventWithStartTime(newEvent);
+                    if (!alreadyExists) {
+                        createEvent(newEvent);
+                    }
+                }
+
+                if (dateRange[j].equals("Thu") && newDay.equals("THURSDAY")) {
+                    // empty event Object
+                    Event newEvent = new Event();
+                    // set class ID
+                    newEvent.setClass_id(classDetails.getClass_id());
+                    // set name
+                    newEvent.setEvent_name(classDetails.getClass_description());
+                    // set color (default to blue)
+                    newEvent.setColor("blue");
+                    // set timed (default to true)
+                    newEvent.setTimed(true);
+                    // set visible to true
+                    newEvent.setIs_visible_online(true);
+
+                    LocalDate nextOrSameThu = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.THURSDAY));
+
+                    startTimeStampBuilder = "";
+                    String month = String.valueOf(nextOrSameThu.getMonthValue());
+                    String day = String.valueOf(nextOrSameThu.getDayOfMonth());
+                    String year = String.valueOf(nextOrSameThu.getYear());
+
+                    String time = LocalTime.parse(classDetails.getStart_time(), DateTimeFormatter.ofPattern("hh:mm a", Locale.US)).format(DateTimeFormatter.ofPattern("HH:mm"));
+                    startTimeStampBuilder += year + "-" + month + "-" + day + " " + time + ":00.0";
+
+                    Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
+                    Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
+                    newEvent.setStart_time(start);
+                    newEvent.setEnd_time(end);
+
+                    boolean alreadyExists = isThereExistingEventWithStartTime(newEvent);
+                    if (!alreadyExists) {
+                        createEvent(newEvent);
+                    }
+                }
+
+                if (dateRange[j].equals("Fri") && newDay.equals("FRIDAY")) {
+                    // empty event Object
+                    Event newEvent = new Event();
+                    // set class ID
+                    newEvent.setClass_id(classDetails.getClass_id());
+                    // set name
+                    newEvent.setEvent_name(classDetails.getClass_description());
+                    // set color (default to blue)
+                    newEvent.setColor("blue");
+                    // set timed (default to true)
+                    newEvent.setTimed(true);
+                    // set visible to true
+                    newEvent.setIs_visible_online(true);
+
+                    LocalDate nextOrSameFri = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.FRIDAY));
+
+                    startTimeStampBuilder = "";
+                    String month = String.valueOf(nextOrSameFri.getMonthValue());
+                    String day = String.valueOf(nextOrSameFri.getDayOfMonth());
+                    String year = String.valueOf(nextOrSameFri.getYear());
+
+                    String time = LocalTime.parse(classDetails.getStart_time(), DateTimeFormatter.ofPattern("hh:mm a", Locale.US)).format(DateTimeFormatter.ofPattern("HH:mm"));
+                    startTimeStampBuilder += year + "-" + month + "-" + day + " " + time + ":00.0";
+
+                    Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
+                    Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
+                    newEvent.setStart_time(start);
+                    newEvent.setEnd_time(end);
+
+                    boolean alreadyExists = isThereExistingEventWithStartTime(newEvent);
+                    if (!alreadyExists) {
+                        createEvent(newEvent);
+                    }
+                }
+
+                if (dateRange[j].equals("Sat") && newDay.equals("SATURDAY")) {
+                    // empty event Object
+                    Event newEvent = new Event();
+                    // set class ID
+                    newEvent.setClass_id(classDetails.getClass_id());
+                    // set name
+                    newEvent.setEvent_name(classDetails.getClass_description());
+                    // set color (default to blue)
+                    newEvent.setColor("blue");
+                    // set timed (default to true)
+                    newEvent.setTimed(true);
+                    // set visible to true
+                    newEvent.setIs_visible_online(true);
+
+                    LocalDate nextOrSameSat = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY));
+
+                    startTimeStampBuilder = "";
+                    String month = String.valueOf(nextOrSameSat.getMonthValue());
+                    String day = String.valueOf(nextOrSameSat.getDayOfMonth());
+                    String year = String.valueOf(nextOrSameSat.getYear());
+
+                    String time = LocalTime.parse(classDetails.getStart_time(), DateTimeFormatter.ofPattern("hh:mm a", Locale.US)).format(DateTimeFormatter.ofPattern("HH:mm"));
+                    startTimeStampBuilder += year + "-" + month + "-" + day + " " + time + ":00.0";
+
+                    Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
+                    Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
+                    newEvent.setStart_time(start);
+                    newEvent.setEnd_time(end);
+
+                    boolean alreadyExists = isThereExistingEventWithStartTime(newEvent);
+                    if (!alreadyExists) {
+                        createEvent(newEvent);
+                    }
+                }
+            }
+            // add another day to the local date
+            try {
+                theLatestTimestamp = addDays(1, theLatestTimestamp);
+            } catch (Exception e) {
+                System.out.println("Error incrementing the timestamp");
+            }
+        }
+
+    }
+
+    @Override
     public void updateEventServerTask() throws Exception {
         List<ClassDetails> classDetails = getAllClasses();
         String end_time = "SELECT * FROM events ORDER BY end_time DESC LIMIT 1";
@@ -415,7 +708,7 @@ public class JdbcEventDao implements EventDao {
 
             DayOfWeek currentDayOfWeek = startTimeLocalDate.getDayOfWeek();
             String currentDay = currentDayOfWeek.toString().substring(0, 3).toLowerCase();
-            currentDay = currentDay.substring(0,1).toUpperCase() + currentDay.substring(1);
+            currentDay = currentDay.substring(0, 1).toUpperCase() + currentDay.substring(1);
 
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
 
@@ -740,8 +1033,7 @@ public class JdbcEventDao implements EventDao {
 
                     }
 
-               }
-                else if (sameDateRange && sameTimes && sameSize) {
+                } else if (sameDateRange && sameTimes && sameSize) {
                     // Remember to Update the rest of the event since the Timestamps match
 
                     // empty event Object
@@ -781,7 +1073,7 @@ public class JdbcEventDao implements EventDao {
         for (String day : updatedClassDateRangeMap.keySet()) {
             String currentValue = updatedClassDateRangeMap.get(day);
             if (currentValue.equals("")) {
-                updatedClassDateRangeMap.put(day,day);
+                updatedClassDateRangeMap.put(day, day);
 
                 Date date = new Date();
                 Timestamp theLatestTimestamp = new Timestamp(date.getTime());
@@ -820,7 +1112,7 @@ public class JdbcEventDao implements EventDao {
                         LocalDate startTimeDate = theLatestTimestamp.toInstant().atZone(ZoneId.of("America/New_York")).toLocalDate();
                         DayOfWeek newDayOfWeek = startTimeDate.getDayOfWeek();
                         String newDay = newDayOfWeek.toString().substring(0, 3).toLowerCase();
-                        newDay = newDay.substring(0,1).toUpperCase() + newDay.substring(1);
+                        newDay = newDay.substring(0, 1).toUpperCase() + newDay.substring(1);
 
                         if (newDay.equals(day)) {
 
@@ -876,9 +1168,6 @@ public class JdbcEventDao implements EventDao {
                     }
 
 
-
-
-
                 }
 
             }
@@ -891,7 +1180,7 @@ public class JdbcEventDao implements EventDao {
     public boolean isThereExistingEventWithStartTime(Event newEvent) {
         String sql = "SELECT * FROM events WHERE start_time = ? AND end_time = ? AND event_name = ? AND color = ?;";
         List<Event> checkForExistingEventList = new ArrayList<>();
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql,newEvent.getStart_time(), newEvent.getEnd_time(), newEvent.getEvent_name(), newEvent.getColor());
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, newEvent.getStart_time(), newEvent.getEnd_time(), newEvent.getEvent_name(), newEvent.getColor());
         while (result.next()) {
             Event event = mapRowToEvent(result);
 
@@ -904,23 +1193,17 @@ public class JdbcEventDao implements EventDao {
     private DayOfWeek getDayOfWeekByString(String assignedDay) {
         if (assignedDay.equals("Sun")) {
             return DayOfWeek.SUNDAY;
-        }
-        else if (assignedDay.equals("Mon")) {
+        } else if (assignedDay.equals("Mon")) {
             return DayOfWeek.MONDAY;
-        }
-        else if (assignedDay.equals("Tue")) {
+        } else if (assignedDay.equals("Tue")) {
             return DayOfWeek.TUESDAY;
-        }
-        else if (assignedDay.equals("Wed")) {
+        } else if (assignedDay.equals("Wed")) {
             return DayOfWeek.WEDNESDAY;
-        }
-        else if (assignedDay.equals("Thu")) {
+        } else if (assignedDay.equals("Thu")) {
             return DayOfWeek.THURSDAY;
-        }
-        else if (assignedDay.equals("Fri")) {
+        } else if (assignedDay.equals("Fri")) {
             return DayOfWeek.FRIDAY;
-        }
-        else if (assignedDay.equals("Sat")) {
+        } else if (assignedDay.equals("Sat")) {
             return DayOfWeek.SATURDAY;
         }
         return null;

@@ -25,13 +25,13 @@ public class JdbcClassDetailsDao implements ClassDetailsDao {
     }
 
     @Override
-    public boolean createClass(ClassDetails classDetails) {
+    public int createClass(ClassDetails classDetails) {
 
         String sql = "INSERT INTO class_details (teacher_id, class_duration, is_paid, " +
-                "class_description, is_repeating, date_range, start_time) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        return jdbcTemplate.update(sql, classDetails.getTeacher_id(),
+                "class_description, is_repeating, date_range, start_time) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING class_id";
+        return jdbcTemplate.queryForObject(sql, Integer.class, classDetails.getTeacher_id(),
                 classDetails.getClass_duration(), classDetails.isIs_paid(),
-                classDetails.getClass_description(), classDetails.isIs_repeating(), classDetails.getDate_range(), classDetails.getStart_time()) == 1;
+                classDetails.getClass_description(), classDetails.isIs_repeating(), classDetails.getDate_range(), classDetails.getStart_time());
     }
 
     @Override
