@@ -48,4 +48,6 @@ public interface EventDao {
     void updateEventsByClass(ClassDetails originalClass, ClassDetails updatedClass);
 
     boolean isThereExistingEventWithStartTime(Event newEvent);
+
+    void createNewEventsFromClass(ClassDetails classDetails) throws Exception;
 }

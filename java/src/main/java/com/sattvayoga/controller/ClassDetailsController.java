@@ -41,7 +41,15 @@ public class ClassDetailsController {
         // should we have exceptions if the class is already registered
         // (an exception that means they are already inside the class table)
 
-        classDetailsDao.createClass(classDetails);
+       ClassDetails retrievedClassDetails = classDetailsDao.getClassByClassId(classDetailsDao.createClass(classDetails));
+
+        // TODO: create events for this class
+        try {
+            eventDao.createNewEventsFromClass(retrievedClassDetails);
+        } catch (Exception e) {
+            System.out.println("Error creating a class");
+        }
+
     }
 
 //    @PreAuthorize("hasRole('ADMIN')")
