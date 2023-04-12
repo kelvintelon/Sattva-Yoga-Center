@@ -480,6 +480,12 @@
         </v-sheet>
       </v-col>
     </v-row>
+    <v-overlay :value="overlay">
+      <v-progress-circular
+        indeterminate
+        size="70"
+      ></v-progress-circular>
+    </v-overlay>
   </v-container>
 </template>
 
@@ -596,6 +602,7 @@ export default {
     types: ["month", "week", "day"],
     date2: "",
     dates: [],
+    overlay: false,
     mode: "stack",
     modes: ["stack"],
     weekday: [0, 1, 2, 3, 4, 5, 6],
@@ -1024,6 +1031,7 @@ export default {
       this.findsMatch();
     },
     submit() {
+      this.overlay = !this.overlay;
       // check if the form is complete
       this.checkCreateForm();
       if (this.createFormIncomplete == false) {
@@ -1073,13 +1081,13 @@ export default {
 
           eventService.createEvent(this.event).then((response) => {
             if (response.status == 201) {
+              this.overlay = false;
               // VERY EXPENSIVE API CALL please optimizie
 
                if (response.data=="Fail") {
             alert("Double Book Error. Failed to Create. Change event name")
             this.closeSelectedCard();
           } else {
-            alert("Successly updated")
             this.closeSelectedCard();
             this.getAllEvents();
           }

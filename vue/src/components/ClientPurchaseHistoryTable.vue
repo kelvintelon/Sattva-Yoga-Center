@@ -14,6 +14,8 @@
       class="elevation-5"
       sort-by="date_purchased"
       sort-desc="[true]"
+       :loading="loading"
+        loading-text="Loading... Please wait"
       dense
     >
       <template v-slot:top>
@@ -143,6 +145,12 @@
     </v-data-table>
     <br />
     <br />
+    <v-overlay :value="overlay">
+      <v-progress-circular
+        indeterminate
+        size="70"
+      ></v-progress-circular>
+    </v-overlay>
   </v-container>
 </template>
 
@@ -308,6 +316,8 @@ export default {
       "11:15 PM",
       "11:30 PM",
     ],
+    loading: true,
+    overlay: false,
     };
   },
   created() {
@@ -324,11 +334,13 @@ export default {
   },
   methods: {
     getPackageHistoryTable() {
+      this.loading = true;
       if (this.$store.state.user.username == "admin") {
         packagePurchaseService
           .getUserPurchasedPackagesByClientId(this.$route.params.clientId)
           .then((response) => {
             if (response.status == 200) {
+              this.loading = false;
               this.packageHistoryList = response.data;
               this.packageHistoryList.forEach((item) => {
                 item.date_purchased = new Date(
@@ -348,6 +360,7 @@ export default {
           if (response.status == 200) {
             this.packageHistoryList = response.data;
             this.packageHistoryList.forEach((item) => {
+              this.loading = false;
               item.date_purchased = new Date(
                 item.date_purchased
               ).toLocaleString();
@@ -371,6 +384,9 @@ export default {
       this.dialog = true;
     },
     update() {
+      this.loading = true;
+      this.dialog = false;
+      this.overlay = !this.overlay;
       this.editedItem.date_purchased = new Date(
         this.editedItem.date_purchased.replace("-", "/")
       ).toJSON();
@@ -388,6 +404,8 @@ export default {
         .updatePackagePurchase(this.editedItem)
         .then((response) => {
           if (response.status == 200) {
+            this.overlay = true;
+            this.loading = false;
             response;
             alert("success");
             this.close();

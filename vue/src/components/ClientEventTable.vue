@@ -6,6 +6,8 @@
       class="elevation-5"
       sort-by="date"
       :sort-desc="[false]"
+       :loading="loading2"
+        loading-text="Loading... Please wait"
       dense
     >
       <template v-slot:top>
@@ -92,6 +94,8 @@
       class="elevation-5"
       sort-by="date"
       :sort-desc="[true]"
+       :loading="loading"
+        loading-text="Loading... Please wait"
       dense
     >
       <template v-slot:top>
@@ -127,6 +131,12 @@
         </v-chip>
       </template>
     </v-data-table>
+    <v-overlay :value="overlay">
+      <v-progress-circular
+        indeterminate
+        size="70"
+      ></v-progress-circular>
+    </v-overlay>
   </v-container>
 </template>
 
@@ -172,6 +182,9 @@ export default {
       availableClasses: [],
       selectedClasses: [],
       dialog: false,
+      loading: true,
+      loading2: true,
+      overlay: false,
     };
   },
   methods: {
@@ -189,10 +202,16 @@ export default {
       });
     },
     getClientEventTable() {
+      this.loading = true;
+      this.loading2 = true;
+      this.overlay = !this.overlay;
       eventService
         .getAllClientEventsByClientId(this.$route.params.clientId)
         .then((response) => {
           if (response.status == 200) {
+            this.loading = false
+            this.loading2 = false;
+            this.overlay = false;
             this.$store.commit("SET_CLIENT_EVENT_LIST", response.data);
 
             this.allClientEvents = response.data;
@@ -319,6 +338,9 @@ export default {
       this.dialog = false;
     },
     addClassesForClient() {
+      this.loading = true;
+      this.loading2 = true;
+      this.overlay = !this.overlay;
       for (let index = 0; index < this.selectedClasses.length; index++) {
         
 
@@ -336,6 +358,9 @@ export default {
         .registerMultipleClientsForEvent(this.selectedClasses)
         .then((response) => {
           if (response.status == 201) {
+            this.loading = false;
+            this.loading2 = false;
+            this.overlay = false;
             alert("Successfully added classes to this client");
             this.getClientEventTable();
             this.$root.$refs.A.getActivePurchaseServerRequest();

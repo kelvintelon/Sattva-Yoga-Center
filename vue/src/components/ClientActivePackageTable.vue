@@ -48,6 +48,8 @@
       class="elevation-5"
       sort-by="date_purchased"
       sort-desc="[true]"
+       :loading="loading"
+        loading-text="Loading... Please wait"
       dense
     >
       <template v-slot:top>
@@ -76,7 +78,7 @@
                   <v-row>
                     <v-col>
                       <v-select
-                        label="Choose one or multiple"
+                        label="Choose one"
                         :items="availablePackages"
                         v-model="selectedPackage"
                         item-text="description"
@@ -158,7 +160,14 @@
     </v-data-table>
     <br />
     <br />
+    <v-overlay :value="overlay">
+      <v-progress-circular
+        indeterminate
+        size="70"
+      ></v-progress-circular>
+    </v-overlay>
   </v-container>
+  
 </template>
 
 <script>
@@ -224,6 +233,8 @@ export default {
       showPercentDiscount: false,
       percentDiscount: 0,
       snackBarReconcilePackagesSuccessful: false,
+      overlay: false,
+      loading: true,
     };
   },
   created() {
@@ -238,9 +249,15 @@ export default {
     }
   },
   methods: {
+    
+
     allowClientReconcile() {
+      this.loading = true;
+      this.overlay = !this.overlay;
       eventService.reconcileClassesForClient(this.$route.params.clientId).then((response) => {
         if (response.status == 200) {
+          this.loading= false;
+          this.overlay = false;
           this.snackBarReconcilePackages = false;
           alert("Success")
           this.getActivePurchaseServerRequest();
@@ -275,9 +292,13 @@ export default {
       this.selectedPackage.discount = 0;
     },
     getActivePurchaseServerRequest() {
+      this.loading = true;
+      this.overlay = !this.overlay;
       if (this.$store.state.user.username == "admin") {
         packagePurchaseService.getUserPurchasedPackagesByClientId(this.$route.params.clientId).then((response) => {
         if (response.status == 200) {
+          this.loading = false;
+          this.overlay = false;
           // focus on if it's expired or not
           var today = new Date();
           var dd = String(today.getDate()).padStart(2, '0');
@@ -302,6 +323,8 @@ export default {
      } else { 
       packagePurchaseService.getUserPurchasedPackages().then((response) => {
         if (response.status == 200) {
+          this.loading = false;
+          this.overlay = false;
           // focus on if it's expired or not
           var today = new Date();
           var dd = String(today.getDate()).padStart(2, '0');
@@ -341,7 +364,8 @@ export default {
       });
     },
     addPackageForClient() {
-
+      this.loading = true;
+      this.overlay = !this.overlay;
       this.packagePurchase.client_id = this.$route.params.clientId;
       const jsonDate = new Date().toJSON();
           this.packagePurchase.date_purchased = jsonDate;
@@ -427,6 +451,8 @@ export default {
               .createPackagePurchase(this.packagePurchase)
               .then((response) => {
                 if (response.status == 201) {
+                  this.loading = false;
+                  this.overlay = false;
                   alert("Succesfully purchased package");
                   // call method that updates the list of active packages
                   this.getActivePurchaseServerRequest();
