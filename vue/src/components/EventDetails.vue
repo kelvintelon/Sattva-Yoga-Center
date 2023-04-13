@@ -240,6 +240,12 @@
         </v-icon>
       </template>
     </v-data-table>
+    <v-overlay :value="overlay">
+      <v-progress-circular
+        indeterminate
+        size="70"
+      ></v-progress-circular>
+    </v-overlay>
   </v-container>
 </template>
 
@@ -426,6 +432,7 @@ export default {
         (v) => !!v || "Name is required",
         (v) => (v && v.length <= 30) || "Name must be less than 30 characters",
       ],
+      overlay:false,
     };
   },
   methods: {
@@ -485,6 +492,7 @@ export default {
     },
     // START OF: REMOVING CLIENT FROM ROSTER
     RemoveClassForClient(client) {
+      this.overlay = !this.overlay;
       let foundClientObject = false;
       client.event_id = this.$route.params.eventId;
       // see if the client object is already selected
@@ -515,6 +523,7 @@ export default {
         .removeEventForSelectedClients(temporaryList)
         .then((response) => {
           if (response.status === 200) {
+            this.overlay = false;
             alert("Successfully deleted clients from roster");
             this.getEventDetailsCall();
             this.selectedClientsFromRoster = [];
@@ -524,10 +533,12 @@ export default {
         }); // END OF REMOVING CLIENT FROM ROSTER
     },
     allowClientDelete() {
+      this.overlay = !this.overlay;
       eventService
         .removeEventForSelectedClients(this.selectedClientsFromRoster)
         .then((response) => {
           if (response.status === 200) {
+            this.overlay = false;
             alert("Successfully deleted clients from roster");
             this.getEventDetailsCall();
             this.selectedClientsFromRoster = [];
@@ -538,6 +549,7 @@ export default {
     },
     // START OF ADDING CLIENT TO ROSTER
     save() {
+      this.overlay = !this.overlay;
       for (let index = 0; index < this.selectedClients.length; index++) {
         this.allowSignUp = false;
 
@@ -552,6 +564,7 @@ export default {
         .registerMultipleClientsForEvent(this.selectedClients)
         .then((response) => {
           if (response.status == 201) {
+            this.overlay = false;
             alert("Successfully added clients to roster");
             this.getEventDetailsCall();
             this.selectedClients = [];
@@ -620,6 +633,7 @@ export default {
         });
     },
     formattingSignUp(object) {
+      this.overlay = !this.overlay;
       // find out if they have at least one active package that's a subscription or a bundle
       // and active
 
@@ -702,6 +716,7 @@ export default {
         if (this.validSignUp == true) {
           eventService.registerForEvent(object).then((response) => {
             if (response.status == 201) {
+              this.overlay = false;
               if (this.hasSubscriptionPackage == false) {
                 packagePurchaseService.decrementByOne(
                   this.quantityPackageIdToDecrement

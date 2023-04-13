@@ -372,11 +372,11 @@
             <!-- DELETE ? -->
             <v-dialog v-model="dialogDelete" max-width="500px">
               <v-card>
-                <v-card-title class="text-h5"
+                <v-card-title class="text-h7"
                   >Sure you want to delete this class?</v-card-title
                 >
-                <v-card-title class="text-h6"
-                  >This will delete the class sign up list as well</v-card-title
+                <v-card-title class="text"
+                  >This will delete the sign up list.</v-card-title
                 >
                 <v-card-actions>
                   <v-spacer></v-spacer>
@@ -417,6 +417,12 @@
         </template>
       </v-data-table>
     </v-app>
+     <v-overlay :value="overlay">
+      <v-progress-circular
+        indeterminate
+        size="70"
+      ></v-progress-circular>
+    </v-overlay>
   </div>
 </template>
 
@@ -622,6 +628,7 @@ export default {
       selectedTime: "",
       dateModel: "",
       loading: true,
+      overlay: false,
     };
   },
   created() {
@@ -700,8 +707,9 @@ export default {
         this.classDetails.class_duration == 0 ||
         this.classDetails.class_description == "" ||
         this.classDetails.start_time == "" ||
-        this.classDetails.date_range == []
+        this.classDetails.date_range.length == 0
       ) {
+        
         alert("Please fill out your form");
       } else {
         this.createFormIncomplete = false;
@@ -709,6 +717,7 @@ export default {
     },
     checkEditForm() {
       if (
+      
         // compare two objects to see if they are exact
         _.isEqual(this.editedItem, this.classes[this.editedIndex]) ||
         this.editedItem.teacher_id == 0 ||
@@ -718,15 +727,20 @@ export default {
         this.editedItem.date_range.length == 0
       ) {
         alert("Please fill out your form");
+        
       } else {
         this.editFormIncomplete = false;
       }
+      
     },
     reset() {
       this.$refs.form.reset();
     },
 
     submit() {
+      this.dialog=false;
+      this.loading = true;
+      this.overlay = !this.overlay
       // assign teacher name to object
       this.teacherObj.forEach((item) => {
         this.fullName = item.first_name + " " + item.last_name;
@@ -740,6 +754,8 @@ export default {
         // after completing the object do the POST REQUEST
         classDetailService.createClass(this.classDetails).then((response) => {
           if (response.status == 201) {
+            this.loading = false;
+            this.overlay = false;
             alert("You have created a class!");
             // this.classDetails.teacher_name = this.selectedTeacherName;
             // this.$store.state.classList.push(this.classDetails);
@@ -754,6 +770,9 @@ export default {
       }
     },
     update() {
+      this.dialog2 = false;
+      this.loading = true;
+      this.overlay = !this.overlay
       // assign teacher name to object
       this.teacherObj.forEach((item2) => {
         this.fullName2 = item2.first_name + " " + item2.last_name;
@@ -767,6 +786,8 @@ export default {
         // after completing the object do the PUT REQUEST
         classDetailService.updateClass(this.editedItem).then((response) => {
           if (response.status == 200) {
+            this.loading = false;
+            this.overlay = false;
             alert("You have updated a class!");
             this.getClassTable();
             this.close2();
@@ -870,6 +891,7 @@ export default {
     dialogDelete(val) {
       val || this.closeDelete();
     },
+    
   },
 };
 </script>

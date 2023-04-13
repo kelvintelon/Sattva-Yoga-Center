@@ -278,7 +278,13 @@
             @click:event="showEvent"
             @click:more="viewWeek"
             @click:date="viewDay"
-          ></v-calendar>
+          ><template v-slot:day-body="{ date, week, timeToY }">
+            <div
+              class="v-current-time"
+              :class="{ first: date === week[0].date }"
+              :style="{ top: nowY(timeToY) }"
+            ></div>
+          </template></v-calendar>
           <!-- Show Selected Event -->
           <v-menu
             v-model="selectedOpen"
@@ -474,6 +480,12 @@
         </v-sheet>
       </v-col>
     </v-row>
+    <v-overlay :value="overlay">
+      <v-progress-circular
+        indeterminate
+        size="70"
+      ></v-progress-circular>
+    </v-overlay>
   </v-container>
 </template>
 
@@ -486,6 +498,7 @@ export default {
   components: {},
   data: () => ({
     type: "month",
+    ready: false,
     allTimes: [
       "12:00 AM",
       "12:15 AM",
@@ -589,6 +602,7 @@ export default {
     types: ["month", "week", "day"],
     date2: "",
     dates: [],
+    overlay: false,
     mode: "stack",
     modes: ["stack"],
     weekday: [0, 1, 2, 3, 4, 5, 6],
@@ -844,7 +858,7 @@ export default {
             this.closeSelectedCard();
             
           } else {
-            alert("Successly updated")
+            
             this.closeSelectedCard();
             this.getAllEvents();
             
@@ -1017,6 +1031,7 @@ export default {
       this.findsMatch();
     },
     submit() {
+      this.overlay = !this.overlay;
       // check if the form is complete
       this.checkCreateForm();
       if (this.createFormIncomplete == false) {
@@ -1066,13 +1081,13 @@ export default {
 
           eventService.createEvent(this.event).then((response) => {
             if (response.status == 201) {
+              this.overlay = false;
               // VERY EXPENSIVE API CALL please optimizie
 
                if (response.data=="Fail") {
             alert("Double Book Error. Failed to Create. Change event name")
             this.closeSelectedCard();
           } else {
-            alert("Successly updated")
             this.closeSelectedCard();
             this.getAllEvents();
           }
@@ -1196,6 +1211,22 @@ export default {
         tms.minute
       ).getTime();
     },
+     getCurrentTime () {
+        return this.cal ? this.cal.times.now.hour * 60 + this.cal.times.now.minute : 0
+      },
+      scrollToTime () {
+        const time = this.getCurrentTime()
+        const first = Math.max(0, time - (time % 30) - 30)
+
+        this.cal.scrollToTime(first)
+      },
+      updateTime () {
+        setInterval(() => this.cal.updateTimes(), 60 * 1000)
+      },
+      nowY (timeToY) {
+        
+      return this.cal ? timeToY(this.cal.times.now) + 'px' : '-10px'
+    },
   },
   created() {
     this.getAllClasses();
@@ -1205,6 +1236,10 @@ export default {
   },
   mounted() {
     this.$refs.calendar.checkChange();
+     this.ready = true
+     
+      this.scrollToTime()
+      this.updateTime()
   },
   computed: {
     returnCorrectEndTime() {
@@ -1232,21 +1267,32 @@ export default {
         return this.dates.length + " Days Selected";
       }
     },
+    cal () {
+        return this.ready ? this.$refs.calendar : null
+      },
+      
   },
 };
 </script>
 
-<style>
-.btn-am {
-  float: left;
-}
+<style lang="scss">
+.v-current-time {
+  height: 2px;
+  background-color: #ea4335;
+  position: absolute;
+  left: -1px;
+  right: 0;
+  pointer-events: none;
 
-.btn-pm {
-  float: right;
-}
-
-.v-date-time-widget-container {
-  background: white;
-  padding: 10px;
+  &.first::before {
+    content: '';
+    position: absolute;
+    background-color: #ea4335;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-top: -5px;
+    margin-left: -6.5px;
+  }
 }
 </style>
