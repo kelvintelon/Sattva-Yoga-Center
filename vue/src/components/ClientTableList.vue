@@ -125,6 +125,8 @@
       item-key="client_id"
       v-model="selectedClients"
       sort-by="client_id"
+      :loading="loading"
+        loading-text="Loading... Please wait"
       :search="search"
       show-select
       dense
@@ -384,6 +386,7 @@ export default {
         is_on_email_list: false,
         email: "",
         has_record_of_liability: false,
+        loading: true,
         date_of_entry: "",
         user_id: 0,
       },
@@ -533,8 +536,10 @@ export default {
       this.emailRegistrationErrorMsg = 'There were problems updating this email.';
     },
     getClientTable() {
+      this.loading = true;
       clientDetailService.getClientList().then((response) => {
         if (response.status == 200) {
+          this.loading = false;
           this.clientList = response.data;
            this.clientList.forEach((item) => {
              if (item.full_address.includes("null")) {

@@ -731,8 +731,12 @@ export default {
       }
     },
     getAllClients() {
+      this.overlay = !this.overlay;
+      this.loading =true;
       clientDetailService.getClientList().then((response) => {
         if (response.status == 200) {
+          this.loading = false;
+          this.overlay = false;
           this.allClientsList = response.data;
 
           this.$store.commit("SET_CLIENT_EVENT_LIST", response.data);
