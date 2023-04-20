@@ -58,6 +58,11 @@ public class PackagePurchaseController {
         return packagePurchaseDao.getAllSharedActiveQuantityPackages(clientId);
     }
 
+    @GetMapping(path="/getAllSharedActiveQuantityPackagesByClientId/{clientId}")
+    public List<PackagePurchase> getAllSharedActiveQuantityPackagesByClientId(@PathVariable int clientId){
+        return packagePurchaseDao.getAllSharedActiveQuantityPackages(clientId);
+    }
+
     @RequestMapping(value= "/expirePackage", method = RequestMethod.PUT)
     public boolean expirePackage(@RequestBody PackagePurchase packagePurchase) {
         return packagePurchaseDao.expirePackage(packagePurchase);

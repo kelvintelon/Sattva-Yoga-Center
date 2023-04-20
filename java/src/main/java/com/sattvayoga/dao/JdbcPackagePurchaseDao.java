@@ -193,6 +193,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         return packages;
     }
 
+
     // helper
     public String getPackageDescriptionByPackageId(int PackageId) {
         PackageDetails packageDetails = null;

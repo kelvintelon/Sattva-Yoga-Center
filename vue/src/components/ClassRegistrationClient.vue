@@ -192,10 +192,9 @@ export default {
       // this.$root.$emit("getActivePurchasePackageTable");
     },
     getActivePurchaseServerRequest() {
-      
       packagePurchaseService.getUserPurchasedPackages().then((response) => {
         if (response.status == 200) {
-          this.thwin();
+          this.getSharedActivePackages();
           // focus on if it's expired or not
           var today = new Date();
           var dd = String(today.getDate()).padStart(2, "0");
@@ -225,7 +224,7 @@ export default {
         }
       });
     },
-    thwin() {
+    getSharedActivePackages() {
       packagePurchaseService
         .getAllSharedActiveQuantityPackages()
         .then((response) => {
@@ -334,7 +333,9 @@ export default {
           }
         });
         if (this.freeloading) {
-          if(confirm("You will use up packages shared by the group")== false){
+          if (
+            confirm("You will use up packages shared by the group") == false
+          ) {
             this.validSignUp == false;
           }
         }
@@ -348,7 +349,7 @@ export default {
                   packagePurchaseService.decrementByOne(
                     this.quantityPackageIdToDecrement
                   );
-                  this.thwin();
+                  this.getSharedActivePackages();
                   this.freeloading = false;
                   this.quantityPackageIdToDecrement = "";
                   alert(
@@ -367,7 +368,7 @@ export default {
                       this.$store.commit("SET_CLIENT_DETAILS", response.data);
                     }
                   });
-                  this.getEventTable();
+                this.getEventTable();
                 this.getClientEventTable();
               }
             });
@@ -478,37 +479,39 @@ export default {
     },
 
     getEventTable() {
-      eventService.get100EventsForClient(this.$store.state.clientDetails.client_id).then((response) => {
-        if (response.status == 200) {
-          this.$store.commit("SET_EVENT_LIST", response.data);
-          this.events = response.data;
-          this.events.forEach((each) => {
-            // YYYY-MM-DD format
-            each.date = each.start_time;
-            each.dateRef = each.start_time;
-            const [Month, Day, Year] = new Date(each.date)
-              .toLocaleDateString()
-              .split("/");
-            each.date = Year + "-" + Month + "-" + Day;
-            // HH:MM AM/PM format
-            each.start_time = new Date(each.start_time).toLocaleString(
-              "en-US",
-              {
+      eventService
+        .get100EventsForClient(this.$store.state.clientDetails.client_id)
+        .then((response) => {
+          if (response.status == 200) {
+            this.$store.commit("SET_EVENT_LIST", response.data);
+            this.events = response.data;
+            this.events.forEach((each) => {
+              // YYYY-MM-DD format
+              each.date = each.start_time;
+              each.dateRef = each.start_time;
+              const [Month, Day, Year] = new Date(each.date)
+                .toLocaleDateString()
+                .split("/");
+              each.date = Year + "-" + Month + "-" + Day;
+              // HH:MM AM/PM format
+              each.start_time = new Date(each.start_time).toLocaleString(
+                "en-US",
+                {
+                  hour: "numeric",
+                  minute: "numeric",
+                  hour12: true,
+                }
+              );
+              each.end_time = new Date(each.end_time).toLocaleString("en-US", {
                 hour: "numeric",
                 minute: "numeric",
                 hour12: true,
-              }
-            );
-            each.end_time = new Date(each.end_time).toLocaleString("en-US", {
-              hour: "numeric",
-              minute: "numeric",
-              hour12: true,
+              });
             });
-          });
-        } else {
-          alert("Error retrieving class information");
-        }
-      });
+          } else {
+            alert("Error retrieving class information");
+          }
+        });
     },
     getClientEventTable() {
       eventService.getAllClientEvents().then((response) => {

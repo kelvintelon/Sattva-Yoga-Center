@@ -29,5 +29,8 @@ export default {
     getAllSharedActiveQuantityPackages(){
         return axios.get('getAllSharedActiveQuantityPackages')
     },
+    getAllSharedActiveQuantityPackagesByClientId(clientId){
+        return axios.get(`getAllSharedActiveQuantityPackagesByClientId/${clientId}`)
+    },
 
 }

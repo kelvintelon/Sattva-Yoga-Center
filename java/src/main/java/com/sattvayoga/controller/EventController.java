@@ -134,8 +134,17 @@ public class EventController {
                 //  update the packagePurchase in the database here then leave/break right after
                 packagePurchaseDao.updatePackage(packagePurchase);
 
-                break;
+//                break;
             }
+
+            // shared package reconcile
+            if(packagePurchase.getPackage_purchase_id() == 0){
+                List<PackagePurchase> allActiveSharedPackages = packagePurchaseDao.getAllSharedActiveQuantityPackages(clientId);
+                if(allActiveSharedPackages.size()>0){
+                    packagePurchase = allActiveSharedPackages.get(0);
+                }
+            }
+
             // update each client-event object row individually using the packagePurchase ID
             eventDao.reconcileClassWithPackageId(packagePurchase.getPackage_purchase_id(), eventList.get(i).getEvent_id(), clientId);
 
@@ -315,6 +324,15 @@ public class EventController {
             List<PackagePurchase> allUserPackagePurchase = packagePurchaseDao.getAllUserPackagePurchases(userId);
             // filter the list of packages to just one
             PackagePurchase packagePurchase = packagePurchaseDao.filterPackageList(allUserPackagePurchase, event);
+            // if user doesn't have any usable package, look for shared packages;
+            if (packagePurchase.getPackage_purchase_id() == 0){
+                List<PackagePurchase> allActiveSharedPackages = packagePurchaseDao.getAllSharedActiveQuantityPackages(clientEvent.getClient_id());
+                if(allActiveSharedPackages.size()>0){
+                    packagePurchase = allActiveSharedPackages.get(0);
+                }
+            }
+
+
             // finally once you've pinpointed the package, set the package purchase ID into the object
             if (packagePurchase.getPackage_purchase_id() > 0) {
                 clientEvent.setPackage_purchase_id(packagePurchase.getPackage_purchase_id());
