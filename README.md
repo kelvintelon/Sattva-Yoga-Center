@@ -2,6 +2,7 @@
 
 Project settings as of 1/4/2023:
 
+Node.js v14.17.6
 npm version: 8.1.0
 axios: 0.21.1
 core-js: 3.9.1
