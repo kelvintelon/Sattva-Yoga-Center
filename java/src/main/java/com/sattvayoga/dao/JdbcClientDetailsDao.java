@@ -68,6 +68,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
         return clientDetails;
     }
+
     @Override
     public void removeDuplicateClients(int clientIdToKeep, int clientIdToRemove) {
         String sql = "UPDATE client_event SET client_id = ? WHERE client_id = ? " +
