@@ -194,6 +194,7 @@ export default {
     getActivePurchaseServerRequest() {
       packagePurchaseService.getUserPurchasedPackages().then((response) => {
         if (response.status == 200) {
+          this.getSharedActivePackages();
           // focus on if it's expired or not
           var today = new Date();
           var dd = String(today.getDate()).padStart(2, "0");
@@ -204,7 +205,7 @@ export default {
           this.packages = response.data.filter((item) => {
             // return item.expiration_date >= today || item.classes_remaining > 0;
             return (
-              (item.is_subscription && item.expiration_date) ||
+              (item.is_subscription && item.expiration_date >= today) ||
               (!item.is_subscription &&
                 item.expiration_date >= today &&
                 item.classes_remaining > 0)
@@ -222,6 +223,8 @@ export default {
           alert("Error retrieving package information");
         }
       });
+    },
+    getSharedActivePackages() {
       packagePurchaseService
         .getAllSharedActiveQuantityPackages()
         .then((response) => {
@@ -258,7 +261,7 @@ export default {
                 });
               this.initial1 = this.subscriptionPackages[0];
               this.subscriptionPackages.forEach((item) => {
-                if (item.expiration_date > this.initial1.expiration_date) {
+                if (item.expiration_date < this.initial1.expiration_date) {
                   this.initial1 = item;
                 }
               });
@@ -287,6 +290,11 @@ export default {
               });
             }
           }
+          // final package_id is always the subscription package with the earliest exp date.
+          if (this.hasSubscriptionPackage) {
+            this.eventClientSignUp.package_purchase_id =
+              this.initial1.package_purchase_id;
+          }
         });
 
         // this here is if they only have a gift certificate or dont have a bundle/subscription
@@ -294,7 +302,9 @@ export default {
           this.snackBarNoPurchaseWarning = true;
         }
       } else if (this.$store.state.sharedPackages.length > 0) {
-        this.allowSignUp = true;
+        if (this.$store.state.sharedPackages[0].classes_remaining > 0) {
+          this.allowSignUp = true;
+        }
         this.eventClientSignUp.package_purchase_id =
           this.$store.state.sharedPackages[0].package_purchase_id;
         this.quantityPackageIdToDecrement =
@@ -323,7 +333,11 @@ export default {
           }
         });
         if (this.freeloading) {
-          alert("You will use up packages shared by the group");
+          if (
+            confirm("You will use up packages shared by the group") == false
+          ) {
+            this.validSignUp == false;
+          }
         }
 
         if (this.validSignUp == true) {
@@ -335,6 +349,7 @@ export default {
                   packagePurchaseService.decrementByOne(
                     this.quantityPackageIdToDecrement
                   );
+                  this.getSharedActivePackages();
                   this.freeloading = false;
                   this.quantityPackageIdToDecrement = "";
                   alert(
@@ -353,6 +368,7 @@ export default {
                       this.$store.commit("SET_CLIENT_DETAILS", response.data);
                     }
                   });
+                this.getEventTable();
                 this.getClientEventTable();
               }
             });
@@ -399,7 +415,7 @@ export default {
           this.packages = response.data.filter((item) => {
             // return item.expiration_date >= today || item.classes_remaining > 0;
             return (
-              (item.is_subscription && item.expiration_date) ||
+              (item.is_subscription && item.expiration_date >= today) ||
               (!item.is_subscription &&
                 item.expiration_date >= today &&
                 item.classes_remaining > 0)
@@ -418,7 +434,7 @@ export default {
           });
           console.log(refundPackage);
           if (refundPackage.length > 0) {
-            if (refundPackage[0].is_subscription == true) { //Kelvin did i break your code?
+            if (refundPackage[0].is_subscription == true) {
               this.hasSubscriptionPackage = true;
             }
           }
@@ -455,6 +471,7 @@ export default {
                 }
                 this.hasSubscriptionPackage = false;
                 this.getClientEventTable();
+                this.getEventTable();
               }
             });
         }
@@ -462,37 +479,39 @@ export default {
     },
 
     getEventTable() {
-      eventService.get100Events().then((response) => {
-        if (response.status == 200) {
-          this.$store.commit("SET_EVENT_LIST", response.data);
-          this.events = response.data;
-          this.events.forEach((each) => {
-            // YYYY-MM-DD format
-            each.date = each.start_time;
-            each.dateRef = each.start_time;
-            const [Month, Day, Year] = new Date(each.date)
-              .toLocaleDateString()
-              .split("/");
-            each.date = Year + "-" + Month + "-" + Day;
-            // HH:MM AM/PM format
-            each.start_time = new Date(each.start_time).toLocaleString(
-              "en-US",
-              {
+      eventService
+        .get100EventsForClient(this.$store.state.clientDetails.client_id)
+        .then((response) => {
+          if (response.status == 200) {
+            this.$store.commit("SET_EVENT_LIST", response.data);
+            this.events = response.data;
+            this.events.forEach((each) => {
+              // YYYY-MM-DD format
+              each.date = each.start_time;
+              each.dateRef = each.start_time;
+              const [Month, Day, Year] = new Date(each.date)
+                .toLocaleDateString()
+                .split("/");
+              each.date = Year + "-" + Month + "-" + Day;
+              // HH:MM AM/PM format
+              each.start_time = new Date(each.start_time).toLocaleString(
+                "en-US",
+                {
+                  hour: "numeric",
+                  minute: "numeric",
+                  hour12: true,
+                }
+              );
+              each.end_time = new Date(each.end_time).toLocaleString("en-US", {
                 hour: "numeric",
                 minute: "numeric",
                 hour12: true,
-              }
-            );
-            each.end_time = new Date(each.end_time).toLocaleString("en-US", {
-              hour: "numeric",
-              minute: "numeric",
-              hour12: true,
+              });
             });
-          });
-        } else {
-          alert("Error retrieving class information");
-        }
-      });
+          } else {
+            alert("Error retrieving class information");
+          }
+        });
     },
     getClientEventTable() {
       eventService.getAllClientEvents().then((response) => {

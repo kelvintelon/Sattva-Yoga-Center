@@ -6,8 +6,8 @@
       class="elevation-5"
       sort-by="date"
       :sort-desc="[false]"
-       :loading="loading2"
-        loading-text="Loading... Please wait"
+      :loading="loading2"
+      loading-text="Loading... Please wait"
       dense
     >
       <template v-slot:top>
@@ -68,7 +68,8 @@
           </v-dialog>
         </v-toolbar>
       </template>
-      <template v-slot:[`item.actions`]="{ item }"><v-icon  
+      <template v-slot:[`item.actions`]="{ item }"
+        ><v-icon
           small
           class="mr-2"
           @click.prevent="sendToEventPageAdminView(item)"
@@ -78,7 +79,6 @@
         <v-icon small class="mr-2" @click="RemoveClassForClient(item)">
           mdi-close-thick
         </v-icon>
-         
       </template>
       <template v-slot:[`item.event_id`]="{ item }">
         <v-chip :color="getColor(item)" dark>
@@ -94,8 +94,8 @@
       class="elevation-5"
       sort-by="date"
       :sort-desc="[true]"
-       :loading="loading"
-        loading-text="Loading... Please wait"
+      :loading="loading"
+      loading-text="Loading... Please wait"
       dense
     >
       <template v-slot:top>
@@ -108,17 +108,16 @@
       <template
         v-slot:[`item.actions`]="{ item }"
         v-if="$store.state.user.username == 'admin'"
-      ><v-icon  
+        ><v-icon
           small
           class="mr-2"
           @click.prevent="sendToEventPageAdminView(item)"
         >
           mdi-calendar-search
-        </v-icon> 
+        </v-icon>
         <v-icon small class="mr-2" @click="RemoveClassForClient(item)">
           mdi-close-thick
-        </v-icon>  
-        
+        </v-icon>
       </template>
       <template v-slot:[`item.event_id`]="{ item }">
         <v-chip :color="getColor(item)" dark>
@@ -132,10 +131,7 @@
       </template>
     </v-data-table>
     <v-overlay :value="overlay">
-      <v-progress-circular
-        indeterminate
-        size="70"
-      ></v-progress-circular>
+      <v-progress-circular indeterminate size="70"></v-progress-circular>
     </v-overlay>
   </v-container>
 </template>
@@ -195,7 +191,7 @@ export default {
         return "blue";
       }
     },
-    sendToEventPageAdminView(item){
+    sendToEventPageAdminView(item) {
       this.$router.push({
         name: "event-attendance-details",
         params: { eventId: item.event_id },
@@ -209,7 +205,7 @@ export default {
         .getAllClientEventsByClientId(this.$route.params.clientId)
         .then((response) => {
           if (response.status == 200) {
-            this.loading = false
+            this.loading = false;
             this.loading2 = false;
             this.overlay = false;
             this.$store.commit("SET_CLIENT_EVENT_LIST", response.data);
@@ -254,84 +250,92 @@ export default {
         });
     },
     get100Events() {
-      eventService.get100EventsForClient(this.$route.params.clientId).then((response) => {
-        if (response.status == 200) {
-          this.availableClasses = response.data;
-          this.availableClasses.forEach((item) => {
-            // YYYY-MM-DD format
+      eventService
+        .get100EventsForClient(this.$route.params.clientId)
+        .then((response) => {
+          if (response.status == 200) {
+            this.availableClasses = response.data;
+            this.availableClasses.forEach((item) => {
+              // YYYY-MM-DD format
 
-            // let theStartTime = item.start_time;
+              // let theStartTime = item.start_time;
 
-            item.date = item.start_time;
-            let [Month, Day, Year] = new Date(item.date)
-              .toLocaleDateString()
-              .split("/");
-            item.date = Month + "/" + Day + "/" + Year.substring(Year.length-2);
+              item.date = item.start_time;
+              let [Month, Day, Year] = new Date(item.date)
+                .toLocaleDateString()
+                .split("/");
+              item.date =
+                Month + "/" + Day + "/" + Year.substring(Year.length - 2);
 
-            // FIND OUT IF ITS TOMORROW
-            const today = new Date();
-            let tomorrow = new Date();
-            tomorrow.setDate(today.getDate() + 1);
-            tomorrow.setHours(0, 0, 0, 0);
+              // FIND OUT IF ITS TOMORROW
+              const today = new Date();
+              let tomorrow = new Date();
+              tomorrow.setDate(today.getDate() + 1);
+              tomorrow.setHours(0, 0, 0, 0);
 
-            // theStartTime.setHours(0,0,0,0)
-            // if (theStartTime.getTime() === tomorrow.getTime()) {
-            //   item.date = "Tomorrow"
-            // }
+              // theStartTime.setHours(0,0,0,0)
+              // if (theStartTime.getTime() === tomorrow.getTime()) {
+              //   item.date = "Tomorrow"
+              // }
 
-            // FIND DAY
-            // let currentDay = new Date(item.start_time).toLocaleDateString(
-            //   "en-US",
-            //   { weekday: "long" }
-            // );
-            // +
+              // FIND DAY
+              // let currentDay = new Date(item.start_time).toLocaleDateString(
+              //   "en-US",
+              //   { weekday: "long" }
+              // );
+              // +
               // currentDay.substring(0,3) +
               // ", " +
               // " at "
 
-            // HH:MM AM/PM format
+              // HH:MM AM/PM format
 
-            item.date = item.date + " " +
-              item.event_name +
-              " "  +
-              new Date(item.start_time).toLocaleString("en-US", {
+              item.date =
+                item.date +
+                " " +
+                item.event_name +
+                " " +
+                new Date(item.start_time).toLocaleString("en-US", {
+                  hour: "numeric",
+                  minute: "numeric",
+                  hour12: true,
+                });
+
+              item.start_time = new Date(item.start_time).toLocaleString(
+                "en-US",
+                {
+                  hour: "numeric",
+                  minute: "numeric",
+                  hour12: true,
+                }
+              );
+              item.end_time = new Date(item.end_time).toLocaleString("en-US", {
                 hour: "numeric",
                 minute: "numeric",
                 hour12: true,
               });
-
-            item.start_time = new Date(item.start_time).toLocaleString("en-US", {
-                hour: "numeric",
-                minute: "numeric",
-                hour12: true,
-              });
-            item.end_time = new Date(item.end_time).toLocaleString("en-US", {
-              hour: "numeric",
-              minute: "numeric",
-              hour12: true,
             });
-          });
-          // this.availableClasses.filter((item) => {
-          //   if (this.allClientEvents.length > 0) {
-          //     let foundOne = false;
-          //     for (
-          //       let index = 0;
-          //       index < this.allClientEvents.length;
-          //       index++
-          //     ) {
-          //       if (this.allClientEvents[index].event_id == item.event_id) {
-          //         foundOne = true;
-          //       }
-          //     }
-          //     if (!foundOne) {
-          //       return item;
-          //     }
-          //   } else {
-          //     return item;
-          //   }
-          // });
-        }
-      });
+            // this.availableClasses.filter((item) => {
+            //   if (this.allClientEvents.length > 0) {
+            //     let foundOne = false;
+            //     for (
+            //       let index = 0;
+            //       index < this.allClientEvents.length;
+            //       index++
+            //     ) {
+            //       if (this.allClientEvents[index].event_id == item.event_id) {
+            //         foundOne = true;
+            //       }
+            //     }
+            //     if (!foundOne) {
+            //       return item;
+            //     }
+            //   } else {
+            //     return item;
+            //   }
+            // });
+          }
+        });
     },
     close() {
       this.selectedClasses = [];
@@ -342,41 +346,37 @@ export default {
       this.loading2 = true;
       this.overlay = !this.overlay;
       for (let index = 0; index < this.selectedClasses.length; index++) {
-        
-
         this.selectedClasses[index].client_id = this.$route.params.clientId;
 
         for (let index = 0; index < this.availableClasses.length; index++) {
           // const element = array[index];
-          
         }
 
         // END OF LOOP BLOCK
       }
       if (this.selectedClasses.length > 0) {
-      eventService
-        .registerMultipleClientsForEvent(this.selectedClasses)
-        .then((response) => {
-          if (response.status == 201) {
-            this.loading = false;
-            this.loading2 = false;
-            this.overlay = false;
-            alert("Successfully added classes to this client");
-            this.getClientEventTable();
-            this.$root.$refs.A.getActivePurchaseServerRequest();
-            this.$root.$refs.B.getPackageHistoryTable();
-            this.$root.$refs.C.getClientDetails();
+        eventService
+          .registerMultipleClientsForEvent(this.selectedClasses)
+          .then((response) => {
+            if (response.status == 201) {
+              this.loading = false;
+              this.loading2 = false;
+              this.overlay = false;
+              alert("Successfully added classes to this client");
+              this.getClientEventTable();
+              this.$root.$refs.A.getActivePurchaseServerRequest();
+              this.$root.$refs.B.getPackageHistoryTable();
+              this.$root.$refs.C.getClientDetails();
 
-            this.selectedClasses = [];
-          } else {
-            alert("Error adding events to this client");
-          }
-        });
+              this.selectedClasses = [];
+            } else {
+              alert("Error adding events to this client");
+            }
+          });
         this.close();
-    } else {
-      alert("Please select at least one event")
-    }
-
+      } else {
+        alert("Please select at least one event");
+      }
     },
     RemoveClassForClient(item) {
       this.eventClientSignUp.event_id = item.event_id;
@@ -416,7 +416,10 @@ export default {
 
             this.packages = response.data.filter((item) => {
               return (
-                item.expiration_date >= today || item.classes_remaining > 0
+                (item.is_subscription && item.expiration_date >= today) ||
+                (!item.is_subscription &&
+                  item.expiration_date >= today &&
+                  item.classes_remaining > 0)
               );
             });
             this.packages.forEach((item) => {
@@ -430,8 +433,10 @@ export default {
                 this.eventClientSignUp.package_purchase_id
               );
             });
-            if (refundPackage[0].is_subscription == true) {
-              this.hasSubscriptionPackage = true;
+            if (refundPackage.length > 0) {
+              if (refundPackage[0].is_subscription == true) {
+                this.hasSubscriptionPackage = true;
+              }
             }
             this.allowSignUp = true;
             this.cancelCheck();
@@ -502,18 +507,19 @@ export default {
         text: "Event ID",
         value: "event_id",
         sortable: false,
-      },
-      );
-      this.allClientEventHeaders.unshift({
-        text: "Event ID",
-        value: "event_id",
-        sortable: false,
-      },
-      {
-        text: "Package ID",
-        value: "package_purchase_id",
-        sortable: false,
       });
+      this.allClientEventHeaders.unshift(
+        {
+          text: "Event ID",
+          value: "event_id",
+          sortable: false,
+        },
+        {
+          text: "Package ID",
+          value: "package_purchase_id",
+          sortable: false,
+        }
+      );
       this.allClientEventHeaders.push({
         text: "Actions",
         value: "actions",

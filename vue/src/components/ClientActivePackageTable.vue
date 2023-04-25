@@ -27,7 +27,12 @@
         >
           Close
         </v-btn>
-        <v-btn color="white" text v-bind="attrs" @click.prevent="allowClientReconcile">
+        <v-btn
+          color="white"
+          text
+          v-bind="attrs"
+          @click.prevent="allowClientReconcile"
+        >
           Continue
         </v-btn>
       </template>
@@ -48,8 +53,8 @@
       class="elevation-5"
       sort-by="date_purchased"
       sort-desc="[true]"
-       :loading="loading"
-        loading-text="Loading... Please wait"
+      :loading="loading"
+      loading-text="Loading... Please wait"
       dense
     >
       <template v-slot:top>
@@ -135,7 +140,11 @@
                 <v-btn color="blue darken-1" text @click="close">
                   Cancel
                 </v-btn>
-                <v-btn color="blue darken-1" text @click.prevent="addPackageForClient">
+                <v-btn
+                  color="blue darken-1"
+                  text
+                  @click.prevent="addPackageForClient"
+                >
                   Save
                 </v-btn>
               </v-card-actions>
@@ -161,13 +170,9 @@
     <br />
     <br />
     <v-overlay :value="overlay">
-      <v-progress-circular
-        indeterminate
-        size="70"
-      ></v-progress-circular>
+      <v-progress-circular indeterminate size="70"></v-progress-circular>
     </v-overlay>
   </v-container>
-  
 </template>
 
 <script>
@@ -235,46 +240,52 @@ export default {
       snackBarReconcilePackagesSuccessful: false,
       overlay: false,
       loading: true,
+      sharedPackages: [],
     };
   },
   created() {
+    this.getSharedActivePackages();
     this.getActivePurchaseServerRequest();
-    
+
     this.$root.$refs.A = this;
 
     if (this.$store.state.user.username == "admin") {
-      this.headers.unshift({ text: "Package ID", value: "package_purchase_id", sortable: false });
-       this.headers.push( { text: "Cancel", value: "actions", sortable: false });
-    this.getPublicPackagesTable();
+      this.headers.unshift({
+        text: "Package ID",
+        value: "package_purchase_id",
+        sortable: false,
+      });
+      this.headers.push({ text: "Cancel", value: "actions", sortable: false });
+      this.getPublicPackagesTable();
     }
   },
   methods: {
-    
-
+    // snackbars not showing and not unshowing
     allowClientReconcile() {
       this.loading = true;
       this.overlay = !this.overlay;
-      eventService.reconcileClassesForClient(this.$route.params.clientId).then((response) => {
-        if (response.status == 200) {
-          this.loading= false;
-          this.overlay = false;
-          this.snackBarReconcilePackages = false;
-          alert("Success")
-          this.getActivePurchaseServerRequest();
-          this.$root.$refs.B.getPackageHistoryTable();
-          this.$root.$refs.C.getClientDetails();
-          this.$root.$refs.D.getClientEventTable();
-          this.$root.$refs.E.getEventDetailsCall();
-          this.snackBarReconcilePackagesSuccessful = true;
-          
-        } else {
-          this.snackBarReconcilePackages = false;
-          alert("Error Reconciling Classes")
-          this.getActivePurchaseServerRequest();
-        }
-      })
+      eventService
+        .reconcileClassesForClient(this.$route.params.clientId)
+        .then((response) => {
+          if (response.status == 200) {
+            this.loading = false;
+            this.overlay = false;
+            this.snackBarReconcilePackages = false;
+            alert("Success");
+            this.getActivePurchaseServerRequest();
+            this.$root.$refs.B.getPackageHistoryTable();
+            this.$root.$refs.C.getClientDetails();
+            this.$root.$refs.D.getClientEventTable();
+            this.$root.$refs.E.getEventDetailsCall();
+            this.snackBarReconcilePackagesSuccessful = true;
+          } else {
+            this.snackBarReconcilePackages = false;
+            alert("Error Reconciling Classes");
+            this.getActivePurchaseServerRequest();
+          }
+        });
     },
-     getPublicPackagesTable() {
+    getPublicPackagesTable() {
       packageDetailService.getAllPublicPackages().then((response) => {
         if (response.status == 200) {
           // adjust this commit in the future perhaps
@@ -295,61 +306,96 @@ export default {
       this.loading = true;
       this.overlay = !this.overlay;
       if (this.$store.state.user.username == "admin") {
-        packagePurchaseService.getUserPurchasedPackagesByClientId(this.$route.params.clientId).then((response) => {
-        if (response.status == 200) {
-          this.loading = false;
-          this.overlay = false;
-          // focus on if it's expired or not
-          var today = new Date();
-          var dd = String(today.getDate()).padStart(2, '0');
-          var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
-          var yyyy = today.getFullYear();
-          today = yyyy + '-' + mm + '-' + dd;
+        packagePurchaseService
+          .getUserPurchasedPackagesByClientId(this.$route.params.clientId)
+          .then((response) => {
+            if (response.status == 200) {
+              this.loading = false;
+              this.overlay = false;
+              // focus on if it's expired or not
+              var today = new Date();
+              var dd = String(today.getDate()).padStart(2, "0");
+              var mm = String(today.getMonth() + 1).padStart(2, "0"); //January is 0!
+              var yyyy = today.getFullYear();
+              today = yyyy + "-" + mm + "-" + dd;
 
-          this.packages = response.data.filter((item) => {
-            return (item.expiration_date >= today && item.is_subscription) || (item.expiration_date >= today && item.classes_remaining == 0 && item.is_subscription) || (item.expiration_date >= today && item.classes_remaining > 0 && !item.is_subscription);
+              this.packages = response.data.filter((item) => {
+                return (
+                  (item.is_subscription && item.expiration_date >= today) ||
+                  (!item.is_subscription &&
+                    item.expiration_date >= today &&
+                    item.classes_remaining > 0)
+                );
+              });
+              this.packages.forEach((item) => {
+                item.date_purchased = new Date(item.date_purchased);
+              });
+              console.log(this.$store.state.clientDetails.redFlag)
+              console.log(this.packages.length > 0)
+              console.log(this.$store.state.sharedPackages.length > 0)
+              console.log(this.$store.state.clientDetails.redFlag &&
+                (this.packages.length > 0 ||
+                this.sharedPackages.length > 0));
+              if (
+                this.$store.state.clientDetails.redFlag &&
+                (this.packages.length > 0 ||
+                this.sharedPackages.length > 0)
+              ) {
+                this.snackBarReconcilePackages = true;
+              }
+              this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
+            } else {
+              alert("Error retrieving package information");
+            }
           });
-          this.packages.forEach((item) => {
-            item.date_purchased = new Date(item.date_purchased);
-          })
-          if (this.$store.state.clientDetails.redFlag && this.packages.length > 0) {
-            this.snackBarReconcilePackages = true;
-          }
-          this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
-        } else {
-          alert("Error retrieving package information");
-        }
-      })
-     } else { 
-      packagePurchaseService.getUserPurchasedPackages().then((response) => {
-        if (response.status == 200) {
-          this.loading = false;
-          this.overlay = false;
-          // focus on if it's expired or not
-          var today = new Date();
-          var dd = String(today.getDate()).padStart(2, '0');
-          var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
-          var yyyy = today.getFullYear();
-          today = yyyy + '-' + mm + '-' + dd;
+      } else {
+        packagePurchaseService.getUserPurchasedPackages().then((response) => {
+          if (response.status == 200) {
+            this.loading = false;
+            this.overlay = false;
+            // focus on if it's expired or not
+            var today = new Date();
+            var dd = String(today.getDate()).padStart(2, "0");
+            var mm = String(today.getMonth() + 1).padStart(2, "0"); //January is 0!
+            var yyyy = today.getFullYear();
+            today = yyyy + "-" + mm + "-" + dd;
 
-          this.packages = response.data.filter((item) => {
-            // return (item.expiration_date >= today) || (item.expiration_date == null && item.classes_remaining > 0) || (item.expiration_date >= today && item.classes_remaining > 0);
-            return (item.is_subscription && item.expiration_date)|| (!item.is_subscription && item.expiration_date >= today && item.classes_remaining>0);
-          });
-          this.packages.forEach((item) => {
-            item.date_purchased = new Date(item.date_purchased);
-          })
-          if (this.$store.state.clientDetails.redFlag && this.packages.length > 0) {
-            this.snackBarReconcilePackages = true;
+            this.packages = response.data.filter((item) => {
+              // return (item.expiration_date >= today) || (item.expiration_date == null && item.classes_remaining > 0) || (item.expiration_date >= today && item.classes_remaining > 0);
+              return (
+                (item.is_subscription && item.expiration_date) ||
+                (!item.is_subscription &&
+                  item.expiration_date >= today &&
+                  item.classes_remaining > 0)
+              );
+            });
+            this.packages.forEach((item) => {
+              item.date_purchased = new Date(item.date_purchased);
+            });
+            if (
+              this.$store.state.clientDetails.redFlag &&
+              this.packages.length > 0 
+            ) {
+              this.snackBarReconcilePackages = true;
+            }
+            this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
+          } else {
+            alert("Error retrieving package information");
           }
-          this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
-        } else {
-          alert("Error retrieving package information");
-        }
-      });
-     }
+        });
+      }
     },
-    Remove(item) { 
+    getSharedActivePackages() {
+      packagePurchaseService
+        .getAllSharedActiveQuantityPackagesByClientId(this.$route.params.clientId)
+        .then((response) => {
+          if (response.status == 200) {
+            this.sharedPackages = response.data;
+          }
+          this.$store.commit("SET_SHARED_PACKAGE_LIST", this.sharedPackages);
+        });
+    },
+    Remove(item) {
       // this will be an update
       packagePurchaseService.expirePackage(item).then((response) => {
         if (response.status == 200) {
@@ -368,104 +414,109 @@ export default {
       this.overlay = !this.overlay;
       this.packagePurchase.client_id = this.$route.params.clientId;
       const jsonDate = new Date().toJSON();
-          this.packagePurchase.date_purchased = jsonDate;
-          this.packagePurchase.package_id = this.selectedPackage.package_id;
-          this.packagePurchase.is_expired = false;
+      this.packagePurchase.date_purchased = jsonDate;
+      this.packagePurchase.package_id = this.selectedPackage.package_id;
+      this.packagePurchase.is_expired = false;
 
-         
-          // if you're buying a subscription and there's a subscription that's active
+      // if you're buying a subscription and there's a subscription that's active
 
-          if (this.packages.length > 0) {
-            
-            let foundSubscription = false;
-            // loop to find another package that is a subscription 
-            for (let index = 0; index < this.packages.length; index++) {
-              if(this.packages[index].is_subscription && this.selectedPackage.is_subscription){
-                foundSubscription = true;
-                 // use that expiration date to create the activation date and expiration date of the new subscription
-                 let formatDate = this.packages[index].expiration_date;
-                 formatDate = formatDate.replaceAll("-","/")
-                 
-                let newActivationDate = new Date(formatDate);
-               
-                newActivationDate = newActivationDate.setDate(newActivationDate.getDate() + 1);
-                this.packagePurchase.activation_date = new Date(newActivationDate);
-               
-                this.packagePurchase.expiration_date = this.addMonths(
-                  new Date(newActivationDate),
-                  this.selectedPackage.subscription_duration);
-              }
-              
-            }
-            
-            // what to do if you don't find a subscription
-            if (!this.selectedPackage.is_subscription) {
-             
+      if (this.packages.length > 0) {
+        let foundSubscription = false;
+        // loop to find another package that is a subscription
+        for (let index = 0; index < this.packages.length; index++) {
+          if (
+            this.packages[index].is_subscription &&
+            this.selectedPackage.is_subscription
+          ) {
+            foundSubscription = true;
+            // use that expiration date to create the activation date and expiration date of the new subscription
+            let formatDate = this.packages[index].expiration_date;
+            formatDate = formatDate.replaceAll("-", "/");
+
+            let newActivationDate = new Date(formatDate);
+
+            newActivationDate = newActivationDate.setDate(
+              newActivationDate.getDate() + 1
+            );
+            this.packagePurchase.activation_date = new Date(newActivationDate);
+
             this.packagePurchase.expiration_date = this.addMonths(
-                  new Date(),
-                  12);
-            } else if (!foundSubscription && this.selectedPackage.is_subscription) {
-              this.packagePurchase.activation_date = new Date();
-            if (this.selectedPackage.subscription_duration > 0) {
-                this.packagePurchase.expiration_date = this.addMonths(
-                  new Date(),
-                  this.selectedPackage.subscription_duration);
-              }
-            }
-            
+              new Date(newActivationDate),
+              this.selectedPackage.subscription_duration
+            );
           }
+        }
 
-          if (this.selectedPackage.is_subscription && this.packages.length == 0) {
-            this.packagePurchase.activation_date = new Date();
-            if (this.selectedPackage.subscription_duration > 0) {
-                this.packagePurchase.expiration_date = this.addMonths(
-                  new Date(),
-                  this.selectedPackage.subscription_duration);
-              }
+        // what to do if you don't find a subscription
+        if (!this.selectedPackage.is_subscription) {
+          this.packagePurchase.expiration_date = this.addMonths(new Date(), 12);
+        } else if (!foundSubscription && this.selectedPackage.is_subscription) {
+          this.packagePurchase.activation_date = new Date();
+          if (this.selectedPackage.subscription_duration > 0) {
+            this.packagePurchase.expiration_date = this.addMonths(
+              new Date(),
+              this.selectedPackage.subscription_duration
+            );
           }
-           if (!(this.selectedPackage.is_subscription) && this.packages.length == 0) {
-             this.packagePurchase.expiration_date = this.addMonths(
-                  new Date(),
-                  12);
-           }
+        }
+      }
 
-          if (this.showPercentDiscount) { 
-            // if it's a percent
-            let num = this.selectedPackage.package_cost * (1 - (this.percentDiscount/100));
-            this.packagePurchase.discount = this.selectedPackage.package_cost - num;
-            this.packagePurchase.total_amount_paid =  Math.round(num * 100) / 100;
-          } else if (this.selectedPackage.discount >= 0 && this.selectedPackage.package_cost >= 0 && !this.showPercentDiscount){
-            // if it's in dollars
-            this.packagePurchase.discount = this.selectedPackage.discount
-            this.packagePurchase.total_amount_paid = this.selectedPackage.package_cost - this.selectedPackage.discount;
-          } else {
-             this.packagePurchase.total_amount_paid = this.selectedPackage.package_cost
-          }
-           
-            //  this.selectedPackage.package_cost;
-            this.packagePurchase.is_monthly_renew = false;
-             this.packagePurchase.classes_remaining =
-              this.selectedPackage.classes_amount;
+      if (this.selectedPackage.is_subscription && this.packages.length == 0) {
+        this.packagePurchase.activation_date = new Date();
+        if (this.selectedPackage.subscription_duration > 0) {
+          this.packagePurchase.expiration_date = this.addMonths(
+            new Date(),
+            this.selectedPackage.subscription_duration
+          );
+        }
+      }
+      if (!this.selectedPackage.is_subscription && this.packages.length == 0) {
+        this.packagePurchase.expiration_date = this.addMonths(new Date(), 12);
+      }
+
+      if (this.showPercentDiscount) {
+        // if it's a percent
+        let num =
+          this.selectedPackage.package_cost * (1 - this.percentDiscount / 100);
+        this.packagePurchase.discount = this.selectedPackage.package_cost - num;
+        this.packagePurchase.total_amount_paid = Math.round(num * 100) / 100;
+      } else if (
+        this.selectedPackage.discount >= 0 &&
+        this.selectedPackage.package_cost >= 0 &&
+        !this.showPercentDiscount
+      ) {
+        // if it's in dollars
+        this.packagePurchase.discount = this.selectedPackage.discount;
+        this.packagePurchase.total_amount_paid =
+          this.selectedPackage.package_cost - this.selectedPackage.discount;
+      } else {
+        this.packagePurchase.total_amount_paid =
+          this.selectedPackage.package_cost;
+      }
+
+      //  this.selectedPackage.package_cost;
+      this.packagePurchase.is_monthly_renew = false;
+      this.packagePurchase.classes_remaining =
+        this.selectedPackage.classes_amount;
 
       packagePurchaseService
-              .createPackagePurchase(this.packagePurchase)
-              .then((response) => {
-                if (response.status == 201) {
-                  this.loading = false;
-                  this.overlay = false;
-                  alert("Succesfully purchased package");
-                  // call method that updates the list of active packages
-                  this.getActivePurchaseServerRequest();
-                  this.$root.$refs.B.getPackageHistoryTable();
-                  this.$root.$refs.D.getClientEventTable();
-                 
-                  this.selectedPackage = {};
-                  this.packagePurchase = {};
-                  this.close();
-                }
-              });
-          this.close();
+        .createPackagePurchase(this.packagePurchase)
+        .then((response) => {
+          if (response.status == 201) {
+            this.loading = false;
+            this.overlay = false;
+            alert("Succesfully purchased package");
+            // call method that updates the list of active packages
+            this.getActivePurchaseServerRequest();
+            this.$root.$refs.B.getPackageHistoryTable();
+            this.$root.$refs.D.getClientEventTable();
 
+            this.selectedPackage = {};
+            this.packagePurchase = {};
+            this.close();
+          }
+        });
+      this.close();
     },
     addMonths(date, months) {
       var d = date.getDate();
@@ -474,53 +525,63 @@ export default {
         date.setDate(0);
       }
       // fixing  fix: (3/3 → 4/2) NOT (3/3 → 4/3)
-      date.setDate(date.getDate()-1);
+      date.setDate(date.getDate() - 1);
       return date;
     },
   },
-  mounted(){
-    this.$root.$on('getActivePurchasePackageTable', () => {
+  mounted() {
+    this.$root.$on("getActivePurchasePackageTable", () => {
       this.getActivePurchaseServerRequest();
-    })
+    });
   },
   computed: {
     returnDiscount() {
       if (this.showPercentDiscount && this.selectedPackage.package_cost >= 0) {
         // this.selectedPackage.discount = this.selectedPackage.package_cost * (1-this.percentDiscount);
-        let num = this.selectedPackage.package_cost-(this.selectedPackage.package_cost * (1 - (this.percentDiscount/100)))
+        let num =
+          this.selectedPackage.package_cost -
+          this.selectedPackage.package_cost * (1 - this.percentDiscount / 100);
         let math = Math.round(num * 100) / 100;
         if (this.selectedPackage.package_cost > math) {
-          return math
+          return math;
         }
-        return 0
-      } else if (this.selectedPackage.discount >= 0 && this.selectedPackage.package_cost >= 0){// TODO: Change the following line
-        if (this.selectedPackage.discount < this.selectedPackage.package_cost ) {
-           return this.selectedPackage.discount;   
-       }
+        return 0;
+      } else if (
+        this.selectedPackage.discount >= 0 &&
+        this.selectedPackage.package_cost >= 0
+      ) {
+        // TODO: Change the following line
+        if (this.selectedPackage.discount < this.selectedPackage.package_cost) {
+          return this.selectedPackage.discount;
+        }
       }
       return 0;
     },
     returnTotal() {
-
-      if (this.showPercentDiscount && this.selectedPackage.package_cost >= 0) { 
-        let num = this.selectedPackage.package_cost * (1 - (this.percentDiscount/100));
+      if (this.showPercentDiscount && this.selectedPackage.package_cost >= 0) {
+        let num =
+          this.selectedPackage.package_cost * (1 - this.percentDiscount / 100);
         if (num > 0) {
           return Math.round(num * 100) / 100;
         }
-        return 0
-      } else if (this.selectedPackage.discount >= 0 && this.selectedPackage.package_cost >= 0){
-        let difference = this.selectedPackage.package_cost - this.selectedPackage.discount;
+        return 0;
+      } else if (
+        this.selectedPackage.discount >= 0 &&
+        this.selectedPackage.package_cost >= 0
+      ) {
+        let difference =
+          this.selectedPackage.package_cost - this.selectedPackage.discount;
         if (difference < this.selectedPackage.package_cost && difference > 0) {
           return difference;
         }
-         return 0
-      } else if(this.selectedPackage.package_cost >= 0) {
+        return 0;
+      } else if (this.selectedPackage.package_cost >= 0) {
         return this.selectedPackage.package_cost;
       } else {
         return 0;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
