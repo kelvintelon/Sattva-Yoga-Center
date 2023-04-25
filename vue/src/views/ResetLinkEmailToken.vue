@@ -169,7 +169,7 @@
       </template>
       <v-card>
         <v-card-title>
-          <span class="text-h5">Please This Username</span>
+          <span class="text-h5">Please Remember This Username</span>
         </v-card-title>
         <v-card-text>
           <v-container>
