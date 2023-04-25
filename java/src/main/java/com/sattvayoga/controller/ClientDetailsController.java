@@ -100,6 +100,12 @@ public class ClientDetailsController {
         return clientDetailsDao.getAllClients();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(path="/duplicateList", method = RequestMethod.GET)
+    public List<ClientDetails> getAllDuplicateClients(){
+        return clientDetailsDao.getAllDuplicateClients();
+    }
+
 
 
     static class ClientDetailsResponse {

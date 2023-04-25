@@ -24,5 +24,8 @@ export default {
     removeClient(clientId) {
         return axios.delete(`/removeClient/${clientId}`)
     },
+    getDuplicateClients(){
+        return axios.get('/duplicateList')
+    }
 
 }

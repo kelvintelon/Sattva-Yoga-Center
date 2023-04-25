@@ -476,6 +476,8 @@ export default {
     },
     // Attendance table methods
     close() {
+      this.clientDetails.first_name = "";
+      this.clientDetails.last_name = "";
       this.dialog = false;
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
@@ -568,6 +570,8 @@ export default {
             alert("Successfully added clients to roster");
             this.getEventDetailsCall();
             this.selectedClients = [];
+            this.clientDetails.first_name = "";
+            this.clientDetails.last_name = "";
           } else {
             alert("Error adding clients to roster");
           }
@@ -583,6 +587,9 @@ export default {
         first_name: this.clientDetails.first_name,
         last_name: this.clientDetails.last_name
       }
+      if (this.clientDetails.first_name != "" && this.clientDetails.last_name != "" && newClient.first_name != "" && newClient.last_name != "") {
+
+      
       eventService
         .registerNewClientForEvent(newClient)
         .then((response) => {
@@ -590,12 +597,17 @@ export default {
             alert("Successfully added clients to roster");
             this.getEventDetailsCall();
             this.selectedClients = [];
+            this.clientDetails.first_name = "";
+            this.clientDetails.last_name = "";
           } else {
             alert("Error adding clients to roster");
           }
         });
 
       this.close();
+      } else {
+        alert("Please Fill Out Both First and Last Name")
+      }
     },
     findActivePackage(object) {
       packagePurchaseService

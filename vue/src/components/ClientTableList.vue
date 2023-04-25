@@ -36,8 +36,210 @@
         single-line
         hide-details
       ></v-text-field>
-      
+      <v-spacer></v-spacer>
 
+      <v-dialog v-model="mergeDialog" max-width="500px">
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on" @click.prevent="retrieveDuplicateClients">
+            Merge
+          </v-btn>
+        </template>
+        <v-card>
+          <!-- Merging Clients starts here -->
+          <v-card-title>
+            <span class="text-h5">Merge Clients</span>
+            <v-spacer></v-spacer>
+          </v-card-title>
+
+          <v-card-text>
+            <v-container>
+              <v-row>
+                <v-col>
+                <!-- Full list of clients autocomplete here -->
+                  
+                  <v-autocomplete
+              v-model="selectedClients"
+              :disabled="isUpdating"
+              :items="listOfDuplicateClients"
+              filled
+              chips
+              color="blue-grey lighten-2"
+              label="Possible Duplicates"
+              item-text="quick_details"
+              return-object
+              multiple
+            >
+              <template v-slot:selection="data">
+                <v-chip
+                color="red lighten-3"
+                  v-bind="data.attrs"
+                  :input-value="data.selected"
+                  close
+                  @click="data.select"
+                  @click:close="remove(data.item)"
+                >
+                  {{ data.item.quick_details }}
+                </v-chip>
+              </template>
+              <template v-slot:item="data">
+                <template v-if="typeof data.item !== 'object'">
+                  <v-list-item-content v-text="data.item"></v-list-item-content>
+                </template>
+                <template v-else>
+                 
+                  <v-list-item-content>
+                    <v-list-item-title v-html="data.item.quick_details"></v-list-item-title>
+                    <!-- <v-list-item-subtitle v-html="data.item.group"></v-list-item-subtitle> -->
+                  </v-list-item-content>
+                </template>
+              </template>
+            </v-autocomplete>
+                  <v-autocomplete
+              v-model="selectedClients"
+              :disabled="isUpdating"
+              :items="clientList"
+              filled
+              chips
+              color="blue-grey lighten-2"
+              label="Clients to Remove"
+              item-text="quick_details"
+              return-object
+              multiple
+            >
+              <template v-slot:selection="data">
+                <v-chip
+                color="red lighten-3"
+                  v-bind="data.attrs"
+                  :input-value="data.selected"
+                  close
+                  @click="data.select"
+                  @click:close="remove(data.item)"
+                >
+                  {{ data.item.quick_details }}
+                </v-chip>
+              </template>
+              <template v-slot:item="data">
+                <template v-if="typeof data.item !== 'object'">
+                  <v-list-item-content v-text="data.item"></v-list-item-content>
+                </template>
+                <template v-else>
+                 
+                  <v-list-item-content>
+                    <v-list-item-title v-html="data.item.quick_details"></v-list-item-title>
+                    <!-- <v-list-item-subtitle v-html="data.item.group"></v-list-item-subtitle> -->
+                  </v-list-item-content>
+                </template>
+              </template>
+            </v-autocomplete>
+            <!-- Client to Keep starts here -->
+            <v-autocomplete
+              v-model="clientToMergeInto"
+              :disabled="isUpdating"
+              :items="clientList"
+              filled
+              chips
+              color="blue-grey lighten-2"
+              label="Clients to Keep"
+              item-text="quick_details"
+              return-object
+              
+            >
+              <template v-slot:selection="data">
+                <v-chip
+                color="green lighten-3"
+                  v-bind="data.attrs"
+                  :input-value="data.selected"
+                  close
+                  @click="data.select"
+                  @click:close="removeClientToKeep()"
+                >
+                  {{ data.item.quick_details }}
+                </v-chip>
+              </template>
+              <template v-slot:item="data">
+                <template v-if="typeof data.item !== 'object'">
+                  <v-list-item-content v-text="data.item"></v-list-item-content>
+                </template>
+                <template v-else>
+                 
+                  <v-list-item-content>
+                    <v-list-item-title v-html="data.item.quick_details"></v-list-item-title>
+                    <!-- <v-list-item-subtitle v-html="data.item.group"></v-list-item-subtitle> -->
+                  </v-list-item-content>
+                </template>
+              </template>
+            </v-autocomplete>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="blue darken-1" text @click="closeMergeAccountsDialog"> Cancel </v-btn>
+            <v-btn
+              color="blue darken-1"
+              text
+              @click="confirmMerge"
+            >
+              Start Merge</v-btn
+            >
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <!-- Carousel forms starts here -->
+      <v-dialog v-model="profileChoiceDialog" max-width="500px">
+              <v-card justify="center">
+                <v-card-title>
+                  <span class="text-h5">Store Client Info</span>
+                </v-card-title>
+
+                <v-container>
+                  <v-row justify="center" style="min-height: 160px">
+                    <v-col cols="6">
+                      <v-form
+                        ref="form"
+                        height="100"
+                        width="500"
+                        v-model="valid"
+                        lazy-validation
+                        class="class-form mx-auto white"
+                        @submit.prevent="keepInfo"
+                        justify="center"
+                        align="center"
+                      >
+                        
+                        <v-row justify="center" align="center"
+                          ><v-col>
+                            <v-btn
+                            color="green lighten-3"
+                              class="mr-4"
+                              type="submit"
+                              :disabled="invalid"
+                            >
+                              Keep
+                            </v-btn></v-col
+                          ><v-col cols="10">
+                            <v-btn color="error" class="mr-4" @click="reset">
+                              Reset Form
+                            </v-btn>
+                          </v-col>
+                          </v-row
+                        >
+                      </v-form>
+                    </v-col>
+                  </v-row>
+                </v-container>
+
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="blue darken-1" text @click="closeProfileChoice">
+                    Cancel
+                  </v-btn>
+                  <!-- <v-btn color="blue darken-1" text @click="save"> Save </v-btn> -->
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
       <v-spacer></v-spacer>
 
       <v-dialog v-model="dialog2" max-width="500px">
@@ -347,6 +549,9 @@ export default {
     return {
       search: "",
       headers: [
+        {text:"ID",
+        sortable: true,
+      value:"client_id"},
         {
           text: "First Name",
           align: "start",
@@ -469,17 +674,91 @@ export default {
       selectedClients: [],
       showNewClientForm: false,
       dialog2: false,
+      mergeDialog: false,
       familyList: [],
       newFamily: "",
       selectedFamily: {},
       emailLink: "https://mail.google.com/mail/u/0/?fs=1&tf=cm&to=",
+      isUpdating: false,
+      autoUpdate: true,
+      clientToMergeInto: {},
+      listOfDuplicateClients: [],
+      listOfClientForms: [],
+      profileChoiceDialog: false,
     };
   },
   created() {
     this.getClientTable();
     this.getFamilyList();
   },
+  watch: {
+      isUpdating (val) {
+        if (val) {
+          setTimeout(() => (this.isUpdating = false), 3000)
+        }
+      },
+    },
   methods: {
+    confirmMerge(){
+      
+      if (Object.keys(this.clientToMergeInto).length == 0 || this.selectedClients.length == 0) {
+        alert("Please Choose Clients to Remove and Keep")
+      } else {
+        alert("filled out")
+        
+        if (this.clientToMergeInto.email  ||
+            this.clientToMergeInto.phone_number  ||
+            this.clientToMergeInto.street_address   ||
+            this.clientToMergeInto.state_abbreviation  ||
+            this.clientToMergeInto.city  || 
+            this.clientToMergeInto.zip_code  ) {
+              this.listOfClientForms.push(this.clientToMergeInto)
+        }
+        
+        for (let index = 0; index < this.selectedClients.length; index++) {
+          
+          if (this.selectedClients[index].email  ||
+            this.selectedClients[index].phone_number  |
+            this.selectedClients[index].street_address  ||
+            this.selectedClients[index].state_abbreviation  ||
+            this.selectedClients[index].city  || 
+            this.selectedClients[index].zip_code  ) {
+              this.listOfClientForms.push(this.selectedClients[index])
+            }
+        }
+        
+        if (this.listOfClientForms.length > 0) {
+        this.mergeDialog = false;
+        this.profileChoiceDialog = true;
+        alert("has data")
+      } else {
+        // TODO: Call method from server here immediately
+        // Method that takes in a list of selected Clients 
+        //and adds the clientToMerge at the zero index
+          alert("No data")
+      }
+      
+    }
+
+    },
+    
+    closeProfileChoice() {
+      this.profileChoiceDialog = false;
+      
+    },
+    remove (item) {
+      let itemIndex = 0;
+      for (let index = 0; index < this.selectedClients.length; index++) {
+        if (this.selectedClients[index.client_id] == item.client_id) {
+          itemIndex = index;
+        }
+        
+      }
+        if (itemIndex >= 0) this.selectedClients.splice(itemIndex, 1)
+      },
+      removeClientToKeep () {
+      this.clientToMergeInto = [];
+      },
     sendToUserPageAdminView(object) {
       this.$store.commit("SET_CLIENT_DETAILS", object);
       this.$router.push({
@@ -552,6 +831,15 @@ export default {
           alert("Error retrieving client information");
         }
       });
+    },
+    retrieveDuplicateClients() {
+      this.loading = true;
+      clientDetailService.getDuplicateClients().then((response) => {
+        if (response.status == 200) {
+          this.loading = false;
+          this.listOfDuplicateClients = response.data;
+        }
+      })
     },
     editItem(item) {
       this.editedIndex = this.clientList.indexOf(item);
@@ -662,6 +950,14 @@ export default {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
       });
+    },
+    closeMergeAccountsDialog() {
+      this.mergeDialog = false;
+      this.selectedClients = [];
+      // this.$nextTick(() => {
+      //   this.editedItem = Object.assign({}, this.defaultItem);
+      //   this.editedIndex = -1;
+      // });
     },
   },
 };

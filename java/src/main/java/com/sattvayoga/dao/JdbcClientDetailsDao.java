@@ -128,6 +128,33 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         return allClients;
     }
 
+    @Override
+    public List<ClientDetails> getAllDuplicateClients() {
+        List<ClientDetails> allClients = new ArrayList<>();
+
+        String sql = "SELECT a1.* " +
+                "FROM client_details a1 " +
+                "WHERE exists (SELECT * " +
+                "FROM client_details a2 " +
+                "WHERE a2.last_name = a1.last_name AND SUBSTRING(a2.first_name from 0 for 3) = SUBSTRING(a1.first_name from 0 for 3) " +
+                "AND a2.client_id <> a1.client_id);";
+
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+        while(result.next()) {
+            ClientDetails clientDetails = mapRowToClient(result);
+
+            clientDetails.setFull_address(clientDetails.getStreet_address() + " "
+                    + clientDetails.getCity() + " " + clientDetails.getState_abbreviation() + " " + clientDetails.getZip_code());
+
+            clientDetails.setQuick_details("("+clientDetails.getClient_id()+")" + " " + clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
+
+            String familyName = getFamilyNameByClientId(clientDetails.getClient_id());
+            clientDetails.setFamily_name(familyName);
+            allClients.add(clientDetails);
+        }
+        return allClients;
+    }
+
     public String getFamilyNameByClientId(int clientId){
         String sql = "SELECT family_name from families \n" +
                 "JOIN client_family ON families.family_id = client_family.family_id \n" +

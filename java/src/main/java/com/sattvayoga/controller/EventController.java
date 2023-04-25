@@ -250,7 +250,7 @@ public class EventController {
 
         Date date = new Date();
         Timestamp theLatestTimestamp = new Timestamp(date.getTime());
-
+        clientDetails.setIs_client_active(true);
         clientDetails.setDate_of_entry(theLatestTimestamp);
         // use it to create a client
         int clientId = clientDetailsDao.createNewClient(clientDetails).getClient_id();
@@ -262,6 +262,7 @@ public class EventController {
         clientEventObj.setPackage_purchase_id(0);
         clientEventObj.setClient_id(clientId);
         clientEventObj.setEvent_id(newClientSignUp.event_id);
+
 
         List<ClientEvent> clientEventObjects = new ArrayList<>();
         clientEventObjects.add(clientEventObj);
