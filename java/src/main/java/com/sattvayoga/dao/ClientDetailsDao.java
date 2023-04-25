@@ -24,4 +24,6 @@ public interface ClientDetailsDao {
     boolean isEmailDuplicate(int clientId, String email);
 
     List<ClientDetails> getAllDuplicateClients();
+
+    void removeDuplicateClients(int clientIdToKeep, int clientIdToRemove);
 }

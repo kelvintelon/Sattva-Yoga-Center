@@ -35,7 +35,7 @@ public class ClientDetailsController {
     @RequestMapping(value = "/updateClientDetails", method = RequestMethod.PUT)
     public void updateClientDetails(@RequestBody ClientDetails clientDetails) {
 
-        // TODO: Change the following line
+
         // look up the email here
         boolean foundEmail = false;
         if (clientDetails.getEmail() != null) {
@@ -50,13 +50,41 @@ public class ClientDetailsController {
 
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value="/mergeClients", method = RequestMethod.PUT)
+    public void mergeClients(@RequestBody List<ClientDetails> clientDetails) {
+
+        // loop through each individual client, grab their ID, and update the client ID in every table one iteration at a time
+        // then delete them
+        for (int i = 1; i < clientDetails.size(); i++) {
+            clientDetailsDao.removeDuplicateClients(clientDetails.get(0).getClient_id(), clientDetails.get(i).getClient_id());
+        }
+
+        // Update the Client Details of the one they want to keep but make sure the email isn't taken by a user that wasn't merged
+
+        // look up the email here
+        boolean foundEmail = false;
+        if (clientDetails.get(0).getEmail() != null && !clientDetails.get(0).getEmail().isEmpty()) {
+            foundEmail = clientDetailsDao.isEmailDuplicate(clientDetails.get(0).getClient_id(),clientDetails.get(0).getEmail());
+        }
+
+        if (foundEmail) {
+            clientDetails.get(0).setEmail("");
+            clientDetailsDao.updateClientDetails(clientDetails.get(0));
+            throw new EmailAlreadyExistsException();
+        } else {
+            clientDetailsDao.updateClientDetails(clientDetails.get(0));
+        }
+
+    }
+
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/registerClient", method = RequestMethod.POST)
     public ResponseEntity<ClientDetailsResponse> registerClient(@RequestBody ClientDetails client) {
 
         // look up the email here
         boolean foundEmail = false;
-        if (client.getEmail() != null) {
+        if (client.getEmail() != null && !client.getEmail().isEmpty()) {
             foundEmail = clientDetailsDao.isEmailDuplicate(0,client.getEmail());
         }
 

@@ -193,22 +193,105 @@
                 <v-card-title>
                   <span class="text-h5">Store Client Info</span>
                 </v-card-title>
-
-                <v-container>
-                  <v-row justify="center" style="min-height: 160px">
+                <v-carousel hide-delimiters height="900"><v-carousel-item 
+                  v-for="(item,i) in listOfClientForms" :key="i">
+                  <v-row justify="center" >
                     <v-col cols="6">
                       <v-form
-                        ref="form"
-                        height="100"
+                        ref="clientForm"
+                        height="200"
                         width="500"
                         v-model="valid"
                         lazy-validation
                         class="class-form mx-auto white"
-                        @submit.prevent="keepInfo"
+                        @submit.prevent="keepClientInfo(item)"
                         justify="center"
                         align="center"
                       >
-                        
+                       <v-text-field
+                        v-model="item.first_name"        
+                        :counter="20"
+                        :rules="nameRules"
+                        label="First Name"
+                        required
+                      ></v-text-field>
+
+                      <v-text-field
+                        v-model="item.last_name"
+                        :counter="20"
+                        :rules="nameRules"
+                        label="Last Name"
+                        required
+                      ></v-text-field>
+
+                      <v-text-field
+                        v-model="item.street_address"
+                        :counter="30"
+                        :rules="addressRules"
+                        label="Street Address"
+                        required
+                      ></v-text-field>
+
+                      <v-text-field
+                        v-model="item.city"
+                        :counter="10"
+                        :rules="nameRules"
+                        label="City"
+                        required
+                      ></v-text-field>
+
+                      <v-select
+                        v-model="item.state_abbreviation"
+                        :items="states"
+                        :rules="[(v) => !!v || 'Item is required']"
+                        label="State"
+                        required
+                      ></v-select>
+
+                      <v-text-field
+                        v-model="item.zip_code"
+                        :counter="10"
+                        :rules="nameRules"
+                        label="ZIP"
+                        required
+                      ></v-text-field>
+
+                      <v-text-field
+                        v-model="item.phone_number"
+                        :counter="15"
+                        :rules="nameRules"
+                        label="Phone Number"
+                        required
+                      ></v-text-field>
+
+                      <v-text-field
+                        v-model="item.email"
+                        :rules="emailRules"
+                        label="E-mail"
+                        required
+                      ></v-text-field>
+                      <v-checkbox
+                        v-model="item.is_new_client"
+                        label="Is New Client?"
+                        required
+                      ></v-checkbox>
+                      <v-checkbox
+                        v-model="item.has_record_of_liability"
+                        label="Record of Liability"
+                        required
+                      ></v-checkbox>
+                      <v-checkbox
+                        v-model="item.is_client_active"
+                        label="Is Client Active?"
+                        required
+                      ></v-checkbox>
+
+                      <v-checkbox
+                        v-model="item.is_on_email_list"
+                        label="Stay on Email List?"
+                        required
+                      ></v-checkbox>
+                      
                         <v-row justify="center" align="center"
                           ><v-col>
                             <v-btn
@@ -219,18 +302,14 @@
                             >
                               Keep
                             </v-btn></v-col
-                          ><v-col cols="10">
-                            <v-btn color="error" class="mr-4" @click="reset">
-                              Reset Form
-                            </v-btn>
-                          </v-col>
+                          >
                           </v-row
                         >
                       </v-form>
                     </v-col>
                   </v-row>
-                </v-container>
-
+                
+              </v-carousel-item></v-carousel>
                 <v-card-actions>
                   <v-spacer></v-spacer>
                   <v-btn color="blue darken-1" text @click="closeProfileChoice">
@@ -328,10 +407,11 @@
       v-model="selectedClients"
       sort-by="client_id"
       :loading="loading"
-        loading-text="Loading... Please wait"
+      loading-text="Loading... Please wait"
       :search="search"
       show-select
       dense
+      class="elevation-5"
     >
       <template v-slot:top>
         <v-toolbar flat>
@@ -477,13 +557,13 @@
             </v-card>
           </v-dialog>
           <!-- END OF EDIT CLIENT FORM -->
-          <v-dialog v-model="dialogDelete" max-width="500px">
+          <v-dialog v-model="dialogDelete" max-width="600px">
             <v-card>
               <v-card-title class="text-h5"
                 >Are you sure you want to delete this client?</v-card-title
               >
-              <v-card-title class="text-h6"
-                >This will delete the client everywhere else too</v-card-title
+              <v-card-title class="text-h6" style="color: red"
+                >This will delete all traces</v-card-title
               >
               <v-card-actions>
                 <v-spacer></v-spacer>
@@ -537,6 +617,12 @@
         <v-btn color="primary" @click="initialize"> Reset </v-btn>
       </template>
     </v-data-table>
+    <v-overlay :value="overlay">
+      <v-progress-circular
+        indeterminate
+        size="70"
+      ></v-progress-circular>
+    </v-overlay>
   </v-card>
 </template>
 
@@ -685,6 +771,7 @@ export default {
       listOfDuplicateClients: [],
       listOfClientForms: [],
       profileChoiceDialog: false,
+      overlay: false,
     };
   },
   created() {
@@ -699,21 +786,48 @@ export default {
       },
     },
   methods: {
+    keepClientInfo(item) {
+      this.overlay = !this.overlay;
+            this.clientToMergeInto.email = item.email
+            this.clientToMergeInto.phone_number = item.phone_number
+            this.clientToMergeInto.street_address = item.street_address
+            this.clientToMergeInto.state_abbreviation = item.state_abbreviation
+            this.clientToMergeInto.city = item.city
+            this.clientToMergeInto.zip_code = item.zip_code
+            this.clientToMergeInto.is_new_client = item.is_new_client
+            this.clientToMergeInto.has_record_of_liability = item.has_record_of_liability
+            this.clientToMergeInto.is_client_active = item.is_client_active
+            this.clientToMergeInto.is_on_email_list = item.is_on_email_list
+
+            // TODO: Call method from server here immediately
+        // Method that takes in a list of selected Clients 
+        //and adds the clientToMerge at the zero index
+        this.selectedClients.unshift(this.clientToMergeInto);
+
+        clientDetailService.mergeClients(this.selectedClients)
+        .then((response) => {
+          if (response.status === 200) {
+            this.overlay = false;
+            this.closeMergeAccountsDialog();
+            this.getClientTable();
+          }
+        })
+        .catch((error) => {
+              const response = error.response;
+              if (response.status === 400) {
+                alert("Email already in use, or different error.")
+              }
+            });
+    },
     confirmMerge(){
       
       if (Object.keys(this.clientToMergeInto).length == 0 || this.selectedClients.length == 0) {
         alert("Please Choose Clients to Remove and Keep")
       } else {
-        alert("filled out")
+        this.listOfClientForms = [];
         
-        if (this.clientToMergeInto.email  ||
-            this.clientToMergeInto.phone_number  ||
-            this.clientToMergeInto.street_address   ||
-            this.clientToMergeInto.state_abbreviation  ||
-            this.clientToMergeInto.city  || 
-            this.clientToMergeInto.zip_code  ) {
-              this.listOfClientForms.push(this.clientToMergeInto)
-        }
+        this.listOfClientForms.push(this.clientToMergeInto)
+        
         
         for (let index = 0; index < this.selectedClients.length; index++) {
           
@@ -723,20 +837,15 @@ export default {
             this.selectedClients[index].state_abbreviation  ||
             this.selectedClients[index].city  || 
             this.selectedClients[index].zip_code  ) {
+              this.selectedClients[index].first_name = this.clientToMergeInto.first_name
+              this.selectedClients[index].last_name = this.clientToMergeInto.last_name;
               this.listOfClientForms.push(this.selectedClients[index])
             }
         }
         
-        if (this.listOfClientForms.length > 0) {
         this.mergeDialog = false;
         this.profileChoiceDialog = true;
-        alert("has data")
-      } else {
-        // TODO: Call method from server here immediately
-        // Method that takes in a list of selected Clients 
-        //and adds the clientToMerge at the zero index
-          alert("No data")
-      }
+        
       
     }
 
@@ -744,6 +853,7 @@ export default {
     
     closeProfileChoice() {
       this.profileChoiceDialog = false;
+      this.listOfClientForms = [];
       
     },
     remove (item) {
@@ -816,9 +926,11 @@ export default {
     },
     getClientTable() {
       this.loading = true;
+      this.overlay = !this.overlay;
       clientDetailService.getClientList().then((response) => {
         if (response.status == 200) {
           this.loading = false;
+          this.overlay = false;
           this.clientList = response.data;
            this.clientList.forEach((item) => {
              if (item.full_address.includes("null")) {
@@ -834,9 +946,11 @@ export default {
     },
     retrieveDuplicateClients() {
       this.loading = true;
+      this.overlay = !this.overlay;
       clientDetailService.getDuplicateClients().then((response) => {
         if (response.status == 200) {
           this.loading = false;
+          this.overlay = false;
           this.listOfDuplicateClients = response.data;
         }
       })
@@ -878,6 +992,11 @@ export default {
     reset() {
       this.$refs.form.reset();
       this.clearErrors();
+    },
+    resetByIndex(index) {
+      this.$refs.clientForm.reset();
+      alert(index)
+      this.listOfClientForms[index] = {}
     },
     checkEditForm() {
       if (
@@ -954,6 +1073,7 @@ export default {
     closeMergeAccountsDialog() {
       this.mergeDialog = false;
       this.selectedClients = [];
+      this.listOfClientForms = [];
       // this.$nextTick(() => {
       //   this.editedItem = Object.assign({}, this.defaultItem);
       //   this.editedIndex = -1;

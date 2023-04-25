@@ -68,7 +68,25 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
         return clientDetails;
     }
-
+    @Override
+    public void removeDuplicateClients(int clientIdToKeep, int clientIdToRemove) {
+        String sql = "UPDATE client_event SET client_id = ? WHERE client_id = ? " +
+                "AND event_id NOT IN (SELECT event_id FROM client_event WHERE client_id = ? OR client_id = ? GROUP BY event_id having count(event_id) > 1);";
+        jdbcTemplate.update(sql,clientIdToKeep,clientIdToRemove,clientIdToKeep, clientIdToRemove);
+        sql = "DELETE FROM client_event WHERE client_id = ?";
+        jdbcTemplate.update(sql,clientIdToRemove);
+        sql = "UPDATE client_family SET client_id = ? WHERE client_id = ? " +
+                "AND family_id NOT IN (SELECT family_id FROM client_family WHERE client_id = ? OR client_id = ? GROUP BY family_id having count(family_id) > 1);";
+        jdbcTemplate.update(sql,clientIdToKeep,clientIdToRemove,clientIdToKeep, clientIdToRemove);
+        sql = "DELETE FROM client_family WHERE client_id = ?";
+        jdbcTemplate.update(sql,clientIdToRemove);
+        sql = "UPDATE package_purchase SET client_id = ? WHERE client_id = ?;";
+        jdbcTemplate.update(sql,clientIdToKeep,clientIdToRemove);
+        sql = "UPDATE client_class SET client_id = ? WHERE client_id = ?;";
+        jdbcTemplate.update(sql,clientIdToKeep,clientIdToRemove);
+        sql = "DELETE FROM client_details WHERE client_id = ?;";
+        jdbcTemplate.update(sql,clientIdToRemove);
+    }
 
     @Override
     public boolean updateClientDetails(ClientDetails clientDetails){
@@ -96,6 +114,15 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
     public boolean deleteClient(int clientId) {
         String sql = "BEGIN TRANSACTION;\n" +
                 "\n" +
+                "DELETE FROM client_event \n" +
+                "WHERE client_event.client_id = ?;\n" +
+                "\n" +
+                "DELETE FROM client_family \n" +
+                "WHERE client_family.client_id = ?;\n" +
+                "\n" +
+                "DELETE FROM package_purchase \n" +
+                "WHERE package_purchase.client_id = ?;\n" +
+                "\n" +
                 "DELETE FROM client_class \n" +
                 "WHERE client_class.client_id = ?;\n" +
                 "\n" +
@@ -103,7 +130,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                 "WHERE client_id = ?;\n" +
                 "\n" +
                 "COMMIT TRANSACTION;";
-        return jdbcTemplate.update(sql, clientId, clientId)==1;
+        return jdbcTemplate.update(sql, clientId, clientId, clientId, clientId, clientId)==1;
     }
 
 
