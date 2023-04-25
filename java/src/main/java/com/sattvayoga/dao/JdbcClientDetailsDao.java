@@ -94,6 +94,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         String sql = "UPDATE client_details SET last_name = ? , " +
                 "first_name = ? , " +
                 "street_address = ? , " +
+                "city = ? , " +
                 "state_abbreviation = ? , " +
                 "zip_code = ? , " +
                 "email = ? , " +
@@ -104,7 +105,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                 "is_new_client = ? " +
                 "WHERE user_id = ?";
         return jdbcTemplate.update(sql, clientDetails.getLast_name(), clientDetails.getFirst_name(),
-                clientDetails.getStreet_address(), clientDetails.getState_abbreviation(),
+                clientDetails.getStreet_address(), clientDetails.getCity(), clientDetails.getState_abbreviation(),
                 clientDetails.getZip_code(), clientDetails.getEmail(), clientDetails.getPhone_number(),
                 clientDetails.isIs_on_email_list(), clientDetails.isHas_record_of_liability(),
                 clientDetails.isIs_client_active(), clientDetails.isIs_new_client(),
