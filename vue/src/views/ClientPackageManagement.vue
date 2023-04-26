@@ -1,6 +1,5 @@
 <template>
   <div>
-    <top-header></top-header>
 
     <v-container
       :key="align"
@@ -19,7 +18,6 @@
 
 
 <script>
-import TopHeader from "../components/TopHeader.vue";
 import ClientPackagePurchaseTable from "../components/ClientPackagePurchaseTable.vue";
 import ClientActivePackageTable from "../components/ClientActivePackageTable.vue";
 import ClientPurchaseHistoryTable from "../components/ClientPurchaseHistoryTable.vue";
@@ -28,7 +26,6 @@ import ClientPurchaseHistoryTable from "../components/ClientPurchaseHistoryTable
 export default {
   name: "client-package-management",
   components: {
-    TopHeader,
     ClientPackagePurchaseTable,
     ClientActivePackageTable,
     ClientPurchaseHistoryTable,

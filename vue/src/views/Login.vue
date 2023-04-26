@@ -44,7 +44,12 @@
             label="Password"
             required
           ></v-text-field>
-            <v-row justify="center">
+          <v-btn type="submit">Sign in</v-btn> 
+          <br>
+          <a v-on:click="goToLogout()"> Don't have an account? Click here to register. </a>
+          <br />
+         
+          <v-row justify="center">
     <v-dialog
       v-model="dialog"
       persistent
@@ -101,10 +106,6 @@
       </template>
     </v-dialog>
   </v-row>
-          <br>
-          <v-btn type="submit">Sign in</v-btn>
-          <br />
-          <a v-on:click="goToLogout()"> Don't have an account? Click here to register. </a>
           <br>
           <br>
           <br>

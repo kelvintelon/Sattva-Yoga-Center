@@ -1,7 +1,5 @@
 <template>
   <div>
-    <top-header></top-header>
-
     <v-container
       :key="align"
     >
@@ -16,13 +14,11 @@
 
 
 <script>
-import TopHeader from "../components/TopHeader.vue";
 import ClientTableList from "../components/ClientTableList.vue";
 
 export default {
   name: "client-management",
   components: {
-    TopHeader,
     ClientTableList,
   },
 };

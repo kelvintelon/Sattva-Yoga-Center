@@ -1,7 +1,5 @@
 <template>
   <div>
-    <top-header></top-header>
-
     <v-container
       :key="align"
     >
@@ -17,14 +15,12 @@
 
 
 <script>
-import TopHeader from "../components/TopHeader.vue";
 import PackageTableList from "../components/PackageTableList.vue";
 
 
 export default {
   name: "package-management",
   components: {
-    TopHeader,
     PackageTableList,
     
   },

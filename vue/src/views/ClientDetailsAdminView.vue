@@ -1,6 +1,5 @@
 <template>
   <v-container>
-    <top-header></top-header>
 
     <v-container class="py-7">
       <v-snackbar v-if="$store.state.user.username == 'admin'"
@@ -91,7 +90,6 @@
 </template>
 
 <script>
-import TopHeader from "../components/TopHeader.vue";
 import ClientActivePackageTable from "../components/ClientActivePackageTable.vue";
 import ClientPurchaseHistoryTable from "../components/ClientPurchaseHistoryTable.vue";
 import ClientEventTable from "../components/ClientEventTable.vue";
@@ -103,7 +101,6 @@ import authService from "../services/AuthService";
 export default {
   name: "client-details-admin-view",
   components: {
-    TopHeader,
     ClientActivePackageTable,
     ClientPurchaseHistoryTable,
     EditProfileForm,
