@@ -1,8 +1,8 @@
 <template>
   <div class="logout-button">
-    <v-btn elevation="5" v-on:click="goToLogout()">
-      <v-icon> mdi-logout-variant </v-icon> - Logout
-    </v-btn>
+    <v-btn-text elevation="0" v-on:click="goToLogout()">
+      <v-icon> mdi-logout-variant </v-icon> Logout
+    </v-btn-text>
   </div>
 </template>
 

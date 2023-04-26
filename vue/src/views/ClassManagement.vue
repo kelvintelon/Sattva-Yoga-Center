@@ -1,7 +1,5 @@
 <template>
   <div>
-    <top-header></top-header>
-
     <v-container :key="align">
       <v-row>
         <v-col cols="14">
@@ -27,7 +25,6 @@
 
 
 <script>
-import TopHeader from "../components/TopHeader.vue";
 import ClassTableList from "../components/ClassTableList.vue";
 import ClassCalendar from "../components/ClassCalendar.vue";
 import ClassWeekTable from "../components/ClassWeekTableList.vue";
@@ -40,7 +37,6 @@ export default {
   }},
   
   components: {
-    TopHeader,
     ClassTableList,
     ClassCalendar,
     ClassWeekTable,

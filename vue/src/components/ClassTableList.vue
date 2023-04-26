@@ -9,6 +9,7 @@
         :loading="loading"
         loading-text="Loading... Please wait"
         dense
+        calculate-widths
       >
         <template v-slot:top>
           <v-toolbar flat>

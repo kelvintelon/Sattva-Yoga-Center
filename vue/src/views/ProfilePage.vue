@@ -1,6 +1,5 @@
 <template>
   <div>
-    <top-header></top-header>
     <admin-account-quick-links
       v-show="adminIsLoggedin"
     ></admin-account-quick-links>
@@ -11,7 +10,6 @@
 </template>
 
 <script>
-import TopHeader from "../components/TopHeader.vue";
 import clientDetailService from "../services/ClientDetailService";
 import adminAccountQuickLinks from "../components/AdminAccountQuickLinks.vue";
 import userAccountQuickLinks from "../components/UserAccountQuickLinks.vue";
@@ -19,7 +17,6 @@ import userAccountQuickLinks from "../components/UserAccountQuickLinks.vue";
 export default {
   name: "profile-page",
   components: {
-    TopHeader,
     adminAccountQuickLinks,
     userAccountQuickLinks,
   },

@@ -1,6 +1,5 @@
 <template>
   <div class="client">
-    <top-header></top-header>
 
     <v-container
       :key="align"
@@ -15,13 +14,11 @@
 
 
 <script>
-import TopHeader from "../components/TopHeader.vue";
 import ClientForm from "../components/ClientForm.vue";
 
 export default {
   name: "client-registration",
   components: {
-    TopHeader,
     ClientForm,
   },
 };

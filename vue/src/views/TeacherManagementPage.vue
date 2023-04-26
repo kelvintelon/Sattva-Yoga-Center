@@ -1,6 +1,5 @@
 <template>
   <div>
-    <top-header></top-header>
     <v-container>
       <v-row>
         <v-col cols="6"> <teacher-table-list></teacher-table-list></v-col>
@@ -29,14 +28,12 @@
 </template>
 
 <script>
-import TopHeader from "../components/TopHeader.vue";
 // import CreateTeacherForm from "../components/CreateTeacherForm.vue";
 import TeacherTableList from "../components/TeacherTableList.vue"
 
 export default {
   name: "teacher-management",
   components: {
-    TopHeader,
     // CreateTeacherForm,
     TeacherTableList
   },
