@@ -1019,6 +1019,11 @@ export default {
       });
     },
     save() {
+
+      if(this.selectedClients.length == 0){
+        alert("You need to select at least one client.");
+        this.close1();
+      }else{
       // check for length > 0 here if bug
       for (let index = 0; index < this.selectedClients.length; index++) {
         // this.allowSignUp = false;
@@ -1038,12 +1043,14 @@ export default {
             this.getClientTable();
             // this.getEventDetailsCall();
             this.selectedClients = [];
+            this.selectedFamily = {};
           } else {
             alert("Error adding clients to roster");
           }
         });
 
       this.close1();
+      }
     },
 
     saveNewClient() {
@@ -1054,9 +1061,11 @@ export default {
         .addMultipleClientsToNewFamily(this.selectedClients)
         .then((response) => {
           if (response.status == 201) {
-            alert("Successfully added clients to roster");
+            alert("Successfully added clients to selected family");
+            this.getFamilyList();
             // this.getEventDetailsCall();
             this.selectedClients = [];
+            this.newFamily = "";
           } else {
             alert("Error adding clients to roster");
           }
@@ -1066,6 +1075,8 @@ export default {
     },
     close1() {
       this.dialog2 = false;
+      this.newFamily = "";
+      this.selectedFamily = {};
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
