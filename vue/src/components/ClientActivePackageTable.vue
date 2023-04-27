@@ -179,6 +179,8 @@
 import packagePurchaseService from "../services/PackagePurchaseService";
 import packageDetailService from "../services/PackageDetailService";
 import eventService from "../services/EventService";
+import clientDetailService from "../services/ClientDetailService";
+
 
 export default {
   name: "client-active-package-table",
@@ -243,10 +245,30 @@ export default {
       sharedPackages: [],
     };
   },
+  beforeCreate() {
+   
+    clientDetailService.getClientDetailsByClientId(this.$route.params.clientId).then((response) => {
+        if (response.data.client_id != 0) {
+          this.clientDetails = response.data;
+          this.$store.commit("SET_CLIENT_DETAILS", response.data);
+          // alert("active package table client details")
+          if (this.clientDetails.redFlag == true) {
+            this.snackBarReconcileWarning = true
+          }
+        }
+      });
+    // TODO: CAREFUL DELETING THIS BECAUSE WE FORGOT WHAT IT DOES
+    //    this.$root.$on("getActivePurchasePackageTable", () => {
+    //   this.getActivePurchaseServerRequest();
+    // });
+  },
   created() {
+    
     this.getSharedActivePackages();
-    this.getActivePurchaseServerRequest();
-
+    setTimeout(() => {
+      this.getActivePurchaseServerRequest();
+    }, 1500)
+    
     this.$root.$refs.A = this;
 
     if (this.$store.state.user.username == "admin") {
@@ -270,7 +292,6 @@ export default {
           if (response.status == 200) {
             this.loading = false;
             this.overlay = false;
-            this.snackBarReconcilePackages = false;
             alert("Success");
             this.getActivePurchaseServerRequest();
             this.$root.$refs.B.getPackageHistoryTable();
@@ -278,6 +299,7 @@ export default {
             this.$root.$refs.D.getClientEventTable();
             this.$root.$refs.E.getEventDetailsCall();
             this.snackBarReconcilePackagesSuccessful = true;
+            this.snackBarReconcilePackages = false;
           } else {
             this.snackBarReconcilePackages = false;
             alert("Error Reconciling Classes");
@@ -336,6 +358,7 @@ export default {
               console.log(this.$store.state.clientDetails.redFlag &&
                 (this.packages.length > 0 ||
                 this.sharedPackages.length > 0));
+                // alert(this.$store.state.clientDetails.redFlag)
               if (
                 this.$store.state.clientDetails.redFlag &&
                 (this.packages.length > 0 ||
@@ -529,11 +552,7 @@ export default {
       return date;
     },
   },
-  mounted() {
-    this.$root.$on("getActivePurchasePackageTable", () => {
-      this.getActivePurchaseServerRequest();
-    });
-  },
+
   computed: {
     returnDiscount() {
       if (this.showPercentDiscount && this.selectedPackage.package_cost >= 0) {

@@ -170,6 +170,7 @@ export default {
         if (response.data.client_id != 0) {
           this.clientDetails = response.data;
           this.$store.commit("SET_CLIENT_DETAILS", response.data);
+          // alert("view")
           if (this.clientDetails.redFlag == true) {
             this.snackBarReconcileWarning = true
           }

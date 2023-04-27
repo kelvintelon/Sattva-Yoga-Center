@@ -27,6 +27,7 @@
 
 <script>
 import HeaderLogo from '../components/HeaderLogo.vue';
+import clientDetailService from "../services/ClientDetailService";
 
 
 export default {
@@ -44,6 +45,19 @@ export default {
       this.$router.push({ name: "login" });
     },
     checkToken() {
+      if (this.$store.state.token != "") {
+         clientDetailService.getClientDetailsOfLoggedInUser().then((response) => {
+        response
+      })
+      .catch((error) => {
+          const response = error.response;
+          if (response.status === 401) {
+            this.$router.push('/login')
+          }
+        });
+      }
+     
+
       this.links = [];
       if (this.$store.state.token == '') {
         this.links.push({ text: 'Login', route: '/login' },

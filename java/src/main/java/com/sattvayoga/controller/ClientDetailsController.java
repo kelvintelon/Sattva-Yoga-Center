@@ -112,6 +112,7 @@ public class ClientDetailsController {
         return clientDetails;
     }
 
+    // TODO: Make sure that you verify that the client ID matches the user that is logged in who is making the request
     @RequestMapping(path = "/getClientDetailsByClientId/{clientId}", method = RequestMethod.GET)
     public ClientDetails getClientDetailsByClientId(@PathVariable int clientId) {
         ClientDetails clientDetails = clientDetailsDao.findClientByClientId(clientId);
