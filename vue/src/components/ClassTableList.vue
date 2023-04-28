@@ -660,7 +660,14 @@ export default {
         } else {
           alert("Error retrieving class information");
         }
-      });
+      })
+      .catch((error) => {
+          const response = error.response;
+          if (response.status === 401) {
+            this.$router.push('/login')
+          }
+        });
+      
     },
     editItem(item) {
       this.editedIndex = this.classes.indexOf(item);

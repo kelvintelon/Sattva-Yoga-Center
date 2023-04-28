@@ -45,6 +45,7 @@ export default {
       this.$router.push({ name: "login" });
     },
     checkToken() {
+      this.links = [];
       if (this.$store.state.token != "") {
          clientDetailService.getClientDetailsOfLoggedInUser().then((response) => {
         response
@@ -52,6 +53,7 @@ export default {
       .catch((error) => {
           const response = error.response;
           if (response.status === 401) {
+            this.$store.state.token = ""
             this.$router.push('/login')
           }
         });
