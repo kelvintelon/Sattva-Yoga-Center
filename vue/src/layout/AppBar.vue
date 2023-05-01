@@ -1,6 +1,6 @@
 <template>
 <div>
-  <v-app-bar shrink-on-scroll app elevation="1" color="#F9A825" dark prominent fade-img-on-scroll height="150px"  scroll-target="#scrolling-techniques-4">
+  <v-app-bar shrink-on-scroll app elevation="1" color="#F9A825" dark prominent fade-img-on-scroll height="150px">
 
     <template v-slot:img="{ props }">
       <v-img v-bind="props" gradient="to bottom, rgba(236, 139, 55, 1), rgba(236, 191, 55, 1) "></v-img>
