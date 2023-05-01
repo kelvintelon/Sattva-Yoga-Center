@@ -54,6 +54,7 @@ export default {
           const response = error.response;
           if (response.status === 401) {
             this.$store.state.token = ""
+            this.links = [];
             this.$router.push('/login')
           }
         });
