@@ -58,9 +58,9 @@ public class TokenProvider implements InitializingBean {
         long now = (new Date()).getTime();
         Date validity;
         if (rememberMe) {
-            validity = new Date(now + this.tokenValidityInMillisecondsForRememberMe*90);
+            validity = new Date(now + this.tokenValidityInMillisecondsForRememberMe*);
         } else {
-            validity = new Date(now + this.tokenValidityInMilliseconds*90);
+            validity = new Date(now + this.tokenValidityInMilliseconds);
         }
 
         return Jwts.builder()
