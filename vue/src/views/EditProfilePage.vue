@@ -9,7 +9,7 @@
           color="gray lighten-4"
           min-height="100%"
         >
-          <header-logo></header-logo>
+        <v-spacer></v-spacer>
           <edit-profile-form></edit-profile-form>
         </v-card>
       </v-col>
@@ -20,11 +20,11 @@
 
 <script>
 import EditProfileForm from "../components/EditProfileForm.vue";
-import HeaderLogo from "../components/HeaderLogo.vue";
+
 
 export default {
   name: "edit-profile-page",
-  components: { EditProfileForm, HeaderLogo },
+  components: { EditProfileForm },
 };
 </script>
 

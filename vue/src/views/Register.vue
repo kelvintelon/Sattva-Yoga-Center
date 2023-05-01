@@ -50,9 +50,7 @@
           <v-btn class="btn btn-lg btn-primary btn-block" type="submit">
             Create New Account
           </v-btn>
-          <br />
-            
-            <br />
+          <br>
           <a v-on:click="goToPage()">Already have an account?</a>
           <div>
             <br />
