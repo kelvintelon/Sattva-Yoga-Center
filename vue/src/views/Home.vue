@@ -9,8 +9,8 @@
         </v-row>
       </v-card-text>
       <v-divider class="mx-4"></v-divider>
-      <v-card-subtitle style="font-size: medium">upcoming classes</v-card-subtitle>
-
+      <v-row><v-col><v-card-subtitle style="font-size: medium">upcoming classes</v-card-subtitle>
+      
       <v-card-text>
         <v-chip-group
             v-model="selection"
@@ -26,8 +26,30 @@
           <v-chip>9:00PM</v-chip>
         </v-chip-group>
       </v-card-text>
-      <v-card-text>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quis nemo repellat facilis adipisci quod praesentium saepe illo ipsam earum veritatis natus non blanditiis debitis, quos assumenda iure vel tempora id.</v-card-text>
+    </v-col>
+    <v-col><v-card-subtitle style="font-size: medium" align="right">available packages</v-card-subtitle>
+      
+      <v-card-text>
+        <v-chip-group
+            v-model="packageSelection"
+            active-class="deep-orange accent-4 white--text"
+            column
+        >
+          <v-chip>First Class $10</v-chip>
 
+          <v-chip>First Month  $40</v-chip>
+
+          <v-chip>Gift</v-chip>
+
+          <v-chip>More</v-chip>
+        </v-chip-group>
+      </v-card-text>
+    </v-col>
+    </v-row>
+      <!-- <v-divider class="mx-4"></v-divider>
+      <v-card-text>In Sanskrit, the ancient language of Yoga, "Sattva" has multiple meanings, some of them being essence, purity, luminosity, and equanimity.</v-card-text> -->
+      <v-diver class="mx-4"></v-diver>
+      <v-card-text>Yoga is a state where all movement of thought is suspended. It is manifested through one-pointed focus. In this state, one is able to experience clarity and peace.</v-card-text>
     </v-card>
 
 
@@ -42,7 +64,8 @@ export default {
   components: {},
   data: () => ({
     loading: false,
-    selection: 1,
+    selection: 0,
+    packageSelection: 0,
   }),
 
   methods: {
