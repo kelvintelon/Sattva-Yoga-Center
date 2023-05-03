@@ -3,7 +3,7 @@
     <!-- src="..\\assets\\stockphoto1.png"-->
     <!-- src="..\\assets\\stockphoto2.png"  color="rgba(255, 183, 0, 0.9)"  -->
     <!-- src="..\\assets\\pexels-neosiam-4498792.png" color="rgba(245, 104, 71, 0.95)" -->
-    <v-app-bar shrink-on-scroll app elevation="1"  dark prominent fade-img-on-scroll height="150px" contain src="..\\assets\\pexels-neosiam-4498792.png" color="rgba(245, 104, 71, 0.95)" 
+    <v-app-bar shrink-on-scroll app elevation="1" prominent fade-img-on-scroll height="150px" contain src="..\\assets\\pexels-neosiam-4498792.png" color="rgba(245, 121, 39, 0.95)" 
     >
 
       <!-- <template v-slot:img="{ props }">
@@ -22,7 +22,7 @@
         </v-list-item>
       </v-list>
     </v-menu> -->
-      <v-btn class="ma-1" x-large icon tile @click="checkToken()">
+      <v-btn dark class="ma-1" x-large icon tile @click="checkToken()">
         <v-icon x-large>mdi-menu</v-icon>
       </v-btn>
       <v-toolbar-side-icon>
@@ -69,6 +69,7 @@ export default {
       menu: false,
       links: [],
       drawer: false,
+      chosenColor: "rgba(245, 121, 39, 0.95)",
     };
   },
   methods: {

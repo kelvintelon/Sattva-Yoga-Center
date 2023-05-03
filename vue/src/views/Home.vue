@@ -1,7 +1,11 @@
 <template>
   <v-container>
-    <v-card class="mx-auto my-2 rounded-xl" max-width="900px" min-width="200px">
-      <v-img height="350px" src="@/assets/sattva-interior.jpeg"></v-img>
+    <!-- ANIMATION IS THIS LOTTIE COMPONENT -->
+    <v-card v-if="animationLoader">
+      <lottie :options="defaultOptions" :width="500" :height="500"/>
+    </v-card>
+    <v-card class="mx-auto my-2 rounded-xl" max-width="900px" min-width="200px" v-if="!animationLoader">
+      <v-img height="350px" src="@/assets/out-door-yoga-practice.jpg"></v-img>
       <v-card-title><strong>Welcome</strong></v-card-title>
       <v-card-text>
         <v-row align="center" class="mx-0">
@@ -60,15 +64,19 @@
 </template>
 
 <script>
-
+ import * as animationData from "@/assets/animations/yog2loader.json";
 
 export default {
   name: "home",
-  components: {},
+ 
   data: () => ({
     loading: false,
+    animationLoader: true,
     selection: 0,
     packageSelection: 3,
+    defaultOptions: {
+      animationData: animationData.default
+    }
   }),
 
   methods: {
@@ -78,6 +86,9 @@ export default {
       setTimeout(() => (this.loading = false), 2000)
     },
   },
+  created() {
+    setTimeout(() => (this.animationLoader = false), 3000);
+  }
 };
 </script>
 
