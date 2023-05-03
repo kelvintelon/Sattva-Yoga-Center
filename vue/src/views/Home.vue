@@ -16,6 +16,7 @@
             v-model="selection"
             active-class="deep-orange accent-4 white--text"
             column
+            class="d-flex align-start flex-column"
         >
           <v-chip>5:30PM</v-chip>
 
@@ -27,13 +28,14 @@
         </v-chip-group>
       </v-card-text>
     </v-col>
-    <v-col><v-card-subtitle style="font-size: medium" align="right">available packages</v-card-subtitle>
+    <v-col align="right"><v-card-subtitle style="font-size: medium" align="right">available packages</v-card-subtitle>
       
       <v-card-text>
         <v-chip-group
             v-model="packageSelection"
             active-class="deep-orange accent-4 white--text"
             column
+            class="d-flex align-end flex-column"
         >
           <v-chip>First Class $10</v-chip>
 
@@ -42,13 +44,14 @@
           <v-chip>Gift</v-chip>
 
           <v-chip>More</v-chip>
+          
         </v-chip-group>
       </v-card-text>
     </v-col>
     </v-row>
       <!-- <v-divider class="mx-4"></v-divider>
       <v-card-text>In Sanskrit, the ancient language of Yoga, "Sattva" has multiple meanings, some of them being essence, purity, luminosity, and equanimity.</v-card-text> -->
-      <v-diver class="mx-4"></v-diver>
+      <v-divider class="mx-4"></v-divider>
       <v-card-text>Yoga is a state where all movement of thought is suspended. It is manifested through one-pointed focus. In this state, one is able to experience clarity and peace.</v-card-text>
     </v-card>
 
@@ -65,7 +68,7 @@ export default {
   data: () => ({
     loading: false,
     selection: 0,
-    packageSelection: 0,
+    packageSelection: 3,
   }),
 
   methods: {
