@@ -3,12 +3,12 @@
     <!-- src="..\\assets\\stockphoto1.png"-->
     <!-- src="..\\assets\\stockphoto2.png"  color="rgba(255, 183, 0, 0.9)"  -->
     <!-- src="..\\assets\\pexels-neosiam-4498792.png" color="rgba(245, 104, 71, 0.95)" -->
-    <v-app-bar shrink-on-scroll app elevation="1" prominent fade-img-on-scroll height="150px" contain src="..\\assets\\pexels-neosiam-4498792.png" color="rgba(245, 121, 39, 0.95)" 
+    <v-app-bar shrink-on-scroll app elevation="1"  dark prominent fade-img-on-scroll height="150px" contain src="..\\assets\\pexels-neosiam-4498792.png" color="rgba(245, 104, 71, 0.95)" 
     >
 
-      <!-- <template v-slot:img="{ props }">
-        <v-img  contain v-bind="props" gradient="to bottom, rgba(236, 139, 55, 1), rgba(236, 191, 55, 1) "></v-img>
-      </template> -->
+      <template v-slot:img="{ props }">
+        <v-img  v-bind="props" ></v-img>
+      </template>
       <!-- <v-menu offset-y bottom right>
       <template v-slot:activator="{ on, attrs }">
         <v-btn class="ma-1" x-large v-bind="attrs" v-on="on" icon tile @click.prevent="checkToken">
@@ -22,7 +22,7 @@
         </v-list-item>
       </v-list>
     </v-menu> -->
-      <v-btn dark class="ma-1" x-large icon tile @click="checkToken()">
+      <v-btn class="ma-1" x-large icon tile @click="checkToken()">
         <v-icon x-large>mdi-menu</v-icon>
       </v-btn>
       <v-toolbar-side-icon>
@@ -69,7 +69,6 @@ export default {
       menu: false,
       links: [],
       drawer: false,
-      chosenColor: "rgba(245, 121, 39, 0.95)",
     };
   },
   methods: {
