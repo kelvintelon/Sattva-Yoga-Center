@@ -4,11 +4,12 @@
     <v-container v-if="animationLoader" >
       <lottie :options="defaultOptions" :width="500" :height="500" />
     </v-container>
+    <!-- Welcome Card -->
     <welcome-card v-if="!animationLoader"></welcome-card>
     <!-- Carousel Card -->
     <br v-if="!animationLoader && !expandCarousel">
     <br v-if="!animationLoader && !expandCarousel">
-    <br v-if="!animationLoader && !expandCarousel">
+    <br v-if="!animationLoader">
     <div
   v-intersect.once='{
     handler: onIntersect,
@@ -30,7 +31,7 @@
       </v-carousel>
     </v-card>
   </v-fab-transition>
-  <!-- End of Carousel Card -->
+  <!-- Calendar Card -->
   </v-container>
 </template>
 

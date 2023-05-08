@@ -89,8 +89,6 @@ export default {
               this.links = [];
               this.links.push({ text: 'Login', route: '/login' },
                 { text: 'Register', route: '/register' })
-
-              this.$router.push('/login')
             }
           });
       }
