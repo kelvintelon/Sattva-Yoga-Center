@@ -1,74 +1,46 @@
 <template>
   <v-container>
     <!-- ANIMATION IS THIS LOTTIE COMPONENT -->
-    <v-card v-if="animationLoader">
-      <lottie :options="defaultOptions" :width="500" :height="500"/>
+    <v-container v-if="animationLoader" >
+      <lottie :options="defaultOptions" :width="500" :height="500" />
+    </v-container>
+    <welcome-card v-if="!animationLoader"></welcome-card>
+    <!-- Carousel Card -->
+    <br v-if="!animationLoader && !expandCarousel">
+    <br v-if="!animationLoader && !expandCarousel">
+    <br v-if="!animationLoader && !expandCarousel">
+    <div
+  v-intersect.once='{
+    handler: onIntersect,
+    options: {
+      threshold: [1.0]
+    }
+  }'
+  class='invisible' v-if="!animationLoader && !expandCarousel">
+  
+  <br>
+  <br>
+  </div> 
+  
+  <v-fab-transition appear>
+    <v-card class="mx-auto my-2 rounded-xl" max-width="900px" min-width="200px" v-if="!animationLoader && expandCarousel" v-model="expandCarousel">
+      <v-carousel cycle height="400" hide-delimiter-background show-arrows="false"  interval="3000" eager>
+        <v-carousel-item v-for="(item, i) in items" :key="i" :src="item.src" transition="fade-transition"    reverse-transition="fade-transition">
+        </v-carousel-item>
+      </v-carousel>
     </v-card>
-    <v-card class="mx-auto my-2 rounded-xl" max-width="900px" min-width="200px" v-if="!animationLoader">
-      <v-img height="350px" src="@/assets/out-door-yoga-practice.jpg"></v-img>
-      <v-card-title><strong>Welcome</strong></v-card-title>
-      <v-card-text>
-        <v-row align="center" class="mx-0">
-          Sattva has been serving our Dearborn, Michigan community since January 2007. The central focus of our classes is the breath. Our aim is to facilitate a healthy body and a supple mind.
-        </v-row>
-      </v-card-text>
-      <v-divider class="mx-4"></v-divider>
-      <v-row><v-col><v-card-subtitle style="font-size: medium">upcoming classes</v-card-subtitle>
-      
-      <v-card-text>
-        <v-chip-group
-            v-model="selection"
-            active-class="deep-orange accent-4 white--text"
-            column
-            class="d-flex align-start flex-column"
-        >
-          <v-chip>5:30PM</v-chip>
-
-          <v-chip>7:30PM</v-chip>
-
-          <v-chip>8:00PM</v-chip>
-
-          <v-chip>9:00PM</v-chip>
-        </v-chip-group>
-      </v-card-text>
-    </v-col>
-    <v-col align="right"><v-card-subtitle style="font-size: medium" align="right">available packages</v-card-subtitle>
-      
-      <v-card-text>
-        <v-chip-group
-            v-model="packageSelection"
-            active-class="deep-orange accent-4 white--text"
-            column
-            class="d-flex align-end flex-column"
-        >
-          <v-chip>First Class $10</v-chip>
-
-          <v-chip>First Month  $40</v-chip>
-
-          <v-chip>Gift</v-chip>
-
-          <v-chip>More</v-chip>
-          
-        </v-chip-group>
-      </v-card-text>
-    </v-col>
-    </v-row>
-      <!-- <v-divider class="mx-4"></v-divider>
-      <v-card-text>In Sanskrit, the ancient language of Yoga, "Sattva" has multiple meanings, some of them being essence, purity, luminosity, and equanimity.</v-card-text> -->
-      <v-divider class="mx-4"></v-divider>
-      <v-card-text>Yoga is a state where all movement of thought is suspended. It is manifested through one-pointed focus. In this state, one is able to experience clarity and peace.</v-card-text>
-    </v-card>
-
-
+  </v-fab-transition>
+  <!-- End of Carousel Card -->
   </v-container>
 </template>
 
 <script>
- import * as animationData from "@/assets/animations/yog2loader.json";
+import * as animationData from "@/assets/animations/yog2loader.json";
+import WelcomeCard from "../components/WelcomeCard.vue"
 
 export default {
   name: "home",
- 
+  components: { WelcomeCard },
   data: () => ({
     loading: false,
     animationLoader: true,
@@ -76,10 +48,27 @@ export default {
     packageSelection: 3,
     defaultOptions: {
       animationData: animationData.default
-    }
+    },
+    items: [
+    { src: require('@/assets/sattvaWebsite/SattvaYoga1.jpeg') },
+      { src: require('@/assets/sattvaWebsite/SattvaYoga2.jpeg') },
+      { src: require('@/assets/sattvaWebsite/SattvaYoga3.jpeg') },
+      { src: require('@/assets/sattvaWebsite/SattvaYoga4.jpeg') },
+      { src: require('@/assets/sattvaWebsite/leaf.jpg') },
+      
+    ],
+    expandCarousel: false,
+    intersectCount: 0,
   }),
 
   methods: {
+    onIntersect(isIntersecting) {
+      this.intersectCount++;
+      if (this.intersectCount == 1) {
+     
+      this.expandCarousel = isIntersecting;
+      }
+    },
     reserve() {
       this.loading = true
 
@@ -88,8 +77,19 @@ export default {
   },
   created() {
     setTimeout(() => (this.animationLoader = false), 3000);
+    
+  },
+  unmounted() {
+    this.expandCarousel = false;
   }
 };
 </script>
 
-<style></style>
+<style>
+.invisible {
+      width: 100%;
+      height: 500px;
+      
+     bottom: 200px;
+   }
+   </style>

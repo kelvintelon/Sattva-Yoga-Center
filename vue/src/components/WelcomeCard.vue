@@ -1,32 +1,52 @@
 <template>
-  <!-- m is margin; x is left & right spacing -->
-  <v-card class="mx-auto my-12"
-          color="amber lighten-5"
-          min-height="100%"
-  >
+   <v-card class="mx-auto my-2 rounded-xl" max-width="900px" min-width="200px">
+      <v-img height="350px" src="@/assets/out-door-yoga-practice.jpg"></v-img>
+      <v-card-title><strong>Welcome</strong></v-card-title>
+      <v-card-text>
+        <v-row align="center" class="mx-0">
+          Sattva has been serving our Dearborn, Michigan community since January 2007. The central focus of our classes is
+          the breath. Our aim is to facilitate a healthy body and a supple mind.
+        </v-row>
+      </v-card-text>
+      <v-divider class="mx-4"></v-divider>
+      <v-row><v-col><v-card-subtitle style="font-size: medium">upcoming classes</v-card-subtitle>
 
-    <v-img src="https://static.wixstatic.com/media/78a355_77a26bec9c04478f82b2c987ae20a2a2~mv2_d_1900_1930_s_2.jpg/v1/fit/w_2607,h_1405,q_90/78a355_77a26bec9c04478f82b2c987ae20a2a2~mv2_d_1900_1930_s_2.webp"></v-img>
+          <v-card-text>
+            <v-chip-group v-model="selection" active-class="deep-orange accent-4 white--text" column
+              class="d-flex align-start flex-column">
+              <v-chip>5:30PM</v-chip>
 
-    <v-card-title class="font-weight-bold">welcome</v-card-title>
+              <v-chip>7:30PM</v-chip>
 
+              <v-chip>8:00PM</v-chip>
 
+              <v-chip>9:00PM</v-chip>
+            </v-chip-group>
+          </v-card-text>
+        </v-col>
+        <v-col align="right"><v-card-subtitle style="font-size: medium" align="right">available packages</v-card-subtitle>
 
-    <v-card-text>
-      <v-row align="center" class="mx-0"> </v-row>
+          <v-card-text>
+            <v-chip-group v-model="packageSelection" active-class="deep-orange accent-4 white--text" column
+              class="d-flex align-end flex-column">
+              <v-chip>First Class $10</v-chip>
 
-      <div class="black--text mx-auto mb-0 mt-5">
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Natus harum
-        error expedita cumque architecto! Dolore, ducimus pariatur.
-        Reprehenderit adipisci quas dolores, deleniti veniam incidunt unde
-        magnam, facere fuga, itaque similique!
-      </div>
+              <v-chip>First Month $40</v-chip>
 
-    </v-card-text>
+              <v-chip>Gift</v-chip>
 
+              <v-chip>More</v-chip>
 
-
-
-  </v-card>
+            </v-chip-group>
+          </v-card-text>
+        </v-col>
+      </v-row>
+      <!-- <v-divider class="mx-4"></v-divider>
+      <v-card-text>In Sanskrit, the ancient language of Yoga, "Sattva" has multiple meanings, some of them being essence, purity, luminosity, and equanimity.</v-card-text> -->
+      <v-divider class="mx-4"></v-divider>
+      <v-card-text>Yoga is a state where all movement of thought is suspended. It is manifested through one-pointed focus.
+        In this state, one is able to experience clarity and peace.</v-card-text>
+    </v-card>  
 </template>
 
 <script>
@@ -34,7 +54,10 @@ export default {
   name: "welcome-card",
   components: {},
   data() {
-    return {};
+    return {
+      selection: 0,
+    packageSelection: 3,
+    };
   },
   created() {},
 };
