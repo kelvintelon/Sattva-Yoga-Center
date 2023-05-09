@@ -1240,6 +1240,15 @@ public class JdbcEventDao implements EventDao {
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
         while (result.next()) {
             Event event = mapRowToEvent(result);
+
+            Date currentDate = new Date(event.getStart_time().getTime());
+
+
+            SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy hh:mm a", java.util.Locale.ENGLISH);
+            sdf.applyPattern("EEE, d MMM yyyy hh:mm a");
+            String timeFormatted = sdf.format(event.getStart_time());
+
+            event.setQuick_details(event.getEvent_name() + " " + timeFormatted);
             allEvents.add(event);
         }
         return allEvents;

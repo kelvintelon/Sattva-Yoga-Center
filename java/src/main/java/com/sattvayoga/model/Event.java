@@ -14,6 +14,8 @@ public class Event {
     private boolean is_visible_online;
     private List<ClientDetails> attendanceList;
     private int package_purchase_id;
+    // helper instance variable
+    private String quick_details;
 
     public Event() {
 
@@ -28,6 +30,14 @@ public class Event {
         this.color = color;
         this.timed = timed;
         this.is_visible_online = is_visible_online;
+    }
+
+    public String getQuick_details() {
+        return quick_details;
+    }
+
+    public void setQuick_details(String quick_details) {
+        this.quick_details = quick_details;
     }
 
     public int getPackage_purchase_id() {

@@ -358,9 +358,9 @@ export default {
       } else {
         packagePurchaseService.getUserPurchasedPackages().then((response) => {
           if (response.status == 200) {
+            this.loading = false;
             this.packageHistoryList = response.data;
             this.packageHistoryList.forEach((item) => {
-              this.loading = false;
               item.date_purchased = new Date(
                 item.date_purchased
               ).toLocaleString();
