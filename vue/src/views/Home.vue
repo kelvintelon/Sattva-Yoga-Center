@@ -39,6 +39,7 @@
 import * as animationData from "@/assets/animations/yog2loader.json";
 import WelcomeCard from "../components/WelcomeCard.vue"
 
+
 export default {
   name: "home",
   components: { WelcomeCard },
