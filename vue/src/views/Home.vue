@@ -15,35 +15,208 @@
       options: {
         threshold: [1.0]
       }
-    }' class='invisible' v-if="!animationLoader && !expandTable">
+    }' class='largeInvisible' v-if="!animationLoader && !expandTable">
 
       <br>
       <br>
     </div>
     <v-expand-x-transition appear>
-    <v-card class="mx-auto my-2 rounded-xl" max-width="900px" min-width="200px"
-    v-if="!animationLoader && expandTable" v-model="expandTable">
-        <v-data-table
-        :headers="tableHeaders"
-        :items="events"
-        class="elevation-1"
-        
-      >
-        <template v-slot:top>
-          <v-toolbar flat>
-            <v-toolbar-title style="color: rgba(245, 104, 71, 0.95)">Next Available Classes</v-toolbar-title>
-            <v-divider class="mx-4" inset vertical></v-divider>
-            <v-spacer></v-spacer>
-          </v-toolbar>
-        </template>
-        <template v-slot:[`item.actions`]="{ item }">
-          <v-icon small class="mr-2" @click="SignUp(item)">
-            mdi-account-plus
-          </v-icon>
-        </template>
-      </v-data-table>
+      <v-card class="mx-auto my-2 rounded-xl" max-width="900px" min-width="200px" v-if="!animationLoader && expandTable"
+        v-model="expandTable">
+        <v-data-table :headers="tableHeaders" :items="events" class="elevation-1">
+          <template v-slot:top>
+            <v-toolbar flat>
+              <v-toolbar-title style="color: rgba(245, 104, 71, 0.95)"><strong>Next Available
+                  Classes</strong></v-toolbar-title>
+              <v-spacer></v-spacer>
+            </v-toolbar>
+          </template>
+          <template v-slot:[`item.actions`]="{ item }">
+            <v-icon small class="mr-2" @click="SignUp(item)">
+              mdi-account-plus
+            </v-icon>
+          </template>
+        </v-data-table>
       </v-card>
     </v-expand-x-transition>
+    <!--Studio Guidelines Card and About Sattva  -->
+    <br v-if="!animationLoader && !expandStudioGuidelines">
+    <br v-if="!animationLoader && !expandStudioGuidelines">
+    <br v-if="!animationLoader">
+    <div v-intersect.once='{
+      handler: onStudioGuidelinesIntersect,
+      options: {
+        threshold: [1.0]
+      }
+    }' class='invisible' v-if="!animationLoader && !expandStudioGuidelines">
+
+      <br>
+      <br>
+    </div>
+    <v-fab-transition appear> 
+    <v-card class="mx-auto my-2 rounded-xl cardBorder" max-width="900px" min-width="200px" v-if="!animationLoader && expandStudioGuidelines" ripple 
+    v-model="expandStudioGuidelines">
+      <v-card-title style="color: rgba(245, 104, 71, 0.95)"><strong>Studio Guidelines</strong></v-card-title>
+      <v-card-subtitle>Prior to attending a class at Sattva Yoga Center, please review the following guidelines. We
+        believe they will help you get the most out of your practice.</v-card-subtitle>
+      <v-divider class="mx-4" color="red"></v-divider>
+      <v-card-text>
+        <v-row align="center" class="mx-0">
+          <div>
+            - Do not eat anything for at least 2 hours before class.
+          </div>
+          <div>
+            - Please arrive at least 10 minutes early before scheduled start time.
+          </div>
+          <div>
+            - Wear comfortable clothing. Do not wear perfumes or scented lotions.
+          </div>
+          <div>
+            - Please remove footwear (shoes, filp flops) in the lobby.
+          </div>
+          <div>
+            - Bring a mat and a hand towel. Due to COVID we do not have rental mats at the studio.
+          </div>
+          <div>
+            - If you have any restrictions, please notify the instructor before class.
+          </div>
+          <div>
+            - Please help us in keeping the practice space neat and orderly.
+          </div>
+          <div>
+            - Keep your attention to yourself during the practice.
+          </div>
+          <div>
+            - Please be mindful and quiet in the yoga room.</div>
+        </v-row>
+      </v-card-text>
+      <div v-intersect.once='{
+      handler: onNewClientIntersect,
+      options: {
+        threshold: [1.0]
+      }
+    }' class='smallInvisible' v-if="!animationLoader && !expandNewClient" />
+    <v-slide-y-reverse-transition appear v-if="!animationLoader && expandNewClient">
+      <v-card v-if="!animationLoader && expandNewClient" v-model="expandNewClient">
+        <v-divider class="mx-4" color="red"></v-divider>
+        <v-card-title style="color: rgba(245, 104, 71, 0.95)"><strong>New Client</strong></v-card-title>
+        <v-card-subtitle>
+          <v-card-text>
+            <v-row align="center" justify="center">
+              <v-col cols="2">
+                <v-img src="@/assets/new.png" contain></v-img>
+              </v-col>
+              <v-col cols="10">
+                <div>If you're new to yoga or the studio, please come to a Beginner/ Basic Class or an All Levels Class.
+                </div>
+              </v-col>
+            </v-row>
+          </v-card-text></v-card-subtitle>
+      </v-card>
+    </v-slide-y-reverse-transition>
+    <div v-intersect.once='{
+      handler: onPurposeMissionIntersect,
+      options: {
+        threshold: [1.0]
+      }
+    }' class='smallInvisible' v-if="!animationLoader && !expandPurposeMission" />
+     <v-slide-y-reverse-transition appear v-if="!animationLoader && expandPurposeMission">
+      <v-card v-if="!animationLoader && expandPurposeMission" v-model="expandPurposeMission">
+        <v-divider class="mx-4" color="red"></v-divider>
+        <v-card-title style="color: rgba(245, 104, 71, 0.95)"><strong>Purpose/Mission</strong></v-card-title>
+        <v-card-subtitle>
+          <v-card-text>
+            <v-row align="center" justify="center">
+              <v-col cols="2">
+                <v-img src="@/assets/pigeon-bird-icon.png" contain height="100"></v-img>
+              </v-col>
+              <v-col cols="10">
+                <div>Our mission is to serve our clients on their path towards peace. We believe that a breath-focused
+                  yoga practice can guide everyone towards peace.
+                </div>
+              </v-col>
+            </v-row>
+          </v-card-text></v-card-subtitle>
+      </v-card>
+    </v-slide-y-reverse-transition>
+    <div v-intersect.once='{
+      handler: onSattvaIntersect,
+      options: {
+        threshold: [1.0]
+      }
+    }' class='smallInvisible' v-if="!animationLoader && !expandSattva" />
+     <v-slide-y-reverse-transition appear v-if="!animationLoader && expandSattva">
+      <v-card v-if="!animationLoader && expandSattva" v-model="expandSattva">
+        <v-divider class="mx-4" color="red"></v-divider>
+        <v-card-title style="color: rgba(245, 104, 71, 0.95)"><strong>Sattva</strong></v-card-title>
+        <v-card-subtitle>
+          <v-card-text>
+            <v-row align="center" justify="center">
+              <v-col cols="2">
+                <v-img src="@/assets/lotus-icon.png" contain></v-img>
+              </v-col>
+              <v-col cols="10">
+                <div>In Sanskrit, the ancient language of Yoga, "Sattva" has multiple meanings, some of them being
+                  essence, purity, luminosity, and equanimity.
+                </div>
+              </v-col>
+            </v-row>
+          </v-card-text></v-card-subtitle>
+      </v-card>
+    </v-slide-y-reverse-transition>
+    <div v-intersect.once='{
+      handler: onYogaIntersect,
+      options: {
+        threshold: [1.0]
+      }
+    }' class='smallInvisible' v-if="!animationLoader && !expandYoga" />
+     <v-slide-y-reverse-transition appear v-if="!animationLoader && expandYoga">
+      <v-card v-if="!animationLoader && expandYoga" v-model="expandYoga">
+        <v-divider class="mx-4" color="red"></v-divider>
+        <v-card-title style="color: rgba(245, 104, 71, 0.95)"><strong>Yoga</strong></v-card-title>
+        <v-card-subtitle>
+          <v-card-text>
+            <v-row align="center" justify="center">
+              <v-col cols="2">
+                <v-img src="@/assets/meditation-yoga-icon.png" contain height="100"></v-img>
+              </v-col>
+              <v-col cols="10">
+                <div>Yoga is a state where all movement of thought is suspended. It is manifested through one-pointed
+                  focus. In this state, one is able to experience clarity and peace.
+                </div>
+              </v-col>
+            </v-row>
+          </v-card-text></v-card-subtitle>
+      </v-card>
+    </v-slide-y-reverse-transition>
+    <div v-intersect.once='{
+      handler: onAcknowledgementsIntersect,
+      options: {
+        threshold: [1.0]
+      }
+    }' class='smallInvisible' v-if="!animationLoader && !expandAcknowledgements" />
+     <v-slide-y-reverse-transition appear v-if="!animationLoader && expandAcknowledgements">
+      <v-card v-if="!animationLoader && expandAcknowledgements" v-model="expandAcknowledgements">
+        <v-divider class="mx-4" color="red"></v-divider>
+        <v-card-title style="color: rgba(245, 104, 71, 0.95)"><strong>Acknowledgements</strong></v-card-title>
+        <v-card-subtitle>
+          <v-card-text>
+            <v-row align="center" justify="center">
+              <v-col cols="2">
+                <v-img src="@/assets/handshake-icon.png" contain height="100"></v-img>
+              </v-col>
+              <v-col cols="10">
+                <div>We are grateful to all our teachers for guiding us on the path of Yoga. We hope to stay true to the
+                  path that our teachers have shown us. We are also grateful to all of the practitioners at our studio
+                  from whom we learn daily.
+                </div>
+              </v-col>
+            </v-row>
+          </v-card-text></v-card-subtitle>
+      </v-card>
+    </v-slide-y-reverse-transition>
+    </v-card>
+  </v-fab-transition>
     <!-- Carousel Card -->
     <br v-if="!animationLoader && !expandCarousel">
     <br v-if="!animationLoader && !expandCarousel">
@@ -53,7 +226,7 @@
       options: {
         threshold: [1.0]
       }
-    }' class='invisible' v-if="!animationLoader && !expandCarousel">
+    }' class='largeInvisible' v-if="!animationLoader && !expandCarousel">
 
       <br>
       <br>
@@ -62,16 +235,14 @@
     <v-fab-transition appear>
       <v-card class="mx-auto my-2 rounded-xl" max-width="900px" min-width="200px"
         v-if="!animationLoader && expandCarousel" v-model="expandCarousel">
-        <v-carousel cycle :interval="3000" height="400" hide-delimiter  eager   hide-delimiters>
-          <v-carousel-item v-for="(item, i) in items" :key="i" :src="item.src" transition="fade-transition"
-            reverse-transition="fade-transition">
+        <v-carousel cycle :interval="3000" height="400" hide-delimiter eager hide-delimiters>
+          <v-carousel-item v-for="(item, i) in items" :key="i" :src="item.src" fade reverse-transition="fade-transition">
           </v-carousel-item>
         </v-carousel>
       </v-card>
     </v-fab-transition>
     <br>
-    
-    
+
   </v-container>
 </template>
 
@@ -107,15 +278,27 @@ export default {
     carouselIntersectCount: 0,
     expandTable: false,
     tableIntersectCount: 0,
+    expandStudioGuidelines: false,
+    studioGuidelinesIntersectCount: 0,
+    expandNewClient: false,
+    newClientIntersectCount:0,
+    expandPurposeMission: false,
+    purposeMissionIntersectCount: 0,
+    expandSattva: false,
+    sattvaIntersectCount: 0,
+    expandYoga: false,
+    yogaIntersectCount: 0,
+    expandAcknowledgements: false,
+    acknowledgementsIntersectCount: 0,
     tableHeaders: [
-        {
-          text: "Class Description",
-          value: "quick_details",
-          align: "start",
-        },
-        { text: "Sign Up", value: "actions", sortable: false },
-      ],
-      events: [],
+      {
+        text: "Class Description",
+        value: "quick_details",
+        align: "start",
+      },
+      { text: "Sign Up", value: "actions", sortable: false },
+    ],
+    events: [],
   }),
 
   methods: {
@@ -133,10 +316,47 @@ export default {
         this.expandTable = isIntersecting;
       }
     },
-    reserve() {
-      this.loading = true
+    onStudioGuidelinesIntersect(isIntersecting) {
+      this.studioGuidelinesIntersectCount++;
+      if (this.studioGuidelinesIntersectCount == 1) {
 
-      setTimeout(() => (this.loading = false), 2000)
+        this.expandStudioGuidelines = isIntersecting;
+      }
+    },
+    onNewClientIntersect(isIntersecting) {
+      this.newClientIntersectCount++;
+      if (this.newClientIntersectCount == 1) {
+
+        this.expandNewClient = isIntersecting;
+      }
+    },
+    onPurposeMissionIntersect(isIntersecting) {
+      this.purposeMissionIntersectCount++;
+      if (this.purposeMissionIntersectCount == 1) {
+
+        this.expandPurposeMission = isIntersecting;
+      }
+    },
+    onSattvaIntersect(isIntersecting) {
+      this.sattvaIntersectCount++;
+      if (this.sattvaIntersectCount == 1) {
+
+        this.expandSattva = isIntersecting;
+      }
+    },
+    onYogaIntersect(isIntersecting) {
+      this.yogaIntersectCount++;
+      if (this.yogaIntersectCount == 1) {
+
+        this.expandYoga = isIntersecting;
+      }
+    },
+    onAcknowledgementsIntersect(isIntersecting) {
+      this.acknowledgementsIntersectCount++;
+      if (this.acknowledgementsIntersectCount == 1) {
+
+        this.expandAcknowledgements = isIntersecting;
+      }
     },
     getEventTable() {
       eventService
@@ -151,7 +371,7 @@ export default {
         });
     },
     SignUp() {
-      if (this.$store.state.token == "") { 
+      if (this.$store.state.token == "") {
         this.$router.push({ name: "login" });
       } else {
         if (this.$store.state.user.username == "admin") {
@@ -165,7 +385,6 @@ export default {
   created() {
     this.getEventTable();
     setTimeout(() => (this.animationLoader = false), 3000);
-
   },
   unmounted() {
     this.expandCarousel = false;
@@ -174,10 +393,17 @@ export default {
 </script>
 
 <style>
-.invisible {
+.largeInvisible {
   width: 100%;
   height: 450px;
 
   bottom: 200px;
 }
+.smallInvisible {
+  width: 100%;
+  height: 400px;
+
+  bottom: 200px;
+}
+
 </style>

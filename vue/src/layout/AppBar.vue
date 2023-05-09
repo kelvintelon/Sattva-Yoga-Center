@@ -60,9 +60,9 @@
 <script>
 import HeaderLogo from '../components/HeaderLogo.vue';
 import clientDetailService from "../services/ClientDetailService";
-import { useRouter } from 'vue-router';
 
 export default {
+
   name: "AppBar",
   data() {
     return {
@@ -89,8 +89,7 @@ export default {
               this.links = [];
               this.links.push({ text: 'Login', route: '/login' },
                 { text: 'Register', route: '/register' })
-                const router = useRouter();
-                if (router.name != 'home' && router.name != 'login' && router.name != 'register') {
+                if (this.$router.currentRoute.name != 'home' && this.$router.currentRoute.name != 'login' && this.$router.currentRoute.name != 'register') {
                   this.$router.push({ name: "login" });
                 }
             }
