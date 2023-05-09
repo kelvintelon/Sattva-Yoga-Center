@@ -32,7 +32,7 @@
             </v-toolbar>
           </template>
           <template v-slot:[`item.actions`]="{ item }">
-            <v-icon small class="mr-2" @click="SignUp(item)">
+            <v-icon class="mr-2" @click="SignUp(item)" style="color: rgba(245, 104, 71, 0.95)">
               mdi-account-plus
             </v-icon>
           </template>
@@ -48,12 +48,12 @@
       options: {
         threshold: [1.0]
       }
-    }' class='invisible' v-if="!animationLoader && !expandStudioGuidelines">
+    }' class='largeInvisible' v-if="!animationLoader && !expandStudioGuidelines">
 
       <br>
       <br>
     </div>
-    <v-fab-transition appear>
+    <v-fab-transition appear origin="bottom right">
       <v-card class="mx-auto my-2 rounded-xl cardBorder" max-width="900px" min-width="200px"
         v-if="!animationLoader && expandStudioGuidelines" ripple v-model="expandStudioGuidelines">
         <v-card-title style="color: rgba(245, 104, 71, 0.95)"><strong>Studio Guidelines</strong></v-card-title>
@@ -219,6 +219,87 @@
         </v-slide-y-reverse-transition>
       </v-card>
     </v-fab-transition>
+    <!--Bhagavad Gita Card  -->
+    <br v-if="!animationLoader && !expandBhagavadGita">
+    <br v-if="!animationLoader && !expandBhagavadGita">
+    <br v-if="!animationLoader">
+    <div v-intersect.once='{
+      handler: onBhagavadGitaIntersect,
+      options: {
+        threshold: [1.0]
+      }
+    }' class='smallInvisible' v-if="!animationLoader && !expandBhagavadGita">
+
+      <br>
+      <br>
+    </div>
+    <v-slide-x-transition appear>
+      <v-card class="mx-auto my-2 rounded-xl" max-width="900px" min-width="200px"
+        v-if="!animationLoader && expandBhagavadGita" v-model="expandBhagavadGita">
+        <v-card-text>
+          <v-row align="center" justify="center">
+            <v-col cols="6">
+              <v-img src="@/assets/thiruman.jpg" contain></v-img>
+            </v-col>
+            <v-spacer></v-spacer>
+          </v-row>
+        </v-card-text>
+        <v-card-text>
+          <v-row>
+            <v-spacer></v-spacer>
+            <v-col>
+              <div>
+                "When the Light of Knowledge shines through all the gates of this body, then it should be known that
+                Sattva is dominant"<br>
+                The Bhagavad Gita, 14:11</div>
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
+    </v-slide-x-transition>
+    <!--Instructor Training  -->
+    <br v-if="!animationLoader && !expandInstructorTraining">
+    <br v-if="!animationLoader && !expandInstructorTraining">
+    <br v-if="!animationLoader">
+    <div v-intersect.once='{
+      handler: onInstructorTrainingIntersect,
+      options: {
+        threshold: [1.0]
+      }
+    }' class='largeInvisible' v-if="!animationLoader && !expandInstructorTraining">
+
+      <br>
+      <br>
+    </div>
+    <v-expand-x-transition appear>
+      <v-card class="mx-auto my-2 rounded-xl" max-width="900px" min-width="200px"
+        v-if="!animationLoader && expandInstructorTraining" v-model="expandInstructorTraining">
+        <v-card-title style="color: rgba(245, 104, 71, 0.95)"><strong>Instructor Training</strong></v-card-title>
+        <v-card-subtitle>September 2022 Update: Training is on hold due to the pandemic.</v-card-subtitle>
+        <v-divider class="mx-4" color="red"></v-divider>
+        <v-card-title style="color: rgba(245, 104, 71, 0.75)">Training Objectives</v-card-title>
+        <v-card-text>
+          <v-row align="center" class="mx-0">
+            <div>- To establish/enhance your personal practice and understanding of Yoga</div>
+            <div>- Building upon the personal practice and learning the skills needed to serve as an instructor of Hatha
+              Yoga</div>
+          </v-row>
+        </v-card-text>
+        <v-divider class="mx-4" color="red"></v-divider>
+        <v-card-title style="color: rgba(245, 104, 71, 0.75)">Certification</v-card-title>
+        <v-card-text>
+          <v-row align="center" class="mx-0">
+            <div> Sattva Yoga Center is a Registered Yoga School with the Yoga Alliance. The length of the training
+              program is 250 hours. This meets and exceeds the RYT 200 standards set by the Yoga Alliance. Upon successful
+              completion of the training (including the successful completion of a comprehensive final exam), a
+              certificate will be issued</div>
+            <div><br>Please call us to learn more about topics covered, cost, and dates.
+              <br>(313) 274-3995
+            </div>
+          </v-row>
+        </v-card-text>
+      </v-card>
+    </v-expand-x-transition>
     <!-- Carousel Card -->
     <br v-if="!animationLoader && !expandCarousel">
     <br v-if="!animationLoader && !expandCarousel">
@@ -228,7 +309,7 @@
       options: {
         threshold: [1.0]
       }
-    }' class='largeInvisible' v-if="!animationLoader && !expandCarousel">
+    }' class='smallInvisible' v-if="!animationLoader && !expandCarousel">
 
       <br>
       <br>
@@ -294,6 +375,8 @@ export default {
     acknowledgementsIntersectCount: 0,
     expandInstructorTraining: false,
     instructorTrainingIntersectCount: 0,
+    expandBhagavadGita: false,
+    bhagavadGitaIntersectCount: 0,
     tableHeaders: [
       {
         text: "Class Description",
@@ -367,6 +450,13 @@ export default {
       if (this.instructorTrainingIntersectCount == 1) {
 
         this.expandInstructorTraining = isIntersecting;
+      }
+    },
+    onBhagavadGitaIntersect(isIntersecting) {
+      this.bhagavadGitaIntersectCount++;
+      if (this.bhagavadGitaIntersectCount == 1) {
+
+        this.expandBhagavadGita = isIntersecting;
       }
     },
     getEventTable() {

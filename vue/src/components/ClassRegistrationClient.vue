@@ -51,7 +51,7 @@
           </v-toolbar>
         </template>
         <template v-slot:[`item.actions`]="{ item }">
-          <v-icon small class="mr-2" @click="SignUp(item)">
+          <v-icon class="mr-2" @click="SignUp(item)" style="color: rgba(245, 104, 71, 0.95)">
             mdi-account-plus
           </v-icon>
         </template>
