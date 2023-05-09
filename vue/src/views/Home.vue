@@ -53,170 +53,172 @@
       <br>
       <br>
     </div>
-    <v-fab-transition appear> 
-    <v-card class="mx-auto my-2 rounded-xl cardBorder" max-width="900px" min-width="200px" v-if="!animationLoader && expandStudioGuidelines" ripple 
-    v-model="expandStudioGuidelines">
-      <v-card-title style="color: rgba(245, 104, 71, 0.95)"><strong>Studio Guidelines</strong></v-card-title>
-      <v-card-subtitle>Prior to attending a class at Sattva Yoga Center, please review the following guidelines. We
-        believe they will help you get the most out of your practice.</v-card-subtitle>
-      <v-divider class="mx-4" color="red"></v-divider>
-      <v-card-text>
-        <v-row align="center" class="mx-0">
-          <div>
-            - Do not eat anything for at least 2 hours before class.
-          </div>
-          <div>
-            - Please arrive at least 10 minutes early before scheduled start time.
-          </div>
-          <div>
-            - Wear comfortable clothing. Do not wear perfumes or scented lotions.
-          </div>
-          <div>
-            - Please remove footwear (shoes, filp flops) in the lobby.
-          </div>
-          <div>
-            - Bring a mat and a hand towel. Due to COVID we do not have rental mats at the studio.
-          </div>
-          <div>
-            - If you have any restrictions, please notify the instructor before class.
-          </div>
-          <div>
-            - Please help us in keeping the practice space neat and orderly.
-          </div>
-          <div>
-            - Keep your attention to yourself during the practice.
-          </div>
-          <div>
-            - Please be mindful and quiet in the yoga room.</div>
-        </v-row>
-      </v-card-text>
-      <div v-intersect.once='{
-      handler: onNewClientIntersect,
-      options: {
-        threshold: [1.0]
-      }
-    }' class='smallInvisible' v-if="!animationLoader && !expandNewClient" />
-    <v-slide-y-reverse-transition appear v-if="!animationLoader && expandNewClient">
-      <v-card v-if="!animationLoader && expandNewClient" v-model="expandNewClient">
+    <v-fab-transition appear>
+      <v-card class="mx-auto my-2 rounded-xl cardBorder" max-width="900px" min-width="200px"
+        v-if="!animationLoader && expandStudioGuidelines" ripple v-model="expandStudioGuidelines">
+        <v-card-title style="color: rgba(245, 104, 71, 0.95)"><strong>Studio Guidelines</strong></v-card-title>
+        <v-card-subtitle>Prior to attending a class at Sattva Yoga Center, please review the following guidelines. We
+          believe they will help you get the most out of your practice.</v-card-subtitle>
         <v-divider class="mx-4" color="red"></v-divider>
-        <v-card-title style="color: rgba(245, 104, 71, 0.95)"><strong>New Client</strong></v-card-title>
-        <v-card-subtitle>
-          <v-card-text>
-            <v-row align="center" justify="center">
-              <v-col cols="2">
-                <v-img src="@/assets/new.png" contain></v-img>
-              </v-col>
-              <v-col cols="10">
-                <div>If you're new to yoga or the studio, please come to a Beginner/ Basic Class or an All Levels Class.
-                </div>
-              </v-col>
-            </v-row>
-          </v-card-text></v-card-subtitle>
+        <v-card-text>
+          <v-row align="center" class="mx-0">
+            <div>
+              - Do not eat anything for at least 2 hours before class.
+            </div>
+            <div>
+              - Please arrive at least 10 minutes early before scheduled start time.
+            </div>
+            <div>
+              - Wear comfortable clothing. Do not wear perfumes or scented lotions.
+            </div>
+            <div>
+              - Please remove footwear (shoes, filp flops) in the lobby.
+            </div>
+            <div>
+              - Bring a mat and a hand towel. Due to COVID we do not have rental mats at the studio.
+            </div>
+            <div>
+              - If you have any restrictions, please notify the instructor before class.
+            </div>
+            <div>
+              - Please help us in keeping the practice space neat and orderly.
+            </div>
+            <div>
+              - Keep your attention to yourself during the practice.
+            </div>
+            <div>
+              - Please be mindful and quiet in the yoga room.</div>
+          </v-row>
+        </v-card-text>
+        <div v-intersect.once='{
+          handler: onNewClientIntersect,
+          options: {
+            threshold: [1.0]
+          }
+        }' class='smallInvisible' v-if="!animationLoader && !expandNewClient" />
+        <v-slide-y-reverse-transition appear v-if="!animationLoader && expandNewClient">
+          <v-card v-if="!animationLoader && expandNewClient" v-model="expandNewClient">
+            <v-divider class="mx-4" color="red"></v-divider>
+            <v-card-title style="color: rgba(245, 104, 71, 0.95)"><strong>New Client</strong></v-card-title>
+            <v-card-subtitle>
+              <v-card-text>
+                <v-row align="center" justify="center">
+                  <v-col cols="2">
+                    <v-img src="@/assets/new.png" contain></v-img>
+                  </v-col>
+                  <v-col cols="10">
+                    <div>If you're new to yoga or the studio, please come to a Beginner/ Basic Class or an All Levels
+                      Class.
+                    </div>
+                  </v-col>
+                </v-row>
+              </v-card-text></v-card-subtitle>
+          </v-card>
+        </v-slide-y-reverse-transition>
+        <div v-intersect.once='{
+          handler: onPurposeMissionIntersect,
+          options: {
+            threshold: [1.0]
+          }
+        }' class='smallInvisible' v-if="!animationLoader && !expandPurposeMission" />
+        <v-slide-y-reverse-transition appear v-if="!animationLoader && expandPurposeMission">
+          <v-card v-if="!animationLoader && expandPurposeMission" v-model="expandPurposeMission">
+            <v-divider class="mx-4" color="red"></v-divider>
+            <v-card-title style="color: rgba(245, 104, 71, 0.95)"><strong>Purpose/Mission</strong></v-card-title>
+            <v-card-subtitle>
+              <v-card-text>
+                <v-row align="center" justify="center">
+                  <v-col cols="2">
+                    <v-img src="@/assets/pigeon-bird-icon.png" contain height="100"></v-img>
+                  </v-col>
+                  <v-col cols="10">
+                    <div>Our mission is to serve our clients on their path towards peace. We believe that a breath-focused
+                      yoga practice can guide everyone towards peace.
+                    </div>
+                  </v-col>
+                </v-row>
+              </v-card-text></v-card-subtitle>
+          </v-card>
+        </v-slide-y-reverse-transition>
+        <div v-intersect.once='{
+          handler: onSattvaIntersect,
+          options: {
+            threshold: [1.0]
+          }
+        }' class='smallInvisible' v-if="!animationLoader && !expandSattva" />
+        <v-slide-y-reverse-transition appear v-if="!animationLoader && expandSattva">
+          <v-card v-if="!animationLoader && expandSattva" v-model="expandSattva">
+            <v-divider class="mx-4" color="red"></v-divider>
+            <v-card-title style="color: rgba(245, 104, 71, 0.95)"><strong>Sattva</strong></v-card-title>
+            <v-card-subtitle>
+              <v-card-text>
+                <v-row align="center" justify="center">
+                  <v-col cols="2">
+                    <v-img src="@/assets/lotus-icon.png" contain></v-img>
+                  </v-col>
+                  <v-col cols="10">
+                    <div>In Sanskrit, the ancient language of Yoga, "Sattva" has multiple meanings, some of them being
+                      essence, purity, luminosity, and equanimity.
+                    </div>
+                  </v-col>
+                </v-row>
+              </v-card-text></v-card-subtitle>
+          </v-card>
+        </v-slide-y-reverse-transition>
+        <div v-intersect.once='{
+          handler: onYogaIntersect,
+          options: {
+            threshold: [1.0]
+          }
+        }' class='smallInvisible' v-if="!animationLoader && !expandYoga" />
+        <v-slide-y-reverse-transition appear v-if="!animationLoader && expandYoga">
+          <v-card v-if="!animationLoader && expandYoga" v-model="expandYoga">
+            <v-divider class="mx-4" color="red"></v-divider>
+            <v-card-title style="color: rgba(245, 104, 71, 0.95)"><strong>Yoga</strong></v-card-title>
+            <v-card-subtitle>
+              <v-card-text>
+                <v-row align="center" justify="center">
+                  <v-col cols="2">
+                    <v-img src="@/assets/meditation-yoga-icon.png" contain height="100"></v-img>
+                  </v-col>
+                  <v-col cols="10">
+                    <div>Yoga is a state where all movement of thought is suspended. It is manifested through one-pointed
+                      focus. In this state, one is able to experience clarity and peace.
+                    </div>
+                  </v-col>
+                </v-row>
+              </v-card-text></v-card-subtitle>
+          </v-card>
+        </v-slide-y-reverse-transition>
+        <div v-intersect.once='{
+          handler: onAcknowledgementsIntersect,
+          options: {
+            threshold: [1.0]
+          }
+        }' class='smallInvisible' v-if="!animationLoader && !expandAcknowledgements" />
+        <v-slide-y-reverse-transition appear v-if="!animationLoader && expandAcknowledgements">
+          <v-card v-if="!animationLoader && expandAcknowledgements" v-model="expandAcknowledgements">
+            <v-divider class="mx-4" color="red"></v-divider>
+            <v-card-title style="color: rgba(245, 104, 71, 0.95)"><strong>Acknowledgements</strong></v-card-title>
+            <v-card-subtitle>
+              <v-card-text>
+                <v-row align="center" justify="center">
+                  <v-col cols="2">
+                    <v-img src="@/assets/handshake-icon.png" contain height="100"></v-img>
+                  </v-col>
+                  <v-col cols="10">
+                    <div>We are grateful to all our teachers for guiding us on the path of Yoga. We hope to stay true to
+                      the
+                      path that our teachers have shown us. We are also grateful to all of the practitioners at our studio
+                      from whom we learn daily.
+                    </div>
+                  </v-col>
+                </v-row>
+              </v-card-text></v-card-subtitle>
+          </v-card>
+        </v-slide-y-reverse-transition>
       </v-card>
-    </v-slide-y-reverse-transition>
-    <div v-intersect.once='{
-      handler: onPurposeMissionIntersect,
-      options: {
-        threshold: [1.0]
-      }
-    }' class='smallInvisible' v-if="!animationLoader && !expandPurposeMission" />
-     <v-slide-y-reverse-transition appear v-if="!animationLoader && expandPurposeMission">
-      <v-card v-if="!animationLoader && expandPurposeMission" v-model="expandPurposeMission">
-        <v-divider class="mx-4" color="red"></v-divider>
-        <v-card-title style="color: rgba(245, 104, 71, 0.95)"><strong>Purpose/Mission</strong></v-card-title>
-        <v-card-subtitle>
-          <v-card-text>
-            <v-row align="center" justify="center">
-              <v-col cols="2">
-                <v-img src="@/assets/pigeon-bird-icon.png" contain height="100"></v-img>
-              </v-col>
-              <v-col cols="10">
-                <div>Our mission is to serve our clients on their path towards peace. We believe that a breath-focused
-                  yoga practice can guide everyone towards peace.
-                </div>
-              </v-col>
-            </v-row>
-          </v-card-text></v-card-subtitle>
-      </v-card>
-    </v-slide-y-reverse-transition>
-    <div v-intersect.once='{
-      handler: onSattvaIntersect,
-      options: {
-        threshold: [1.0]
-      }
-    }' class='smallInvisible' v-if="!animationLoader && !expandSattva" />
-     <v-slide-y-reverse-transition appear v-if="!animationLoader && expandSattva">
-      <v-card v-if="!animationLoader && expandSattva" v-model="expandSattva">
-        <v-divider class="mx-4" color="red"></v-divider>
-        <v-card-title style="color: rgba(245, 104, 71, 0.95)"><strong>Sattva</strong></v-card-title>
-        <v-card-subtitle>
-          <v-card-text>
-            <v-row align="center" justify="center">
-              <v-col cols="2">
-                <v-img src="@/assets/lotus-icon.png" contain></v-img>
-              </v-col>
-              <v-col cols="10">
-                <div>In Sanskrit, the ancient language of Yoga, "Sattva" has multiple meanings, some of them being
-                  essence, purity, luminosity, and equanimity.
-                </div>
-              </v-col>
-            </v-row>
-          </v-card-text></v-card-subtitle>
-      </v-card>
-    </v-slide-y-reverse-transition>
-    <div v-intersect.once='{
-      handler: onYogaIntersect,
-      options: {
-        threshold: [1.0]
-      }
-    }' class='smallInvisible' v-if="!animationLoader && !expandYoga" />
-     <v-slide-y-reverse-transition appear v-if="!animationLoader && expandYoga">
-      <v-card v-if="!animationLoader && expandYoga" v-model="expandYoga">
-        <v-divider class="mx-4" color="red"></v-divider>
-        <v-card-title style="color: rgba(245, 104, 71, 0.95)"><strong>Yoga</strong></v-card-title>
-        <v-card-subtitle>
-          <v-card-text>
-            <v-row align="center" justify="center">
-              <v-col cols="2">
-                <v-img src="@/assets/meditation-yoga-icon.png" contain height="100"></v-img>
-              </v-col>
-              <v-col cols="10">
-                <div>Yoga is a state where all movement of thought is suspended. It is manifested through one-pointed
-                  focus. In this state, one is able to experience clarity and peace.
-                </div>
-              </v-col>
-            </v-row>
-          </v-card-text></v-card-subtitle>
-      </v-card>
-    </v-slide-y-reverse-transition>
-    <div v-intersect.once='{
-      handler: onAcknowledgementsIntersect,
-      options: {
-        threshold: [1.0]
-      }
-    }' class='smallInvisible' v-if="!animationLoader && !expandAcknowledgements" />
-     <v-slide-y-reverse-transition appear v-if="!animationLoader && expandAcknowledgements">
-      <v-card v-if="!animationLoader && expandAcknowledgements" v-model="expandAcknowledgements">
-        <v-divider class="mx-4" color="red"></v-divider>
-        <v-card-title style="color: rgba(245, 104, 71, 0.95)"><strong>Acknowledgements</strong></v-card-title>
-        <v-card-subtitle>
-          <v-card-text>
-            <v-row align="center" justify="center">
-              <v-col cols="2">
-                <v-img src="@/assets/handshake-icon.png" contain height="100"></v-img>
-              </v-col>
-              <v-col cols="10">
-                <div>We are grateful to all our teachers for guiding us on the path of Yoga. We hope to stay true to the
-                  path that our teachers have shown us. We are also grateful to all of the practitioners at our studio
-                  from whom we learn daily.
-                </div>
-              </v-col>
-            </v-row>
-          </v-card-text></v-card-subtitle>
-      </v-card>
-    </v-slide-y-reverse-transition>
-    </v-card>
-  </v-fab-transition>
+    </v-fab-transition>
     <!-- Carousel Card -->
     <br v-if="!animationLoader && !expandCarousel">
     <br v-if="!animationLoader && !expandCarousel">
@@ -281,7 +283,7 @@ export default {
     expandStudioGuidelines: false,
     studioGuidelinesIntersectCount: 0,
     expandNewClient: false,
-    newClientIntersectCount:0,
+    newClientIntersectCount: 0,
     expandPurposeMission: false,
     purposeMissionIntersectCount: 0,
     expandSattva: false,
@@ -290,6 +292,8 @@ export default {
     yogaIntersectCount: 0,
     expandAcknowledgements: false,
     acknowledgementsIntersectCount: 0,
+    expandInstructorTraining: false,
+    instructorTrainingIntersectCount: 0,
     tableHeaders: [
       {
         text: "Class Description",
@@ -358,6 +362,13 @@ export default {
         this.expandAcknowledgements = isIntersecting;
       }
     },
+    onInstructorTrainingIntersect(isIntersecting) {
+      this.instructorTrainingIntersectCount++;
+      if (this.instructorTrainingIntersectCount == 1) {
+
+        this.expandInstructorTraining = isIntersecting;
+      }
+    },
     getEventTable() {
       eventService
         .get100Events()
@@ -399,10 +410,10 @@ export default {
 
   bottom: 200px;
 }
+
 .smallInvisible {
   width: 100%;
-  height: 300px;
+  height: 250px;
   bottom: 200px;
 }
-
 </style>
