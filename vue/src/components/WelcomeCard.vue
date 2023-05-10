@@ -1,5 +1,5 @@
 <template>
-   <v-card class="mx-auto my-2 rounded-xl" max-width="900px" min-width="200px">
+   <v-card class="mx-auto my-2 rounded-xl" max-width="900px" min-width="200px" id="first-tab-id" >
       <v-img height="350px" src="@/assets/out-door-yoga-practice.jpg" alt="A group of people doing a yoga position together out on the grass"></v-img>
       <v-card-title style="color: rgba(245, 104, 71, 0.95)"><strong>Welcome</strong></v-card-title>
       <v-card-text>

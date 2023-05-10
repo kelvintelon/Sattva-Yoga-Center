@@ -9,20 +9,22 @@
     <!-- Table Card -->
     <br v-if="!animationLoader && !expandTable">
     <br v-if="!animationLoader && !expandTable">
-    <br v-if="!animationLoader">
+    <br id="classes-id">
+    
     <div v-intersect.once='{
       handler: onTableIntersect,
       options: {
         threshold: [1.0]
       }
-    }' class='largeInvisible' v-if="!animationLoader && !expandTable">
+    }' class='largeInvisible' v-if="!animationLoader && !expandTable" >
 
       <br>
       <br>
     </div>
     <v-expand-x-transition appear>
+      <temp-classes-card v-if="!animationLoader"></temp-classes-card>
       <v-card class="mx-auto my-2 rounded-xl" max-width="900px" min-width="200px" v-if="!animationLoader && expandTable"
-        v-model="expandTable">
+        v-model="expandTable" >
         <v-data-table :headers="tableHeaders" :items="events" class="elevation-1">
           <template v-slot:top>
             <v-toolbar flat>
@@ -308,8 +310,25 @@
             </v-btn>
       </v-card-text>
       <v-card-text align="center" justify="center" class="hidden-sm-and-up">
-        <div><a href="https://www.youtube.com/embed/QpZqLIIJQ2Q">Going to Sattva Yoga Center</a></div>
-        <div><a href="https://www.youtube.com/embed/yf-tnhoHZE0">Inside of Sattva Yoga Center</a></div>  
+        <iframe v-if="!firstYoutubeVideo" width="300" height="315" src="https://www.youtube.com/embed/QpZqLIIJQ2Q" title="YouTube video player"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen></iframe>
+          <iframe v-if="firstYoutubeVideo" width="300" height="315" src="https://www.youtube.com/embed/yf-tnhoHZE0" title="YouTube video player"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen></iframe> 
+          <v-btn
+            color="rgba(245, 104, 71, 0.95)"
+              fab
+              x-large
+              dark
+              class="mx-2"
+              outlined
+              @click="firstYoutubeVideo = !firstYoutubeVideo"
+            >
+              <v-icon >mdi-chevron-right</v-icon>
+            </v-btn>
       </v-card-text>
     </v-card>
   </v-fab-transition>
@@ -387,12 +406,13 @@
 <script>
 import * as animationData from "@/assets/animations/yog2loader.json";
 import WelcomeCard from "../components/WelcomeCard.vue";
+import TempClassesCard from "../components/TempClassesCard.vue";
 import eventService from "../services/EventService";
 
 
 export default {
   name: "home",
-  components: { WelcomeCard },
+  components: { WelcomeCard,TempClassesCard },
   data: () => ({
     loading: false,
     animationLoader: true,
@@ -445,6 +465,14 @@ export default {
     firstYoutubeVideo: false,
     events: [],
   }),
+  created() {
+    this.getEventTable();
+    setTimeout(() => (this.animationLoader = false), 3000);
+    
+  },
+  unmounted() {
+    this.expandCarousel = false;
+  },
   computed: {
   mobile() {
     return this.$vuetify.breakpoint.sm
@@ -552,13 +580,6 @@ export default {
       }
     },
   },
-  created() {
-    this.getEventTable();
-    setTimeout(() => (this.animationLoader = false), 3000);
-  },
-  unmounted() {
-    this.expandCarousel = false;
-  }
 };
 </script>
 

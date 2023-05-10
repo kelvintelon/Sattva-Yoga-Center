@@ -3,11 +3,11 @@
     <!-- src="..\\assets\\stockphoto1.png"-->
     <!-- src="..\\assets\\stockphoto2.png"  color="rgba(255, 183, 0, 0.9)"  -->
     <!-- src="..\\assets\\pexels-neosiam-4498792.png" color="rgba(245, 104, 71, 0.95)" -->
-    <v-app-bar shrink-on-scroll app elevation="1"  dark prominent fade-img-on-scroll height="150px" contain src="..\\assets\\pexels-neosiam-4498792.png" color="rgba(245, 104, 71, 0.95)" 
-    >
+    <v-app-bar shrink-on-scroll app elevation="1" dark prominent fade-img-on-scroll height="150px" contain
+      src="..\\assets\\pexels-neosiam-4498792.png" color="rgba(245, 104, 71, 0.95)">
 
       <template v-slot:img="{ props }">
-        <v-img  v-bind="props" ></v-img>
+        <v-img v-bind="props"></v-img>
       </template>
       <!-- <v-menu offset-y bottom right>
       <template v-slot:activator="{ on, attrs }">
@@ -29,7 +29,16 @@
         <HeaderLogo />
       </v-toolbar-side-icon>
 
-      <v-spacer></v-spacer>
+      <!-- <template v-slot:extension>
+        <v-tabs centered center-active show-arrows>
+         
+          <v-tab style="color:white" @click="$vuetify.goTo(firstTarget, options)" v-if="computeFirstTab != '<'">{{ computeFirstTab }}</v-tab>
+           <v-btn v-else small fab depressed light @click="$vuetify.goTo(firstTarget, options)"><v-icon x-large color="rgba(245, 104, 71, 0.95)">mdi-chevron-left</v-icon></v-btn>
+           <v-tab style="color:white" @click="$vuetify.goTo(secondTarget, options)">{{ computeSecondTab }}</v-tab>
+          <v-tab style="color:white" @click="$vuetify.goTo(thirdTarget, options)" v-if="computeThirdTab != '>'" >{{ computeThirdTab }}</v-tab>
+          <v-btn v-else small fab depressed light @click="$vuetify.goTo(thirdTarget, options)"><v-icon x-large color="rgba(245, 104, 71, 0.95)">mdi-chevron-right</v-icon></v-btn>
+        </v-tabs>
+      </template> -->
 
     </v-app-bar>
     <v-expand-x-transition appear>
@@ -69,9 +78,89 @@ export default {
       menu: false,
       links: [],
       drawer: false,
+      selectedTarget: "",
+      selectedIndex: 0,
+      availableTargets: ["Home","Classes","Studio Guidelines", "About Us", "Instructor Training", "Find Us"],
+      availableTargetIDs: ["#first-tag-id","#classes-id","Studio Guidelines", "About Us", "Instructor Training", "Find Us"]
     };
   },
+  computed: {
+    // selectedPreviousIndex(event) {  
+    //   alert(event.target.id)
+    //   return event.target.id;
+    // },
+    options () {
+        return {
+          duration: 1000,
+          offset: 500,
+          easing: 'easeInOutCubic',
+        }
+    },
+   
+    
+    computeFirstTab() {
+      if (this.selectedIndex == 0) {
+        return "Home"
+      } else {
+        return "<";
+      }
+    }, 
+    firstTarget() {
+      // alert(event.target.id)
+      if (this.computeFirstTab === 'Home') {
+        return '#first-tab-id'
+      } else {
+        if (this.selectedIndex - 1 <= 0) {
+          this.setSelectedIndex(0)
+          return "#first-tab-id'";
+        } else {
+          this.setSelectedIndex(this.selectedIndex - 1)
+          return this.availableTargetIDs[this.selectedIndex];
+        }       
+      }
+    },
+    computeSecondTab() {
+      if (this.computeFirstTab == "Home") {
+        return "Classes"
+      } else {
+        return this.availableTargets[this.selectedIndex];
+      } 
+    },
+    secondTarget() {
+      // alert(event.target.id)
+      if (this.selectedIndex == 0) {
+        return '#classes-id'
+      } else {
+        alert(this.selectedIndex);
+        return this.availableTargetIDs[this.selectedIndex];
+      }
+    },
+    computeThirdTab() {
+      if (this.selectedIndex == this.availableTargets.length-1) {
+        return "Find Us"
+      } else {
+        return ">";
+      }
+    },
+    thirdTarget() {
+      if (this.computeFirstTab === 'Home') {
+        this.setSelectedIndex(1);
+        return '#studio-guidelines-id'
+      } else {
+        if (this.selectedIndex + 1 > this.availableTargets.length-1) {
+          this.setSelectedIndex(this.availableTargets.length-1)
+          return "#find-us-id'";
+        } else {
+          this.setSelectedIndex(this.selectedIndex + 1)
+          return this.availableTargetIDs[this.selectedIndex];
+        }       
+      }
+    }
+  },
   methods: {
+    setSelectedIndex(num) {
+      this.selectedIndex = num;
+    },
     goToLogin() {
       this.$router.push({ name: "login" });
     },
@@ -89,9 +178,9 @@ export default {
               this.links = [];
               this.links.push({ text: 'Login', route: '/login' },
                 { text: 'Register', route: '/register' })
-                if (this.$router.currentRoute.name != 'home' && this.$router.currentRoute.name != 'login' && this.$router.currentRoute.name != 'register') {
-                  this.$router.push({ name: "login" });
-                }
+              if (this.$router.currentRoute.name != 'home' && this.$router.currentRoute.name != 'login' && this.$router.currentRoute.name != 'register') {
+                this.$router.push({ name: "login" });
+              }
             }
           });
       }
