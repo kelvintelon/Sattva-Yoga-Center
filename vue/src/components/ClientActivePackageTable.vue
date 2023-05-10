@@ -352,12 +352,12 @@ export default {
               this.packages.forEach((item) => {
                 item.date_purchased = new Date(item.date_purchased);
               });
-              console.log(this.$store.state.clientDetails.redFlag)
-              console.log(this.packages.length > 0)
-              console.log(this.$store.state.sharedPackages.length > 0)
-              console.log(this.$store.state.clientDetails.redFlag &&
-                (this.packages.length > 0 ||
-                this.sharedPackages.length > 0));
+              // console.log(this.$store.state.clientDetails.redFlag)
+              // console.log(this.packages.length > 0)
+              // console.log(this.$store.state.sharedPackages.length > 0)
+              // console.log(this.$store.state.clientDetails.redFlag &&
+                // (this.packages.length > 0 ||
+                // this.sharedPackages.length > 0);
                 // alert(this.$store.state.clientDetails.redFlag)
               if (
                 this.$store.state.clientDetails.redFlag &&

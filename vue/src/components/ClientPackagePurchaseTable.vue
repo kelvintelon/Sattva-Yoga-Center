@@ -228,7 +228,7 @@ export default {
               this.packagePurchase.activation_date = latestExpDate;
               
               if (this.purchaseItem.subscription_duration > 0) {
-                console.log(new Date(this.packagePurchase.activation_date))
+               // console.log(new Date(this.packagePurchase.activation_date))
                 this.packagePurchase.expiration_date = this.addMonths(
                   new Date(this.packagePurchase.activation_date),
                   this.purchaseItem.subscription_duration);

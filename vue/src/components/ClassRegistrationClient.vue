@@ -432,7 +432,7 @@ export default {
               this.eventClientSignUp.package_purchase_id
             );
           });
-          console.log(refundPackage);
+          //console.log(refundPackage);
           if (refundPackage.length > 0) {
             if (refundPackage[0].is_subscription == true) {
               this.hasSubscriptionPackage = true;
@@ -447,7 +447,7 @@ export default {
     },
     cancelCheck() {
       if (this.allowSignUp || this.eventClientSignUp.package_purchase_id == 0) {
-        console.log(this.hasSubscriptionPackage);
+        //console.log(this.hasSubscriptionPackage);
         if (
           this.validSignUp == true ||
           this.eventClientSignUp.package_purchase_id == 0
