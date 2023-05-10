@@ -22,7 +22,7 @@
       <br>
     </div>
     <v-expand-x-transition appear>
-      <temp-classes-card v-if="!animationLoader"></temp-classes-card>
+      <!-- <temp-classes-card v-if="!animationLoader"></temp-classes-card> -->
       <v-card class="mx-auto my-2 rounded-xl" max-width="900px" min-width="200px" v-if="!animationLoader && expandTable"
         v-model="expandTable" >
         <v-data-table :headers="tableHeaders" :items="events" class="elevation-1">
@@ -406,13 +406,13 @@
 <script>
 import * as animationData from "@/assets/animations/yog2loader.json";
 import WelcomeCard from "../components/WelcomeCard.vue";
-import TempClassesCard from "../components/TempClassesCard.vue";
+// import TempClassesCard from "../components/TempClassesCard.vue";
 import eventService from "../services/EventService";
 
 
 export default {
   name: "home",
-  components: { WelcomeCard,TempClassesCard },
+  components: { WelcomeCard, },
   data: () => ({
     loading: false,
     animationLoader: true,
