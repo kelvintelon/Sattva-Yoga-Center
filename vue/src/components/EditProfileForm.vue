@@ -217,6 +217,9 @@ export default {
     displayAlert() {
       this.showAlert = true;
     },
+    getImageUral(img) {
+      return require(`@/assets/${img}`)
+    },
     clickOkay() {
       
         this.showAlert = false;

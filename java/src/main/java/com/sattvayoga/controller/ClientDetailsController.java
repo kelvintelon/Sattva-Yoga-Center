@@ -38,7 +38,7 @@ public class ClientDetailsController {
 
         // look up the email here
         boolean foundEmail = false;
-        if (clientDetails.getEmail() != null) {
+        if (clientDetails.getEmail() != null && !(clientDetails.getEmail().equalsIgnoreCase(""))) {
             foundEmail = clientDetailsDao.isEmailDuplicate(clientDetails.getClient_id(),clientDetails.getEmail());
         }
 

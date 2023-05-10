@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <!-- ANIMATION IS THIS LOTTIE COMPONENT -->
-    <v-container v-if="animationLoader">
+    <v-container v-if="animationLoader" alt="Yoga lotus flower by Rebecca Southall">
       <lottie :options="defaultOptions" :width="500" :height="500" />
     </v-container>
     <!-- Welcome Card -->
@@ -248,15 +248,71 @@
           <v-row>
             <v-spacer></v-spacer>
             <v-col>
-              <div>
-                "When the Light of Knowledge shines through all the gates of this body, then it should be known that
-                Sattva is dominant"<br>
+              <div><em>
+                  "When the Light of Knowledge shines through all the gates of this body, then it should be known that
+                  Sattva is dominant"</em><br>
                 The Bhagavad Gita, 14:11</div>
             </v-col>
           </v-row>
         </v-card-text>
       </v-card>
     </v-slide-x-transition>
+    <!-- Youtube Videos -->
+    <br v-if="!animationLoader && !expandYoutubeVideos">
+    <br v-if="!animationLoader && !expandYoutubeVideos">
+    <br v-if="!animationLoader">
+    <div v-intersect.once='{
+      handler: onYoutubeVideosIntersect,
+      options: {
+        threshold: [1.0]
+      }
+    }' class='smallInvisible' v-if="!animationLoader && !expandYoutubeVideos">
+
+      <br>
+      <br>
+    </div>
+    <v-fab-transition appear>
+    <v-card class="mx-auto my-2 rounded-xl" max-width="900px" min-width="200px" 
+    v-if="!animationLoader && expandYoutubeVideos" v-model="expandYoutubeVideos">
+      <v-card-title style="color: rgba(245, 104, 71, 0.95)" class="hidden-sm-and-up"><strong>Videos</strong></v-card-title>
+      <v-card-text align="center" justify="center" class="hidden-sm-and-down">
+        <v-btn
+        color="rgba(245, 104, 71, 0.95)"
+              fab
+              x-large
+              dark
+              class="mx-2"
+              outlined
+              @click="firstYoutubeVideo = !firstYoutubeVideo"
+            >
+              <v-icon  color="rgba(245, 104, 71, 0.95)">mdi-chevron-left</v-icon>
+            </v-btn>
+        <iframe v-if="!firstYoutubeVideo" width="560" height="315" src="https://www.youtube.com/embed/QpZqLIIJQ2Q" title="YouTube video player"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen></iframe>
+          <iframe v-if="firstYoutubeVideo" width="560" height="315" src="https://www.youtube.com/embed/yf-tnhoHZE0" title="YouTube video player"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen></iframe>
+          <v-btn
+            color="rgba(245, 104, 71, 0.95)"
+              fab
+              x-large
+              dark
+              class="mx-2"
+              outlined
+              @click="firstYoutubeVideo = !firstYoutubeVideo"
+            >
+              <v-icon >mdi-chevron-right</v-icon>
+            </v-btn>
+      </v-card-text>
+      <v-card-text align="center" justify="center" class="hidden-sm-and-up">
+        <div><a href="https://www.youtube.com/embed/QpZqLIIJQ2Q">Going to Sattva Yoga Center</a></div>
+        <div><a href="https://www.youtube.com/embed/yf-tnhoHZE0">Inside of Sattva Yoga Center</a></div>  
+      </v-card-text>
+    </v-card>
+  </v-fab-transition>
     <!--Instructor Training  -->
     <br v-if="!animationLoader && !expandInstructorTraining">
     <br v-if="!animationLoader && !expandInstructorTraining">
@@ -267,7 +323,6 @@
         threshold: [1.0]
       }
     }' class='largeInvisible' v-if="!animationLoader && !expandInstructorTraining">
-
       <br>
       <br>
     </div>
@@ -377,6 +432,8 @@ export default {
     instructorTrainingIntersectCount: 0,
     expandBhagavadGita: false,
     bhagavadGitaIntersectCount: 0,
+    expandYoutubeVideos: false,
+    youtubeVideosIntersectCount: 0,
     tableHeaders: [
       {
         text: "Class Description",
@@ -385,9 +442,14 @@ export default {
       },
       { text: "Sign Up", value: "actions", sortable: false },
     ],
+    firstYoutubeVideo: false,
     events: [],
   }),
-
+  computed: {
+  mobile() {
+    return this.$vuetify.breakpoint.sm
+  },
+},
   methods: {
     onCarouselIntersect(isIntersecting) {
       this.carouselIntersectCount++;
@@ -459,6 +521,13 @@ export default {
         this.expandBhagavadGita = isIntersecting;
       }
     },
+    onYoutubeVideosIntersect(isIntersecting) {
+      this.youtubeVideosIntersectCount++;
+      if (this.youtubeVideosIntersectCount == 1) {
+
+        this.expandYoutubeVideos = isIntersecting;
+      }
+    },
     getEventTable() {
       eventService
         .get100Events()
@@ -506,4 +575,7 @@ export default {
   height: 250px;
   bottom: 200px;
 }
-</style>
+
+.parallax {
+  z-index: 99;
+}</style>
