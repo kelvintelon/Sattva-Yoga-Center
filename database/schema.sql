@@ -1,6 +1,6 @@
 BEGIN TRANSACTION;
 
-DROP TABLE IF EXISTS users,teacher_details,class_details,client_details,client_class,package_purchase,package_details,events,client_event CASCADE;
+DROP TABLE IF EXISTS users,teacher_details,class_details,client_details,client_class,package_purchase,package_details,events,client_event,client_family,families,website_descriptions CASCADE;
 
 
 CREATE TABLE users 
@@ -131,6 +131,13 @@ CREATE TABLE client_family(
 	CONSTRAINT PK_client_family PRIMARY KEY (client_id,family_id),
 	CONSTRAINT FK_client_family_client_id FOREIGN KEY (client_id) REFERENCES client_details (client_id),
 	CONSTRAINT FK_client_family_family_id FOREIGN KEY (family_id) REFERENCES families (family_id)
+);
+
+CREATE TABLE website_descriptions (
+	webdescription_id serial NOT NULL,
+	location_name varchar(30) NOT NULL,
+	description text NOT NULL,
+	CONSTRAINT PK_website_descriptions PRIMARY KEY (webdescription_id)
 );
 
 COMMIT TRANSACTION;
