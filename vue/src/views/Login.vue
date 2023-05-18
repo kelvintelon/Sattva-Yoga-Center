@@ -1,8 +1,8 @@
 <template>
-  <v-container fill-height fluid>
+  <v-card class="mx-auto my-12 pb-12">
     <v-row justify="center" align="center">
       <v-spacer></v-spacer>
-      <v-col cols="4" justify="center" align="center">
+      <v-col lg="4" sm="10" justify="center" align="center">
         <br>
         <br>
         <br>
@@ -123,7 +123,7 @@
       </v-col>
       <v-spacer></v-spacer>
     </v-row>
-  </v-container>
+  </v-card>
 </template>
 
 <script>

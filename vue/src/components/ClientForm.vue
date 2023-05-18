@@ -200,13 +200,7 @@ export default {
     checkForm() {
       if (
         this.clientDetails.last_name == "" ||
-        this.clientDetails.first_name == "" ||
-        this.clientDetails.street_address == "" ||
-        this.clientDetails.city == "" ||
-        this.clientDetails.state_abbreviation == "" ||
-        this.clientDetails.zip_code == "" ||
-        this.clientDetails.phone_number == "" ||
-        this.clientDetails.email == ""
+        this.clientDetails.first_name == ""
       ) {
         alert("Please fill out your form");
       } else {

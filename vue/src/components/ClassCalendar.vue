@@ -292,7 +292,7 @@
             :activator="selectedElement"
             offset-x
           >
-            <v-card color="grey lighten-4" min-width="350px" flat>
+            <v-card color="grey lighten-4" min-width="350px" flat class="d-flex flex-sm-column">
               <v-toolbar :color="selectedEvent.color" dark>
                 <v-btn icon>
                   <v-icon @click="showCardEditForm">mdi-pencil</v-icon>
@@ -349,7 +349,7 @@
                 >
               </v-card-text>
               <!-- UPDATE EVENT FORM -->
-              <v-card-text v-show="showEditForm">
+              <v-card-text v-show="showEditForm" >
                 <v-form
                   ref="form"
                   height="100"
@@ -368,7 +368,7 @@
                     required
                   ></v-text-field>
                   <!-- DATE PICKER -->
-                  <v-row>
+                  <v-row sm="3">
                     <v-col>
                       <v-menu
                         v-model="editMenu"
@@ -732,7 +732,11 @@ export default {
       });
     },
     submitUpdate() {
-      this.findsMatch();
+      // TODO: FOLLOWING LINE BREAKS UPDATING EVENTS
+      // this.findsMatch();
+
+      // alert(this.editedEvent.start_time)
+      // alert(this.editedEvent.end_time)
       // find the ID of selected event
       for (let i = 0; i < this.serverEvents.length; i++) {
         if (
@@ -794,8 +798,8 @@ export default {
       let endTime = `${hours2}:${minutes2}`;
 
       let chosenDate = this.date2;
-      let newStartDate = new Date(chosenDate + " " + startTime).toJSON();
-      let newEndDate = new Date(chosenDate + " " + endTime).toJSON();
+      let newStartDate = new Date(chosenDate + " " + startTime);
+      let newEndDate = new Date(chosenDate + " " + endTime);
       // alert(newStartDate)
       // alert(newEndDate)
       this.editedEvent.start_time = newStartDate;
@@ -921,7 +925,6 @@ export default {
         .split("/");
       this.date2 = selectedYear + "-" + selectedMonth + "-" + selectedDay;
 
-      // converts Date Object to 12:00 AM/PM string
       this.editedEvent.start_time = new Date(
         this.selectedEvent.start
       ).toLocaleString("en-US", {

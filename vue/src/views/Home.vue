@@ -39,6 +39,7 @@
             </v-icon>
           </template>
         </v-data-table>
+        <class-schedule-description></class-schedule-description>
       </v-card>
     </v-expand-x-transition>
     <!--Studio Guidelines Card and About Sattva  -->
@@ -406,13 +407,13 @@
 <script>
 import * as animationData from "@/assets/animations/yog2loader.json";
 import WelcomeCard from "../components/WelcomeCard.vue";
-// import TempClassesCard from "../components/TempClassesCard.vue";
+import ClassScheduleDescription from "../components/ClassScheduleDescription.vue";
 import eventService from "../services/EventService";
 
 
 export default {
   name: "home",
-  components: { WelcomeCard, },
+  components: { WelcomeCard, ClassScheduleDescription},
   data: () => ({
     loading: false,
     animationLoader: true,

@@ -46,14 +46,17 @@
       <v-divider class="mx-4"></v-divider>
       <!-- <v-card-text>Yoga is a state where all movement of thought is suspended. It is manifested through one-pointed focus.
         In this state, one is able to experience clarity and peace.</v-card-text> -->
-        <v-card-text><v-btn color="rgba(255, 104, 71, 0.85)" rounded block @click="pushToPackageManagement()"><v-icon>mdi-cart-variant</v-icon>Purchase A Package</v-btn></v-card-text>
+        
+        <news-and-events  v-if="!animationLoader"></news-and-events><v-card-text><v-btn color="rgba(255, 104, 71, 0.85)" rounded block @click="pushToPackageManagement()"><v-icon>mdi-cart-variant</v-icon>Purchase A Package</v-btn></v-card-text>
     </v-card>  
 </template>
 
 <script>
+import NewsAndEvents from "../components/NewsAndEvents.vue";
+
 export default {
   name: "welcome-card",
-  components: {},
+  components: {NewsAndEvents},
   data() {
     return {
       selection: 0,
