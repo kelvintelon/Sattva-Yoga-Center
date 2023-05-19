@@ -15,7 +15,7 @@
        <v-row justify="center"
       align="center"><v-col justify="center"
       align="center">
-      <h1 style="color: orange">Edit Profile</h1>
+      <h1 style="color: rgba(245, 104, 71, 0.95)">Edit Profile</h1>
       </v-col>
       <!-- // TODO: Fix the code here -->
       <v-col cols="12" md="12" justify="center"

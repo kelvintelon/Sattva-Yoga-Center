@@ -3,16 +3,9 @@
     <v-row justify="center" align="center">
       <v-spacer></v-spacer>
       <v-col lg="4" sm="10" justify="center" align="center">
-        <br>
-        <br>
-        <br>
-        <br>
-        <br>
-        <br>
-        <br>
         
         <v-form class="form-signin" @submit.prevent="login">
-          <h1 class="h3 mb-3 font-weight-normal">Please sign in.</h1>
+          <h1 class="h3 mb-3 font-weight-normal" style="color: rgba(245, 104, 71, 0.95)">Please sign in.</h1>
           <div
             class="alert alert-danger"
             role="alert"

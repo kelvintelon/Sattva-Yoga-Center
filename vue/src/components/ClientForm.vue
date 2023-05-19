@@ -1,13 +1,14 @@
 <template>
-  <div class="client-form-template">
+  <v-card class="mx-auto my-12 pb-12">
+    <v-row justify="center" align="center">
+      <v-spacer></v-spacer>
+      <v-col lg="4" sm="10" justify="center" align="center">
     <v-form
       ref="form"
       v-model="valid"
       lazy-validation
-      class="client-form"
+      class="client-form-template"
       @submit.prevent="submit"
-      justify="center"
-      align="center"
     >
       <h1>Set Up Your Profile</h1>
       <div
@@ -90,7 +91,10 @@
 
       <v-btn class="mr-4" type="submit" :disabled="invalid"> submit </v-btn>
     </v-form>
-  </div>
+    </v-col>
+    <v-spacer></v-spacer>
+  </v-row>
+  </v-card>
 </template>
 
 <script>
@@ -249,7 +253,11 @@ export default {
       this.emailRegistrationErrorMsg = 'There were problems registering this email.';
     },
   },
-  created() {},
+  created() {
+    if(this.$store.state.clientDetails.client_id > 0) {
+      this.$router.push({ name: 'home' });
+    }
+  },
 };
 </script>
 
@@ -257,7 +265,7 @@ export default {
 <style scoped>
 .client-form-template {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
 }
 
 .client-form {

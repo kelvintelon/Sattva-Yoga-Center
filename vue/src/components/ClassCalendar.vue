@@ -925,20 +925,20 @@ export default {
         .split("/");
       this.date2 = selectedYear + "-" + selectedMonth + "-" + selectedDay;
 
-      this.editedEvent.start_time = new Date(
-        this.selectedEvent.start
-      ).toLocaleString("en-US", {
-        hour: "numeric",
-        minute: "numeric",
-        hour12: true,
-      });
-      this.editedEvent.end_time = new Date(
-        this.selectedEvent.end
-      ).toLocaleString("en-US", {
-        hour: "numeric",
-        minute: "numeric",
-        hour12: true,
-      });
+      // this.editedEvent.start_time = new Date(
+      //   this.selectedEvent.start
+      // ).toLocaleString("en-US", {
+      //   hour: "numeric",
+      //   minute: "numeric",
+      //   hour12: true,
+      // });
+      // this.editedEvent.end_time = new Date(
+      //   this.selectedEvent.end
+      // ).toLocaleString("en-US", {
+      //   hour: "numeric",
+      //   minute: "numeric",
+      //   hour12: true,
+      // });
 
       // assigns the correct color pulled from what was selected
       this.editedEvent.color = this.selectedEvent.color;

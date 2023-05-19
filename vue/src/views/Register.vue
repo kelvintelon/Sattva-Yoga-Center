@@ -1,8 +1,8 @@
 <template>
-  <v-container fill-height fluid>
+  <v-card class="mx-auto my-12 pb-12">
     <v-row justify="center" align="center">
       <v-spacer></v-spacer>
-      <v-col cols="4" justify="center" align="center">
+      <v-col lg="4" sm="10" justify="center" align="center">
         <!-- <header-logo></header-logo> -->
         <v-form
           class="form-register"
@@ -10,7 +10,7 @@
           lazy-validation
           v-model="valid"
         >
-          <h1 class="h3 mb-3 font-weight-normal">Create Account</h1>
+          <h1 class="h3 mb-3 font-weight-normal" style="color: rgba(245, 104, 71, 0.95)">Create Account</h1>
           <div
             class="alert alert-danger"
             role="alert"
@@ -72,7 +72,7 @@
       </v-col>
       <v-spacer></v-spacer>
     </v-row>
-  </v-container>
+  </v-card>
 </template>
 
 <script>

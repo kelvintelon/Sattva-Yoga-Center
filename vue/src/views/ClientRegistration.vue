@@ -1,14 +1,10 @@
 <template>
   <div class="client">
 
-    <v-container
-      :key="align"
-      class="grey lighten-5 mb-6"
-    >
-      <v-row>
-        <v-col cols="12"> <client-form></client-form></v-col>
-      </v-row>
-    </v-container>
+
+        <client-form></client-form>
+     
+    
   </div>
 </template>
 
