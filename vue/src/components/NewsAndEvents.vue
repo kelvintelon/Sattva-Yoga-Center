@@ -1,9 +1,9 @@
 <template>
    <v-card class="mx-auto my-4 rounded-xl" max-width="900px" min-width="200px" id="first-tab-id" >
       <v-card-title style="color: rgba(245, 104, 71, 0.95)"><strong>News and Events</strong></v-card-title>
-      <v-textarea class="mx-4" readonly :value="newsAndEventsDescription"  v-if="$store.state.user.username != 'admin'">
+      <v-textarea class="mx-4" rows=2 readonly :value="newsAndEventsDescription"  v-if="$store.state.user.username != 'admin'">
       </v-textarea>
-      <v-textarea class="mx-4" @keyup="updateNewsAndEventsDescription($event)" :value="newsAndEventsDescription" v-if="$store.state.user.username == 'admin'">
+      <v-textarea class="mx-4" rows=2  @keyup="updateNewsAndEventsDescription($event)" :value="newsAndEventsDescription" v-if="$store.state.user.username == 'admin'">
       </v-textarea>
     </v-card>  
 </template>
