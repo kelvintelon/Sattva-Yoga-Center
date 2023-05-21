@@ -88,7 +88,7 @@
                 <template v-else>
                  
                   <v-list-item-content>
-                    <v-list-item-title v-html="data.item.quick_details"></v-list-item-title>
+                    <v-list-item-title v-text="data.item.quick_details"></v-list-item-title>
                     <!-- <v-list-item-subtitle v-html="data.item.group"></v-list-item-subtitle> -->
                   </v-list-item-content>
                 </template>
