@@ -255,6 +255,7 @@ public class EventController {
 
         clientDetails.setFirst_name(newClientSignUp.getFirst_name());
         clientDetails.setLast_name(newClientSignUp.getLast_name());
+        clientDetails.setEmail(newClientSignUp.getEmail());
         clientDetails.setUser_id(userId);
 
         Date date = new Date();
@@ -393,6 +394,7 @@ public class EventController {
         private int event_id;
         private String first_name;
         private String last_name;
+        private String email;
 
         public NewClientSignUp() {
         }
@@ -401,6 +403,21 @@ public class EventController {
             this.event_id = event_id;
             this.first_name = first_name;
             this.last_name = last_name;
+        }
+
+        public NewClientSignUp(int event_id, String first_name, String last_name, String email) {
+            this.event_id = event_id;
+            this.first_name = first_name;
+            this.last_name = last_name;
+            this.email = email;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
         }
 
         public int getEvent_id() {

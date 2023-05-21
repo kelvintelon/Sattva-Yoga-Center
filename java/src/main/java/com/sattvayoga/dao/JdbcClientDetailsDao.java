@@ -37,10 +37,10 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
     @Override
     public ClientDetails createNewClient(ClientDetails client) {
-        String sql = "INSERT INTO client_details (last_name, first_name, is_client_active, " +
-                "is_new_client, user_id) VALUES (?, ?, ?, ?, ?) RETURNING client_id";
+        String sql = "INSERT INTO client_details (last_name, first_name, is_client_active, email, " +
+                "is_new_client, user_id) VALUES (?, ?, ?, ?, ?, ?) RETURNING client_id";
         int clientId = jdbcTemplate.queryForObject(sql, Integer.class, client.getLast_name(), client.getFirst_name(),
-                client.isIs_client_active(), client.isIs_new_client(), client.getUser_id());
+                client.isIs_client_active(), client.getEmail(), client.isIs_new_client(), client.getUser_id());
         client.setClient_id(clientId);
         return client;
     }

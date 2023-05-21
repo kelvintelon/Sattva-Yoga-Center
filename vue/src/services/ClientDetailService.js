@@ -29,6 +29,9 @@ export default {
     },
     mergeClients(listOfClients) {
         return axios.put('/mergeClients', listOfClients)
+    },
+    registerNewClient(newClient) {
+        return axios.post('/registerNewClient', newClient)
     }
 
 }

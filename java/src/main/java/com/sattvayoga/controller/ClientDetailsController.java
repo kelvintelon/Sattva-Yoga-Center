@@ -7,6 +7,7 @@ import com.sattvayoga.dao.UserDao;
 import com.sattvayoga.model.ClientDetails;
 import com.sattvayoga.model.EmailAlreadyExistsException;
 import com.sattvayoga.model.EmailNotFoundException;
+import com.sattvayoga.model.YogaUser;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +16,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.security.Principal;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 @PreAuthorize("isAuthenticated()")
 @RestController
@@ -98,6 +102,55 @@ public class ClientDetailsController {
             return new ResponseEntity<>(new ClientDetailsResponse(clientDetails.getClient_id(), clientDetails), httpHeaders, HttpStatus.CREATED);
         }
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value="/registerNewClient", method = RequestMethod.POST)
+    public void registerNewClient(@RequestBody ClientDetails newClientDetails) {
+
+        int leftLimit = 48; // numeral '0'
+        int rightLimit = 122; // letter 'z'
+        int targetStringLength = 10;
+        Random random = new Random();
+
+        // create password
+        String generatedPassword = random.ints(leftLimit, rightLimit + 1)
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                .limit(targetStringLength)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+
+
+        // create username
+        String generatedUsername = random.ints(leftLimit, rightLimit + 1)
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                .limit(targetStringLength)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+
+        generatedUsername = "user" + generatedUsername;
+
+        // create user with username and password
+        userDao.create(generatedUsername,generatedPassword, "user");
+
+        // retrieve the user ID,
+        YogaUser newUser = userDao.findByUsername(generatedUsername);
+        int userId = newUser.getId();
+
+        ClientDetails clientDetails = new ClientDetails();
+
+        clientDetails.setFirst_name(newClientDetails.getFirst_name());
+        clientDetails.setLast_name(newClientDetails.getLast_name());
+        clientDetails.setUser_id(userId);
+
+        Date date = new Date();
+        Timestamp theLatestTimestamp = new Timestamp(date.getTime());
+        clientDetails.setIs_client_active(true);
+        clientDetails.setDate_of_entry(theLatestTimestamp);
+        // use it to create a client
+        int clientId = clientDetailsDao.createNewClient(clientDetails).getClient_id();
+    }
+
+
     @RequestMapping(value = "/removeClient/{clientId}", method = RequestMethod.DELETE)
     public void deleteClient(@PathVariable int clientId) {
         clientDetailsDao.deleteClient(clientId);

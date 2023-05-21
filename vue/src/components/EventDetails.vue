@@ -171,6 +171,14 @@
                         label="Last Name"
                         required
                       ></v-text-field>
+                      <v-text-field
+                        v-if="showNewClientForm"
+                        v-model="clientDetails.email"
+                        :counter="30"
+                        
+                        label="Email (Optional)"
+                     
+                      ></v-text-field>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -585,7 +593,8 @@ export default {
       let newClient = {
         event_id: this.$route.params.eventId,
         first_name: this.clientDetails.first_name,
-        last_name: this.clientDetails.last_name
+        last_name: this.clientDetails.last_name,
+        email: this.clientDetails.email
       }
       if (this.clientDetails.first_name != "" && this.clientDetails.last_name != "" && newClient.first_name != "" && newClient.last_name != "") {
 
@@ -599,6 +608,7 @@ export default {
             this.selectedClients = [];
             this.clientDetails.first_name = "";
             this.clientDetails.last_name = "";
+            this.clientDetails.email = "";
           } else {
             alert("Error adding clients to roster");
           }

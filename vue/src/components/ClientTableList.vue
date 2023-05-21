@@ -125,7 +125,7 @@
                 <template v-else>
                  
                   <v-list-item-content>
-                    <v-list-item-title v-html="data.item.quick_details"></v-list-item-title>
+                    <v-list-item-title v-text="data.item.quick_details"></v-list-item-title>
                     <!-- <v-list-item-subtitle v-html="data.item.group"></v-list-item-subtitle> -->
                   </v-list-item-content>
                 </template>
@@ -163,7 +163,7 @@
                 <template v-else>
                  
                   <v-list-item-content>
-                    <v-list-item-title v-html="data.item.quick_details"></v-list-item-title>
+                    <v-list-item-title v-text="data.item.quick_details"></v-list-item-title>
                     <!-- <v-list-item-subtitle v-html="data.item.group"></v-list-item-subtitle> -->
                   </v-list-item-content>
                 </template>
@@ -320,7 +320,65 @@
               </v-card>
             </v-dialog>
       <v-spacer></v-spacer>
+        <!-- Add a new client -->
+        <v-dialog v-model="newClientDialog" max-width="500px">
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn color="primary" dark fab class="mx-2" v-bind="attrs" v-on="on">
+                <v-icon large>mdi-new-box</v-icon>
+              </v-btn>
+            </template>
+            <v-card>
+              <!-- Add a Client Form starts here -->
+              <v-card-title>
+                <span class="text-h5">Add Client To Roster</span>
+    
+              </v-card-title>
 
+              <v-card-text>
+                <v-container>
+                  <v-row>
+                    <v-col>
+                      
+                      <v-text-field
+                       
+                        v-model="newClientDetails.first_name"
+                        :counter="20"
+                        :rules="nameRules"
+                        label="First Name"
+                        required
+                      ></v-text-field>
+
+                      <v-text-field
+                       
+                        v-model="newClientDetails.last_name"
+                        :counter="20"
+                        :rules="nameRules"
+                        label="Last Name"
+                        required
+                      ></v-text-field>
+                      <v-text-field
+                       
+                        v-model="newClientDetails.email"
+                        :counter="30"
+                
+                        label="Email (Optional)"
+                        
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+                </v-container>
+              </v-card-text>
+
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue darken-1" text @click="close">
+                  Cancel
+                </v-btn>
+                  <v-btn color="blue darken-1" text @click="saveNewClientRegistration" > Save New Client</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+          <v-spacer></v-spacer>
       <v-dialog v-model="dialog2" max-width="500px">
         <template v-slot:activator="{ on, attrs }">
           <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
@@ -769,9 +827,27 @@ export default {
       autoUpdate: true,
       clientToMergeInto: {},
       listOfDuplicateClients: [],
+      newClientDetails: {
+        last_name: "",
+        first_name: "",
+        is_client_active: true,
+        is_new_client: true,
+        street_address: "",
+        city: "",
+        state_abbreviation: "",
+        zip_code: "",
+        phone_number: "",
+        is_on_email_list: false,
+        email: "",
+        has_record_of_liability: false,
+        loading: true,
+        date_of_entry: "",
+        user_id: 0,
+      },
       listOfClientForms: [],
       profileChoiceDialog: false,
       overlay: false,
+      newClientDialog: false,
     };
   },
   created() {
@@ -1079,6 +1155,27 @@ export default {
         });
 
       this.close1();
+    },
+    saveNewClientRegistration() {
+    
+      if (this.newClientDetails.first_name != "" && this.newClientDetails.last_name != "") {
+
+      
+      clientDetailService
+        .registerNewClient(this.newClientDetails)
+        .then((response) => {
+          if (response.status == 200) {
+            alert("Successfully added client");
+            this.getClientTable();
+          } else {
+            alert("Error adding clients to roster");
+          }
+        });
+
+      this.newClientDialog = false;
+      } else {
+        alert("Please Fill Out Both First and Last Name")
+      }
     },
     close1() {
       this.dialog2 = false;
