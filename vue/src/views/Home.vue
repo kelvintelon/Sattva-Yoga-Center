@@ -1,9 +1,102 @@
 <template>
   <v-container>
     <v-row
-      ><v-col align-self="start">
-        <v-container class="mt-16"   v-if="!animationLoader"
-          ><v-list nav dense style="position: fixed">
+      ><v-col cols="3" align="center" justify="center">
+        <v-container class="hidden-lg-and-up">
+          <v-speed-dial
+      v-model="anchorFab"
+      :bottom="true"  
+      :right="true"
+      :direction="'top'"
+      fixed
+      style="bottom: 70px; right: 260px"
+      :transition="slide-y-reverse"
+    >
+    <template v-slot:activator>
+          <v-btn
+      class="mx-16"
+      fab
+      bottom right
+      dark
+      large
+      color="primary"
+      fixed
+      style="z-index:99"
+      v-model="anchorFab"
+    >
+      <v-icon v-if="anchorFab">
+            mdi-close
+          </v-icon>
+          <v-icon dark v-else>
+            mdi-anchor
+          </v-icon>
+    </v-btn></template>
+    <v-container class="hidden-lg-and-up"  v-if="!animationLoader"
+          ><v-list color="rgba(245, 104, 31, 0.75)" nav class="mr-16 hidden-lg-and-up">
+            <v-list-item>
+              <v-btn
+                elevation="0"
+                color="rgba(245, 104, 31, 0.85)"
+                @click="$vuetify.goTo('#welcomeCard', welcomeCardOptions)"
+                >-Welcome</v-btn
+              >
+            </v-list-item>
+            <v-list-item
+              ><v-btn
+                elevation="0"
+                color="rgba(245, 104, 31, 0.85)"
+                @click="$vuetify.goTo('#classes-id', regularCardOptions)"
+                >-Classes</v-btn
+              >
+            </v-list-item>
+            <v-list-item
+              ><v-btn
+                elevation="0"
+                color="rgba(245, 104, 31, 0.85)"
+                @click="$vuetify.goTo('#studio-guidelines', regularCardOptions)"
+                >-Guidelines</v-btn
+              >
+            </v-list-item>
+            <v-list-item
+              ><v-btn
+                elevation="0"
+                color="rgba(245, 104, 31, 0.85)"
+                @click="$vuetify.goTo('#new-client', regularCardOptions)"
+                >-New Client</v-btn
+              >
+            </v-list-item>
+            <v-list-item
+              ><v-btn
+                elevation="0"
+                color="rgba(245, 104, 31, 0.85)"
+                @click="$vuetify.goTo('#about-us', regularCardOptions)"
+                >-About Us</v-btn
+              >
+            </v-list-item>
+            <v-list-item
+              ><v-btn
+                elevation="0"
+                height="50px"
+                color="rgba(245, 104, 31, 0.85)"
+                @click="$vuetify.goTo('#instructor-training', regularCardOptions)"
+                >-Instructor <br/>Training
+                 </v-btn
+              >
+            </v-list-item>
+            <v-list-item
+              ><v-btn
+                elevation="0"
+                color="rgba(245, 104, 31, 0.85)"
+                @click="$vuetify.goTo(9999, regularCardOptions)"
+                >-Find Us</v-btn
+              >
+            </v-list-item></v-list
+          ></v-container
+        >>
+  </v-speed-dial>
+        </v-container>
+        <v-container class="mt-16 mr-16 hidden-md-and-down"  v-if="!animationLoader"
+          ><v-list nav dense style="position: fixed" class="mr-16 hidden-md-and-down">
             <v-list-item>
               <v-btn
                 elevation="0"
@@ -49,7 +142,8 @@
                 elevation="0"
                 color="white"
                 @click="$vuetify.goTo('#instructor-training', regularCardOptions)"
-                >-Instructor Training</v-btn
+                >-Instructor <br/>Training
+                 </v-btn
               >
             </v-list-item>
             <v-list-item
@@ -62,7 +156,7 @@
             </v-list-item></v-list
           ></v-container
         > </v-col
-      ><v-col>
+      ><v-col md="8" sm="12">
         <v-container ref="welcomeContainer">
           <!-- ANIMATION IS THIS LOTTIE COMPONENT -->
           <v-container
@@ -707,7 +801,7 @@
           <br />
         </v-container> </v-col
     >
-  <v-spacer></v-spacer></v-row>
+  <v-col lg="2"></v-col></v-row>
     
   </v-container>
 </template>
@@ -772,6 +866,7 @@ export default {
     ],
     firstYoutubeVideo: false,
     events: [],
+    anchorFab: false,
   }),
   created() {
     this.getEventTable();

@@ -23,6 +23,7 @@
           v-bind="attrs"
           @click="snackBarNoPurchaseWarning = false"
           left
+          top
         >
           Close
         </v-btn>
@@ -31,8 +32,9 @@
           text
           v-bind="attrs"
           @click="sendThemToPurchasePackage"
+          bottom
         >
-          Buy a Package
+          Buy Package
         </v-btn>
       </template>
     </v-snackbar>
@@ -122,7 +124,7 @@ export default {
           value: "event_name",
           align: "start",
         },
-        { text: "Date", value: "date", sortable: false },
+        { text: "Date", value: "date", sortable: true },
         { text: "Start Time", value: "start_time", sortable: false },
         { text: "End Time", value: "end_time", sortable: false },
         { text: "Sign Up", value: "actions", sortable: false },
