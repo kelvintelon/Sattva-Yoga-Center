@@ -25,5 +25,7 @@ public interface ClientDetailsDao {
 
     List<ClientDetails> getAllDuplicateClients();
 
+    List<ClientDetails> getAllPaginatedClients(int page, int limit);
+
     void removeDuplicateClients(int clientIdToKeep, int clientIdToRemove);
 }

@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <v-row
-      ><v-col cols="3" align="center" justify="center">
+      ><v-col lg="3" sm="0" md="0" xlg="3">
         <v-container class="hidden-lg-and-up">
           <v-speed-dial
       v-model="anchorFab"
@@ -156,14 +156,15 @@
             </v-list-item></v-list
           ></v-container
         > </v-col
-      ><v-col md="8" sm="12">
+      ><v-col md="10" sm="10" lg="7" xlg="7">
         <v-container ref="welcomeContainer">
           <!-- ANIMATION IS THIS LOTTIE COMPONENT -->
           <v-container
-            v-if="animationLoader"
+            align="center" justify="center"
             alt="Yoga lotus flower by Rebecca Southall"
           >
-            <lottie :options="defaultOptions" :width="500" :height="500" />
+          <v-row align="center" justify="center"><v-col align="center" justify="center" sm="12"> <lottie v-if="animationLoader" :options="defaultOptions" :width="500" :height="500" /></v-col></v-row>
+           
           </v-container>
           <!-- Welcome Card -->
           <welcome-card id="welcomeCard" v-if="!animationLoader"></welcome-card>
@@ -801,7 +802,7 @@
           <br />
         </v-container> </v-col
     >
-  <v-col lg="2"></v-col></v-row>
+  <v-col lg="2" sm="0" xlg="2"></v-col></v-row>
     
   </v-container>
 </template>

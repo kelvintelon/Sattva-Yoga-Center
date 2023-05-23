@@ -21,6 +21,58 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
     public JdbcClientDetailsDao(JdbcTemplate jdbcTemplate) { this.jdbcTemplate = jdbcTemplate;}
 
     @Override
+    public List<ClientDetails> getAllPaginatedClients(int page, int pageSize) {
+        int offset = pageSize * (page-1);
+
+        String offsetString = "";
+        if (offset == 10) {
+            offsetString = " LIMIT ?";
+        } else {
+            offsetString = " OFFSET ? LIMIT " + pageSize;
+        }
+        List<ClientDetails> allClients = new ArrayList<>();
+
+        String sql = "SELECT * FROM client_details ORDER BY client_id" + offsetString;
+
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql,offset);
+        while (result.next()) {
+            ClientDetails clientDetails = mapRowToClient(result);
+
+            clientDetails.setFull_address(clientDetails.getStreet_address() + " "
+                    + clientDetails.getCity() + " " + clientDetails.getState_abbreviation() + " " + clientDetails.getZip_code());
+
+            clientDetails.setQuick_details("("+clientDetails.getClient_id()+")" + " " + clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
+
+            String familyName = getFamilyNameByClientId(clientDetails.getClient_id());
+            clientDetails.setFamily_name(familyName);
+            allClients.add(clientDetails);
+        }
+        return allClients;
+
+    }
+
+    @Override
+    public List<ClientDetails> getAllClients() {
+        List<ClientDetails> allClients = new ArrayList<>();
+
+        String sql = "SELECT * FROM client_details ORDER BY client_id;";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+        while(result.next()) {
+            ClientDetails clientDetails = mapRowToClient(result);
+
+            clientDetails.setFull_address(clientDetails.getStreet_address() + " "
+                    + clientDetails.getCity() + " " + clientDetails.getState_abbreviation() + " " + clientDetails.getZip_code());
+
+            clientDetails.setQuick_details("("+clientDetails.getClient_id()+")" + " " + clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
+
+            String familyName = getFamilyNameByClientId(clientDetails.getClient_id());
+            clientDetails.setFamily_name(familyName);
+            allClients.add(clientDetails);
+        }
+        return allClients;
+    }
+
+    @Override
     public ClientDetails createClient(ClientDetails client) {
         String sql = "INSERT INTO client_details (last_name, first_name, is_client_active, " +
                 "is_new_client, street_address, city, state_abbreviation, zip_code, " +
@@ -136,26 +188,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
     }
 
 
-    @Override
-    public List<ClientDetails> getAllClients() {
-        List<ClientDetails> allClients = new ArrayList<>();
 
-        String sql = "SELECT * FROM client_details ORDER BY client_id;";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
-        while(result.next()) {
-            ClientDetails clientDetails = mapRowToClient(result);
-
-            clientDetails.setFull_address(clientDetails.getStreet_address() + " "
-                    + clientDetails.getCity() + " " + clientDetails.getState_abbreviation() + " " + clientDetails.getZip_code());
-
-            clientDetails.setQuick_details("("+clientDetails.getClient_id()+")" + " " + clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
-
-            String familyName = getFamilyNameByClientId(clientDetails.getClient_id());
-            clientDetails.setFamily_name(familyName);
-            allClients.add(clientDetails);
-        }
-        return allClients;
-    }
 
     @Override
     public List<ClientDetails> getAllDuplicateClients() {

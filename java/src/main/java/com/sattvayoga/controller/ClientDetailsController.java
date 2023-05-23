@@ -36,6 +36,120 @@ public class ClientDetailsController {
         this.eventDao = eventDao;
     }
 
+//    http://localhost:8080/getPaginatedClients?page=1&limit=10
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value = "/getPaginatedClients", method = RequestMethod.GET)
+    public List<ClientDetails> getPaginatedClients(@RequestParam(defaultValue = "1")  int page,
+                                                   @RequestParam(defaultValue = "10") int pageSize) {
+        // sort by is just another string concatenation
+        return clientDetailsDao.getAllPaginatedClients(page,pageSize);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(path = "/clientList", method = RequestMethod.GET)
+    public List<ClientDetails> getAllClients() {
+
+        return clientDetailsDao.getAllClients();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value="/register100Clients", method = RequestMethod.POST)
+    public void register100Clients() {
+        for (int k = 0; k < 100; k++) {
+
+
+            int leftLimit = 48; // numeral '0'
+            int rightLimit = 122; // letter 'z'
+            int targetStringLength = 10;
+            Random random = new Random();
+
+            // create password
+            String generatedPassword = random.ints(leftLimit, rightLimit + 1)
+                    .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                    .limit(targetStringLength)
+                    .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                    .toString();
+
+
+            // create username
+            String generatedUsername = random.ints(leftLimit, rightLimit + 1)
+                    .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                    .limit(targetStringLength)
+                    .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                    .toString();
+
+            generatedUsername = "user" + generatedUsername;
+
+            // create user with username and password
+            userDao.create(generatedUsername, generatedPassword, "user");
+
+            // retrieve the user ID,
+            YogaUser newUser = userDao.findByUsername(generatedUsername);
+            int userId = newUser.getId();
+
+            ClientDetails clientDetails = new ClientDetails();
+
+            clientDetails.setFirst_name(generatedUsername);
+            clientDetails.setLast_name(generatedUsername);
+            clientDetails.setUser_id(userId);
+
+            Date date = new Date();
+            Timestamp theLatestTimestamp = new Timestamp(date.getTime());
+            clientDetails.setIs_client_active(true);
+            clientDetails.setDate_of_entry(theLatestTimestamp);
+            // use it to create a client
+            int clientId = clientDetailsDao.createNewClient(clientDetails).getClient_id();
+
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value="/registerNewClient", method = RequestMethod.POST)
+    public void registerNewClient(@RequestBody ClientDetails newClientDetails) {
+
+        int leftLimit = 48; // numeral '0'
+        int rightLimit = 122; // letter 'z'
+        int targetStringLength = 10;
+        Random random = new Random();
+
+        // create password
+        String generatedPassword = random.ints(leftLimit, rightLimit + 1)
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                .limit(targetStringLength)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+
+
+        // create username
+        String generatedUsername = random.ints(leftLimit, rightLimit + 1)
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                .limit(targetStringLength)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+
+        generatedUsername = "user" + generatedUsername;
+
+        // create user with username and password
+        userDao.create(generatedUsername,generatedPassword, "user");
+
+        // retrieve the user ID,
+        YogaUser newUser = userDao.findByUsername(generatedUsername);
+        int userId = newUser.getId();
+
+        ClientDetails clientDetails = new ClientDetails();
+
+        clientDetails.setFirst_name(newClientDetails.getFirst_name());
+        clientDetails.setLast_name(newClientDetails.getLast_name());
+        clientDetails.setUser_id(userId);
+
+        Date date = new Date();
+        Timestamp theLatestTimestamp = new Timestamp(date.getTime());
+        clientDetails.setIs_client_active(true);
+        clientDetails.setDate_of_entry(theLatestTimestamp);
+        // use it to create a client
+        int clientId = clientDetailsDao.createNewClient(clientDetails).getClient_id();
+    }
+
     @RequestMapping(value = "/updateClientDetails", method = RequestMethod.PUT)
     public void updateClientDetails(@RequestBody ClientDetails clientDetails) {
 
@@ -103,53 +217,6 @@ public class ClientDetailsController {
         }
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @RequestMapping(value="/registerNewClient", method = RequestMethod.POST)
-    public void registerNewClient(@RequestBody ClientDetails newClientDetails) {
-
-        int leftLimit = 48; // numeral '0'
-        int rightLimit = 122; // letter 'z'
-        int targetStringLength = 10;
-        Random random = new Random();
-
-        // create password
-        String generatedPassword = random.ints(leftLimit, rightLimit + 1)
-                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
-                .limit(targetStringLength)
-                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-                .toString();
-
-
-        // create username
-        String generatedUsername = random.ints(leftLimit, rightLimit + 1)
-                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
-                .limit(targetStringLength)
-                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-                .toString();
-
-        generatedUsername = "user" + generatedUsername;
-
-        // create user with username and password
-        userDao.create(generatedUsername,generatedPassword, "user");
-
-        // retrieve the user ID,
-        YogaUser newUser = userDao.findByUsername(generatedUsername);
-        int userId = newUser.getId();
-
-        ClientDetails clientDetails = new ClientDetails();
-
-        clientDetails.setFirst_name(newClientDetails.getFirst_name());
-        clientDetails.setLast_name(newClientDetails.getLast_name());
-        clientDetails.setUser_id(userId);
-
-        Date date = new Date();
-        Timestamp theLatestTimestamp = new Timestamp(date.getTime());
-        clientDetails.setIs_client_active(true);
-        clientDetails.setDate_of_entry(theLatestTimestamp);
-        // use it to create a client
-        int clientId = clientDetailsDao.createNewClient(clientDetails).getClient_id();
-    }
-
 
     @RequestMapping(value = "/removeClient/{clientId}", method = RequestMethod.DELETE)
     public void deleteClient(@PathVariable int clientId) {
@@ -174,13 +241,6 @@ public class ClientDetailsController {
         return clientDetails;
     }
 
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @RequestMapping(path = "/clientList", method = RequestMethod.GET)
-    public List<ClientDetails> getAllClients() {
-
-        return clientDetailsDao.getAllClients();
-    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(path="/duplicateList", method = RequestMethod.GET)
