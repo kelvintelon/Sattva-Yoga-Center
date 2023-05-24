@@ -1,6 +1,14 @@
 import axios from 'axios';
 
 export default {
+    getClientList() {
+        return axios.get('/clientList')
+    },
+
+    getPaginatedClients(thisPage, thisPageSize) {
+        // , {params: {page: 1, pageSize: 20} }
+        return axios.get('/getPaginatedClients', {params: {page: thisPage, pageSize: thisPageSize} })
+    },
 
     registerClient(clientDetails) {
         return axios.post('/registerClient', clientDetails)
@@ -17,9 +25,7 @@ export default {
         return axios.put(`/updateClientDetails`, clientDetails )
     },
 
-    getClientList() {
-        return axios.get('/clientList')
-    },
+   
 
     removeClient(clientId) {
         return axios.delete(`/removeClient/${clientId}`)

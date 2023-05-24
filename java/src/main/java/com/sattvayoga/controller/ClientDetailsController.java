@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sattvayoga.dao.ClientDetailsDao;
 import com.sattvayoga.dao.EventDao;
 import com.sattvayoga.dao.UserDao;
-import com.sattvayoga.model.ClientDetails;
-import com.sattvayoga.model.EmailAlreadyExistsException;
-import com.sattvayoga.model.EmailNotFoundException;
-import com.sattvayoga.model.YogaUser;
+import com.sattvayoga.model.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,8 +36,8 @@ public class ClientDetailsController {
 //    http://localhost:8080/getPaginatedClients?page=1&limit=10
     @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/getPaginatedClients", method = RequestMethod.GET)
-    public List<ClientDetails> getPaginatedClients(@RequestParam(defaultValue = "1")  int page,
-                                                   @RequestParam(defaultValue = "10") int pageSize) {
+    public PaginatedListOfClients getPaginatedClients(@RequestParam(defaultValue = "1")  int page,
+                                                      @RequestParam(defaultValue = "10") int pageSize) {
         // sort by is just another string concatenation
         return clientDetailsDao.getAllPaginatedClients(page,pageSize);
     }

@@ -4,6 +4,7 @@ import ch.qos.logback.core.net.server.Client;
 import com.sattvayoga.model.ClassDetails;
 import com.sattvayoga.model.ClientDetails;
 import com.sattvayoga.model.ClientNotFoundException;
+import com.sattvayoga.model.PaginatedListOfClients;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SqlRowSetResultSetExtractor;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -21,11 +22,11 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
     public JdbcClientDetailsDao(JdbcTemplate jdbcTemplate) { this.jdbcTemplate = jdbcTemplate;}
 
     @Override
-    public List<ClientDetails> getAllPaginatedClients(int page, int pageSize) {
+    public PaginatedListOfClients getAllPaginatedClients(int page, int pageSize) {
         int offset = pageSize * (page-1);
 
         String offsetString = "";
-        if (offset == 10) {
+        if (offset == 10 && page == 1) {
             offsetString = " LIMIT ?";
         } else {
             offsetString = " OFFSET ? LIMIT " + pageSize;
@@ -47,7 +48,16 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
             clientDetails.setFamily_name(familyName);
             allClients.add(clientDetails);
         }
-        return allClients;
+
+        PaginatedListOfClients paginatedListOfClients = new PaginatedListOfClients();
+        paginatedListOfClients.setListOfClients(allClients);
+
+        String countSql = "Select COUNT(*) from client_details";
+
+        int count = jdbcTemplate.queryForObject(countSql, Integer.class);
+
+        paginatedListOfClients.setTotalRows(count);
+        return paginatedListOfClients;
 
     }
 
