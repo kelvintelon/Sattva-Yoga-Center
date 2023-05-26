@@ -141,6 +141,7 @@
               ><v-btn
                 elevation="0"
                 color="white"
+                class="my-3"
                 @click="$vuetify.goTo('#instructor-training', regularCardOptions)"
                 >-Instructor <br/>Training
                  </v-btn

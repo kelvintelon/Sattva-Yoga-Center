@@ -3,12 +3,21 @@
     <v-card-title>
       Client List
       <v-divider class="mx-4" inset vertical></v-divider>
+      <v-text-field
+        v-model="search"
+        append-icon="mdi-magnify"
+        label="Search"
+        single-line
+        hide-details
+        @keyup.enter="getSearchedClientTablePaginated"
+      ></v-text-field>
     </v-card-title>
     <v-data-table
       :headers="headers"
       :items="clientList"
       :options.sync="options"
       :server-items-length="totalClients"
+      :search="search"
       :loading="loading"
       class="elevation-1"
       hide-default-footer
@@ -17,13 +26,13 @@
       <v-col cols="11">
         <v-pagination
           v-model="page"
-          :length="totalClients / pageSize"
+          :length="Math.ceil(totalClients / pageSize)"
           @input="temporaryPageMethod"
+          total-visible="8"
         ></v-pagination>
       </v-col>
       <v-col col="1">
         <v-select
-          
           v-model="pageSize"
           :items="[10, 20, 30, 40, 50]"
           outlined
@@ -88,10 +97,32 @@ export default {
     },
   },
   methods: {
-    getPaginatedClientTable() {
+    getSearchedClientTablePaginated() {
       this.loading = true;
+      this.page = 1;
       clientDetailService
-        .getPaginatedClients(this.page,this.pageSize)
+        .getPaginatedClients(this.page, this.pageSize, this.search)
+        .then((response) => {
+          if (response.status == 200) {
+            this.loading = false;
+            this.paginatedObject = response.data;
+            this.clientList = this.paginatedObject.listOfClients;
+            this.totalClients = this.paginatedObject.totalRows;
+            this.clientList.forEach((item) => {
+              if (item.full_address.includes("null")) {
+                item.full_address = item.full_address.replaceAll("null", " ");
+              }
+              item.date_of_entry = new Date(item.date_of_entry);
+            });
+            this.$store.commit("SET_CLIENT_LIST", response.data);
+          } else {
+            alert("Error retrieving client information");
+          }
+        });
+    },
+    getPaginatedClientTable() {
+      clientDetailService
+        .getPaginatedClients(this.page, this.pageSize)
         .then((response) => {
           if (response.status == 200) {
             this.loading = false;
@@ -117,14 +148,12 @@ export default {
         });
     },
     temporaryPageMethod() {
-      alert(this.page);
+      
       this.getPaginatedClientTable();
     },
     temporaryPageSizeMethod() {
-        this.page = 1;
-
-      alert(this.pageSize);
-      this.getPaginatedClientTable()
+      this.page = 1;
+      this.getPaginatedClientTable();
     },
   },
 };

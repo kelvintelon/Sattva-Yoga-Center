@@ -5,9 +5,9 @@ export default {
         return axios.get('/clientList')
     },
 
-    getPaginatedClients(thisPage, thisPageSize) {
+    getPaginatedClients(thisPage, thisPageSize, thisSearch) {
         // , {params: {page: 1, pageSize: 20} }
-        return axios.get('/getPaginatedClients', {params: {page: thisPage, pageSize: thisPageSize} })
+        return axios.get('/getPaginatedClients', {params: {page: thisPage, pageSize: thisPageSize, search: thisSearch} })
     },
 
     registerClient(clientDetails) {

@@ -19,45 +19,86 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public JdbcClientDetailsDao(JdbcTemplate jdbcTemplate) { this.jdbcTemplate = jdbcTemplate;}
+    public JdbcClientDetailsDao(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @Override
-    public PaginatedListOfClients getAllPaginatedClients(int page, int pageSize) {
-        int offset = pageSize * (page-1);
+    public PaginatedListOfClients getAllPaginatedClients(int page, int pageSize, String search) {
+
+        int offset = 0;
 
         String offsetString = "";
-        if (offset == 10 && page == 1) {
+        if (page == 1) {
+            offset = pageSize * (page);
             offsetString = " LIMIT ?";
         } else {
+            offset = pageSize * (page-1);
             offsetString = " OFFSET ? LIMIT " + pageSize;
         }
+
         List<ClientDetails> allClients = new ArrayList<>();
+        String searchString = "";
+        if (!search.isEmpty()) {
+            search = "%" + search + "%";
+            searchString = " WHERE first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ?";
 
-        String sql = "SELECT * FROM client_details ORDER BY client_id" + offsetString;
+            String sql = "SELECT * FROM client_details" + searchString + " ORDER BY client_id" + offsetString;
 
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql,offset);
-        while (result.next()) {
-            ClientDetails clientDetails = mapRowToClient(result);
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, search, search, search, offset);
 
-            clientDetails.setFull_address(clientDetails.getStreet_address() + " "
-                    + clientDetails.getCity() + " " + clientDetails.getState_abbreviation() + " " + clientDetails.getZip_code());
+            while (result.next()) {
+                ClientDetails clientDetails = mapRowToClient(result);
 
-            clientDetails.setQuick_details("("+clientDetails.getClient_id()+")" + " " + clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
+                clientDetails.setFull_address(clientDetails.getStreet_address() + " "
+                        + clientDetails.getCity() + " " + clientDetails.getState_abbreviation() + " " + clientDetails.getZip_code());
 
-            String familyName = getFamilyNameByClientId(clientDetails.getClient_id());
-            clientDetails.setFamily_name(familyName);
-            allClients.add(clientDetails);
+                clientDetails.setQuick_details("(" + clientDetails.getClient_id() + ")" + " " + clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
+
+                String familyName = getFamilyNameByClientId(clientDetails.getClient_id());
+                clientDetails.setFamily_name(familyName);
+                allClients.add(clientDetails);
+            }
+
+            PaginatedListOfClients paginatedListOfClients = new PaginatedListOfClients();
+            paginatedListOfClients.setListOfClients(allClients);
+
+            String countSql = "Select COUNT(*) from client_details";
+
+            int count = jdbcTemplate.queryForObject(countSql, Integer.class);
+
+            paginatedListOfClients.setTotalRows(count);
+            return paginatedListOfClients;
+
+        } else {
+
+            String sql = "SELECT * FROM client_details ORDER BY client_id" + offsetString;
+
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, offset);
+
+            while (result.next()) {
+                ClientDetails clientDetails = mapRowToClient(result);
+
+                clientDetails.setFull_address(clientDetails.getStreet_address() + " "
+                        + clientDetails.getCity() + " " + clientDetails.getState_abbreviation() + " " + clientDetails.getZip_code());
+
+                clientDetails.setQuick_details("(" + clientDetails.getClient_id() + ")" + " " + clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
+
+                String familyName = getFamilyNameByClientId(clientDetails.getClient_id());
+                clientDetails.setFamily_name(familyName);
+                allClients.add(clientDetails);
+            }
+
+            PaginatedListOfClients paginatedListOfClients = new PaginatedListOfClients();
+            paginatedListOfClients.setListOfClients(allClients);
+
+            String countSql = "Select COUNT(*) from client_details";
+
+            int count = jdbcTemplate.queryForObject(countSql, Integer.class);
+
+            paginatedListOfClients.setTotalRows(count);
+            return paginatedListOfClients;
         }
-
-        PaginatedListOfClients paginatedListOfClients = new PaginatedListOfClients();
-        paginatedListOfClients.setListOfClients(allClients);
-
-        String countSql = "Select COUNT(*) from client_details";
-
-        int count = jdbcTemplate.queryForObject(countSql, Integer.class);
-
-        paginatedListOfClients.setTotalRows(count);
-        return paginatedListOfClients;
 
     }
 
@@ -67,13 +108,13 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
         String sql = "SELECT * FROM client_details ORDER BY client_id;";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
-        while(result.next()) {
+        while (result.next()) {
             ClientDetails clientDetails = mapRowToClient(result);
 
             clientDetails.setFull_address(clientDetails.getStreet_address() + " "
                     + clientDetails.getCity() + " " + clientDetails.getState_abbreviation() + " " + clientDetails.getZip_code());
 
-            clientDetails.setQuick_details("("+clientDetails.getClient_id()+")" + " " + clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
+            clientDetails.setQuick_details("(" + clientDetails.getClient_id() + ")" + " " + clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
 
             String familyName = getFamilyNameByClientId(clientDetails.getClient_id());
             clientDetails.setFamily_name(familyName);
@@ -89,7 +130,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                 "phone_number, is_on_email_list, email, has_record_of_liability, " +
                 "date_of_entry, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?) RETURNING client_id";
         int clientId = jdbcTemplate.queryForObject(sql, Integer.class, client.getLast_name(), client.getFirst_name(),
-                client.isIs_client_active(), client.isIs_new_client(),client.getStreet_address(), client.getCity(),
+                client.isIs_client_active(), client.isIs_new_client(), client.getStreet_address(), client.getCity(),
                 client.getState_abbreviation(), client.getZip_code(), client.getPhone_number(), client.isIs_on_email_list(),
                 client.getEmail(), client.isHas_record_of_liability(),
                 client.getDate_of_entry(), client.getUser_id());
@@ -135,24 +176,24 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
     public void removeDuplicateClients(int clientIdToKeep, int clientIdToRemove) {
         String sql = "UPDATE client_event SET client_id = ? WHERE client_id = ? " +
                 "AND event_id NOT IN (SELECT event_id FROM client_event WHERE client_id = ? OR client_id = ? GROUP BY event_id having count(event_id) > 1);";
-        jdbcTemplate.update(sql,clientIdToKeep,clientIdToRemove,clientIdToKeep, clientIdToRemove);
+        jdbcTemplate.update(sql, clientIdToKeep, clientIdToRemove, clientIdToKeep, clientIdToRemove);
         sql = "DELETE FROM client_event WHERE client_id = ?";
-        jdbcTemplate.update(sql,clientIdToRemove);
+        jdbcTemplate.update(sql, clientIdToRemove);
         sql = "UPDATE client_family SET client_id = ? WHERE client_id = ? " +
                 "AND family_id NOT IN (SELECT family_id FROM client_family WHERE client_id = ? OR client_id = ? GROUP BY family_id having count(family_id) > 1);";
-        jdbcTemplate.update(sql,clientIdToKeep,clientIdToRemove,clientIdToKeep, clientIdToRemove);
+        jdbcTemplate.update(sql, clientIdToKeep, clientIdToRemove, clientIdToKeep, clientIdToRemove);
         sql = "DELETE FROM client_family WHERE client_id = ?";
-        jdbcTemplate.update(sql,clientIdToRemove);
+        jdbcTemplate.update(sql, clientIdToRemove);
         sql = "UPDATE package_purchase SET client_id = ? WHERE client_id = ?;";
-        jdbcTemplate.update(sql,clientIdToKeep,clientIdToRemove);
+        jdbcTemplate.update(sql, clientIdToKeep, clientIdToRemove);
         sql = "UPDATE client_class SET client_id = ? WHERE client_id = ?;";
-        jdbcTemplate.update(sql,clientIdToKeep,clientIdToRemove);
+        jdbcTemplate.update(sql, clientIdToKeep, clientIdToRemove);
         sql = "DELETE FROM client_details WHERE client_id = ?;";
-        jdbcTemplate.update(sql,clientIdToRemove);
+        jdbcTemplate.update(sql, clientIdToRemove);
     }
 
     @Override
-    public boolean updateClientDetails(ClientDetails clientDetails){
+    public boolean updateClientDetails(ClientDetails clientDetails) {
         String sql = "UPDATE client_details SET last_name = ? , " +
                 "first_name = ? , " +
                 "street_address = ? , " +
@@ -194,10 +235,8 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                 "WHERE client_id = ?;\n" +
                 "\n" +
                 "COMMIT TRANSACTION;";
-        return jdbcTemplate.update(sql, clientId, clientId, clientId, clientId, clientId)==1;
+        return jdbcTemplate.update(sql, clientId, clientId, clientId, clientId, clientId) == 1;
     }
-
-
 
 
     @Override
@@ -212,13 +251,13 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                 "AND a2.client_id <> a1.client_id);";
 
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
-        while(result.next()) {
+        while (result.next()) {
             ClientDetails clientDetails = mapRowToClient(result);
 
             clientDetails.setFull_address(clientDetails.getStreet_address() + " "
                     + clientDetails.getCity() + " " + clientDetails.getState_abbreviation() + " " + clientDetails.getZip_code());
 
-            clientDetails.setQuick_details("("+clientDetails.getClient_id()+")" + " " + clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
+            clientDetails.setQuick_details("(" + clientDetails.getClient_id() + ")" + " " + clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
 
             String familyName = getFamilyNameByClientId(clientDetails.getClient_id());
             clientDetails.setFamily_name(familyName);
@@ -227,12 +266,12 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         return allClients;
     }
 
-    public String getFamilyNameByClientId(int clientId){
+    public String getFamilyNameByClientId(int clientId) {
         String sql = "SELECT family_name from families \n" +
                 "JOIN client_family ON families.family_id = client_family.family_id \n" +
                 "WHERE client_id = ?";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, clientId);
-        if(result.next()){
+        if (result.next()) {
             return result.getString("family_name");
         }
         return "";
@@ -243,10 +282,10 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         List<ClientDetails> allClientsWithSameEmail = new ArrayList<>();
         String sql = "SELECT * FROM client_details WHERE email = ?;";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, email);
-        while(result.next()) {
+        while (result.next()) {
             ClientDetails clientDetails = mapRowToClient(result);
-           if (clientDetails.getClient_id() != clientId) {
-               allClientsWithSameEmail.add(clientDetails);
+            if (clientDetails.getClient_id() != clientId) {
+                allClientsWithSameEmail.add(clientDetails);
             }
         }
         return allClientsWithSameEmail.size() > 0;

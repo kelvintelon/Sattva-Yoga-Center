@@ -35,6 +35,7 @@
         label="Search"
         single-line
         hide-details
+        @keyup.enter="getSearchedClientTablePaginated"
       ></v-text-field>
       <v-spacer></v-spacer>
 
@@ -463,13 +464,15 @@
       :items="clientList"
       item-key="client_id"
       v-model="selectedClients"
-      sort-by="client_id"
+      :options.sync="options"
+      :server-items-length="totalClients"
       :loading="loading"
       loading-text="Loading... Please wait"
       :search="search"
       show-select
       dense
       class="elevation-5"
+      hide-default-footer
     >
       <template v-slot:top>
         <v-toolbar flat>
@@ -675,6 +678,27 @@
         <v-btn color="primary" @click="initialize"> Reset </v-btn>
       </template>
     </v-data-table>
+    <v-row>
+      <v-col cols="11">
+        <v-pagination
+          v-model="page"
+          :length="Math.ceil(totalClients / pageSize)"
+          @input="temporaryPageMethod"
+          total-visible="8"
+        ></v-pagination>
+      </v-col>
+      <v-col col="1">
+        <v-select
+          v-model="pageSize"
+          :items="[10, 20, 30, 40, 50]"
+          outlined
+          filled
+          @change="temporaryPageSizeMethod"
+        >
+        </v-select>
+      </v-col>
+      <v-spacer></v-spacer>
+    </v-row>
     <v-overlay :value="overlay">
       <v-progress-circular
         indeterminate
@@ -692,6 +716,8 @@ export default {
   data() {
     return {
       search: "",
+      page: 1,
+      pageSize: 20,
       headers: [
         {text:"ID",
         sortable: true,
@@ -719,6 +745,8 @@ export default {
         { text: "Actions", value: "actions", sortable: false },
       ],
       clientList: [],
+      totalClients: 0,
+      paginatedObject: {},
       dialogDelete: false,
       dialog: false,
       editedIndex: -1,
@@ -1001,14 +1029,39 @@ export default {
       this.emailRegistrationErrors = false;
       this.emailRegistrationErrorMsg = 'There were problems updating this email.';
     },
+    getSearchedClientTablePaginated() {
+      this.loading = true;
+      this.page = 1;
+      clientDetailService
+        .getPaginatedClients(this.page, this.pageSize, this.search)
+        .then((response) => {
+          if (response.status == 200) {
+            this.loading = false;
+            this.paginatedObject = response.data;
+            this.clientList = this.paginatedObject.listOfClients;
+            this.totalClients = this.paginatedObject.totalRows;
+            this.clientList.forEach((item) => {
+              if (item.full_address.includes("null")) {
+                item.full_address = item.full_address.replaceAll("null", " ");
+              }
+              item.date_of_entry = new Date(item.date_of_entry);
+            });
+            this.$store.commit("SET_CLIENT_LIST", response.data);
+          } else {
+            alert("Error retrieving client information");
+          }
+        });
+    },
     getClientTable() {
       this.loading = true;
       this.overlay = !this.overlay;
-      clientDetailService.getClientList().then((response) => {
+      clientDetailService .getPaginatedClients(this.page, this.pageSize).then((response) => {
         if (response.status == 200) {
           this.loading = false;
           this.overlay = false;
-          this.clientList = response.data;
+          this.paginatedObject = response.data;
+            this.clientList = this.paginatedObject.listOfClients;
+            this.totalClients = this.paginatedObject.totalRows;
            this.clientList.forEach((item) => {
              if (item.full_address.includes("null")) {
                item.full_address = item.full_address.replaceAll("null", " ")
@@ -1027,6 +1080,14 @@ export default {
           }
         });
       
+    },
+    temporaryPageMethod() {
+      
+      this.getPaginatedClientTable();
+    },
+    temporaryPageSizeMethod() {
+      this.page = 1;
+      this.getPaginatedClientTable();
     },
     retrieveDuplicateClients() {
       this.loading = true;
