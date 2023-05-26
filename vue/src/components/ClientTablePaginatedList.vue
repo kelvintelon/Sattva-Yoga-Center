@@ -148,12 +148,17 @@ export default {
         });
     },
     temporaryPageMethod() {
-      alert(this.page)
+      this.$vuetify.goTo(0)  
       this.getPaginatedClientTable();
     },
     temporaryPageSizeMethod() {
-      this.page = 1;
+      if (this.page == 1) {
       this.getPaginatedClientTable();
+      } else {
+        this.$vuetify.goTo(0)  
+        this.page = 1;
+      this.getPaginatedClientTable();
+      }
     },
   },
 };

@@ -1081,12 +1081,18 @@ export default {
         });
       
     },
-    temporaryPageMethod() {     
+    temporaryPageMethod() {   
+      this.$vuetify.goTo(0)  
       this.getClientTable();
     },
     temporaryPageSizeMethod() {
-      this.page = 1;
+      if (this.page == 1) {
       this.getClientTable();
+      } else {
+        this.$vuetify.goTo(0)  
+        this.page = 1;
+        this.getClientTable();
+      }
     },
     retrieveDuplicateClients() {
       this.loading = true;
