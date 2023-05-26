@@ -32,7 +32,7 @@
       <v-text-field
         v-model="search"
         append-icon="mdi-magnify"
-        label="Search"
+        label="Search (press enter)"
         single-line
         hide-details
         @keyup.enter="getSearchedClientTablePaginated"
@@ -475,7 +475,7 @@
       hide-default-footer
     >
       <template v-slot:top>
-        <v-toolbar flat>
+        <v-toolbar flat max-height="10px">
           <!-- START OF EDIT CLIENT FORM -->
           <v-dialog v-model="dialog" max-width="500px">
             <v-card justify="center" align="center">
@@ -1081,13 +1081,12 @@ export default {
         });
       
     },
-    temporaryPageMethod() {
-      
-      this.getPaginatedClientTable();
+    temporaryPageMethod() {     
+      this.getClientTable();
     },
     temporaryPageSizeMethod() {
       this.page = 1;
-      this.getPaginatedClientTable();
+      this.getClientTable();
     },
     retrieveDuplicateClients() {
       this.loading = true;

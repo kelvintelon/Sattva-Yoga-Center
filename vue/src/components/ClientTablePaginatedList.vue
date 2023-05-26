@@ -148,7 +148,7 @@ export default {
         });
     },
     temporaryPageMethod() {
-      
+      alert(this.page)
       this.getPaginatedClientTable();
     },
     temporaryPageSizeMethod() {
