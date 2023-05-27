@@ -122,7 +122,7 @@ export default {
     },
     getPaginatedClientTable() {
       clientDetailService
-        .getPaginatedClients(this.page, this.pageSize)
+        .getPaginatedClients(this.page, this.pageSize, this.search)
         .then((response) => {
           if (response.status == 200) {
             this.loading = false;
