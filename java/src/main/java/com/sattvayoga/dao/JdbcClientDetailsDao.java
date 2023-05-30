@@ -63,9 +63,9 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
             PaginatedListOfClients paginatedListOfClients = new PaginatedListOfClients();
             paginatedListOfClients.setListOfClients(allClients);
 
-            String countSql = "Select COUNT(*) from client_details";
+            String countSql = "Select COUNT(*) from client_details" + searchString;
 
-            int count = jdbcTemplate.queryForObject(countSql, Integer.class);
+            int count = jdbcTemplate.queryForObject(countSql, Integer.class,  search, search, search);
 
             paginatedListOfClients.setTotalRows(count);
             return paginatedListOfClients;

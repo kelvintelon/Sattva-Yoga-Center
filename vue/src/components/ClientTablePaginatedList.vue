@@ -9,7 +9,8 @@
         label="Search"
         single-line
         hide-details
-        @keyup.enter="getSearchedClientTablePaginated"
+        @keypress="getSearchedClientTablePaginated"
+        @keyup.delete="resetThePageOnEmptyLength"
       ></v-text-field>
     </v-card-title>
     <v-data-table
@@ -31,7 +32,7 @@
           total-visible="8"
         ></v-pagination>
       </v-col>
-      <v-col col="1">
+      <v-col col="1" class="mt-2">
         <v-select
           v-model="pageSize"
           :items="[10, 20, 30, 40, 50]"
@@ -97,29 +98,29 @@ export default {
     },
   },
   methods: {
-    getSearchedClientTablePaginated() {
-      this.loading = true;
-      this.page = 1;
-      clientDetailService
-        .getPaginatedClients(this.page, this.pageSize, this.search)
-        .then((response) => {
-          if (response.status == 200) {
-            this.loading = false;
-            this.paginatedObject = response.data;
-            this.clientList = this.paginatedObject.listOfClients;
-            this.totalClients = this.paginatedObject.totalRows;
-            this.clientList.forEach((item) => {
-              if (item.full_address.includes("null")) {
-                item.full_address = item.full_address.replaceAll("null", " ");
-              }
-              item.date_of_entry = new Date(item.date_of_entry);
-            });
-            this.$store.commit("SET_CLIENT_LIST", response.data);
-          } else {
-            alert("Error retrieving client information");
-          }
-        });
+    getSearchedClientTablePaginated(event) {
+      var charTyped = String.fromCharCode(event.which);
+       if (/[a-z\d]/i.test(charTyped)) {
+        // alert("Letter or number typed: " + charTyped);
+        // this.search = charTyped;
+        setTimeout(
+          () =>
+            // alert(this.search)
+
+            this.getPaginatedClientTable(),
+
+            // logic goes in here
+          250
+        );
+      }
     },
+    resetThePageOnEmptyLength() {
+     if (this.search == 0) {
+      this.page = 1; 
+      this.getPaginatedClientTable();
+     }
+    
+    },  
     getPaginatedClientTable() {
       clientDetailService
         .getPaginatedClients(this.page, this.pageSize, this.search)
@@ -147,17 +148,44 @@ export default {
           }
         });
     },
+    resetClientTable() {
+      clientDetailService
+        .getPaginatedClients(this.page, this.pageSize, this.search)
+        .then((response) => {
+          if (response.status == 200) {
+            this.loading = false;
+            this.paginatedObject = response.data;
+            this.clientList = this.paginatedObject.listOfClients;
+            this.totalClients = this.paginatedObject.totalRows;
+            this.clientList.forEach((item) => {
+              if (item.full_address.includes("null")) {
+                item.full_address = item.full_address.replaceAll("null", " ");
+              }
+              item.date_of_entry = new Date(item.date_of_entry);
+            });
+            this.$store.commit("SET_CLIENT_LIST", response.data);
+          } else {
+            alert("Error retrieving client information");
+          }
+        })
+        .catch((error) => {
+          const response = error.response;
+          if (response.status === 401) {
+            this.$router.push("/login");
+          }
+        });
+    },
     temporaryPageMethod() {
-      this.$vuetify.goTo(0)  
+      this.$vuetify.goTo(0);
       this.getPaginatedClientTable();
     },
     temporaryPageSizeMethod() {
       if (this.page == 1) {
-      this.getPaginatedClientTable();
+        this.getPaginatedClientTable();
       } else {
-        this.$vuetify.goTo(0)  
+        this.$vuetify.goTo(0);
         this.page = 1;
-      this.getPaginatedClientTable();
+        this.getPaginatedClientTable();
       }
     },
   },
