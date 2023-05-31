@@ -9,6 +9,10 @@ export default {
         // , {params: {page: 1, pageSize: 20} }
         return axios.get('/getPaginatedClients', {params: {page: thisPage, pageSize: thisPageSize, search: thisSearch} })
     },
+    getPaginatedDuplicateClients(thisPage, thisPageSize, thisSearch) {
+        // , {params: {page: 1, pageSize: 20} }
+        return axios.get('/getPaginatedDuplicateClients', {params: {page: thisPage, pageSize: thisPageSize, search: thisSearch} })
+    },
 
     registerClient(clientDetails) {
         return axios.post('/registerClient', clientDetails)

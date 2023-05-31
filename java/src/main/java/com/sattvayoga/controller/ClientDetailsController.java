@@ -51,9 +51,23 @@ public class ClientDetailsController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value = "/getPaginatedDuplicateClients", method = RequestMethod.GET)
+    public PaginatedListOfClients getPaginatedDuplicateClientList(@RequestParam(defaultValue = "1")  int page,
+                                                                  @RequestParam(defaultValue = "10") int pageSize,
+                                                                  @RequestParam(defaultValue = "") String search) {
+        return clientDetailsDao.getAllPaginatedDuplicateClients(page,pageSize,search);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(path="/duplicateList", method = RequestMethod.GET)
+    public List<ClientDetails> getAllDuplicateClients(){
+        return clientDetailsDao.getAllDuplicateClients();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value="/register100Clients", method = RequestMethod.POST)
     public void register100Clients() {
-        for (int k = 0; k < 7900; k++) {
+        for (int k = 0; k < 1000; k++) {
 
 
             int leftLimit = 48; // numeral '0'
@@ -88,7 +102,7 @@ public class ClientDetailsController {
             ClientDetails clientDetails = new ClientDetails();
 
             clientDetails.setFirst_name(generatedUsername);
-            clientDetails.setLast_name(generatedUsername);
+            clientDetails.setLast_name("Telon");
             clientDetails.setUser_id(userId);
 
             Date date = new Date();
@@ -239,12 +253,6 @@ public class ClientDetailsController {
         return clientDetails;
     }
 
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @RequestMapping(path="/duplicateList", method = RequestMethod.GET)
-    public List<ClientDetails> getAllDuplicateClients(){
-        return clientDetailsDao.getAllDuplicateClients();
-    }
 
 
 

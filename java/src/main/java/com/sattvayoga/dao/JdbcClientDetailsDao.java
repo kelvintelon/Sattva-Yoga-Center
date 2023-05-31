@@ -103,10 +103,128 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
     }
 
     @Override
+    public PaginatedListOfClients getAllPaginatedDuplicateClients(int page, int pageSize, String search) {
+
+        int offset = 0;
+
+        String offsetString = "";
+        if (page == 1) {
+            offset = pageSize * (page);
+            offsetString = " LIMIT ?";
+        } else {
+            offset = pageSize * (page-1);
+            offsetString = " OFFSET ? LIMIT " + pageSize;
+        }
+
+        List<ClientDetails> allClients = new ArrayList<>();
+        String searchString = "";
+
+
+        if (!search.isEmpty()) {
+            search = "%" + search + "%";
+            searchString = " WHERE first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ?";
+
+            String sql = "SELECT * FROM client_details" + searchString + " ORDER BY client_id" + offsetString;
+
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, search, search, search, offset);
+
+            while (result.next()) {
+                ClientDetails clientDetails = mapRowToClient(result);
+
+                clientDetails.setFull_address(clientDetails.getStreet_address() + " "
+                        + clientDetails.getCity() + " " + clientDetails.getState_abbreviation() + " " + clientDetails.getZip_code());
+
+                clientDetails.setQuick_details("(" + clientDetails.getClient_id() + ")" + " " + clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
+
+                String familyName = getFamilyNameByClientId(clientDetails.getClient_id());
+                clientDetails.setFamily_name(familyName);
+                allClients.add(clientDetails);
+            }
+
+            PaginatedListOfClients paginatedListOfClients = new PaginatedListOfClients();
+            paginatedListOfClients.setListOfClients(allClients);
+
+            String countSql = "Select COUNT(*) from client_details" + searchString;
+
+            int count = jdbcTemplate.queryForObject(countSql, Integer.class,  search, search, search);
+
+            paginatedListOfClients.setTotalRows(count);
+            return paginatedListOfClients;
+
+        } else {
+            PaginatedListOfClients paginatedListOfClients = new PaginatedListOfClients();
+
+            String sql = "SELECT a1.* " +
+                    "FROM client_details a1 " +
+                    "WHERE exists (SELECT * " +
+                    "FROM client_details a2 " +
+                    "WHERE a2.last_name = a1.last_name AND SUBSTRING(a2.first_name from 0 for 3) = SUBSTRING(a1.first_name from 0 for 3) " +
+                    "AND a2.client_id <> a1.client_id) " + offsetString;
+
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, offset);
+            while (result.next()) {
+                ClientDetails clientDetails = mapRowToClient(result);
+
+                clientDetails.setFull_address(clientDetails.getStreet_address() + " "
+                        + clientDetails.getCity() + " " + clientDetails.getState_abbreviation() + " " + clientDetails.getZip_code());
+
+                clientDetails.setQuick_details("(" + clientDetails.getClient_id() + ")" + " " + clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
+
+                String familyName = getFamilyNameByClientId(clientDetails.getClient_id());
+                clientDetails.setFamily_name(familyName);
+                allClients.add(clientDetails);
+            }
+
+            paginatedListOfClients.setListOfClients(allClients);
+
+            String countSql = "SELECT COUNT(a1.*) " +
+                    "FROM client_details a1 " +
+                    "WHERE exists (SELECT * " +
+                    "FROM client_details a2 " +
+                    "WHERE a2.last_name = a1.last_name AND SUBSTRING(a2.first_name from 0 for 3) = SUBSTRING(a1.first_name from 0 for 3) " +
+                    "AND a2.client_id <> a1.client_id);";
+
+            int count = jdbcTemplate.queryForObject(countSql, Integer.class);
+
+            paginatedListOfClients.setTotalRows(count);
+
+            return paginatedListOfClients;
+        }
+
+    }
+
+    @Override
     public List<ClientDetails> getAllClients() {
         List<ClientDetails> allClients = new ArrayList<>();
 
         String sql = "SELECT * FROM client_details ORDER BY client_id;";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+        while (result.next()) {
+            ClientDetails clientDetails = mapRowToClient(result);
+
+            clientDetails.setFull_address(clientDetails.getStreet_address() + " "
+                    + clientDetails.getCity() + " " + clientDetails.getState_abbreviation() + " " + clientDetails.getZip_code());
+
+            clientDetails.setQuick_details("(" + clientDetails.getClient_id() + ")" + " " + clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
+
+            String familyName = getFamilyNameByClientId(clientDetails.getClient_id());
+            clientDetails.setFamily_name(familyName);
+            allClients.add(clientDetails);
+        }
+        return allClients;
+    }
+
+    @Override
+    public List<ClientDetails> getAllDuplicateClients() {
+        List<ClientDetails> allClients = new ArrayList<>();
+
+        String sql = "SELECT a1.* " +
+                "FROM client_details a1 " +
+                "WHERE exists (SELECT * " +
+                "FROM client_details a2 " +
+                "WHERE a2.last_name = a1.last_name AND SUBSTRING(a2.first_name from 0 for 3) = SUBSTRING(a1.first_name from 0 for 3) " +
+                "AND a2.client_id <> a1.client_id);";
+
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
         while (result.next()) {
             ClientDetails clientDetails = mapRowToClient(result);
@@ -236,34 +354,6 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                 "\n" +
                 "COMMIT TRANSACTION;";
         return jdbcTemplate.update(sql, clientId, clientId, clientId, clientId, clientId) == 1;
-    }
-
-
-    @Override
-    public List<ClientDetails> getAllDuplicateClients() {
-        List<ClientDetails> allClients = new ArrayList<>();
-
-        String sql = "SELECT a1.* " +
-                "FROM client_details a1 " +
-                "WHERE exists (SELECT * " +
-                "FROM client_details a2 " +
-                "WHERE a2.last_name = a1.last_name AND SUBSTRING(a2.first_name from 0 for 3) = SUBSTRING(a1.first_name from 0 for 3) " +
-                "AND a2.client_id <> a1.client_id);";
-
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
-        while (result.next()) {
-            ClientDetails clientDetails = mapRowToClient(result);
-
-            clientDetails.setFull_address(clientDetails.getStreet_address() + " "
-                    + clientDetails.getCity() + " " + clientDetails.getState_abbreviation() + " " + clientDetails.getZip_code());
-
-            clientDetails.setQuick_details("(" + clientDetails.getClient_id() + ")" + " " + clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
-
-            String familyName = getFamilyNameByClientId(clientDetails.getClient_id());
-            clientDetails.setFamily_name(familyName);
-            allClients.add(clientDetails);
-        }
-        return allClients;
     }
 
     public String getFamilyNameByClientId(int clientId) {
