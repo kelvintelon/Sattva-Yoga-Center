@@ -38,9 +38,11 @@ public class ClientDetailsController {
     @RequestMapping(value = "/getPaginatedClients", method = RequestMethod.GET)
     public PaginatedListOfClients getPaginatedClients(@RequestParam(defaultValue = "1")  int page,
                                                       @RequestParam(defaultValue = "10") int pageSize,
-                                                      @RequestParam(defaultValue = "") String search) {
+                                                      @RequestParam(defaultValue = "") String search,
+                                                      @RequestParam(defaultValue = "client_id") String sortBy,
+                                                      @RequestParam(defaultValue = "false") boolean sortDesc) {
         // sort by is just another string concatenation
-        return clientDetailsDao.getAllPaginatedClients(page,pageSize,search);
+        return clientDetailsDao.getAllPaginatedClients(page,pageSize,search, sortBy, sortDesc);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

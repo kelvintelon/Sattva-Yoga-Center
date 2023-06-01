@@ -26,7 +26,7 @@ public interface ClientDetailsDao {
 
     List<ClientDetails> getAllDuplicateClients();
 
-    PaginatedListOfClients getAllPaginatedClients(int page, int limit0, String search);
+    PaginatedListOfClients getAllPaginatedClients(int page, int limit, String search, String sortBy, boolean sortDesc);
 
     PaginatedListOfClients getAllPaginatedDuplicateClients(int page, int pageSize, String search);
 

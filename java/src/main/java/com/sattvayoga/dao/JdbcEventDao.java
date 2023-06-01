@@ -355,6 +355,7 @@ public class JdbcEventDao implements EventDao {
         LocalDate latestDate = theLatestTimestamp.toLocalDateTime().toLocalDate();
         cal1.set(latestDate.getYear(), latestDate.getMonthValue(), latestDate.getDayOfMonth());
 
+        // plusWeeks(52) for one year, 260 for 5 years
         LocalDate todayNextYear = LocalDate.now().plusWeeks(52).plusDays(1);
 
         // Figure out what day it is (e.g. Monday, Tuesday, Wednesday)

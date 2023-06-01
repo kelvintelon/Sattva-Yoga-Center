@@ -24,9 +24,10 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
     }
 
     @Override
-    public PaginatedListOfClients getAllPaginatedClients(int page, int pageSize, String search) {
+    public PaginatedListOfClients getAllPaginatedClients(int page, int pageSize, String search, String sortBy, boolean sortDesc) {
 
         int offset = 0;
+        String sortDirection = (sortDesc ? "DESC" : "ASC");
 
         String offsetString = "";
         if (page == 1) {
@@ -43,7 +44,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
             search = "%" + search + "%";
             searchString = " WHERE first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ?";
 
-            String sql = "SELECT * FROM client_details" + searchString + " ORDER BY client_id" + offsetString;
+            String sql = "SELECT * FROM client_details" + searchString + " ORDER BY " + sortBy + " " + sortDirection + offsetString;
 
             SqlRowSet result = jdbcTemplate.queryForRowSet(sql, search, search, search, offset);
 
@@ -72,7 +73,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
         } else {
 
-            String sql = "SELECT * FROM client_details ORDER BY client_id" + offsetString;
+            String sql = "SELECT * FROM client_details ORDER BY " + sortBy + " " + sortDirection + offsetString;
 
             SqlRowSet result = jdbcTemplate.queryForRowSet(sql, offset);
 

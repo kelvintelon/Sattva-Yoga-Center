@@ -504,6 +504,10 @@
       dense
       class="elevation-5"
       hide-default-footer
+      :sort-by.sync="sortBy"
+      :sort-desc.sync="sortDesc"
+      @update:sort-by="sortTable"
+      @update:sort-desc="sortTable"
     >
       <template v-slot:top>
         <v-toolbar flat max-height="10px">
@@ -744,6 +748,8 @@ export default {
       search: "",
       page: 1,
       pageSize: 20,
+      sortBy: 'client_id',
+      sortDesc: false,
       headers: [
         { text: "ID", sortable: true, value: "client_id" },
         {
@@ -753,19 +759,19 @@ export default {
           value: "first_name",
         },
         { text: "Last Name", value: "last_name", sortable: true },
-        { text: "Active", value: "is_client_active" },
-        { text: "New Client", value: "is_new_client" },
+        { text: "Active", value: "is_client_active", sortable: false },
+        { text: "New Client", value: "is_new_client", sortable: false },
         { text: "Address", value: "full_address", sortable: false },
         { text: "Phone Number", value: "phone_number", sortable: false },
-        { text: "Email List", value: "is_on_email_list", sortable: true },
+        { text: "Email List", value: "is_on_email_list", sortable: false },
         { text: "Email", value: "email", sortable: false },
-        { text: "Shared Group", value: "family_name", sortable: true },
+        { text: "Shared Group", value: "family_name", sortable: false },
         {
           text: "Record of Liability",
           value: "has_record_of_liability",
-          sortable: true,
+          sortable: false,
         },
-        { text: "Date of Entry", value: "date_of_entry", sortable: true },
+        { text: "Date of Entry", value: "date_of_entry", sortable: false },
         { text: "Actions", value: "actions", sortable: false },
       ],
       clientList: [],
@@ -1290,7 +1296,7 @@ export default {
       this.loading = true;
       this.overlay = !this.overlay;
       clientDetailService
-        .getPaginatedClients(this.page, this.pageSize, this.search)
+      .getPaginatedClients(this.page, this.pageSize, this.search, this.sortBy, this.sortDesc)
         .then((response) => {
           if (response.status == 200) {
             this.loading = false;
@@ -1318,7 +1324,12 @@ export default {
           }
         });
     },
-
+    sortTable() {
+      if (this.sortDesc == undefined) {
+        this.sortDesc = false;
+      } 
+      this.getClientTable();
+    },
     temporaryPageMethod() {
       this.$vuetify.goTo(0);
       this.getClientTable();

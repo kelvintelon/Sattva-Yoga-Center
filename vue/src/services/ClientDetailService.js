@@ -5,9 +5,9 @@ export default {
         return axios.get('/clientList')
     },
 
-    getPaginatedClients(thisPage, thisPageSize, thisSearch) {
+    getPaginatedClients(thisPage, thisPageSize, thisSearch, thisSortBy, thisSortDesc) {
         // , {params: {page: 1, pageSize: 20} }
-        return axios.get('/getPaginatedClients', {params: {page: thisPage, pageSize: thisPageSize, search: thisSearch} })
+        return axios.get('/getPaginatedClients', {params: {page: thisPage, pageSize: thisPageSize, search: thisSearch, sortBy: thisSortBy, sortDesc: thisSortDesc} })
     },
     getPaginatedDuplicateClients(thisPage, thisPageSize, thisSearch) {
         // , {params: {page: 1, pageSize: 20} }
