@@ -145,15 +145,25 @@
                 <v-container>
                   <v-row>
                     <v-col>
-                      <v-select
-                        v-if="!showNewClientForm"
-                        label="Choose one or multiple"
-                        :items="returnCorrectClientListToChoose"
-                        v-model="selectedClients"
-                        item-text="quick_details"
-                        return-object
-                        multiple
-                      ></v-select>
+                      <v-autocomplete
+                      v-if="!showNewClientForm"
+                    v-model="selectedClients"
+                    :disabled="isUpdating"
+                    :items="returnCorrectClientListToChoose"
+                    :loading="loadingFirstClientList"
+                    filled
+                    color="blue-grey lighten-2"
+                    label="Choose one or more"
+                    item-text="quick_details"
+                    return-object
+                    multiple
+                    cache-items="true"
+                    @keypress="getSearchedFirstClientTableForAutocomplete"         
+                  >
+                  <template v-slot:append-item>
+                      <div v-intersect="endFirstIntersect" />
+                    </template>
+                  </v-autocomplete>
                       <v-text-field
                         v-if="showNewClientForm"
                         v-model="clientDetails.first_name"
@@ -441,6 +451,12 @@ export default {
         (v) => (v && v.length <= 30) || "Name must be less than 30 characters",
       ],
       overlay:false,
+      paginatedObject: {},
+      autocompleteFirstClientList: [],
+      loadingFirstClientList: false,
+      firstAutocompletePage: 1,
+      pageSize: 20,
+      firstAutocompleteSearch: "",
     };
   },
   methods: {
@@ -752,6 +768,81 @@ export default {
         }
       }
     },
+    endFirstIntersect(entries, observer, isIntersecting) {
+      if (isIntersecting && this.firstAutocompleteSearch == "") {
+        // alert("intersected")
+
+       
+        this.firstAutocompletePage++;
+
+        setTimeout(
+          () =>
+            // alert(this.search)
+            ( this.getAutoCompletedFirstClientTable()
+            ),
+            // this.getPaginatedClientTable(),
+
+            // logic goes in here
+          250
+        );
+        
+      }
+    },
+    getSearchedFirstClientTableForAutocomplete(event){
+      this.firstAutocompletePage = 1;
+      var charTyped = String.fromCharCode(event.which);
+       if (/[a-z\d]/i.test(charTyped)) {
+       
+       
+        setTimeout(
+          () =>
+           
+            ( this.setFirstAutcompleteSearch(event.target.value) 
+            ),
+            
+          250
+        );
+         
+      }
+    },
+    setFirstAutcompleteSearch(search) {
+      if (search != undefined && search.length > 0) {
+        this.firstAutocompleteSearch = search;
+        this.firstAutocompletePage = 1;
+        // alert(this.firstAutocompleteSearch)
+      } else {
+        this.firstAutocompleteSearch = "";
+      }
+      this.loadingFirstClientList = true;
+      this.getAutoCompletedFirstClientTable();
+    },
+    getAutoCompletedFirstClientTable() {
+      
+      clientDetailService
+        .getPaginatedClients(this.firstAutocompletePage, this.pageSize, this.firstAutocompleteSearch)
+        .then((response) => {
+          if (response.status == 200) {
+            this.paginatedObject = response.data;
+
+            this.autocompleteFirstClientList = this.paginatedObject.listOfClients;
+            this.loadingFirstClientList = false;
+            this.autocompleteFirstClientList.forEach((item) => {
+              if (item.full_address.includes("null")) {
+                item.full_address = item.full_address.replaceAll("null", " ");
+              }
+              item.date_of_entry = new Date(item.date_of_entry);
+            });
+          } else {
+            alert("Error retrieving client information");
+          }
+        })
+        .catch((error) => {
+          const response = error.response;
+          if (response.status === 401) {
+            this.$router.push("/login");
+          }
+        });
+    },
     getAllClients() {
       this.overlay = !this.overlay;
       this.loading =true;
@@ -809,7 +900,7 @@ export default {
             this.formatsIncomingEvent();
             this.listOfSignedUpClients = this.event.attendanceList;
             // formats the date to be readable
-            this.getAllClients();
+            this.getAutoCompletedFirstClientTable()
             this.listOfSignedUpClients.forEach((item) => {
               item.date_of_entry = new Date(item.date_of_entry);
               if (item.redFlag) {
@@ -847,17 +938,18 @@ export default {
     },
     returnCorrectClientListToChoose() {
       let finalizedList = [];
-      for (let index = 0; index < this.allClientsList.length; index++) {
+      for (let index = 0; index < this.autocompleteFirstClientList.length; index++) {
         let foundMatch = false;
         this.listOfSignedUpClients.forEach((element) => {
-          if (element.client_id == this.allClientsList[index].client_id) {
+          if (element.client_id == this.autocompleteFirstClientList[index].client_id) {
             foundMatch = true;
           }
         });
         if (foundMatch == false) {
-          finalizedList.push(this.allClientsList[index]);
+          finalizedList.push(this.autocompleteFirstClientList[index]);
         }
       }
+      // returns a list of users excluding the ones who are already signed up
       return finalizedList;
     },
     formTitle() {

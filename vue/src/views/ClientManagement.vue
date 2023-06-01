@@ -14,7 +14,7 @@
 
 
 <script>
-// import ClientTableList from "../components/ClientTableList.vue";
+// import ClientTableList from "../components/ClientTablePaginatedList.vue";
 import ClientTableList from "../components/ClientTableList.vue";
 
 export default {
