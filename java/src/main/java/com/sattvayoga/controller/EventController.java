@@ -6,15 +6,16 @@ import com.sattvayoga.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.security.Principal;
 import java.sql.SQLException;
+import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.time.LocalDate;
+import java.util.*;
 
 
 @RestController
@@ -345,6 +346,35 @@ public class EventController {
                 packagePurchaseDao.decrementByOne(packagePurchase.getPackage_purchase_id());
             }
             eventDao.registerForEvent(clientEvent.getClient_id(),clientEvent.getEvent_id(),clientEvent.getPackage_purchase_id());
+        }
+
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @RequestMapping(value = "/registerAClientAndPurchasePackage/{id}", method = RequestMethod.POST)
+    public void registerAClientAndPurchasePackage(@PathVariable int id) {
+
+        for (int i = 3000; i < 6000; i++) {
+            PackagePurchase packagePurchase = new PackagePurchase();
+            packagePurchase.setClient_id(id);
+            packagePurchase.setPackage_id(3);
+            packagePurchase.setDate_purchased( new Timestamp(System.currentTimeMillis()));
+
+
+            LocalDate ld = LocalDate.now();
+
+
+                    LocalDate monthLater = ld.plusMonths( 12 );
+
+
+            java.sql.Date sqlDate = java.sql.Date.valueOf( monthLater );
+
+            packagePurchase.setClasses_remaining(1);
+            packagePurchase.setExpiration_date(sqlDate);
+            packagePurchase.setTotal_amount_paid(new BigDecimal(14));
+            packagePurchase.setIs_monthly_renew(false);
+            packagePurchaseDao.createPackagePurchase(packagePurchase);
+            eventDao.registerForEvent(id,i,i);
         }
 
     }
