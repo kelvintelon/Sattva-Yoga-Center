@@ -441,8 +441,9 @@ export default {
             var mm = String(today.getMonth() + 1).padStart(2, "0"); //January is 0!
             var yyyy = today.getFullYear();
             today = yyyy + "-" + mm + "-" + dd;
-
-            this.packages = response.data.filter((item) => {
+            this.paginatedObject = response.data;
+              this.totalPackagesPurchased = this.paginatedObject.totalRows;
+              this.packages = this.paginatedObject.listOfPurchasedPackages.filter((item) => {
               // return (item.expiration_date >= today) || (item.expiration_date == null && item.classes_remaining > 0) || (item.expiration_date >= today && item.classes_remaining > 0);
               return (
                 (item.is_subscription && item.expiration_date) ||
