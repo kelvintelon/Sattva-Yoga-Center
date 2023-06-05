@@ -4,7 +4,7 @@
       :headers="clientEventHeaders"
       :items="clientEvents"
       class="elevation-5"
-      sort-by="date"
+      
       :sort-desc="[false]"
       :loading="loading2"
       loading-text="Loading... Please wait"
@@ -150,8 +150,8 @@ export default {
           text: "Class Description",
           value: "event_name",
         },
-        { text: "Date", value: "date", sortable: true, align: "start" },
-        { text: "Start Time", value: "start_time", sortable: false },
+        { text: "Date", value: "date", sortable: true },
+        { text: "Start Time", value: "start_time", sortable: true },
         { text: "End Time", value: "end_time", sortable: false },
         { text: "Actions", value: "actions", sortable: false },
       ],
@@ -160,7 +160,7 @@ export default {
           text: "Class Description",
           value: "event_name",
         },
-        { text: "Date", value: "date", sortable: true, align: "end" },
+        { text: "Date", value: "date", sortable: true },
         { text: "Start Time", value: "start_time", sortable: false },
         { text: "End Time", value: "end_time", sortable: false },
       ],
@@ -506,18 +506,18 @@ export default {
       this.clientEventHeaders.unshift({
         text: "Event ID",
         value: "event_id",
-        sortable: false,
+        sortable: true,
       });
       this.allClientEventHeaders.unshift(
         {
           text: "Event ID",
           value: "event_id",
-          sortable: false,
+          sortable: true,
         },
         {
           text: "Package ID",
           value: "package_purchase_id",
-          sortable: false,
+          sortable: true,
         }
       );
       this.allClientEventHeaders.push({

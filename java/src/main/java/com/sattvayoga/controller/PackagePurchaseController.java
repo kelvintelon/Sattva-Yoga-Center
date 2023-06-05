@@ -6,6 +6,7 @@ import com.sattvayoga.dao.UserDao;
 import com.sattvayoga.model.ClassDetails;
 import com.sattvayoga.model.ClientDetails;
 import com.sattvayoga.model.PackagePurchase;
+import com.sattvayoga.model.PaginatedListOfPurchasedPackages;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +30,36 @@ public class PackagePurchaseController {
         this.clientDetailsDao = clientDetailsDao;
     }
 
+    @RequestMapping(value= "/userPackagePurchaseList", method = RequestMethod.GET)
+    public List<PackagePurchase> getAllUserPackagePurchase(Principal principal) throws SQLException {
+        return packagePurchaseDao.getAllUserPackagePurchases(userDao.findIdByUsername(principal.getName()));
+    }
+
+    @RequestMapping(value= "/userPackagePurchaseListByClientId/{clientId}", method = RequestMethod.GET)
+    public List<PackagePurchase> getAllUserPackagePurchaseByClientId(@PathVariable int clientId) throws SQLException {
+        return packagePurchaseDao.getAllUserPackagePurchases(clientDetailsDao.findClientByClientId(clientId).getUser_id());
+    }
+
+    @RequestMapping(value= "/userPaginatedPackagePurchaseList", method = RequestMethod.GET)
+    public PaginatedListOfPurchasedPackages getAllPaginatedUserPackagePurchase(Principal principal,
+                                                                               @RequestParam(defaultValue = "1")  int page,
+                                                                               @RequestParam(defaultValue = "10") int pageSize,
+                                                                               @RequestParam(defaultValue = "date_purchased") String sortBy,
+                                                                               @RequestParam(defaultValue = "false") boolean sortDesc) throws SQLException {
+        int userId = userDao.findIdByUsername(principal.getName());
+        return packagePurchaseDao.getAllUserPaginatedPackagePurchases(userId, page, pageSize, sortBy, sortDesc);
+    }
+
+    @RequestMapping(value= "/userPaginatedPackagePurchaseListByClientId/{clientId}", method = RequestMethod.GET)
+    public PaginatedListOfPurchasedPackages getAllPaginatedUserPackagePurchaseByClientId(@PathVariable int clientId,
+                                                                                         @RequestParam(defaultValue = "1")  int page,
+                                                                                         @RequestParam(defaultValue = "10") int pageSize,
+                                                                                         @RequestParam(defaultValue = "date_purchased") String sortBy,
+                                                                                         @RequestParam(defaultValue = "false") boolean sortDesc) throws SQLException {
+        int userId = clientDetailsDao.findClientByClientId(clientId).getUser_id();
+        return packagePurchaseDao.getAllUserPaginatedPackagePurchases(userId, page, pageSize, sortBy, sortDesc);
+    }
+
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/createPackagePurchase", method = RequestMethod.POST)
     public void createPackagePurchase(@RequestBody PackagePurchase packagePurchase) {
@@ -36,20 +67,14 @@ public class PackagePurchaseController {
         packagePurchaseDao.createPackagePurchase(packagePurchase);
     }
 
-    @RequestMapping(value= "/userPackagePurchaseList", method = RequestMethod.GET)
-    public List<PackagePurchase> getAllUserPackagePurchase(Principal principal) throws SQLException {
-        return packagePurchaseDao.getAllUserPackagePurchases(userDao.findIdByUsername(principal.getName()));
-    }
+
 
     @RequestMapping(value= "/userPackagePurchaseListByUserId/{userId}", method = RequestMethod.GET)
     public List<PackagePurchase> getAllUserPackagePurchaseByUserId(@PathVariable int userId) throws SQLException {
         return packagePurchaseDao.getAllUserPackagePurchases(userId);
     }
 
-    @RequestMapping(value= "/userPackagePurchaseListByClientId/{clientId}", method = RequestMethod.GET)
-    public List<PackagePurchase> getAllUserPackagePurchaseByClientId(@PathVariable int clientId) throws SQLException {
-        return packagePurchaseDao.getAllUserPackagePurchases(clientDetailsDao.findClientByClientId(clientId).getUser_id());
-    }
+
 
     @GetMapping(path="/getAllSharedActiveQuantityPackages")
     public List<PackagePurchase> getAllSharedActiveQuantityPackages(Principal principal){

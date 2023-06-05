@@ -217,6 +217,7 @@ public class EventController {
         eventDao.registerForEvent(clientEvent.getClient_id(),clientEvent.getEvent_id(),clientEvent.getPackage_purchase_id());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/registerNewClientToEvent", method = RequestMethod.POST)
     public void registerNewClientForEvent(@RequestBody NewClientSignUp newClientSignUp) {
@@ -307,6 +308,7 @@ public class EventController {
 
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/registerMultipleClientsForEvent", method = RequestMethod.POST)
     public void registerMultipleClientsForEvent(@RequestBody List<ClientEvent> clientEventObjects) {
@@ -350,6 +352,7 @@ public class EventController {
 
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/registerAClientAndPurchasePackage/{id}", method = RequestMethod.POST)
     public void registerAClientAndPurchasePackage(@PathVariable int id) {
@@ -362,11 +365,7 @@ public class EventController {
 
 
             LocalDate ld = LocalDate.now();
-
-
-                    LocalDate monthLater = ld.plusMonths( 12 );
-
-
+            LocalDate monthLater = ld.plusMonths( 12 );
             java.sql.Date sqlDate = java.sql.Date.valueOf( monthLater );
 
             packagePurchase.setClasses_remaining(1);

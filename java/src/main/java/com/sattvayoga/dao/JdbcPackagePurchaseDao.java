@@ -3,6 +3,7 @@ package com.sattvayoga.dao;
 import com.sattvayoga.model.Event;
 import com.sattvayoga.model.PackageDetails;
 import com.sattvayoga.model.PackagePurchase;
+import com.sattvayoga.model.PaginatedListOfPurchasedPackages;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.security.core.parameters.P;
@@ -23,18 +24,6 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    @Override
-    public void createPackagePurchase(PackagePurchase packagePurchase) {
-        String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, " +
-                "classes_remaining, activation_date, expiration_date, " +
-                "total_amount_paid, is_monthly_renew,  discount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        jdbcTemplate.update(sql, packagePurchase.getClient_id(), packagePurchase.getDate_purchased(),
-                packagePurchase.getPackage_id(), packagePurchase.getClasses_remaining(),
-                packagePurchase.getActivation_date(), packagePurchase.getExpiration_date(),
-                packagePurchase.getTotal_amount_paid(),
-                packagePurchase.isIs_monthly_renew(), packagePurchase.getDiscount());
-
-    }
 
     @Override
     public List<PackagePurchase> getAllUserPackagePurchases(int userId) {
@@ -54,6 +43,59 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         return allUserPackagePurchase;
     }
 
+    @Override
+    public PaginatedListOfPurchasedPackages getAllUserPaginatedPackagePurchases(int userId, int page, int pageSize, String sortBy, boolean sortDesc) {
+
+        int offset = 0;
+        String sortDirection = (sortDesc ? "DESC" : "ASC");
+
+        String offsetString = "";
+        if (page == 1) {
+            offset = pageSize * (page);
+            offsetString = " LIMIT ?";
+        } else {
+            offset = pageSize * (page-1);
+            offsetString = " OFFSET ? LIMIT " + pageSize;
+        }
+
+        List<PackagePurchase> allUserPackagePurchase = new ArrayList<>();
+
+        String sql = "SELECT * FROM package_purchase " +
+                "JOIN client_details on client_details.client_id = package_purchase.client_id " +
+                "WHERE client_details.user_id = ? ORDER BY " + sortBy + " " + sortDirection + offsetString;
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId, offset);
+        while (result.next()) {
+            PackagePurchase packagePurchase = mapRowToPackagePurchase(result);
+
+            // set package description
+            packagePurchase.setPackage_description(getPackageDescriptionByPackageId(packagePurchase.getPackage_id()));
+            packagePurchase.setIs_subscription(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
+            allUserPackagePurchase.add(packagePurchase);
+        }
+
+        String countSql = "SELECT COUNT(*) FROM package_purchase " +
+                "JOIN client_details on client_details.client_id = package_purchase.client_id " +
+                "WHERE client_details.user_id = ?" ;
+
+        int count = jdbcTemplate.queryForObject(countSql, Integer.class, userId);
+
+        PaginatedListOfPurchasedPackages paginatedListOfPurchasedPackages = new PaginatedListOfPurchasedPackages(allUserPackagePurchase,count);
+
+        return paginatedListOfPurchasedPackages;
+    }
+
+    @Override
+    public void createPackagePurchase(PackagePurchase packagePurchase) {
+        String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, " +
+                "classes_remaining, activation_date, expiration_date, " +
+                "total_amount_paid, is_monthly_renew,  discount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        jdbcTemplate.update(sql, packagePurchase.getClient_id(), packagePurchase.getDate_purchased(),
+                packagePurchase.getPackage_id(), packagePurchase.getClasses_remaining(),
+                packagePurchase.getActivation_date(), packagePurchase.getExpiration_date(),
+                packagePurchase.getTotal_amount_paid(),
+                packagePurchase.isIs_monthly_renew(), packagePurchase.getDiscount());
+
+    }
     @Override
     public PackagePurchase getPackagePurchaseObjectByPackagePurchaseId(int packagePurchaseId) {
         PackagePurchase packagePurchase = null;

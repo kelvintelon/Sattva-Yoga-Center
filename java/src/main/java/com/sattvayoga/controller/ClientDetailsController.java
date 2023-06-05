@@ -231,7 +231,7 @@ public class ClientDetailsController {
         }
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/removeClient/{clientId}", method = RequestMethod.DELETE)
     public void deleteClient(@PathVariable int clientId) {
         clientDetailsDao.deleteClient(clientId);
