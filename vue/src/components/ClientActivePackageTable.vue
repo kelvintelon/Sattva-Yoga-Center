@@ -245,7 +245,7 @@ export default {
         },
       ],
       page: 1,
-      pageSize: 20,
+      pageSize: 10,
       sortBy: 'date_purchased',
       sortDesc: false,
       totalPackagesPurchased: 0,

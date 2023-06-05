@@ -747,7 +747,7 @@ export default {
     return {
       search: "",
       page: 1,
-      pageSize: 20,
+      pageSize: 10,
       sortBy: 'client_id',
       sortDesc: false,
       headers: [

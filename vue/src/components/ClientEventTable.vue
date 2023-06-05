@@ -8,7 +8,7 @@
       :sort-desc="[false]"
       :loading="loading2"
       loading-text="Loading... Please wait"
-      dense
+      
     >
       <template v-slot:top>
         <v-toolbar flat>
@@ -96,7 +96,7 @@
       :sort-desc="[true]"
       :loading="loading"
       loading-text="Loading... Please wait"
-      dense
+      
     >
       <template v-slot:top>
         <v-toolbar flat>
