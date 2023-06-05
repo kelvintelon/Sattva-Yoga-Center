@@ -85,13 +85,13 @@
     </v-container>
     <client-event-table py-7></client-event-table>
     <client-active-package-table></client-active-package-table>
-    <!-- <client-purchase-history-table></client-purchase-history-table> -->
+    <client-purchase-history-table></client-purchase-history-table>
   </v-container>
 </template>
 
 <script>
 import ClientActivePackageTable from "../components/ClientActivePackageTable.vue";
-// import ClientPurchaseHistoryTable from "../components/ClientPurchaseHistoryTable.vue";
+import ClientPurchaseHistoryTable from "../components/ClientPurchaseHistoryTable.vue";
 import ClientEventTable from "../components/ClientEventTable.vue";
 import EditProfileForm from "../components/EditProfileForm.vue";
 import clientDetailService from "../services/ClientDetailService";
@@ -102,7 +102,7 @@ export default {
   name: "client-details-admin-view",
   components: {
     ClientActivePackageTable,
-    
+    ClientPurchaseHistoryTable,
     EditProfileForm,
     ClientEventTable,
   },
