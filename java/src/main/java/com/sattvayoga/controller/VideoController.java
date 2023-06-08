@@ -22,9 +22,9 @@ public class VideoController {
             value = "/get-file",
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE
     )
-    public ResponseEntity getFile(@RequestParam(defaultValue = "0-3000")  String range,
+    public ResponseEntity getFile(@RequestParam(defaultValue = "")  String range,
                                   @RequestParam(defaultValue = "0")  int rangeStart) throws IOException {
-        if (range == null) {
+        if (range.equals("")) {
             return ResponseEntity.status(HttpStatus.OK)
                     .header("Content-Type", "video/" + "mp4")
                     .header("Content-Length", String.valueOf(2000 - 1))
@@ -36,7 +36,7 @@ public class VideoController {
 
     public byte[] readByteRange(String filename, long start, long end) throws IOException {
 
-        FileInputStream inputStream = new FileInputStream("java/src/main/java/Videos/" + filename);
+        FileInputStream inputStream = new FileInputStream("src/main/java/Videos/" + filename);
         ByteArrayOutputStream bufferedOutputStream = new ByteArrayOutputStream();
         byte[] data = new byte[1024];
         int nRead;

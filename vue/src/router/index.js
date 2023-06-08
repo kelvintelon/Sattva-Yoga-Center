@@ -19,6 +19,8 @@ import ClientPackageManagement from '../views/ClientPackageManagement.vue'
 import EventAttendanceDetails from '../views/EventAttendanceDetails.vue'
 import ClientDetailsAdminView from '../views/ClientDetailsAdminView.vue'
 import ResetLinkEmailToken from '../views/ResetLinkEmailToken.vue'
+import VideoPage from '../views/VideoPage.vue'
+
 
 Vue.use(Router)
 
@@ -178,6 +180,14 @@ const router = new Router({
     meta: {
       requiresAuth: false
     }
+    },
+    {
+      path:"/videos",
+      name:"video-page",
+      component: VideoPage,
+      meta: {
+        requiresAuth: true
+      }
     },
   ]
 })
