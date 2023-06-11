@@ -23,23 +23,25 @@ public class VideoController {
     )
     public ResponseEntity getFile(@RequestHeader HttpHeaders headers) throws IOException {
         // https://stackoverflow.com/questions/8841407/grabbing-the-range-values-from-the-httpheader
-      List<String> startList = headers.get("rangestartvalue");
-      String startString = startList.get(0);
-      int startInt = Integer.parseInt(startString);
+        List<String> startList = headers.get("rangestartvalue");
+        String startString = startList.get(0);
+        long startLong = Long.parseLong(startString);
         List<String> endList = headers.get("rangeendvalue");
         String endString = endList.get(0);
-        int endInt = Integer.parseInt(endString);
+        long endLong = Long.parseLong(endString);
 
-        String range = "";
-        if (range.equals("")) {
-            return ResponseEntity.status(HttpStatus.OK)
+
+        if (!startString.equals("") && !endString.equals("")) {
+            return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
                     .header("Content-Type", "video/" + "mp4")
-                    .header("Content-Length", String.valueOf(endInt - 1))
-                    .body(readByteRange("09.18.20 - Friday_.mp4", startInt,endInt)); // Read the object and convert it as bytes
+                    .header("Content-Length", String.valueOf(endLong - (startLong + 1)))
+                    .header("Accept-Ranges", "bytes")
+                    .body(readByteRange("09.18.20 - Friday_.mp4", startLong, endLong)); // Read the object and convert it as bytes
         } else {
-            return null;
+            return (ResponseEntity) ResponseEntity.status(HttpStatus.BAD_REQUEST);
         }
     }
+
     // https://stackoverflow.com/questions/31591166/load-video-from-inputstream-using-java-and-video-js
     // https://stackoverflow.com/a/16157075
     //

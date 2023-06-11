@@ -31,7 +31,9 @@ export default {
             // '', 
             require("@/assets/videos/earth.mp4"), 
             // require(this.getVideo()),
+            // require(this.videoObject),
               type: 'video/mp4'
+              // type: 'bytes'
           }
         ]
       },
@@ -50,12 +52,13 @@ export default {
   },
   methods: {
     getVideo() {
-
+      let obj = {}
     VideoService.getVideoFile().then((response) => {
   
-        return response.data
+        obj = response.data
 
     })
+    return obj;
   },
   }
 };
