@@ -28,9 +28,10 @@ export default {
         sources: [
           {
             src:
-            // '', 
+            // '/get-file', 
             // VideoService.getVideoFile().then(),
             'http://localhost:9000/get-file',
+            // this.getVideo(),
             // require("@/assets/videos/earth.mp4"), 
             // require(this.getVideo()),
             // require(this.videoObject),
@@ -55,9 +56,9 @@ export default {
   methods: {
     getVideo() {
     
-    return VideoService.getVideoFile().then((response) => {
+     VideoService.getVideoFile().then((response) => {
   
-        response.data
+     return   response.data
 
     })
     

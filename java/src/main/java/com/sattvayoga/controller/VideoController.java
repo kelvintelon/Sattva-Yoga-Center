@@ -3,14 +3,17 @@ package com.sattvayoga.controller;
 
 import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 //@PreAuthorize("isAuthenticated()")
@@ -19,30 +22,77 @@ import java.util.List;
 public class VideoController {
 
     @GetMapping(
-            value = "/get-file",
-            produces = MediaType.APPLICATION_OCTET_STREAM_VALUE
+            value = "/get-file"
     )
-    public ResponseEntity getFile(@RequestHeader HttpHeaders headers) throws IOException {
+    @ResponseBody
+    public void getFile(@RequestHeader(value = "Range", required = false) String rangeHeader, HttpServletResponse response) throws IOException {
         // https://stackoverflow.com/questions/8841407/grabbing-the-range-values-from-the-httpheader
+        // https://stackoverflow.com/questions/65492071/implement-byte-serving-for-spring-boot
 
-        List<HttpRange> startList = headers.getRange();
+        long rangeStart = 0;
+        long rangeEnd;
 
-        File f = new File("src/main/java/Videos/09.18.20 - Friday_.mp4");
+        File videoFile = new File("src/main/java/Videos/09.18.20 - Friday_.mp4");
 
-        long startLong = startList.get(0).getRangeStart(f.length());
+        String filePathString = "src/main/java/Videos/09.18.20 - Friday_.mp4";
 
-        long endLong = startList.get(0).getRangeEnd(f.length());
+        OutputStream os = response.getOutputStream();
 
+        InputStream videoFileStream = new FileInputStream(videoFile);
 
-        if (true) {
-            return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
-                    .header("Content-Type", "video/" + "mp4")
-                    .header("Content-Length", String.valueOf(endLong - (startLong + 1)))
-                    .header("Accept-Ranges", "bytes")
-                    .body(readByteRange("09.18.20 - Friday_.mp4", startLong, endLong)); // Read the object and convert it as bytes
-        } else {
-            return (ResponseEntity) ResponseEntity.status(HttpStatus.BAD_REQUEST);
+        Path filePath = Paths.get("src/main/java/Videos/09.18.20 - Friday_.mp4");
+
+        Long fileSize = Files.size(filePath);
+
+        byte[] buffer = new byte[1024];
+
+        RandomAccessFile file = new RandomAccessFile(filePathString, "r");
+
+        try (file) {
+            if (rangeHeader == null) {
+                response.setHeader("Content-Type", "video/mp4");
+                response.setHeader("Content-Length", fileSize.toString());
+                response.setStatus(HttpStatus.OK.value());
+                long pos = rangeStart;
+                file.seek(pos);
+                while (pos < fileSize - 1) {
+                    file.read(buffer);
+                    os.write(buffer);
+                    pos += buffer.length;
+                }
+                os.flush();
+                return;
+            }
+
+            String[] ranges = rangeHeader.split("-");
+            rangeStart = Long.parseLong(ranges[0].substring(6));
+            if (ranges.length > 1) {
+                rangeEnd = Long.parseLong(ranges[1]);
+            } else {
+                rangeEnd = fileSize - 1;
+            }
+            if (fileSize < rangeEnd) {
+                rangeEnd = fileSize - 1;
+            }
+
+            String contentLength = String.valueOf((rangeEnd - rangeStart) + 1);
+            response.setHeader("Content-Type", "video/mp4");
+            response.setHeader("Content-Length", contentLength);
+            response.setHeader("Accept-Ranges", "bytes");
+            response.setHeader("Content-Range", "bytes" + " " + rangeStart + "-" + rangeEnd + "/" + fileSize);
+            response.setStatus(HttpStatus.PARTIAL_CONTENT.value());
+            long pos = rangeStart;
+            file.seek(pos);
+            while (pos < rangeEnd) {
+                file.read(buffer);
+                os.write(buffer);
+                pos += buffer.length;
+            }
+            os.flush();
+
         }
+
+
     }
 
     // https://stackoverflow.com/questions/31591166/load-video-from-inputstream-using-java-and-video-js
@@ -55,6 +105,7 @@ public class VideoController {
         ByteArrayOutputStream bufferedOutputStream = new ByteArrayOutputStream();
         byte[] data = new byte[1024];
         int nRead;
+
         // intputstream.read(b, offset, len)       Reads up to len bytes of data from this input stream into an array of bytes.
         // If len is not zero, the method blocks until some input is available; otherwise, no bytes are read and 0 is returned.
         //Params:
@@ -67,12 +118,12 @@ public class VideoController {
 
         inputStream.read(result,0, (int) end);
 
-
+//
 //        while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
 //            bufferedOutputStream.write(data, 0, nRead);
 //        }
 //
-//        bufferedOutputStream.flush();
+////        bufferedOutputStream.flush();
 //
 //
 //        // System.arraycopy() method copies a source array from a specific beginning position to the destination array from the mentioned position.
@@ -81,5 +132,94 @@ public class VideoController {
 
         return result;
     }
+
+    //        long contentLength = videoFileStream.available();
+
+//        if (rangeHeader != null && rangeHeader.startsWith("bytes=")) {
+
+//        final long start = startList.get(0).getRangeStart(videoFile.length());
+//
+//        long end = startList.get(0).getRangeEnd(videoFile.length());
+//
+//            if (end == Long.MAX_VALUE) {
+//                end = contentLength - 1;
+//            }
+//
+//            final long[] rangeLength = {end - start + 1};
+//
+//
+//
+//            return ResponseEntity.status(206)
+//                    .header("Content-Range", "bytes " + start + "-" + end + "/" + contentLength)
+//                    .header("Content-Length", String.valueOf(rangeLength[0]))
+//                    .header("Accept-Ranges", "bytes")
+//                    .body(outputStream -> {
+//                        try {
+//                            videoFileStream.skip(start);
+//                            byte[] buffer = new byte[1024];
+//                            int bytesRead;
+//                            while (rangeLength[0] > 0 && (bytesRead = videoFileStream.read(buffer)) != -1) {
+//                                outputStream.write(buffer, 0, (int) Math.min(rangeLength[0], bytesRead));
+//                                rangeLength[0] -= bytesRead;
+//                            }
+//                        } finally {
+//                            videoFileStream.close();
+//                        }
+//                    });
+//        }
+//
+//        return ResponseEntity.ok()
+//                .headers(headers)
+//                .body(outputStream -> Files.copy(videoFile.toPath(), outputStream));
+
+    //TODO: CASE 2
+
+//
+//        long startLong = startList.get(0).getRangeStart(f.length());
+//
+//        long endLong = startList.get(0).getRangeEnd(f.length());
+//
+////        if (endLong == Long.MAX_VALUE) {
+////            endLong = f.length() - 1;
+////        }
+//
+//        long rangeLength = endLong - startLong + 1;
+//
+//        long finalEndLong = endLong;
+//
+//        if (true) {
+//
+//            return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
+//                    .header("Content-Range", "bytes " + startLong + "-" + endLong + "/" + f.length())
+//                    .header("Content-Type", "video/" + "mp4")
+//                    .header("Content-Length", String.valueOf(f.length()))
+//                    .header("Accept-Ranges", "bytes")
+//                    .body(outputStream -> readByteRange("09.18.20 - Friday_.mp4", startLong, endLong)); // Read the object and convert it as bytes
+//        } else {
+//            return (ResponseEntity) ResponseEntity.status(HttpStatus.BAD_REQUEST);
+//        }
+
+
+    //TODO: CASE 3
+
+//        List<String> startList = headers.get("rangestartvalue");
+//        String startString = startList.get(0);
+//        long startLong = Long.parseLong(startString);
+//
+//        List<String> endList = headers.get("rangeendvalue");
+//        String endString = endList.get(0);
+//        long endLong = Long.parseLong(endString);
+
+    // !startString.equals("") && !endString.equals("")
+
+//        if (true) {
+//            return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
+//                    .header("Content-Type", "video/" + "mp4")
+//                    .header("Content-Length", String.valueOf(endLong - (startLong + 1)))
+//                    .header("Accept-Ranges", "bytes")
+//                    .body(outputStream -> readByteRange("09.18.20 - Friday_.mp4", startLong, endLong)); // Read the object and convert it as bytes
+//        } else {
+//            return (ResponseEntity) ResponseEntity.status(HttpStatus.BAD_REQUEST);
+//        }
 
 }
