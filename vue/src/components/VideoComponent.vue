@@ -29,7 +29,9 @@ export default {
           {
             src:
             // '', 
-            require("@/assets/videos/earth.mp4"), 
+            // VideoService.getVideoFile().then(),
+            'http://localhost:9000/get-file',
+            // require("@/assets/videos/earth.mp4"), 
             // require(this.getVideo()),
             // require(this.videoObject),
               type: 'video/mp4'
@@ -41,24 +43,24 @@ export default {
       earthLocation: require("@/assets/videos/earth.mp4")
     };
   },
-  created() {
-    VideoService.getVideoFile().then((response) => {
+  // created() {
+  //   VideoService.getVideoFile().then((response) => {
 
      
     
-    this.videoObject = response.data;
+  //   this.videoObject = response.data;
 
-    })
-  },
+  //   })
+  // },
   methods: {
     getVideo() {
-      let obj = {}
-    VideoService.getVideoFile().then((response) => {
+    
+    return VideoService.getVideoFile().then((response) => {
   
-        obj = response.data
+        response.data
 
     })
-    return obj;
+    
   },
   }
 };
