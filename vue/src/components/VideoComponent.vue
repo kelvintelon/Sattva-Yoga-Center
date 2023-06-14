@@ -2,7 +2,7 @@
   <!-- https://videojs.com/guides/vue/ -->
   <v-container>
     <div>
-         <video-player :options="videoOptions" />
+         <video-player id="vid1" :options="videoOptions" />
       <!-- <video-player  >
         <source src=earthLocation type="video/mp4"/>
       </video-player> -->
@@ -22,37 +22,34 @@ export default {
   },
   data() {
     return {
-      videoOptions: {
+      
+      localUrl: 'http://localhost:9000/get-file?fileName=',
+      exactFileLocation: 'http://localhost:9000/get-file?fileName=09.18.20 - Friday_',
+      fileName: '09.18.20 - Friday_',
+
+    };
+  },
+  computed: {
+    videoOptions() {
+      return {
         autoplay: true,
         controls: true,
         sources: [
           {
             src:
-            // '/get-file', 
-            // VideoService.getVideoFile().then(),
-            'http://localhost:9000/get-file',
-            // this.getVideo(),
-            // require("@/assets/videos/earth.mp4"), 
-            // require(this.getVideo()),
-            // require(this.videoObject),
+            this.localUrl+this.fileName,
               type: 'video/mp4'
               // type: 'bytes'
           }
         ]
-      },
-      videoObject: {},
-      earthLocation: require("@/assets/videos/earth.mp4")
-    };
+      }
+    }
   },
-  // created() {
-  //   VideoService.getVideoFile().then((response) => {
-
-     
-    
-  //   this.videoObject = response.data;
-
-  //   })
-  // },
+  created() {
+    // this.videoOptions.src='http://localhost:9000/get-file?fileName='+ this.file;
+    // var video = this.videojs("vid1");
+    // video.src(this.fileName);
+  },
   methods: {
     getVideo() {
     

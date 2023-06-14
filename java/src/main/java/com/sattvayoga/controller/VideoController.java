@@ -21,26 +21,25 @@ import java.util.List;
 @CrossOrigin
 public class VideoController {
 
-    @GetMapping(
-            value = "/get-file"
-    )
+    @GetMapping(value = "/get-file")
     @ResponseBody
-    public void getFile(@RequestHeader(value = "Range", required = false) String rangeHeader, HttpServletResponse response) throws IOException {
+    public void getFile(@RequestHeader(value = "Range", required = false) String rangeHeader, @RequestParam String fileName, HttpServletResponse response) throws IOException {
         // https://stackoverflow.com/questions/8841407/grabbing-the-range-values-from-the-httpheader
-        // https://stackoverflow.com/questions/65492071/implement-byte-serving-for-spring-boot
+        // https://stackoverflow.com/a/65526884 second or third solution
+
+
+        // You are directly writing the response to the HttpServletResponse object using its output stream.
+        // You read the video file using a RandomAccessFile and seek to the appropriate position based on the range requested.
+        // Then, you write the file data to the output stream in chunks using a buffer.
 
         long rangeStart = 0;
         long rangeEnd;
-
-        File videoFile = new File("src/main/java/Videos/09.18.20 - Friday_.mp4");
-
-        String filePathString = "src/main/java/Videos/09.18.20 - Friday_.mp4";
+        // 09.18.20 - Friday_
+        String filePathString = "src/main/java/Videos/" + fileName + ".mp4";
 
         OutputStream os = response.getOutputStream();
 
-        InputStream videoFileStream = new FileInputStream(videoFile);
-
-        Path filePath = Paths.get("src/main/java/Videos/09.18.20 - Friday_.mp4");
+        Path filePath = Paths.get("src/main/java/Videos/" + fileName + ".mp4");
 
         Long fileSize = Files.size(filePath);
 
@@ -95,28 +94,111 @@ public class VideoController {
 
     }
 
+//    @GetMapping(
+//            value = "/get-file"
+//    )
+//    @ResponseBody
+//    public ResponseEntity<StreamingResponseBody>  getFile(@RequestHeader(value = "Range", required = false) String rangeHeader) throws IOException {
+//        // https://stackoverflow.com/questions/8841407/grabbing-the-range-values-from-the-httpheader
+//        // https://stackoverflow.com/a/65526884 second or third solution
+//
+//
+//        StreamingResponseBody responseStream;
+//
+//        long rangeStart = 0;
+//        long rangeEnd;
+//
+//        String filePathString = "src/main/java/Videos/09.18.20 - Friday_.mp4";
+//
+//        final HttpHeaders responseHeaders = new HttpHeaders();
+//
+//        Path filePath = Paths.get("src/main/java/Videos/09.18.20 - Friday_.mp4");
+//
+//        Long fileSize = Files.size(filePath);
+//
+//        byte[] buffer = new byte[1024];
+//
+//
+//        if (rangeHeader == null) {
+//            responseHeaders.add("Content-Type", "video/mp4");
+//            responseHeaders.add("Content-Length", fileSize.toString());
+//            responseStream = os -> {
+//                RandomAccessFile file = new RandomAccessFile(filePathString, "r");
+//                try (file) {
+//                    long pos = 0;
+//                    file.seek(pos);
+//                    while (pos < fileSize - 1) {
+//                        file.read(buffer);
+//                        os.write(buffer);
+//                        pos += buffer.length;
+//                    }
+//                    os.flush();
+//                } catch (Exception e) {}
+//            };
+//            return new ResponseEntity<>(responseStream, responseHeaders, HttpStatus.OK);
+//        }
+//
+//        String[] ranges = rangeHeader.split("-");
+//         rangeStart = Long.parseLong(ranges[0].substring(6));
+//
+//        if (ranges.length > 1) {
+//            rangeEnd = Long.parseLong(ranges[1]);
+//        } else {
+//            rangeEnd = fileSize - 1;
+//        }
+//        if (fileSize < rangeEnd) {
+//            rangeEnd = fileSize - 1;
+//        }
+//
+//        String contentLength = String.valueOf((rangeEnd - rangeStart) + 1);
+//        responseHeaders.add("Content-Type", "video/mp4");
+//        responseHeaders.add("Content-Length", contentLength);
+//        responseHeaders.add("Accept-Ranges", "bytes");
+//        responseHeaders.add("Content-Range", "bytes" + " " + rangeStart + "-" + rangeEnd + "/" + fileSize);
+//        final Long _rangeEnd = rangeEnd;
+//        long finalRangeStart = rangeStart;
+//        responseStream = os -> {
+//            RandomAccessFile file = new RandomAccessFile(filePathString, "r");
+//            try (file) {
+//                long pos = finalRangeStart;
+//                file.seek(pos);
+//                while (pos < _rangeEnd) {
+//                    file.read(buffer);
+//                    os.write(buffer);
+//                    pos += buffer.length;
+//                }
+//                os.flush();
+//            } catch (Exception e) {}
+//        };
+//        return new ResponseEntity<>(responseStream, responseHeaders, HttpStatus.PARTIAL_CONTENT);
+//
+//
+//
+//    }
+
+
     // https://stackoverflow.com/questions/31591166/load-video-from-inputstream-using-java-and-video-js
     // https://stackoverflow.com/a/16157075
     //
 
-    public byte[] readByteRange(String filename, long start, long end) throws IOException {
-
-        FileInputStream inputStream = new FileInputStream("src/main/java/Videos/" + filename);
-        ByteArrayOutputStream bufferedOutputStream = new ByteArrayOutputStream();
-        byte[] data = new byte[1024];
-        int nRead;
-
-        // intputstream.read(b, offset, len)       Reads up to len bytes of data from this input stream into an array of bytes.
-        // If len is not zero, the method blocks until some input is available; otherwise, no bytes are read and 0 is returned.
-        //Params:
-        //b – the buffer into which the data is read.
-        //off – the start offset in the destination array b
-        //len – the maximum number of bytes read.
-        //Returns:
-        //the total number of bytes read into the buffer, or -1 if there is no more data because the end of the file has been reached.
-        byte[] result = new byte[(int) (end - start)];
-
-        inputStream.read(result,0, (int) end);
+//    public byte[] readByteRange(String filename, long start, long end) throws IOException {
+//
+//        FileInputStream inputStream = new FileInputStream("src/main/java/Videos/" + filename);
+//        ByteArrayOutputStream bufferedOutputStream = new ByteArrayOutputStream();
+//        byte[] data = new byte[1024];
+//        int nRead;
+//
+//        // intputstream.read(b, offset, len)       Reads up to len bytes of data from this input stream into an array of bytes.
+//        // If len is not zero, the method blocks until some input is available; otherwise, no bytes are read and 0 is returned.
+//        //Params:
+//        //b – the buffer into which the data is read.
+//        //off – the start offset in the destination array b
+//        //len – the maximum number of bytes read.
+//        //Returns:
+//        //the total number of bytes read into the buffer, or -1 if there is no more data because the end of the file has been reached.
+//        byte[] result = new byte[(int) (end - start)];
+//
+//        inputStream.read(result,0, (int) end);
 
 //
 //        while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
@@ -130,8 +212,8 @@ public class VideoController {
 //
 //        System.arraycopy(bufferedOutputStream.toByteArray(), (int) start, result, 0, (int) (end - start));
 
-        return result;
-    }
+//        return result;
+//    }
 
     //        long contentLength = videoFileStream.available();
 
