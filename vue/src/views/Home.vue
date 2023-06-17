@@ -99,49 +99,104 @@
           ><v-list nav dense style="position: fixed" class="mr-16 hidden-md-and-down">
             <v-list-item>
               <v-btn
+              v-if="!foundWelcome"
                 elevation="0"
                 color="white"
+                @click="$vuetify.goTo('#welcomeCard', welcomeCardOptions)"
+                >-Welcome</v-btn
+              >
+              <v-btn
+              v-else
+                elevation="0"
+                color="orange"
+                x-large
                 @click="$vuetify.goTo('#welcomeCard', welcomeCardOptions)"
                 >-Welcome</v-btn
               >
             </v-list-item>
             <v-list-item
               ><v-btn
+              v-if="!foundClasses"
                 elevation="0"
                 color="white"
+                @click="$vuetify.goTo('#classes-id', regularCardOptions)"
+                >-Classes</v-btn
+              >
+              <v-btn
+              v-else
+                elevation="0"
+                color="orange"
+                x-large
                 @click="$vuetify.goTo('#classes-id', regularCardOptions)"
                 >-Classes</v-btn
               >
             </v-list-item>
             <v-list-item
               ><v-btn
+              v-if="!foundGuidelines"
                 elevation="0"
                 color="white"
+                @click="$vuetify.goTo('#studio-guidelines', regularCardOptions)"
+                >-Guidelines</v-btn
+              >
+              <v-btn
+              v-else
+                elevation="0"
+                color="orange"
+                x-large
                 @click="$vuetify.goTo('#studio-guidelines', regularCardOptions)"
                 >-Guidelines</v-btn
               >
             </v-list-item>
             <v-list-item
               ><v-btn
+                v-if="!foundNewClients"
                 elevation="0"
                 color="white"
+                @click="$vuetify.goTo('#new-client', regularCardOptions)"
+                >-New Client</v-btn
+              >
+              <v-btn
+                v-else
+                elevation="0"
+                color="orange"
+                x-large
                 @click="$vuetify.goTo('#new-client', regularCardOptions)"
                 >-New Client</v-btn
               >
             </v-list-item>
             <v-list-item
               ><v-btn
+              v-if="!foundAboutUs"
                 elevation="0"
                 color="white"
                 @click="$vuetify.goTo('#about-us', regularCardOptions)"
                 >-About Us</v-btn
               >
+              <v-btn
+                v-else
+                elevation="0"
+                color="orange"
+                @click="$vuetify.goTo('#about-us', regularCardOptions)"
+                x-large
+                >-About Us</v-btn
+              >
             </v-list-item>
             <v-list-item
               ><v-btn
+              v-if="!foundInstructorTraining"
                 elevation="0"
                 color="white"
                 class="my-3"
+                @click="$vuetify.goTo('#instructor-training', regularCardOptions)"
+                >-Instructor <br/>Training
+                 </v-btn
+              ><v-btn
+              v-else
+                elevation="0"
+                color="orange"
+                class="my-3"
+                x-large
                 @click="$vuetify.goTo('#instructor-training', regularCardOptions)"
                 >-Instructor <br/>Training
                  </v-btn
@@ -149,8 +204,16 @@
             </v-list-item>
             <v-list-item
               ><v-btn
+              v-if="!foundFindUs"
                 elevation="0"
                 color="white"
+                @click="$vuetify.goTo(9999, regularCardOptions)"
+                >-Find Us</v-btn
+              ><v-btn
+              v-else
+                elevation="0"
+                color="orange"
+                x-large
                 @click="$vuetify.goTo(9999, regularCardOptions)"
                 >-Find Us</v-btn
               >
@@ -431,7 +494,7 @@
                     threshold: [1.0],
                   },
                 }"
-                class="smallInvisible"
+                class="smallInvisible mb-0"
                 v-if="!animationLoader && !expandAcknowledgements"
               />
               <v-slide-y-reverse-transition
@@ -441,6 +504,8 @@
                 <v-card
                   v-if="!animationLoader && expandAcknowledgements"
                   v-model="expandAcknowledgements"
+                  outlined
+                  class="mb-0"
                 >
                   <v-divider class="mx-4" color="red"></v-divider>
                   <v-card-title style="color: rgba(245, 104, 71, 0.95)"
@@ -467,13 +532,13 @@
                         </v-col>
                       </v-row>
                     </v-card-text></v-card-subtitle
-                  >
+                  ><v-divider class="mx-4" color="red"></v-divider>
                 </v-card>
               </v-slide-y-reverse-transition>
               
             </v-card>
           </v-fab-transition>
-          <v-card id="new-client"></v-card>
+          <v-card id="new-client"  height="0"></v-card>
           <div
                 v-intersect.once="{
                   handler: onNewClientIntersect,
@@ -493,6 +558,11 @@
                 <v-card
                   v-if="!animationLoader && expandNewClient"
                   v-model="expandNewClient"
+                  class="mx-auto  rounded-xl mt-0"
+                   max-width="900px"
+              min-width="200px"
+        
+              
                 >
                   <v-card-title style="color: rgba(245, 104, 71, 0.95)"
                     ><strong>New Client</strong></v-card-title
@@ -511,7 +581,7 @@
                         </v-col>
                       </v-row>
                     </v-card-text></v-card-subtitle
-                  >
+                  ><v-divider class="mx-4" color="red"></v-divider>
                 </v-card>
               </v-slide-y-reverse-transition>
               <v-card id="about-us"></v-card>
@@ -804,7 +874,8 @@
         </v-container> </v-col
     >
   <v-col lg="2" sm="0" xlg="2"></v-col></v-row>
-    
+    <br>
+    <br>
   </v-container>
 </template>
 
@@ -869,6 +940,13 @@ export default {
     firstYoutubeVideo: false,
     events: [],
     anchorFab: false,
+    foundWelcome: false,
+    foundClasses: false,
+    foundGuidelines: false,
+    foundNewClients: false,
+    foundAboutUs: false,
+    foundInstructorTraining: false,
+    foundFindUs: false,
   }),
   created() {
     this.getEventTable();
@@ -896,24 +974,41 @@ export default {
   },
   methods: {
     onCarouselIntersect(isIntersecting) {
+      // alert("find us")
+      // this.resetAllExceptParameter("Find Us")
+      // this.foundFindUs = true;
       this.carouselIntersectCount++;
       if (this.carouselIntersectCount == 1) {
         this.expandCarousel = isIntersecting;
       }
     },
     onTableIntersect(isIntersecting) {
+      // alert("instructor training")
+      // this.resetAllExceptParameter("Classes")
+      // this.foundClasses = true;
       this.tableIntersectCount++;
       if (this.tableIntersectCount == 1) {
         this.expandTable = isIntersecting;
       }
     },
     onStudioGuidelinesIntersect(isIntersecting) {
+
+      // this.resetAllExceptParameter("Guidelines")
+
+      // this.foundGuidelines = true;
+
+
       this.studioGuidelinesIntersectCount++;
       if (this.studioGuidelinesIntersectCount == 1) {
         this.expandStudioGuidelines = isIntersecting;
       }
     },
     onNewClientIntersect(isIntersecting) {
+      
+      // this.resetAllExceptParameter("Classes")
+
+      // this.foundClasses = true;
+
       this.newClientIntersectCount++;
       if (this.newClientIntersectCount == 1) {
         this.expandNewClient = isIntersecting;
@@ -944,12 +1039,22 @@ export default {
       }
     },
     onInstructorTrainingIntersect(isIntersecting) {
+      
+      // this.resetAllExceptParameter("Instructor Training")
+      
+      // this.foundInstructorTraining = true;
+
       this.instructorTrainingIntersectCount++;
       if (this.instructorTrainingIntersectCount == 1) {
         this.expandInstructorTraining = isIntersecting;
       }
     },
     onBhagavadGitaIntersect(isIntersecting) {
+      
+      // this.resetAllExceptParameter("About Us")
+
+      // this.foundAboutUs = true;
+
       this.bhagavadGitaIntersectCount++;
       if (this.bhagavadGitaIntersectCount == 1) {
         this.expandBhagavadGita = isIntersecting;
@@ -981,6 +1086,23 @@ export default {
           this.$router.push({ name: "class-registration" });
         }
       }
+    },
+    resetAllExceptParameter(exception) {
+       if (exception != "Classes") {
+        this.foundClasses = false
+      } else if (exception != "Guidelines") {
+        this.foundGuidelines = false
+      } else if (exception != "New Clients") {
+        this.foundNewClients = false
+      } else if (exception != "About Us") {
+        this.foundAboutUs = false
+      } else if (exception != "Instructor Training") {
+        this.foundInstructorTraining = false
+      } else if (exception != "Find Us") {
+        this.foundFindUs = false
+      }
+      
+      
     },
   },
 };

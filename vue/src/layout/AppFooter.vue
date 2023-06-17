@@ -1,6 +1,5 @@
 <template>
   <v-footer
-    
     padless
     light
     min-height="250px"
