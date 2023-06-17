@@ -198,6 +198,7 @@ export default {
           { text: 'Teacher Management', route: '/teacherManagement' },
           { text: 'Client Management', route: '/clientManagement' },
           { text: 'Package Management', route: '/packageManagement' },
+          { text: 'Videos', route: '/videos' },
           { text: 'Logout', route: '/logout' })
       } else if (this.$store.state.token != '') {
         this.links = [];
@@ -215,6 +216,7 @@ export default {
             { text: 'View Classes', route: '/registerForClass' },
             { text: 'Package Management', route: '/clientPackageManagement' },
             { text: 'Reset Password', route: '/' },
+            { text: 'Videos', route: '/videos' },
             { text: 'Logout', route: '/logout' })
         }
       }

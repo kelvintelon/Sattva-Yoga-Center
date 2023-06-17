@@ -1,6 +1,22 @@
 <template>
   <v-container>
-    <v-simple-table height="400px" v-if="!showVideo">
+    <v-card v-if="showVideo">
+    <v-row>
+      <v-spacer></v-spacer>
+      <v-col>
+    <video-component :chosenFileName="chosenFileName"></video-component></v-col>
+    <v-spacer></v-spacer>
+  </v-row>
+  <v-row align="center" justify="center">
+    <v-spacer></v-spacer>
+    <v-col align="center" justify="center">
+      <v-btn @click="showVideo = false">CLOSE OUT PLAYER</v-btn>
+    </v-col>
+    <v-spacer></v-spacer>
+  </v-row>
+</v-card>
+
+    <v-simple-table height="400px">
     <template v-slot:default>
       <thead>
         <tr>
@@ -25,21 +41,7 @@
     
   </v-simple-table>
     
-     <v-card v-else>
-    <v-row>
-      <v-spacer></v-spacer>
-      <v-col>
-    <video-component :chosenFileName="chosenFileName"></video-component></v-col>
-    <v-spacer></v-spacer>
-  </v-row>
-  <v-row>
-    <v-spacer></v-spacer>
-    <v-col>
-      <v-btn @click="showVideo = false">CLOSE OUT PLAYER</v-btn>
-    </v-col>
-    <v-spacer></v-spacer>
-  </v-row>
-</v-card>
+
 
   </v-container>
 </template>
@@ -63,6 +65,10 @@ data() {
   }
 },
 created() {
+  if (this.$store.state.token == '') {
+    this.$router.push({ name: "login" });
+      }
+
   VideoService.getVideoFilenames().then((response) => {
     if (response.status == 200) {
       this.listOfFileNames = response.data;
@@ -71,8 +77,15 @@ created() {
 },
 methods: {
   chosenVideo(fileName){
+    if (this.showVideo) {
+    this.showVideo = false;
+    }
+    setTimeout(() => {
+      this.chosenFileName = fileName;
+    
     this.showVideo = true;
-    this.chosenFileName = fileName;
+    }, 250)
+    
   }
 },  
 }

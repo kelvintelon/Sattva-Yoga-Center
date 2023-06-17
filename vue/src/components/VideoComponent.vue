@@ -28,7 +28,7 @@ export default {
   computed: {
     videoOptions() {
       return {
-        autoplay: true,
+        autoplay: false,
         controls: true,
         sources: [
           {
