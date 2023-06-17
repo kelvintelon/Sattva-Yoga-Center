@@ -22,7 +22,7 @@ import java.util.List;
 @CrossOrigin
 public class VideoController {
 
-    //test
+
     @GetMapping(value = "/get-file")
     @ResponseBody
     public void getFile(@RequestHeader(value = "Range", required = false) String rangeHeader, @RequestParam String fileName, HttpServletResponse response) throws IOException {
