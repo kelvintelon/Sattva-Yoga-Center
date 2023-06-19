@@ -208,6 +208,7 @@
                 elevation="0"
                 color="white"
                 @click="$vuetify.goTo(9999, regularCardOptions)"
+                class="mb-0"
                 >-Find Us</v-btn
               ><v-btn
               v-else
@@ -504,7 +505,7 @@
                 <v-card
                   v-if="!animationLoader && expandAcknowledgements"
                   v-model="expandAcknowledgements"
-                  outlined
+                
                   class="mb-0"
                 >
                   <v-divider class="mx-4" color="red"></v-divider>

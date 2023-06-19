@@ -2,10 +2,9 @@
   <v-footer
     padless
     light
-    min-height="250px"
+    min-height="220px"
     color="rgba(252, 142, 1, 0.22)"
   >
- 
   <v-row justify="center" align="center">
   
    <v-col justify="center" align="center">
@@ -23,17 +22,12 @@
 
 
 (313) 274-3995 (touch number to dial)
-
-    </div>
-  </v-col>
-   </v-row>
-   <v-row justify="center" align="center">
-    
-    <v-col justify="center" align="center">
+<v-col justify="center" align="center">
       <div style="font-size: 16px" >©2023 by Sattva Yoga Center</div>
       
     </v-col>
-   
+    </div>
+  </v-col>
    </v-row>
   </v-footer>
 </template>
