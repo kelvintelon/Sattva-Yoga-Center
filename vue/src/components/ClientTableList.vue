@@ -1310,7 +1310,9 @@ export default {
               if (item.full_address.includes("null")) {
                 item.full_address = item.full_address.replaceAll("null", " ");
               }
-              item.date_of_entry = new Date(item.date_of_entry);
+
+              let dateEntry = item.date_of_entry.toString();
+              item.date_of_entry = dateEntry.substring(0,10);
             });
             this.$store.commit("SET_CLIENT_LIST", response.data);
           } else {
