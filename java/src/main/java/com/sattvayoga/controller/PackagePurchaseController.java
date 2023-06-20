@@ -54,10 +54,20 @@ public class PackagePurchaseController {
     public PaginatedListOfPurchasedPackages getAllPaginatedUserPackagePurchaseByClientId(@PathVariable int clientId,
                                                                                          @RequestParam(defaultValue = "1")  int page,
                                                                                          @RequestParam(defaultValue = "10") int pageSize,
-                                                                                         @RequestParam(defaultValue = "date_purchased") String sortBy,
+                                                                                         @RequestParam(defaultValue = "package_purchase_id") String sortBy,
                                                                                          @RequestParam(defaultValue = "false") boolean sortDesc) throws SQLException {
         int userId = clientDetailsDao.findClientByClientId(clientId).getUser_id();
         return packagePurchaseDao.getAllUserPaginatedPackagePurchases(userId, page, pageSize, sortBy, sortDesc);
+    }
+
+    @RequestMapping(value= "/userActivePaginatedPackagePurchaseListByClientId/{clientId}", method = RequestMethod.GET)
+    public PaginatedListOfPurchasedPackages getAllActivePaginatedUserPackagePurchaseByClientId(@PathVariable int clientId,
+                                                                                         @RequestParam(defaultValue = "1")  int page,
+                                                                                         @RequestParam(defaultValue = "10") int pageSize,
+                                                                                         @RequestParam(defaultValue = "package_purchase_id") String sortBy,
+                                                                                         @RequestParam(defaultValue = "false") boolean sortDesc) throws SQLException {
+        int userId = clientDetailsDao.findClientByClientId(clientId).getUser_id();
+        return packagePurchaseDao.getAllActiveUserPaginatedPackagePurchases(userId, page, pageSize, sortBy, sortDesc);
     }
 
     @ResponseStatus(HttpStatus.CREATED)

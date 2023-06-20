@@ -13,6 +13,9 @@ export default {
     getPaginatedUserPurchasedPackagesByClientId(clientId, thisPage, thisPageSize,thisSortBy, thisSortDesc) {
         return axios.get(`userPaginatedPackagePurchaseListByClientId/${clientId}`, {params: {page: thisPage, pageSize: thisPageSize, sortBy: thisSortBy, sortDesc: thisSortDesc} })
     },
+    getActivePaginatedUserPurchasedPackagesByClientId(clientId, thisPage, thisPageSize,thisSortBy, thisSortDesc) {
+        return axios.get(`userActivePaginatedPackagePurchaseListByClientId/${clientId}`, {params: {page: thisPage, pageSize: thisPageSize, sortBy: thisSortBy, sortDesc: thisSortDesc} })
+    },
     createPackagePurchase(packagePurchase) {
         return axios.post('/createPackagePurchase', packagePurchase)
     },

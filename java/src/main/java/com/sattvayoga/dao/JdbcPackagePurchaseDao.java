@@ -62,7 +62,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
         String sql = "SELECT * FROM package_purchase " +
                 "JOIN client_details on client_details.client_id = package_purchase.client_id " +
-                "WHERE client_details.user_id = ? ORDER BY " + sortBy + " " + sortDirection + offsetString;
+                "WHERE client_details.user_id = ? ORDER BY package_purchase." + sortBy + " " + sortDirection + offsetString;
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId, offset);
         while (result.next()) {
             PackagePurchase packagePurchase = mapRowToPackagePurchase(result);
@@ -72,14 +72,6 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             packagePurchase.setIs_subscription(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
             allUserPackagePurchase.add(packagePurchase);
         }
-        
-//        SELECT package_purchase_id, pp.client_id, pp.package_id, date_purchased, classes_remaining, activation_date, expiration_date, is_monthly_renew, total_amount_paid, discount FROM package_purchase as pp
-//        JOIN package_details on pp.package_id = package_details.package_id
-//        JOIN client_details on client_details.client_id = pp.client_id
-//        WHERE client_details.user_id = 3
-//        AND ( ( pp.classes_remaining > 0 AND pp.expiration_date > NOW())
-//        OR (package_details.is_subscription = true AND pp.expiration_date > NOW()) );
-
 
         String countSql = "SELECT COUNT(*) FROM package_purchase " +
                 "JOIN client_details on client_details.client_id = package_purchase.client_id " +
@@ -91,6 +83,84 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
         return paginatedListOfPurchasedPackages;
     }
+
+    @Override
+    public PaginatedListOfPurchasedPackages getAllActiveUserPaginatedPackagePurchases(int userId, int page, int pageSize, String sortBy, boolean sortDesc) {
+        int offset = 0;
+        String sortDirection = (sortDesc ? "DESC" : "ASC");
+
+        String offsetString = "";
+        if (page == 1) {
+            offset = pageSize * (page);
+            offsetString = " LIMIT ?";
+        } else {
+            offset = pageSize * (page-1);
+            offsetString = " OFFSET ? LIMIT " + pageSize;
+        }
+
+        List<PackagePurchase> allUserPackagePurchase = new ArrayList<>();
+
+        String sql = "SELECT package_purchase_id, pp.client_id, pp.package_id, date_purchased, classes_remaining, activation_date, expiration_date, is_monthly_renew, total_amount_paid, discount FROM package_purchase as pp " +
+                "JOIN package_details on pp.package_id = package_details.package_id " +
+                "JOIN client_details on client_details.client_id = pp.client_id " +
+                "WHERE client_details.user_id = ? " +
+                "AND ( ( pp.classes_remaining > 0 AND pp.expiration_date > NOW()) " +
+                "OR (package_details.is_subscription = true AND pp.expiration_date > NOW()) ) " +
+                "ORDER BY " + sortBy + " " + sortDirection + offsetString;
+
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId, offset);
+        while (result.next()) {
+            PackagePurchase packagePurchase = mapRowToPackagePurchase(result);
+
+            // set package description
+            packagePurchase.setPackage_description(getPackageDescriptionByPackageId(packagePurchase.getPackage_id()));
+            packagePurchase.setIs_subscription(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
+            allUserPackagePurchase.add(packagePurchase);
+        }
+
+
+        String countSql = "SELECT COUNT(*) FROM package_purchase as pp " +
+                "JOIN package_details on pp.package_id = package_details.package_id " +
+                "JOIN client_details on client_details.client_id = pp.client_id " +
+                "WHERE client_details.user_id = ? " +
+                "AND ( ( pp.classes_remaining > 0 AND pp.expiration_date > NOW()) " +
+                "OR (package_details.is_subscription = true AND pp.expiration_date > NOW()) ) ";
+
+        int count = jdbcTemplate.queryForObject(countSql, Integer.class, userId);
+
+        PaginatedListOfPurchasedPackages paginatedListOfPurchasedPackages = new PaginatedListOfPurchasedPackages(allUserPackagePurchase,count);
+
+        return paginatedListOfPurchasedPackages;
+
+    }
+
+    @Override
+    public List<PackagePurchase> getAllActiveUserPackagePurchases(int userId) {
+
+        List<PackagePurchase> allUserPackagePurchase = new ArrayList<>();
+
+        String sql = "SELECT package_purchase_id, pp.client_id, pp.package_id, date_purchased, classes_remaining, activation_date, expiration_date, is_monthly_renew, total_amount_paid, discount FROM package_purchase as pp " +
+                "JOIN package_details on pp.package_id = package_details.package_id " +
+                "JOIN client_details on client_details.client_id = pp.client_id " +
+                "WHERE client_details.user_id = ? " +
+                "AND ( ( pp.classes_remaining > 0 AND pp.expiration_date > NOW()) " +
+                "OR (package_details.is_subscription = true AND pp.expiration_date > NOW()) ) ";
+
+
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId);
+        while (result.next()) {
+            PackagePurchase packagePurchase = mapRowToPackagePurchase(result);
+
+            // set package description
+            packagePurchase.setPackage_description(getPackageDescriptionByPackageId(packagePurchase.getPackage_id()));
+            packagePurchase.setIs_subscription(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
+
+            allUserPackagePurchase.add(packagePurchase);
+        }
+
+        return allUserPackagePurchase;
+    }
+
 
     @Override
     public void createPackagePurchase(PackagePurchase packagePurchase) {

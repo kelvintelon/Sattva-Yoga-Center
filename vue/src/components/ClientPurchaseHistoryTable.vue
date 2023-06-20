@@ -191,6 +191,7 @@ export default {
         {
           text: "Package Description",
           value: "package_description",
+          sortable: false,
         },
         { text: "Purchase Date", value: "date_purchased", sortable: true },
         {
@@ -219,8 +220,8 @@ export default {
       ],
       page: 1,
       pageSize: 10,
-      sortBy: 'date_purchased',
-      sortDesc: false,
+      sortBy: 'package_purchase_id',
+      sortDesc: true,
       totalPackagesPurchased: 0,
       paginatedObject: {},
       packageHistoryList: [],
@@ -383,6 +384,12 @@ export default {
         this.page = 1;
         this.getPackageHistoryTable();
       }
+    },
+    sortTable() {
+      if (this.sortDesc == undefined) {
+        this.sortDesc = false;
+      } 
+      this.getPackageHistoryTable();
     },
     getPackageHistoryTable() {
       this.loading = true;

@@ -125,7 +125,7 @@ public class EventController {
         }
 
         // grab a list of packages
-        List<PackagePurchase> allUserPackagePurchase = packagePurchaseDao.getAllUserPackagePurchases(userId);
+        List<PackagePurchase> allUserPackagePurchase = packagePurchaseDao.getAllActiveUserPackagePurchases(userId);
 
         for (int i = 0; i < eventList.size(); i++) {
             // filter the list of packages to just one
@@ -326,7 +326,7 @@ public class EventController {
             // user Id
             int userId = clientDetails.getUser_id();
             // find active packages for each client/user
-            List<PackagePurchase> allUserPackagePurchase = packagePurchaseDao.getAllUserPackagePurchases(userId);
+            List<PackagePurchase> allUserPackagePurchase = packagePurchaseDao.getAllActiveUserPackagePurchases(userId);
             // filter the list of packages to just one
             PackagePurchase packagePurchase = packagePurchaseDao.filterPackageList(allUserPackagePurchase, event);
             // if user doesn't have any usable package, look for shared packages;

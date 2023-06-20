@@ -42,7 +42,7 @@ public class ClientDetailsController {
                                                       @RequestParam(defaultValue = "client_id") String sortBy,
                                                       @RequestParam(defaultValue = "false") boolean sortDesc) {
         // sort by is just another string concatenation
-        return clientDetailsDao.getAllPaginatedClients(page,pageSize,search, sortBy, sortDesc);
+            return clientDetailsDao.getAllPaginatedClients(page,pageSize,search, sortBy, sortDesc);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -66,6 +66,7 @@ public class ClientDetailsController {
         return clientDetailsDao.getAllDuplicateClients();
     }
 
+    //TODO: This is for testing purposes
     @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value="/register100Clients", method = RequestMethod.POST)
     public void register100Clients() {

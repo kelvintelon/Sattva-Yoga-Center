@@ -218,6 +218,7 @@ export default {
           text: "Package Description",
           align: "start",
           value: "package_description",
+          sortable: false,
         },
         { text: "Purchase Date", value: "date_purchased", sortable: true },
         {
@@ -387,7 +388,7 @@ export default {
       this.overlay = !this.overlay;
       if (this.$store.state.user.username == "admin") {
         packagePurchaseService
-          .getPaginatedUserPurchasedPackagesByClientId(this.$route.params.clientId,this.page, this.pageSize, this.sortBy, this.sortDesc)
+          .getActivePaginatedUserPurchasedPackagesByClientId(this.$route.params.clientId,this.page, this.pageSize, this.sortBy, this.sortDesc)
           .then((response) => {
             if (response.status == 200) {
               this.loading = false;
@@ -400,14 +401,15 @@ export default {
               today = yyyy + "-" + mm + "-" + dd;
               this.paginatedObject = response.data;
               this.totalPackagesPurchased = this.paginatedObject.totalRows;
-              this.packages = this.paginatedObject.listOfPurchasedPackages.filter((item) => {
-                return (
-                  (item.is_subscription && item.expiration_date >= today) ||
-                  (!item.is_subscription &&
-                    item.expiration_date >= today &&
-                    item.classes_remaining > 0)
-                );
-              });
+              this.packages = this.paginatedObject.listOfPurchasedPackages;
+              // this.packages = this.paginatedObject.listOfPurchasedPackages.filter((item) => {
+              //   return (
+              //     (item.is_subscription && item.expiration_date >= today) ||
+              //     (!item.is_subscription &&
+              //       item.expiration_date >= today &&
+              //       item.classes_remaining > 0)
+              //   );
+              // });
               this.packages.forEach((item) => {
                 item.date_purchased = new Date(item.date_purchased);
               });

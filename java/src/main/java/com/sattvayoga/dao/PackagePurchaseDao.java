@@ -27,4 +27,8 @@ public interface PackagePurchaseDao {
     List<PackagePurchase> getAllSharedActiveQuantityPackages(int client_id);
 
     PaginatedListOfPurchasedPackages getAllUserPaginatedPackagePurchases(int userId, int page, int limit, String sortBy, boolean sortDesc);
+
+    PaginatedListOfPurchasedPackages getAllActiveUserPaginatedPackagePurchases(int userId, int page, int pageSize, String sortBy, boolean sortDesc);
+
+    List<PackagePurchase> getAllActiveUserPackagePurchases(int userId);
 }
