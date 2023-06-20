@@ -352,12 +352,13 @@ public class EventController {
 
     }
 
+    //TODO: This is for package+client testing purposes
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/registerAClientAndPurchasePackage/{id}", method = RequestMethod.POST)
     public void registerAClientAndPurchasePackage(@PathVariable int id) {
 
-        for (int i = 3000; i < 6000; i++) {
+        for (int i = 1; i < 1664; i++) {
             PackagePurchase packagePurchase = new PackagePurchase();
             packagePurchase.setClient_id(id);
             packagePurchase.setPackage_id(3);
@@ -368,7 +369,7 @@ public class EventController {
             LocalDate monthLater = ld.plusMonths( 12 );
             java.sql.Date sqlDate = java.sql.Date.valueOf( monthLater );
 
-            packagePurchase.setClasses_remaining(1);
+            packagePurchase.setClasses_remaining(0);
             packagePurchase.setExpiration_date(sqlDate);
             packagePurchase.setTotal_amount_paid(new BigDecimal(14));
             packagePurchase.setIs_monthly_renew(false);

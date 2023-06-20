@@ -371,6 +371,19 @@ export default {
     
   },
   methods: {
+    temporaryPageMethod() {
+     
+      this.getPackageHistoryTable();
+    },
+    temporaryPageSizeMethod() {
+      if (this.page == 1) {
+        this.getPackageHistoryTable();
+      } else {
+       
+        this.page = 1;
+        this.getPackageHistoryTable();
+      }
+    },
     getPackageHistoryTable() {
       this.loading = true;
       if (this.$store.state.user.username == "admin") {
@@ -446,7 +459,7 @@ export default {
         .updatePackagePurchase(this.editedItem)
         .then((response) => {
           if (response.status == 200) {
-            this.overlay = true;
+            this.overlay = false;
             this.loading = false;
             response;
             alert("success");

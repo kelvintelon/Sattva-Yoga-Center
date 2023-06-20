@@ -72,6 +72,14 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             packagePurchase.setIs_subscription(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
             allUserPackagePurchase.add(packagePurchase);
         }
+        
+//        SELECT package_purchase_id, pp.client_id, pp.package_id, date_purchased, classes_remaining, activation_date, expiration_date, is_monthly_renew, total_amount_paid, discount FROM package_purchase as pp
+//        JOIN package_details on pp.package_id = package_details.package_id
+//        JOIN client_details on client_details.client_id = pp.client_id
+//        WHERE client_details.user_id = 3
+//        AND ( ( pp.classes_remaining > 0 AND pp.expiration_date > NOW())
+//        OR (package_details.is_subscription = true AND pp.expiration_date > NOW()) );
+
 
         String countSql = "SELECT COUNT(*) FROM package_purchase " +
                 "JOIN client_details on client_details.client_id = package_purchase.client_id " +

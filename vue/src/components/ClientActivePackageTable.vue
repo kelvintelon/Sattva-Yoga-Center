@@ -364,14 +364,14 @@ export default {
       this.selectedPackage.discount = 0;
     },
     temporaryPageMethod() {
-      this.$vuetify.goTo(0);
+     
       this.getActivePurchaseServerRequest();
     },
     temporaryPageSizeMethod() {
       if (this.page == 1) {
         this.getActivePurchaseServerRequest();
       } else {
-        this.$vuetify.goTo(0);
+       
         this.page = 1;
         this.getActivePurchaseServerRequest();
       }
