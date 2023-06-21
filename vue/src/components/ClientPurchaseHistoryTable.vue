@@ -148,7 +148,7 @@
       </template>
     </v-data-table>
     <v-row>
-      <v-col cols="11">
+      <v-col lg="10" md="9" sm="8">
         <v-pagination
           v-model="page"
           :length="Math.ceil(totalPackagesPurchased / pageSize)"
@@ -156,7 +156,7 @@
           total-visible="8"
         ></v-pagination>
       </v-col>
-      <v-col col="1" class="mt-2">
+      <v-col lg="2" md="3" sm="3" class="mt-2">
         <v-select
           v-model="pageSize"
           :items="[10, 20, 30, 40, 50]"
