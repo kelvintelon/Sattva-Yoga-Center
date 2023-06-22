@@ -330,12 +330,13 @@ export default {
         .reconcileClassesForClient(this.$route.params.clientId)
         .then((response) => {
           if (response.status == 200) {
+            this.$root.$refs.C.getClientDetails();
             this.loading = false;
             this.overlay = false;
             alert("Success");
             this.getActivePurchaseServerRequest();
             this.$root.$refs.B.getPackageHistoryTable();
-            this.$root.$refs.C.getClientDetails();
+            
             this.$root.$refs.D.getClientEventTable();
             this.$root.$refs.E.getEventDetailsCall();
             this.snackBarReconcilePackagesSuccessful = true;
@@ -433,7 +434,7 @@ export default {
             }
           });
       } else {
-        packagePurchaseService.getPaginatedUserPurchasedPackages(this.page, this.pageSize, this.search, this.sortBy, this.sortDesc).then((response) => {
+        packagePurchaseService.getActivePaginatedUserPurchasedPackagesByClientId(this.$store.state.clientDetails.client_id,this.page, this.pageSize, this.sortBy, this.sortDesc).then((response) => {
           if (response.status == 200) {
             this.loading = false;
             this.overlay = false;

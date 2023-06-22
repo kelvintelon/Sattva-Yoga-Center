@@ -222,7 +222,7 @@ public class EventController {
     @RequestMapping(value = "/registerNewClientToEvent", method = RequestMethod.POST)
     public void registerNewClientForEvent(@RequestBody NewClientSignUp newClientSignUp) {
 
-
+        //TODO: What if the event is free?
 
         int leftLimit = 48; // numeral '0'
         int rightLimit = 122; // letter 'z'
@@ -286,22 +286,31 @@ public class EventController {
         for (int i = 0; i < clientEventObjects.size(); i++) {
             // current clientEvent object
             ClientEvent clientEvent = clientEventObjects.get(i);
-            // client details
-            ClientDetails clientDetailsObj = clientDetailsDao.findClientByClientId(clientEvent.getClient_id());
-            // user Id
-            int userIdNum = clientDetailsObj.getUser_id();
-            // find active packages for each client/user
-            List<PackagePurchase> allUserPackagePurchase = packagePurchaseDao.getAllUserPackagePurchases(userIdNum);
-            // filter the list of packages to just one
-            PackagePurchase packagePurchase = packagePurchaseDao.filterPackageList(allUserPackagePurchase, event);
-            // finally once you've pinpointed the package, set the package purchase ID into the object
-            if (packagePurchase.getPackage_purchase_id() > 0) {
-                clientEvent.setPackage_purchase_id(packagePurchase.getPackage_purchase_id());
-            }
 
-            // decrement if it's a quantity bundle but register it into the table either way
-            if (!packagePurchase.isIs_subscription()) {
-                packagePurchaseDao.decrementByOne(packagePurchase.getPackage_purchase_id());
+            if (!event.isIs_paid()) {
+
+
+                // client details
+                ClientDetails clientDetailsObj = clientDetailsDao.findClientByClientId(clientEvent.getClient_id());
+                // user Id
+                int userIdNum = clientDetailsObj.getUser_id();
+                // find active packages for each client/user
+                List<PackagePurchase> allUserPackagePurchase = packagePurchaseDao.getAllUserPackagePurchases(userIdNum);
+                // filter the list of packages to just one
+                PackagePurchase packagePurchase = packagePurchaseDao.filterPackageList(allUserPackagePurchase, event);
+
+                // finally once you've pinpointed the package, set the package purchase ID into the object
+                if (packagePurchase.getPackage_purchase_id() > 0) {
+                    clientEvent.setPackage_purchase_id(packagePurchase.getPackage_purchase_id());
+                }
+
+                // decrement if it's a quantity bundle but register it into the table either way
+                if (!packagePurchase.isIs_subscription()) {
+                    packagePurchaseDao.decrementByOne(packagePurchase.getPackage_purchase_id());
+                }
+
+            } else {
+                clientEvent.setPackage_purchase_id(-1);
             }
             eventDao.registerForEvent(clientEvent.getClient_id(),clientEvent.getEvent_id(),clientEvent.getPackage_purchase_id());
         }
@@ -316,36 +325,42 @@ public class EventController {
         // retrieve the event object once
         Event event = eventDao.getEventByEventId(clientEventObjects.get(0).getEvent_id());
 
-
+        //TODO: Logic to incorporate: What if the event is free?
 
         for (int i = 0; i < clientEventObjects.size(); i++) {
             // current clientEvent object
             ClientEvent clientEvent = clientEventObjects.get(i);
-            // client details
-            ClientDetails clientDetails = clientDetailsDao.findClientByClientId(clientEvent.getClient_id());
-            // user Id
-            int userId = clientDetails.getUser_id();
-            // find active packages for each client/user
-            List<PackagePurchase> allUserPackagePurchase = packagePurchaseDao.getAllActiveUserPackagePurchases(userId);
-            // filter the list of packages to just one
-            PackagePurchase packagePurchase = packagePurchaseDao.filterPackageList(allUserPackagePurchase, event);
-            // if user doesn't have any usable package, look for shared packages;
-            if (packagePurchase.getPackage_purchase_id() == 0){
-                List<PackagePurchase> allActiveSharedPackages = packagePurchaseDao.getAllSharedActiveQuantityPackages(clientEvent.getClient_id());
-                if(allActiveSharedPackages.size()>0){
-                    packagePurchase = allActiveSharedPackages.get(0);
+            if (!event.isIs_paid()) {
+                // client details
+                ClientDetails clientDetails = clientDetailsDao.findClientByClientId(clientEvent.getClient_id());
+                // user Id
+                int userId = clientDetails.getUser_id();
+                // find active packages for each client/user
+                List<PackagePurchase> allUserPackagePurchase = packagePurchaseDao.getAllActiveUserPackagePurchases(userId);
+                // filter the list of packages to just one
+                PackagePurchase packagePurchase = packagePurchaseDao.filterPackageList(allUserPackagePurchase, event);
+
+
+                // if user doesn't have any usable package, look for shared packages;
+                if (packagePurchase.getPackage_purchase_id() == 0) {
+                    List<PackagePurchase> allActiveSharedPackages = packagePurchaseDao.getAllSharedActiveQuantityPackages(clientEvent.getClient_id());
+                    if (allActiveSharedPackages.size() > 0) {
+                        packagePurchase = allActiveSharedPackages.get(0);
+                    }
                 }
-            }
 
 
-            // finally once you've pinpointed the package, set the package purchase ID into the object
-            if (packagePurchase.getPackage_purchase_id() > 0) {
-                clientEvent.setPackage_purchase_id(packagePurchase.getPackage_purchase_id());
-            }
+                // finally once you've pinpointed the package, set the package purchase ID into the object
+                if (packagePurchase.getPackage_purchase_id() > 0) {
+                    clientEvent.setPackage_purchase_id(packagePurchase.getPackage_purchase_id());
+                }
 
-            // decrement if it's a quantity bundle but register it into the table either way
-            if (!packagePurchase.isIs_subscription()) {
-                packagePurchaseDao.decrementByOne(packagePurchase.getPackage_purchase_id());
+                // decrement if it's a quantity bundle but register it into the table either way
+                if (!packagePurchase.isIs_subscription()) {
+                    packagePurchaseDao.decrementByOne(packagePurchase.getPackage_purchase_id());
+                }
+            } else {
+                clientEvent.setPackage_purchase_id(-1);
             }
             eventDao.registerForEvent(clientEvent.getClient_id(),clientEvent.getEvent_id(),clientEvent.getPackage_purchase_id());
         }

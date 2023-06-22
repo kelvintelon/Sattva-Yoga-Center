@@ -416,7 +416,7 @@ export default {
             }
           });
       } else {
-        packagePurchaseService.getUserPurchasedPackages().then((response) => {
+        packagePurchaseService.getPaginatedUserPurchasedPackages(this.page, this.pageSize, this.sortBy, this.sortDesc).then((response) => {
           if (response.status == 200) {
               this.loading = false;
               this.paginatedObject = response.data;

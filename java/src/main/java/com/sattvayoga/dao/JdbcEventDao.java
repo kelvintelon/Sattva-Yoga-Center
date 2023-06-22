@@ -30,10 +30,10 @@ public class JdbcEventDao implements EventDao {
     @Override
     public void createEvent(Event newEvent) {
         String sql = "INSERT INTO events (class_id, event_name, start_time, " +
-                "end_time, color, timed, is_visible_online) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                "end_time, color, timed, is_visible_online, is_paid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql, newEvent.getClass_id(),
                 newEvent.getEvent_name(), newEvent.getStart_time(),
-                newEvent.getEnd_time(), newEvent.getColor(), newEvent.isTimed(), newEvent.isIs_visible_online());
+                newEvent.getEnd_time(), newEvent.getColor(), newEvent.isTimed(), newEvent.isIs_visible_online(), newEvent.isIs_paid());
     }
 
     @Override
@@ -85,7 +85,11 @@ public class JdbcEventDao implements EventDao {
                     newEvent.setTimed(true);
                     // set visible to true
                     newEvent.setIs_visible_online(true);
-
+                    if (classDetails.isIs_paid()) {
+                        newEvent.setIs_paid(true);
+                    } else {
+                        newEvent.setIs_paid(false);
+                    }
                     LocalDate nextOrSameSun = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
 
                     startTimeStampBuilder = "";
@@ -122,7 +126,11 @@ public class JdbcEventDao implements EventDao {
                     newEvent.setTimed(true);
                     // set visible to true
                     newEvent.setIs_visible_online(true);
-
+                    if (classDetails.isIs_paid()) {
+                        newEvent.setIs_paid(true);
+                    } else {
+                        newEvent.setIs_paid(false);
+                    }
                     LocalDate nextOrSameMon = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY));
 
                     startTimeStampBuilder = "";
@@ -157,7 +165,11 @@ public class JdbcEventDao implements EventDao {
                     newEvent.setTimed(true);
                     // set visible to true
                     newEvent.setIs_visible_online(true);
-
+                    if (classDetails.isIs_paid()) {
+                        newEvent.setIs_paid(true);
+                    } else {
+                        newEvent.setIs_paid(false);
+                    }
                     LocalDate nextOrSameTue = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.TUESDAY));
 
                     startTimeStampBuilder = "";
@@ -192,7 +204,11 @@ public class JdbcEventDao implements EventDao {
                     newEvent.setTimed(true);
                     // set visible to true
                     newEvent.setIs_visible_online(true);
-
+                    if (classDetails.isIs_paid()) {
+                        newEvent.setIs_paid(true);
+                    } else {
+                        newEvent.setIs_paid(false);
+                    }
                     LocalDate nextOrSameWed = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.WEDNESDAY));
 
                     startTimeStampBuilder = "";
@@ -227,7 +243,11 @@ public class JdbcEventDao implements EventDao {
                     newEvent.setTimed(true);
                     // set visible to true
                     newEvent.setIs_visible_online(true);
-
+                    if (classDetails.isIs_paid()) {
+                        newEvent.setIs_paid(true);
+                    } else {
+                        newEvent.setIs_paid(false);
+                    }
                     LocalDate nextOrSameThu = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.THURSDAY));
 
                     startTimeStampBuilder = "";
@@ -262,7 +282,11 @@ public class JdbcEventDao implements EventDao {
                     newEvent.setTimed(true);
                     // set visible to true
                     newEvent.setIs_visible_online(true);
-
+                    if (classDetails.isIs_paid()) {
+                        newEvent.setIs_paid(true);
+                    } else {
+                        newEvent.setIs_paid(false);
+                    }
                     LocalDate nextOrSameFri = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.FRIDAY));
 
                     startTimeStampBuilder = "";
@@ -297,7 +321,11 @@ public class JdbcEventDao implements EventDao {
                     newEvent.setTimed(true);
                     // set visible to true
                     newEvent.setIs_visible_online(true);
-
+                    if (classDetails.isIs_paid()) {
+                        newEvent.setIs_paid(true);
+                    } else {
+                        newEvent.setIs_paid(false);
+                    }
                     LocalDate nextOrSameSat = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY));
 
                     startTimeStampBuilder = "";
@@ -409,7 +437,11 @@ public class JdbcEventDao implements EventDao {
                             newEvent.setTimed(true);
                             // set visible to true
                             newEvent.setIs_visible_online(true);
-
+                            if (currentClass.isIs_paid()) {
+                                newEvent.setIs_paid(true);
+                            } else {
+                                newEvent.setIs_paid(false);
+                            }
                             LocalDate nextOrSameSun = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
 
                             startTimeStampBuilder = "";
@@ -444,7 +476,11 @@ public class JdbcEventDao implements EventDao {
                             newEvent.setTimed(true);
                             // set visible to true
                             newEvent.setIs_visible_online(true);
-
+                            if (currentClass.isIs_paid()) {
+                                newEvent.setIs_paid(true);
+                            } else {
+                                newEvent.setIs_paid(false);
+                            }
                             LocalDate nextOrSameMon = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY));
 
                             startTimeStampBuilder = "";
@@ -477,7 +513,11 @@ public class JdbcEventDao implements EventDao {
                             newEvent.setTimed(true);
                             // set visible to true
                             newEvent.setIs_visible_online(true);
-
+                            if (currentClass.isIs_paid()) {
+                                newEvent.setIs_paid(true);
+                            } else {
+                                newEvent.setIs_paid(false);
+                            }
                             LocalDate nextOrSameTue = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.TUESDAY));
 
                             startTimeStampBuilder = "";
@@ -510,7 +550,11 @@ public class JdbcEventDao implements EventDao {
                             newEvent.setTimed(true);
                             // set visible to true
                             newEvent.setIs_visible_online(true);
-
+                            if (currentClass.isIs_paid()) {
+                                newEvent.setIs_paid(true);
+                            } else {
+                                newEvent.setIs_paid(false);
+                            }
                             LocalDate nextOrSameWed = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.WEDNESDAY));
 
                             startTimeStampBuilder = "";
@@ -542,7 +586,11 @@ public class JdbcEventDao implements EventDao {
                             newEvent.setTimed(true);
                             // set visible to true
                             newEvent.setIs_visible_online(true);
-
+                            if (currentClass.isIs_paid()) {
+                                newEvent.setIs_paid(true);
+                            } else {
+                                newEvent.setIs_paid(false);
+                            }
                             LocalDate nextOrSameThu = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.THURSDAY));
 
                             startTimeStampBuilder = "";
@@ -574,7 +622,11 @@ public class JdbcEventDao implements EventDao {
                             newEvent.setTimed(true);
                             // set visible to true
                             newEvent.setIs_visible_online(true);
-
+                            if (currentClass.isIs_paid()) {
+                                newEvent.setIs_paid(true);
+                            } else {
+                                newEvent.setIs_paid(false);
+                            }
                             LocalDate nextOrSameFri = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.FRIDAY));
 
                             startTimeStampBuilder = "";
@@ -606,7 +658,11 @@ public class JdbcEventDao implements EventDao {
                             newEvent.setTimed(true);
                             // set visible to true
                             newEvent.setIs_visible_online(true);
-
+                            if (currentClass.isIs_paid()) {
+                                newEvent.setIs_paid(true);
+                            } else {
+                                newEvent.setIs_paid(false);
+                            }
                             LocalDate nextOrSameSat = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY));
 
                             startTimeStampBuilder = "";
@@ -663,11 +719,12 @@ public class JdbcEventDao implements EventDao {
                 "end_time = ? , " +
                 "color = ? , " +
                 "timed = ? , " +
-                "is_visible_online = ? " +
+                "is_visible_online = ? , " +
+                "is_paid = ? " +
                 "WHERE event_id = ?";
         return jdbcTemplate.update(sql, event.getClass_id(), event.getEvent_name(), event.getStart_time(),
                 event.getEnd_time(), event.getColor(), event.isTimed(),
-                event.isIs_visible_online(), event.getEvent_id()) == 1;
+                event.isIs_visible_online(), event.isIs_paid(), event.getEvent_id()) == 1;
     }
 
     @Override
@@ -1179,9 +1236,9 @@ public class JdbcEventDao implements EventDao {
     // helper method
     @Override
     public boolean isThereExistingEventWithStartTime(Event newEvent) {
-        String sql = "SELECT * FROM events WHERE start_time = ? AND end_time = ? AND event_name = ? AND color = ?;";
+        String sql = "SELECT * FROM events WHERE start_time = ? AND end_time = ? AND event_name = ? AND color = ? AND is_paid = ?;";
         List<Event> checkForExistingEventList = new ArrayList<>();
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, newEvent.getStart_time(), newEvent.getEnd_time(), newEvent.getEvent_name(), newEvent.getColor());
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, newEvent.getStart_time(), newEvent.getEnd_time(), newEvent.getEvent_name(), newEvent.getColor(), newEvent.isIs_paid());
         while (result.next()) {
             Event event = mapRowToEvent(result);
 
@@ -1359,7 +1416,7 @@ public class JdbcEventDao implements EventDao {
     public List<Event> getAllHistoricalClientEvents(int user_id) {
         List<Event> allClientEvents = new ArrayList<>();
         Event event = new Event();
-        String sql = "SELECT events.event_id, class_id, event_name, start_time, end_time, color, timed, is_visible_online, package_purchase_id FROM events \n" +
+        String sql = "SELECT events.event_id, class_id, event_name, start_time, end_time, color, timed, is_visible_online, is_paid, package_purchase_id FROM events \n" +
                 "JOIN client_event ON events.event_id = client_event.event_id \n" +
                 "JOIN client_details ON client_details.client_id = client_event.client_id \n" +
                 "WHERE user_id = ? " +
@@ -1405,7 +1462,11 @@ public class JdbcEventDao implements EventDao {
                         event.setColor("blue");
                         // set timed (default to true)
                         event.setTimed(true);
-
+                        if (currentClass.isIs_paid()) {
+                            event.setIs_paid(true);
+                        } else {
+                            event.setIs_paid(false);
+                        }
                         LocalDate currentDate = LocalDate.now();
                         LocalDate nextOrSameSun = currentDate.plusWeeks(k).with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
 
@@ -1437,7 +1498,11 @@ public class JdbcEventDao implements EventDao {
                         event.setColor("blue");
                         // set timed (default to true)
                         event.setTimed(true);
-
+                        if (currentClass.isIs_paid()) {
+                            event.setIs_paid(true);
+                        } else {
+                            event.setIs_paid(false);
+                        }
                         LocalDate currentDate = LocalDate.now();
                         LocalDate nextOrSameMon = currentDate.plusWeeks(k).with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY));
 
@@ -1469,7 +1534,11 @@ public class JdbcEventDao implements EventDao {
                         event.setColor("blue");
                         // set timed (default to true)
                         event.setTimed(true);
-
+                        if (currentClass.isIs_paid()) {
+                            event.setIs_paid(true);
+                        } else {
+                            event.setIs_paid(false);
+                        }
                         LocalDate currentDate = LocalDate.now();
                         LocalDate nextOrSameTue = currentDate.plusWeeks(k).with(TemporalAdjusters.nextOrSame(DayOfWeek.TUESDAY));
 
@@ -1501,7 +1570,11 @@ public class JdbcEventDao implements EventDao {
                         event.setColor("blue");
                         // set timed (default to true)
                         event.setTimed(true);
-
+                        if (currentClass.isIs_paid()) {
+                            event.setIs_paid(true);
+                        } else {
+                            event.setIs_paid(false);
+                        }
                         LocalDate currentDate = LocalDate.now();
                         LocalDate nextOrSameWed = currentDate.plusWeeks(k).with(TemporalAdjusters.nextOrSame(DayOfWeek.WEDNESDAY));
 
@@ -1533,7 +1606,11 @@ public class JdbcEventDao implements EventDao {
                         event.setColor("blue");
                         // set timed (default to true)
                         event.setTimed(true);
-
+                        if (currentClass.isIs_paid()) {
+                            event.setIs_paid(true);
+                        } else {
+                            event.setIs_paid(false);
+                        }
                         LocalDate currentDate = LocalDate.now();
                         LocalDate nextOrSameThu = currentDate.plusWeeks(k).with(TemporalAdjusters.nextOrSame(DayOfWeek.THURSDAY));
 
@@ -1565,7 +1642,11 @@ public class JdbcEventDao implements EventDao {
                         event.setColor("blue");
                         // set timed (default to true)
                         event.setTimed(true);
-
+                        if (currentClass.isIs_paid()) {
+                            event.setIs_paid(true);
+                        } else {
+                            event.setIs_paid(false);
+                        }
                         LocalDate currentDate = LocalDate.now();
                         LocalDate nextOrSameFri = currentDate.plusWeeks(k).with(TemporalAdjusters.nextOrSame(DayOfWeek.FRIDAY));
 
@@ -1597,7 +1678,7 @@ public class JdbcEventDao implements EventDao {
                         event.setColor("blue");
                         // set timed (default to true)
                         event.setTimed(true);
-
+                        event.setIs_paid(false);
                         LocalDate currentDate = LocalDate.now();
                         LocalDate nextOrSameSat = currentDate.plusWeeks(k).with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY));
 
@@ -1635,6 +1716,9 @@ public class JdbcEventDao implements EventDao {
         event.setEnd_time(rs.getTimestamp("end_time"));
         event.setColor(rs.getString("color"));
         event.setTimed(rs.getBoolean("timed"));
+        // if it's not null?
+
+            event.setIs_paid(rs.getBoolean("is_paid"));
 
         event.setIs_visible_online(rs.getBoolean("is_visible_online"));
 

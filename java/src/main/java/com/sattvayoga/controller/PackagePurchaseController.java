@@ -35,6 +35,11 @@ public class PackagePurchaseController {
         return packagePurchaseDao.getAllUserPackagePurchases(userDao.findIdByUsername(principal.getName()));
     }
 
+    @RequestMapping(value= "/activeUserPackagePurchaseList", method = RequestMethod.GET)
+    public List<PackagePurchase> getAllActiveUserPackagePurchase(Principal principal) {
+        return packagePurchaseDao.getAllActiveUserPackagePurchases(userDao.findIdByUsername(principal.getName()));
+    }
+
     @RequestMapping(value= "/userPackagePurchaseListByClientId/{clientId}", method = RequestMethod.GET)
     public List<PackagePurchase> getAllUserPackagePurchaseByClientId(@PathVariable int clientId) throws SQLException {
         return packagePurchaseDao.getAllUserPackagePurchases(clientDetailsDao.findClientByClientId(clientId).getUser_id());

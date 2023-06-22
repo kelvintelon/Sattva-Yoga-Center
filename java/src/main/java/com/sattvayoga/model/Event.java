@@ -13,6 +13,8 @@ public class Event {
     private boolean timed;
     private boolean is_visible_online;
     private List<ClientDetails> attendanceList;
+
+    private boolean is_paid;
     private int package_purchase_id;
     // helper instance variable
     private String quick_details;
@@ -21,7 +23,7 @@ public class Event {
 
     }
 
-    public Event(int event_id, int class_id, String event_name, Timestamp start_time, Timestamp end_time, String color, boolean timed, boolean is_visible_online) {
+    public Event(int event_id, int class_id, String event_name, Timestamp start_time, Timestamp end_time, String color, boolean timed, boolean is_visible_online, boolean is_paid) {
         this.event_id = event_id;
         this.class_id = class_id;
         this.event_name = event_name;
@@ -30,6 +32,15 @@ public class Event {
         this.color = color;
         this.timed = timed;
         this.is_visible_online = is_visible_online;
+        this.is_paid = is_paid;
+    }
+
+    public boolean isIs_paid() {
+        return is_paid;
+    }
+
+    public void setIs_paid(boolean is_paid) {
+        this.is_paid = is_paid;
     }
 
     public String getQuick_details() {

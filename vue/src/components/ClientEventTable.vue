@@ -5,7 +5,7 @@
       :items="clientEvents"
       class="elevation-5"
       
-      :sort-desc="[false]"
+     
       :loading="loading2"
       loading-text="Loading... Please wait"
       
@@ -92,8 +92,6 @@
       :headers="allClientEventHeaders"
       :items="allClientEvents"
       class="elevation-5"
-      sort-by="date"
-      :sort-desc="[true]"
       :loading="loading"
       loading-text="Loading... Please wait"
       
@@ -393,7 +391,7 @@ export default {
       this.classSignUpItem = Object.assign({}, item);
 
       // get active packages from API service request
-      if (this.eventClientSignUp.package_purchase_id == 0) {
+      if (this.eventClientSignUp.package_purchase_id <= 0) {
         this.allowSignUp = true;
 
         this.cancelCheck();
@@ -446,7 +444,7 @@ export default {
         });
     },
     cancelCheck() {
-      if (this.allowSignUp || this.eventClientSignUp.package_purchase_id == 0) {
+      if (this.allowSignUp || this.eventClientSignUp.package_purchase_id <= 0) {
         // console.log(this.eventClientSignUp.date)
         // console.log(this.initial1.expiration_date)
         // console.log(this.eventClientSignUp.date > this.initial1.expiration_date)

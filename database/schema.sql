@@ -104,6 +104,7 @@ CREATE TABLE events (
 	end_time timestamp NOT NULL,
 	color varchar(10) NOT NULL,
 	timed boolean NOT NULL,
+	is_paid boolean,
 	is_visible_online boolean,
 	CONSTRAINT PK_event PRIMARY KEY (event_id)
 -- 	CONSTRAINT FK_event_class_id FOREIGN KEY (class_id) REFERENCES class_details (class_id)
@@ -112,7 +113,7 @@ CREATE TABLE events (
 CREATE TABLE client_event (
 	client_id int NOT NULL,
 	event_id int NOT NULL,
-	package_purchase_id int NOT NULL,
+	package_purchase_id int,
 	CONSTRAINT PK_client_event PRIMARY KEY (client_id, event_id),
 	CONSTRAINT FK_client_event_client_id FOREIGN KEY (client_id) REFERENCES client_details (client_id),
 	CONSTRAINT FK_client_event_event_id FOREIGN KEY (event_id) REFERENCES events(event_id)

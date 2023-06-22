@@ -133,6 +133,8 @@ export default {
           this.$store.commit("SET_CLIENT_DETAILS", response.data);
           if (this.clientDetails.redFlag == true) {
             this.snackBarReconcileWarning = true
+          } else {
+            this.snackBarReconcileWarning = false;
           }
         }
       });
