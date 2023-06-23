@@ -198,6 +198,7 @@ export default {
           { text: 'Teacher Management', route: '/teacherManagement' },
           { text: 'Client Management', route: '/clientManagement' },
           { text: 'Package Management', route: '/packageManagement' },
+          { text: 'Reset Password', route: '/resetPassword' },
           { text: 'Videos', route: '/videos' },
           { text: 'Logout', route: '/logout' })
       } else if (this.$store.state.token != '') {
@@ -215,7 +216,7 @@ export default {
             { text: 'Edit Profile', route: '/editProfile' },
             { text: 'View Classes', route: '/registerForClass' },
             { text: 'Package Management', route: '/clientPackageManagement' },
-            { text: 'Reset Password', route: '/' },
+            { text: 'Reset Password', route: '/resetPassword' },
             { text: 'Videos', route: '/videos' },
             { text: 'Logout', route: '/logout' })
         }

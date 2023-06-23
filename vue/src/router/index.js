@@ -20,7 +20,7 @@ import EventAttendanceDetails from '../views/EventAttendanceDetails.vue'
 import ClientDetailsAdminView from '../views/ClientDetailsAdminView.vue'
 import ResetLinkEmailToken from '../views/ResetLinkEmailToken.vue'
 import VideoPage from '../views/VideoPage.vue'
-
+import ResetPasswordLoggedIn from '../views/ResetPasswordLoggedIn.vue'
 
 Vue.use(Router)
 
@@ -185,6 +185,14 @@ const router = new Router({
       path:"/videos",
       name:"video-page",
       component: VideoPage,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path:"/resetPassword",
+      name:"reset-password-logged-in",
+      component: ResetPasswordLoggedIn,
       meta: {
         requiresAuth: true
       }

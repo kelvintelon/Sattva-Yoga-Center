@@ -61,7 +61,16 @@ public class AuthenticationController {
     @RequestMapping(value= "/emailResetLink/{email}", method = RequestMethod.GET)
     public String sendEmailResetLink(@PathVariable String email) {
         // find the username w/ email and plug it in
-        YogaUser yogaUser = userDao.findByEmail(email);
+        YogaUser yogaUser = new YogaUser();
+
+        // info@sattva-yoga-center.com
+        // telon.kelvin77@gmail.com
+        if (email.equals("info@sattva-yoga-center.com")) {
+            yogaUser.setUsername("admin");
+        } else {
+            yogaUser = userDao.findByEmail(email);
+        }
+
         // create token with user
         String jwt = tokenProvider.createEmailToken(yogaUser.getUsername());
         // prepare the link to send in mail

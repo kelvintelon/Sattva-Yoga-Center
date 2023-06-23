@@ -222,8 +222,6 @@ public class EventController {
     @RequestMapping(value = "/registerNewClientToEvent", method = RequestMethod.POST)
     public void registerNewClientForEvent(@RequestBody NewClientSignUp newClientSignUp) {
 
-        //TODO: What if the event is free?
-
         int leftLimit = 48; // numeral '0'
         int rightLimit = 122; // letter 'z'
         int targetStringLength = 10;
@@ -287,8 +285,8 @@ public class EventController {
             // current clientEvent object
             ClientEvent clientEvent = clientEventObjects.get(i);
 
+            // if the event is free or not
             if (!event.isIs_paid()) {
-
 
                 // client details
                 ClientDetails clientDetailsObj = clientDetailsDao.findClientByClientId(clientEvent.getClient_id());
@@ -325,11 +323,12 @@ public class EventController {
         // retrieve the event object once
         Event event = eventDao.getEventByEventId(clientEventObjects.get(0).getEvent_id());
 
-        //TODO: Logic to incorporate: What if the event is free?
 
         for (int i = 0; i < clientEventObjects.size(); i++) {
             // current clientEvent object
             ClientEvent clientEvent = clientEventObjects.get(i);
+
+            // if the event is free or not
             if (!event.isIs_paid()) {
                 // client details
                 ClientDetails clientDetails = clientDetailsDao.findClientByClientId(clientEvent.getClient_id());

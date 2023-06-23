@@ -175,7 +175,7 @@ public class ClientDetailsController {
             foundEmail = clientDetailsDao.isEmailDuplicate(clientDetails.getClient_id(),clientDetails.getEmail());
         }
 
-        if (foundEmail) {
+        if (foundEmail || clientDetails.getEmail().equals("info@sattva-yoga-center.com")) {
             throw new EmailAlreadyExistsException();
         } else {
             clientDetailsDao.updateClientDetails(clientDetails);
@@ -201,7 +201,7 @@ public class ClientDetailsController {
             foundEmail = clientDetailsDao.isEmailDuplicate(clientDetails.get(0).getClient_id(),clientDetails.get(0).getEmail());
         }
 
-        if (foundEmail) {
+        if (foundEmail || clientDetails.get(0).getEmail().equals("info@sattva-yoga-center.com")) {
             clientDetails.get(0).setEmail("");
             clientDetailsDao.updateClientDetails(clientDetails.get(0));
             throw new EmailAlreadyExistsException();
@@ -221,7 +221,7 @@ public class ClientDetailsController {
             foundEmail = clientDetailsDao.isEmailDuplicate(0,client.getEmail());
         }
 
-        if (foundEmail) {
+        if (foundEmail || client.getEmail().equals("info@sattva-yoga-center.com")) {
             throw new EmailAlreadyExistsException();
         } else {
             // if we don't want all the hardcoded values passed in from the user we can call the setters and
