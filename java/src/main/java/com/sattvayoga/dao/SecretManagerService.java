@@ -1,6 +1,7 @@
 package com.sattvayoga.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
@@ -17,6 +18,7 @@ public class SecretManagerService {
         this.secretsManagerClient = secretsManagerClient;
     }
 
+    @Cacheable("apiKeyCache")
     public String getApiKey() throws Throwable {
 
         String secretName = "mapsKey";
