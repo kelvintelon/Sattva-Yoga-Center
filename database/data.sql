@@ -24,15 +24,10 @@ INSERT INTO package_details (description,package_cost,classes_amount,subscriptio
 INSERT INTO website_descriptions(location_name, description) VALUES ('News and Events', 'New Website Coming Soon 2023!');
 INSERT INTO website_descriptions(location_name, description) VALUES ('Class Schedule', 'Schedule Updates: Effective Monday, April 10th, 2023
 
- 
-
 1.  Wednesday: 12:30 p.m., Beginner/Basic Class added (60 minutes).
-
- 
 
 2.  Tuesday and Thursday: 4:30 p.m., All Levels Class cancelled.
 
-​
 Current Protocols:
 
 1.  No reservation needed.
@@ -44,8 +39,6 @@ Current Protocols:
 4.  No distancing requirements (however, since we have a large space, we encourage everyone to spread out as much as possible).
 
 5.  Clients are required to bring their own yoga mats; also, we are not bringing props back yet.
-
- 
 
 We hope to see you soon in a class at the studio!');
 
