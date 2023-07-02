@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin
 public class AWSController {
 
-    @Autowired
-    private SecretManagerService secretManagerService;
+    private final SecretManagerService secretManagerService;
 
-    public AWSController() {
+    public AWSController(SecretManagerService secretManagerService) {
+        this.secretManagerService = secretManagerService;
     }
 
     @RequestMapping(value="/getMap", method = RequestMethod.GET)
