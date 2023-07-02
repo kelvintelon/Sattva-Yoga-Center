@@ -20,6 +20,7 @@ export default {
     return {
       
       localUrl: 'http://localhost:9000/get-file?fileName=',
+      // localUrl: 'https://sattva-yoga-app.herokuapp.com/get-file?fileName=',
       exactFileLocation: 'http://localhost:9000/get-file?fileName=09.18.20 - Friday_.mp4',
       fileName: '09.18.20 - Friday_.mp4',
 
