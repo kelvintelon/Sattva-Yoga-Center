@@ -3,7 +3,10 @@ package com.sattvayoga.spring.config;
 import javax.sql.DataSource;
 
 import com.sattvayoga.dao.EventDao;
+import software.amazon.awssdk.regions.Region;
+
 import com.sattvayoga.dao.JdbcEventDao;
+import com.sattvayoga.dao.SecretManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -11,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 
 //This is a Java Spring configuration class that defines a DataSource bean and an EventDao bean
 // for a Spring application. The purpose of the code is to configure a database connection
@@ -69,5 +73,18 @@ public class AppConfig {
     @Bean
     public EventDao getEventDao() {
         return new JdbcEventDao(dataSource());
+    }
+
+    @Bean
+    public SecretsManagerClient secretManagerClient() {
+        // Create and configure the SecretManagerClient instance
+        return SecretsManagerClient.builder()
+                .region(Region.of("us-east-2"))
+                .build();
+    }
+
+    @Bean
+    public SecretManagerService customSecretManagerService(SecretsManagerClient secretsManagerClient) {
+        return new SecretManagerService(secretsManagerClient);
     }
 }

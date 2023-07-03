@@ -59,7 +59,7 @@ public class AuthenticationController {
 
 
     @RequestMapping(value= "/emailResetLink/{email}", method = RequestMethod.GET)
-    public String sendEmailResetLink(@PathVariable String email) {
+    public String sendEmailResetLink(@PathVariable String email) throws Throwable {
         // find the username w/ email and plug it in
         YogaUser yogaUser = new YogaUser();
 
@@ -75,7 +75,7 @@ public class AuthenticationController {
         String jwt = tokenProvider.createEmailToken(yogaUser.getUsername());
         // prepare the link to send in mail
         // TODO: Change the following line when you have to
-//        String website = "http://sattva-yoga.netlify.app/resetLink/";
+//        String website = "http://sattva-yoga.netlify.app/resetLink?token=";
         String website = "http://localhost:8080/resetLink?token=";
         String resetLink = website + jwt;
         senderService.sendEmail(email,"Sattva Yoga Center Email Reset Link For Account","Your Reset Link is: " +resetLink +  "\n" + "Note: Reset Link expires in 2 days" + "\n" + "PLEASE DO NOT REPLY BACK TO THIS EMAIL" + "\n" + "- Sattva Yoga Center");

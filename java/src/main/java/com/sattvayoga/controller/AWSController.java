@@ -19,6 +19,7 @@ public class AWSController {
 
     @RequestMapping(value="/getMap", method = RequestMethod.GET)
     public String getMapKey() throws Throwable {
+
         return secretManagerService.getApiKey();
     }
 }
