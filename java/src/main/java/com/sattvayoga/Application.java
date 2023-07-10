@@ -45,10 +45,16 @@ class WorkerThread extends Thread {
             try {
                 eventDao.updateEventServerTask();
             } catch (Exception e) {
-                System.out.println("ERROR ON EVENT THREAD");;
+                System.out.println("ERROR ON EVENTS UPDATE THREAD");;
             }
 
-            System.out.println("Events Up To Date. Thread Initialized at count:  " + ++count);
+            try {
+                eventDao.updateAllClientsByLookingAtEvents();
+            } catch (Exception e) {
+                System.out.println("ERROR ON CLIENTS UPDATE THREAD");
+            }
+
+            System.out.println("Events Up To Date. Clients Up To Date. Thread Initialized at count:  " + ++count);
 
             // 86400000 ms in a day
             // 604800000 in a week

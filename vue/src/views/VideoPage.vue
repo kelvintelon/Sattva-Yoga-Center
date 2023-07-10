@@ -49,7 +49,7 @@
 <script>
 
 import VideoComponent from "../components/VideoComponent.vue"
-import VideoService from "../services/VideoService";
+// import VideoService from "../services/VideoService";
 
 export default {
     
@@ -60,7 +60,7 @@ components: {
 data() {
   return {
     listOfFileNames: [],
-    showVideo: false,
+    showVideo: true,
     chosenFileName: "",
   }
 },
@@ -68,12 +68,15 @@ created() {
   if (this.$store.state.token == '') {
     this.$router.push({ name: "login" });
       }
-
-  VideoService.getVideoFilenames().then((response) => {
-    if (response.status == 200) {
-      this.listOfFileNames = response.data;
-    }
-  })
+      if (this.$store.state.user.username != "admin" && !this.$store.state.clientDetails.is_allowed_video) {
+        alert("Please contact the owner to get permissions for videos")
+        this.$router.push({ name: "home" });
+      }
+  // VideoService.getVideoFilenames().then((response) => {
+  //   if (response.status == 200) {
+  //     this.listOfFileNames = response.data;
+  //   }
+  // })
 },
 methods: {
   chosenVideo(fileName){

@@ -101,15 +101,6 @@
   </v-row>
           <br>
           <br>
-          <br>
-          <br>
-          <br>
-          <br>
-          <br>
-          <br>
-          <br>
-          <br>
-          <br>
 
           <div></div>
         </v-form>

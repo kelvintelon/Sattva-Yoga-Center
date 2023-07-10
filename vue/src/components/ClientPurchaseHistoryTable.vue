@@ -3,7 +3,7 @@
     <v-row><br /></v-row>
     <v-row>
       <v-spacer></v-spacer>
-      <h1 v-if="$store.state.user.username != 'admin'">Purchase History</h1>
+      <h1 v-if="$store.state.user.username != 'admin'" style="color: rgba(245, 104, 71, 0.95)">Purchase History</h1>
       <v-spacer></v-spacer
     ></v-row>
     <br />

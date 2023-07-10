@@ -247,12 +247,12 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         String sql = "INSERT INTO client_details (last_name, first_name, is_client_active, " +
                 "is_new_client, street_address, city, state_abbreviation, zip_code, " +
                 "phone_number, is_on_email_list, email, has_record_of_liability, " +
-                "date_of_entry, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?) RETURNING client_id";
+                "date_of_entry, is_allowed_video, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING client_id";
         int clientId = jdbcTemplate.queryForObject(sql, Integer.class, client.getLast_name(), client.getFirst_name(),
                 client.isIs_client_active(), client.isIs_new_client(), client.getStreet_address(), client.getCity(),
                 client.getState_abbreviation(), client.getZip_code(), client.getPhone_number(), client.isIs_on_email_list(),
                 client.getEmail(), client.isHas_record_of_liability(),
-                client.getDate_of_entry(), client.getUser_id());
+                client.getDate_of_entry(), client.isIs_allowed_video(), client.getUser_id());
         client.setClient_id(clientId);
         return client;
     }
@@ -260,9 +260,9 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
     @Override
     public ClientDetails createNewClient(ClientDetails client) {
         String sql = "INSERT INTO client_details (last_name, first_name, is_client_active, email, " +
-                "is_new_client, user_id, date_of_entry) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING client_id";
+                "is_new_client, user_id, date_of_entry, is_allowed_video) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING client_id";
         int clientId = jdbcTemplate.queryForObject(sql, Integer.class, client.getLast_name(), client.getFirst_name(),
-                client.isIs_client_active(), client.getEmail(), client.isIs_new_client(), client.getUser_id(), client.getDate_of_entry());
+                client.isIs_client_active(), client.getEmail(), client.isIs_new_client(), client.getUser_id(), client.getDate_of_entry(), client.isIs_allowed_video());
         client.setClient_id(clientId);
         return client;
     }
@@ -324,13 +324,14 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                 "is_on_email_list = ? , " +
                 "has_record_of_liability = ? , " +
                 "is_client_active = ?  , " +
+                "is_allowed_video = ?  , " +
                 "is_new_client = ? " +
                 "WHERE user_id = ?";
         return jdbcTemplate.update(sql, clientDetails.getLast_name(), clientDetails.getFirst_name(),
                 clientDetails.getStreet_address(), clientDetails.getCity(), clientDetails.getState_abbreviation(),
                 clientDetails.getZip_code(), clientDetails.getEmail(), clientDetails.getPhone_number(),
                 clientDetails.isIs_on_email_list(), clientDetails.isHas_record_of_liability(),
-                clientDetails.isIs_client_active(), clientDetails.isIs_new_client(),
+                clientDetails.isIs_client_active(), clientDetails.isIs_allowed_video(), clientDetails.isIs_new_client(),
                 clientDetails.getUser_id()) == 1;
     }
 
@@ -398,6 +399,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         clientDetails.setEmail(rs.getString("email"));
         clientDetails.setHas_record_of_liability(rs.getBoolean("has_record_of_liability"));
         clientDetails.setDate_of_entry(rs.getTimestamp("date_of_entry"));
+        clientDetails.setIs_allowed_video(rs.getBoolean("is_allowed_video"));
         clientDetails.setUser_id(rs.getInt("user_id"));
         return clientDetails;
     }

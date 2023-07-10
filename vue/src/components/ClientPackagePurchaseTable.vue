@@ -3,7 +3,7 @@
     <v-row><br /></v-row>
     <v-row>
       <v-spacer></v-spacer>
-      <h1>Purchase a Package</h1>
+      <h1 style="color: rgba(245, 104, 71, 0.95)">Purchase a Package</h1>
       <v-spacer></v-spacer
     ></v-row>
     <br />

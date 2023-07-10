@@ -21,7 +21,9 @@ export default {
       
       localUrl: 'http://localhost:9000/get-file?fileName=',
       // localUrl: 'https://sattva-yoga-app.herokuapp.com/get-file?fileName=',
-      exactFileLocation: 'http://localhost:9000/get-file?fileName=09.18.20 - Friday_.mp4',
+      // exactFileLocation: 'http://localhost:9000/get-file?fileName=09.18.20 - Friday_.mp4',
+       exactFileLocation: '',
+      //   
       fileName: '09.18.20 - Friday_.mp4',
 
     };
@@ -34,7 +36,11 @@ export default {
         sources: [
           {
             src:
-            this.localUrl+this.chosenFileName,
+            this.exactFileLocation,
+            // 'https://storage.googleapis.com/sattva-yoga/earth.mp4',
+            // this.localUrl+this.chosenFileName,
+            // 'https://storage.googleapis.com/sattva_yoga_center_videos/09.28.20%20-%20Monday.mp4',
+            // require('@/assets/videos/earth.mp4'),
               type: 'video/mp4'
              
           }

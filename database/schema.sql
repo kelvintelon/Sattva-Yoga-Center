@@ -53,6 +53,7 @@ CREATE TABLE client_details
     email                   varchar(30) ,
     has_record_of_liability boolean     ,
     date_of_entry           timestamp   ,
+	is_allowed_video		boolean		NOT NULL,
 	user_id 				int 		,
     CONSTRAINT PK_client_id PRIMARY KEY (client_id),
 	CONSTRAINT FK_client_id_user_id FOREIGN KEY (user_id) REFERENCES users (user_id)

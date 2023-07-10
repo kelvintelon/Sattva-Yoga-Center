@@ -55,18 +55,7 @@
           <div>
             <br />
             <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
+
           </div>
         </v-form>
       </v-col>

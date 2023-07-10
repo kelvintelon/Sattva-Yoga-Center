@@ -2,7 +2,7 @@
     <v-container>
     <v-card>
         <v-card-title>
-            <span class="text-h5">Enter Email For Reset Link</span>
+            <span class="text-h5" style="color: rgba(245, 104, 71, 0.95)">Enter Email For Reset Link</span>
         </v-card-title>
         <v-card-text>
             <v-container>

@@ -22,6 +22,7 @@ public class EmailSenderService {
     public void sendEmail(String toEmail, String subject, String body) throws Throwable {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(secretManagerService.getEmailPassword().getUsername());
+        // message.setFrom("emailresetsattvayoga@gmail.com");
         message.setTo(toEmail);
         message.setText(body);
         message.setSubject(subject);

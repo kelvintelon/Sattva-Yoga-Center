@@ -111,6 +111,7 @@ public class ClientDetailsController {
             Date date = new Date();
             Timestamp theLatestTimestamp = new Timestamp(date.getTime());
             clientDetails.setIs_client_active(true);
+            clientDetails.setIs_allowed_video(false);
             clientDetails.setDate_of_entry(theLatestTimestamp);
             // use it to create a client
             int clientId = clientDetailsDao.createNewClient(clientDetails).getClient_id();
@@ -159,7 +160,9 @@ public class ClientDetailsController {
 
         Date date = new Date();
         Timestamp theLatestTimestamp = new Timestamp(date.getTime());
-        clientDetails.setIs_client_active(true);
+        clientDetails.setIs_client_active(false);
+        clientDetails.setIs_allowed_video(false);
+        clientDetails.setIs_new_client(true);
         clientDetails.setDate_of_entry(theLatestTimestamp);
         // use it to create a client
         int clientId = clientDetailsDao.createNewClient(clientDetails).getClient_id();
@@ -175,7 +178,7 @@ public class ClientDetailsController {
             foundEmail = clientDetailsDao.isEmailDuplicate(clientDetails.getClient_id(),clientDetails.getEmail());
         }
 
-        if (foundEmail || clientDetails.getEmail().equals("info@sattva-yoga-center.com")) {
+        if (foundEmail || (clientDetails.getEmail() != null && clientDetails.getEmail().equals("info@sattva-yoga-center.com"))) {
             throw new EmailAlreadyExistsException();
         } else {
             clientDetailsDao.updateClientDetails(clientDetails);

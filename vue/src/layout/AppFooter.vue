@@ -6,6 +6,8 @@
         <h5>Find Us</h5>
         <div id="map"></div>
       </v-col>
+    </v-row>
+    <v-row justify="center" align="center">
       <v-col justify="center" align="center">
         <h5> Contact Us</h5>
         <div class="contactUs" style="font-size: 18px ">

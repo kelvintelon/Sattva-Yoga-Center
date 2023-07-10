@@ -3,7 +3,7 @@
     <v-row><br /></v-row>
     <v-row>
       <v-spacer></v-spacer>
-      <h1>Sign up for classes</h1>
+      <h1 style="color: rgba(245, 104, 71, 0.95)">Sign up for classes</h1>
       <v-spacer></v-spacer
     ></v-row>
     <br />
