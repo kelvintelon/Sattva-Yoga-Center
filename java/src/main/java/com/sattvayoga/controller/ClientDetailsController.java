@@ -160,8 +160,10 @@ public class ClientDetailsController {
 
         Date date = new Date();
         Timestamp theLatestTimestamp = new Timestamp(date.getTime());
+        clientDetails.setEmail(newClientDetails.getEmail());
         clientDetails.setIs_client_active(false);
-        clientDetails.setIs_allowed_video(false);
+        clientDetails.setIs_on_email_list(newClientDetails.isIs_on_email_list());
+        clientDetails.setIs_allowed_video(newClientDetails.isIs_allowed_video());
         clientDetails.setIs_new_client(true);
         clientDetails.setDate_of_entry(theLatestTimestamp);
         // use it to create a client
@@ -178,7 +180,7 @@ public class ClientDetailsController {
             foundEmail = clientDetailsDao.isEmailDuplicate(clientDetails.getClient_id(),clientDetails.getEmail());
         }
 
-        if (foundEmail || (clientDetails.getEmail() != null && clientDetails.getEmail().equals("info@sattva-yoga-center.com"))) {
+        if (foundEmail || (clientDetails.getEmail() != null && ( clientDetails.getEmail().equalsIgnoreCase("info@sattva-yoga-center.com") || clientDetails.getEmail().equalsIgnoreCase("sattva.yoga.center.michigan@gmail.com")))) {
             throw new EmailAlreadyExistsException();
         } else {
             clientDetailsDao.updateClientDetails(clientDetails);
@@ -204,7 +206,7 @@ public class ClientDetailsController {
             foundEmail = clientDetailsDao.isEmailDuplicate(clientDetails.get(0).getClient_id(),clientDetails.get(0).getEmail());
         }
 
-        if (foundEmail || clientDetails.get(0).getEmail().equals("info@sattva-yoga-center.com")) {
+        if (foundEmail || (clientDetails.get(0).getEmail() != null && ( clientDetails.get(0).getEmail().equalsIgnoreCase("info@sattva-yoga-center.com") || clientDetails.get(0).getEmail().equalsIgnoreCase("sattva.yoga.center.michigan@gmail.com")))) {
             clientDetails.get(0).setEmail("");
             clientDetailsDao.updateClientDetails(clientDetails.get(0));
             throw new EmailAlreadyExistsException();
@@ -224,11 +226,11 @@ public class ClientDetailsController {
             foundEmail = clientDetailsDao.isEmailDuplicate(0,client.getEmail());
         }
 
-        if (foundEmail || client.getEmail().equals("info@sattva-yoga-center.com")) {
+        if (foundEmail || (client.getEmail() != null && ( client.getEmail().equalsIgnoreCase("info@sattva-yoga-center.com") || client.getEmail().equalsIgnoreCase("sattva.yoga.center.michigan@gmail.com")))) {
             throw new EmailAlreadyExistsException();
         } else {
             // if we don't want all the hardcoded values passed in from the user we can call the setters and
-            // set them before the following method happens:
+            // set them before the following method ha@ppens:
             ClientDetails clientDetails = clientDetailsDao.createClient(client);
             HttpHeaders httpHeaders = new HttpHeaders();
             return new ResponseEntity<>(new ClientDetailsResponse(clientDetails.getClient_id(), clientDetails), httpHeaders, HttpStatus.CREATED);

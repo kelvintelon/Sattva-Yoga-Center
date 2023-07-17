@@ -59,7 +59,7 @@ class WorkerThread extends Thread {
             // 86400000 ms in a day
             // 604800000 in a week
             try {
-                sleep(604800000);
+                sleep(86400000);
             } catch (InterruptedException e) {
                 // handle exception here
                 System.out.println("Thread error");

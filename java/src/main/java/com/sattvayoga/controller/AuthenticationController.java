@@ -65,7 +65,7 @@ public class AuthenticationController {
 
         // info@sattva-yoga-center.com
         // telon.kelvin77@gmail.com
-        if (email.equals("info@sattva-yoga-center.com")) {
+        if (email.equalsIgnoreCase("info@sattva-yoga-center.com") || email.equalsIgnoreCase("sattva.yoga.center.michigan@gmail.com")) {
             yogaUser.setUsername("admin");
         } else {
             yogaUser = userDao.findByEmail(email);
@@ -75,10 +75,10 @@ public class AuthenticationController {
         String jwt = tokenProvider.createEmailToken(yogaUser.getUsername());
         // prepare the link to send in mail
         // TODO: Change the following line when you have to
-//        String website = "http://sattva-yoga.netlify.app/resetLink?token=";
+        // String website = "http://sattva-yoga.netlify.app/resetLink?token=";
         String website = "http://localhost:8080/resetLink?token=";
         String resetLink = website + jwt;
-        senderService.sendEmail(email,"Sattva Yoga Center Email Reset Link For Account","Your Reset Link is: " +resetLink +  "\n" + "Note: Reset Link expires in 2 days" + "\n" + "PLEASE DO NOT REPLY BACK TO THIS EMAIL" + "\n" + "- Sattva Yoga Center");
+        senderService.sendEmail(email,"Sattva Yoga Center Email Reset Link For Account - Expires Soon","Your Reset Link is: " +resetLink +  "\n" + "Note: Reset Link expires in 2 days" + "\n" + "PLEASE DO NOT REPLY BACK TO THIS EMAIL" + "\n" + "- Sattva Yoga Center");
     }
 
     @RequestMapping(value = "/resetUsernameAndPassword", method = RequestMethod.PUT)

@@ -36,35 +36,34 @@
       <v-text-field
         v-model="clientDetails.street_address"
         :counter="30"
-        :rules="addressRules"
+        
         label="Street Address"
       ></v-text-field>
 
       <v-text-field
         v-model="clientDetails.city"
         :counter="10"
-        :rules="nameRules"
+    
         label="City"
       ></v-text-field>
 
       <v-select
         v-model="clientDetails.state_abbreviation"
         :items="items"
-        :rules="[(v) => !!v || 'Item is required']"
         label="State"
       ></v-select>
 
       <v-text-field
         v-model="clientDetails.zip_code"
         :counter="10"
-        :rules="nameRules"
+    
         label="ZIP"
       ></v-text-field>
 
       <v-text-field
         v-model="clientDetails.phone_number"
         :counter="15"
-        :rules="phoneeRules"
+        
         label="Phone Number"
       ></v-text-field>
 
@@ -141,7 +140,12 @@ export default {
       (v) => !!v || "Name is required",
       (v) => (v && v.length <= 30) || "Name must be less than 30 characters",
     ],
-
+    cityRules: [
+      (v) => (v && v.length <= 30) || "City must be less than 30 characters",
+    ],
+    zipRules:[
+      (v) => (v && v.length <= 10) || "Zip must be less than 10 characters",
+    ],
     addressRules: [
       (v) => (v && v.length <= 30) || "Street must be less than 40 characters",
     ],

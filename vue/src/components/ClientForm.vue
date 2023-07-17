@@ -11,13 +11,6 @@
       @submit.prevent="submit"
     >
       <h1 style="color: rgba(245, 104, 71, 0.95)">Set Up Your Profile</h1>
-      <div
-            class="alert alert-danger"
-            role="alert"
-            v-if="emailRegistrationErrors"
-          >
-            {{ emailRegistrationErrorMsg }}
-          </div>
       <v-text-field
         v-model="clientDetails.first_name"
         :counter="10"
@@ -44,7 +37,7 @@
       <v-text-field
         v-model="clientDetails.city"
         :counter="10"
-        :rules="nameRules"
+        :rules="cityRules"
         label="City"
       ></v-text-field>
 
@@ -58,7 +51,7 @@
       <v-text-field
         v-model="clientDetails.zip_code"
         :counter="10"
-        :rules="nameRules"
+        :rules="zipRules"
         label="ZIP"
       ></v-text-field>
 
@@ -95,6 +88,14 @@ I understand that yoga can be physically intensive and I voluntarily assume the 
       <v-btn color="error" class="mr-4 my-4" @click="reset"> Reset Form </v-btn>
 
       <v-btn class="mr-4" type="submit" :disabled="invalid"> submit </v-btn>
+      <div
+            class="alert alert-danger"
+            role="alert"
+            style="color: red"
+            v-if="emailRegistrationErrors"
+          >
+            {{ emailRegistrationErrorMsg }}
+          </div>
     </v-form>
     </v-col>
     <v-spacer></v-spacer>
@@ -131,7 +132,12 @@ export default {
     nameRules: [
       (v) => (v && v.length <= 30) || "Name must be less than 30 characters",
     ],
-
+    cityRules: [
+      (v) => (v && v.length <= 30) || "City must be less than 30 characters",
+    ],
+    zipRules:[
+      (v) => (v && v.length <= 10) || "Zip must be less than 10 characters",
+    ],
     addressRules: [
       (v) => (v && v.length <= 30) || "Street must be less than 40 characters",
     ],
@@ -244,7 +250,7 @@ export default {
               const response = error.response;
               this.emailRegistrationErrors = true;
               if (response.status === 400) {
-                this.emailRegistrationErrorMsg = "There were problems registering this user/email.";
+                this.emailRegistrationErrorMsg = "There were problems registering this email.";
               }
             });
         } else {

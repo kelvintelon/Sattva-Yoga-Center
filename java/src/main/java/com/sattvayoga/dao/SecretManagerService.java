@@ -1,9 +1,9 @@
 package com.sattvayoga.dao;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.sattvayoga.model.JavaMailCredentials;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -11,6 +11,9 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueResponse;
+import software.amazon.awssdk.thirdparty.jackson.core.JsonProcessingException;
+
+import java.io.IOException;
 
 
 @Service
@@ -92,7 +95,7 @@ public class SecretManagerService {
         JavaMailCredentials emailCredentials = null;
         try {
             emailCredentials = objectMapper.readValue(secret, JavaMailCredentials.class);
-        } catch (JsonProcessingException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return emailCredentials;

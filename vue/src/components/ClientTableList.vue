@@ -36,7 +36,33 @@
             <v-container>
               <v-row>
                 <v-col>
-                  <!-- Full list of clients autocomplete here -->
+                   <!-- Client to Keep starts here -->
+                   <v-autocomplete v-model="clientToMergeInto" :disabled="isUpdating" :items="autocompleteSecondClientList"
+                    :loading="loadingSecondClientList" filled chips color="blue-grey lighten-2" label="Clients to Keep"
+                    item-text="quick_details" return-object cache-items="true"
+                    @keypress="getSearchedSecondClientTableForAutocomplete">
+                    <template v-slot:append-item>
+                      <div v-intersect="endSecondIntersect" />
+                    </template>
+                    <template v-slot:selection="data">
+                      <v-chip color="green lighten-3" v-bind="data.attrs" :input-value="data.selected" close
+                        @click="data.select" @click:close="removeClientToKeep()">
+                        {{ data.item.quick_details }}
+                      </v-chip>
+                    </template>
+                    <template v-slot:item="data">
+                      <template v-if="typeof data.item !== 'object'">
+                        <v-list-item-content v-text="data.item"></v-list-item-content>
+                      </template>
+                      <template v-else>
+                        <v-list-item-content>
+                          <v-list-item-title v-text="data.item.quick_details"></v-list-item-title>
+                          <!-- <v-list-item-subtitle v-html="data.item.group"></v-list-item-subtitle> -->
+                        </v-list-item-content>
+                      </template>
+                    </template>
+                  </v-autocomplete>
+                  <!-- Possible Duplicate list of clients autocomplete here -->
 
                   <v-autocomplete v-model="selectedClients" :disabled="isUpdating"
                     :items="autocompleteDuplicateClientList" :loading="loadingDuplicateClientList" filled chips
@@ -89,32 +115,7 @@
                       </template>
                     </template>
                   </v-autocomplete>
-                  <!-- Client to Keep starts here -->
-                  <v-autocomplete v-model="clientToMergeInto" :disabled="isUpdating" :items="autocompleteSecondClientList"
-                    :loading="loadingSecondClientList" filled chips color="blue-grey lighten-2" label="Clients to Keep"
-                    item-text="quick_details" return-object cache-items="true"
-                    @keypress="getSearchedSecondClientTableForAutocomplete">
-                    <template v-slot:append-item>
-                      <div v-intersect="endSecondIntersect" />
-                    </template>
-                    <template v-slot:selection="data">
-                      <v-chip color="green lighten-3" v-bind="data.attrs" :input-value="data.selected" close
-                        @click="data.select" @click:close="removeClientToKeep()">
-                        {{ data.item.quick_details }}
-                      </v-chip>
-                    </template>
-                    <template v-slot:item="data">
-                      <template v-if="typeof data.item !== 'object'">
-                        <v-list-item-content v-text="data.item"></v-list-item-content>
-                      </template>
-                      <template v-else>
-                        <v-list-item-content>
-                          <v-list-item-title v-text="data.item.quick_details"></v-list-item-title>
-                          <!-- <v-list-item-subtitle v-html="data.item.group"></v-list-item-subtitle> -->
-                        </v-list-item-content>
-                      </template>
-                    </template>
-                  </v-autocomplete>
+                
                 </v-col>
               </v-row>
             </v-container>
@@ -171,6 +172,9 @@
                     <v-checkbox v-model="item.is_on_email_list" label="Stay on Email List?" required></v-checkbox>
 
                     <v-row justify="center" align="center"><v-col>
+                      <div class="alert alert-danger" role="alert" v-if="emailRegistrationErrors" style="color: red">
+                            {{ emailRegistrationErrorMsg }}
+                          </div>
                         <v-btn color="green lighten-3" class="mr-4" type="submit" :disabled="invalid">
                           Keep
                         </v-btn></v-col>
@@ -220,6 +224,9 @@
           </v-card-text>
 
           <v-card-actions>
+            <div class="alert alert-danger" role="alert" v-if="emailRegistrationErrors" style="color: red">
+                            {{ emailRegistrationErrorMsg }}
+                          </div>
             <v-spacer></v-spacer>
             <v-btn color="blue darken-1" text @click="closeNewClient"> Cancel </v-btn>
             <v-btn color="blue darken-1" text @click="saveNewClientRegistration">
@@ -317,19 +324,21 @@
                       <v-checkbox v-model="editedItem.is_on_email_list" label="Stay on Email List?" required></v-checkbox>
                       <v-checkbox v-model="editedItem.is_allowed_video" label="Allow Video?" required></v-checkbox>
                       <v-row justify="center" align="center">
-                        <v-col justify="center" align="center">
-                          <div class="alert alert-danger" role="alert" v-if="emailRegistrationErrors" style="color: red">
-                            {{ emailRegistrationErrorMsg }}
-                          </div>
-                          <v-btn class="mr-4" type="submit" :disabled="invalid">
-                            update
-                          </v-btn>
-                        </v-col>
+                        
                         <v-col cols="10" justify="center" align="center">
                           <v-btn color="error" class="mr-4" @click="reset">
                             Reset Form
                           </v-btn>
-                        </v-col></v-row>
+                        </v-col>
+                        <v-col justify="center" align="center">
+                         
+                         <v-btn class="mr-4" type="submit" :disabled="invalid">
+                           update
+                         </v-btn>
+                         <div class="alert alert-danger" role="alert" v-if="emailRegistrationErrors" style="color: red">
+                           {{ emailRegistrationErrorMsg }}
+                         </div>
+                       </v-col></v-row>
                     </v-form>
                   </v-col>
                 </v-row>
@@ -822,19 +831,21 @@ export default {
         .catch((error) => {
           const response = error.response;
           if (response.status === 400) {
-            alert("Email already in use, or different error.");
+            this.getClientTable();
+            alert("Email already in use, or different error. Refresh");
           }
         });
     },
     confirmMerge() {
       if (
         Object.keys(this.clientToMergeInto).length == 0 ||
-        this.selectedClients.length == 0
+        this.selectedClients.length == 0 || this.selectedClients.includes(this.clientToMergeInto)
       ) {
         alert("Please Choose Clients to Remove and Keep");
       } else {
         this.listOfClientForms = [];
-
+        
+        // push the client to keep to the front
         this.listOfClientForms.push(this.clientToMergeInto);
 
         for (let index = 0; index < this.selectedClients.length; index++) {
@@ -921,8 +932,9 @@ export default {
             const response = error.response;
             this.emailRegistrationErrors = true;
             if (response.status === 400) {
+         
               this.emailRegistrationErrorMsg =
-                "Could not update. Email is already being used by an account";
+                "Email is already being used by an account. Refresh";
             }
           });
       }
@@ -1170,9 +1182,16 @@ export default {
             } else {
               alert("Error adding clients to roster");
             }
-          });
-
-        this.newClientDialog = false;
+          })
+          .catch((error) => {
+              const response = error.response;
+              this.emailRegistrationErrors = true;
+              if (response.status === 400) {
+                this.getClientTable();
+               alert("There were problems registering this user with this email.");
+              }
+            })
+        this.newClientDialog = false
         this.newClientDetails = {
           last_name: "",
           first_name: "",

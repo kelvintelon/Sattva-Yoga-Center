@@ -1,10 +1,7 @@
 package com.sattvayoga.dao;
 
 import ch.qos.logback.core.net.server.Client;
-import com.sattvayoga.model.ClassDetails;
-import com.sattvayoga.model.ClientDetails;
-import com.sattvayoga.model.ClientNotFoundException;
-import com.sattvayoga.model.PaginatedListOfClients;
+import com.sattvayoga.model.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SqlRowSetResultSetExtractor;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -259,11 +256,25 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
     @Override
     public ClientDetails createNewClient(ClientDetails client) {
-        String sql = "INSERT INTO client_details (last_name, first_name, is_client_active, email, " +
-                "is_new_client, user_id, date_of_entry, is_allowed_video) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING client_id";
+        String sql = "INSERT INTO client_details (last_name, first_name, is_client_active, email, is_on_email_list, " +
+                "is_new_client, user_id, date_of_entry, is_allowed_video) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING client_id";
         int clientId = jdbcTemplate.queryForObject(sql, Integer.class, client.getLast_name(), client.getFirst_name(),
-                client.isIs_client_active(), client.getEmail(), client.isIs_new_client(), client.getUser_id(), client.getDate_of_entry(), client.isIs_allowed_video());
+                client.isIs_client_active(), client.getEmail(), client.isIs_on_email_list(), client.isIs_new_client(), client.getUser_id(), client.getDate_of_entry(), client.isIs_allowed_video());
         client.setClient_id(clientId);
+        // look up the email here
+        boolean foundEmail = false;
+        if (client.getEmail() != null && !(client.getEmail().equalsIgnoreCase(""))) {
+            foundEmail = isEmailDuplicate(client.getClient_id(),client.getEmail());
+        }
+
+        if (foundEmail || (client.getEmail() != null && ( client.getEmail().equalsIgnoreCase("info@sattva-yoga-center.com") || client.getEmail().equalsIgnoreCase("sattva.yoga.center.michigan@gmail.com")))) {
+            client.setEmail("");
+            client.setIs_on_email_list(false);
+
+            updateClientDetails(client);
+
+            throw new EmailAlreadyExistsException();
+        }
         return client;
     }
 
