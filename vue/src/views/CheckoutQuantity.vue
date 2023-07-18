@@ -6,7 +6,7 @@
 
 
 <script>
-import ShoppingCart from "../components/ShoppingCart.vue";
+import ShoppingCart from "../components/ShoppingCartQuantity.vue";
 
 export default {
   name: "checkout",

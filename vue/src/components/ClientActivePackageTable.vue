@@ -179,8 +179,7 @@
 import packagePurchaseService from "../services/PackagePurchaseService";
 import packageDetailService from "../services/PackageDetailService";
 import eventService from "../services/EventService";
-import clientDetailService from "../services/ClientDetailService";
-
+// import clientDetailService from "../services/ClientDetailService";
 
 export default {
   name: "client-active-package-table",
@@ -246,29 +245,27 @@ export default {
     };
   },
   beforeCreate() {
-   
-    clientDetailService.getClientDetailsByClientId(this.$route.params.clientId).then((response) => {
-        if (response.data.client_id != 0) {
-          this.clientDetails = response.data;
-          this.$store.commit("SET_CLIENT_DETAILS", response.data);
-          // alert("active package table client details")
-          if (this.clientDetails.redFlag == true) {
-            this.snackBarReconcileWarning = true
-          }
-        }
-      });
+    // clientDetailService.getClientDetailsByClientId(this.$route.params.clientId).then((response) => {
+    //     if (response.data.client_id != 0) {
+    //       this.clientDetails = response.data;
+    //       this.$store.commit("SET_CLIENT_DETAILS", response.data);
+    //       // alert("active package table client details")
+    //       if (this.clientDetails.redFlag == true) {
+    //         this.snackBarReconcileWarning = true
+    //       }
+    //     }
+    //   });
     // TODO: CAREFUL DELETING THIS BECAUSE WE FORGOT WHAT IT DOES
-    //    this.$root.$on("getActivePurchasePackageTable", () => {
-    //   this.getActivePurchaseServerRequest();
-    // });
+    this.$root.$on("getActivePurchasePackageTable", () => {
+      this.getActivePurchaseServerRequest();
+    });
   },
   created() {
-    
     this.getSharedActivePackages();
     setTimeout(() => {
       this.getActivePurchaseServerRequest();
-    }, 1500)
-    
+    }, 1500);
+
     this.$root.$refs.A = this;
 
     if (this.$store.state.user.username == "admin") {
@@ -293,12 +290,16 @@ export default {
             this.loading = false;
             this.overlay = false;
             alert("Success");
+            this.getSharedActivePackages();
             this.getActivePurchaseServerRequest();
             this.$root.$refs.B.getPackageHistoryTable();
             this.$root.$refs.C.getClientDetails();
             this.$root.$refs.D.getClientEventTable();
             this.$root.$refs.E.getEventDetailsCall();
             this.snackBarReconcilePackagesSuccessful = true;
+            // setTimeout(() => {
+            //   this.closeReconcile();
+            // }, 2500);
             this.snackBarReconcilePackages = false;
           } else {
             this.snackBarReconcilePackages = false;
@@ -324,6 +325,9 @@ export default {
       this.percentDiscount = 0;
       this.selectedPackage.discount = 0;
     },
+    // closeReconcile(){
+    //   this.snackBarReconcilePackages = false;
+    // },
     getActivePurchaseServerRequest() {
       this.loading = true;
       this.overlay = !this.overlay;
@@ -352,17 +356,17 @@ export default {
               this.packages.forEach((item) => {
                 item.date_purchased = new Date(item.date_purchased);
               });
-              console.log(this.$store.state.clientDetails.redFlag)
-              console.log(this.packages.length > 0)
-              console.log(this.$store.state.sharedPackages.length > 0)
-              console.log(this.$store.state.clientDetails.redFlag &&
-                (this.packages.length > 0 ||
-                this.sharedPackages.length > 0));
-                // alert(this.$store.state.clientDetails.redFlag)
+              // console.log(this.$store.state.clientDetails.redFlag);
+              // console.log(this.packages.length > 0);
+              // console.log(this.$store.state.sharedPackages.length > 0);
+              // console.log(
+              //   this.$store.state.clientDetails.redFlag &&
+              //     (this.packages.length > 0 || this.sharedPackages.length > 0)
+              // );
+              // alert(this.$store.state.clientDetails.redFlag)
               if (
                 this.$store.state.clientDetails.redFlag &&
-                (this.packages.length > 0 ||
-                this.sharedPackages.length > 0)
+                (this.packages.length > 0 || this.sharedPackages.length > 0)
               ) {
                 this.snackBarReconcilePackages = true;
               }
@@ -397,7 +401,7 @@ export default {
             });
             if (
               this.$store.state.clientDetails.redFlag &&
-              this.packages.length > 0 
+              this.packages.length > 0
             ) {
               this.snackBarReconcilePackages = true;
             }
@@ -410,7 +414,9 @@ export default {
     },
     getSharedActivePackages() {
       packagePurchaseService
-        .getAllSharedActiveQuantityPackagesByClientId(this.$route.params.clientId)
+        .getAllSharedActiveQuantityPackagesByClientId(
+          this.$route.params.clientId
+        )
         .then((response) => {
           if (response.status == 200) {
             this.sharedPackages = response.data;
