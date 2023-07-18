@@ -24,6 +24,8 @@ import Checkout6Month from '../views/stripe/Checkout6Month.vue'
 import CheckoutSuccess from '../views/stripe/CheckoutSuccess.vue'
 import CheckoutFail from '../views/stripe/CheckoutFail.vue'
 import ShoppingCart from '../views/stripe/ShoppingCart.vue'
+import VideoPage from '../views/VideoPage.vue'
+import ResetPasswordLoggedIn from '../views/ResetPasswordLoggedIn.vue'
 
 Vue.use(Router)
 
@@ -225,7 +227,22 @@ const router = new Router({
         requiresAuth: false
       }
     },
-
+    {
+      path:"/videos",
+      name:"video-page",
+      component: VideoPage,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path:"/resetPassword",
+      name:"reset-password-logged-in",
+      component: ResetPasswordLoggedIn,
+      meta: {
+        requiresAuth: true
+      }
+    },
   ]
 })
 

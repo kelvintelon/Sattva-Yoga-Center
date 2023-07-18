@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sattvayoga.dao.ClientDetailsDao;
 import com.sattvayoga.dao.EventDao;
 import com.sattvayoga.dao.UserDao;
-import com.sattvayoga.model.ClientDetails;
-import com.sattvayoga.model.EmailAlreadyExistsException;
-import com.sattvayoga.model.EmailNotFoundException;
+import com.sattvayoga.model.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +13,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.security.Principal;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 @PreAuthorize("isAuthenticated()")
 @RestController
@@ -32,6 +33,143 @@ public class ClientDetailsController {
         this.eventDao = eventDao;
     }
 
+//    http://localhost:8080/getPaginatedClients?page=1&limit=10
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value = "/getPaginatedClients", method = RequestMethod.GET)
+    public PaginatedListOfClients getPaginatedClients(@RequestParam(defaultValue = "1")  int page,
+                                                      @RequestParam(defaultValue = "10") int pageSize,
+                                                      @RequestParam(defaultValue = "") String search,
+                                                      @RequestParam(defaultValue = "client_id") String sortBy,
+                                                      @RequestParam(defaultValue = "false") boolean sortDesc) {
+        // sort by is just another string concatenation
+            return clientDetailsDao.getAllPaginatedClients(page,pageSize,search, sortBy, sortDesc);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(path = "/clientList", method = RequestMethod.GET)
+    public List<ClientDetails> getAllClients() {
+
+        return clientDetailsDao.getAllClients();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value = "/getPaginatedDuplicateClients", method = RequestMethod.GET)
+    public PaginatedListOfClients getPaginatedDuplicateClientList(@RequestParam(defaultValue = "1")  int page,
+                                                                  @RequestParam(defaultValue = "10") int pageSize,
+                                                                  @RequestParam(defaultValue = "") String search) {
+        return clientDetailsDao.getAllPaginatedDuplicateClients(page,pageSize,search);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(path="/duplicateList", method = RequestMethod.GET)
+    public List<ClientDetails> getAllDuplicateClients(){
+        return clientDetailsDao.getAllDuplicateClients();
+    }
+
+    //TODO: This is for testing purposes
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value="/register100Clients", method = RequestMethod.POST)
+    public void register100Clients() {
+        for (int k = 0; k < 1000; k++) {
+
+
+            int leftLimit = 48; // numeral '0'
+            int rightLimit = 122; // letter 'z'
+            int targetStringLength = 10;
+            Random random = new Random();
+
+            // create password
+            String generatedPassword = random.ints(leftLimit, rightLimit + 1)
+                    .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                    .limit(targetStringLength)
+                    .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                    .toString();
+
+
+            // create username
+            String generatedUsername = random.ints(leftLimit, rightLimit + 1)
+                    .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                    .limit(targetStringLength)
+                    .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                    .toString();
+
+            generatedUsername = "user" + generatedUsername;
+
+            // create user with username and password
+            userDao.create(generatedUsername, generatedPassword, "user");
+
+            // retrieve the user ID,
+            YogaUser newUser = userDao.findByUsername(generatedUsername);
+            int userId = newUser.getId();
+
+            ClientDetails clientDetails = new ClientDetails();
+
+            clientDetails.setFirst_name(generatedUsername);
+            clientDetails.setLast_name("Telon");
+            clientDetails.setUser_id(userId);
+
+            Date date = new Date();
+            Timestamp theLatestTimestamp = new Timestamp(date.getTime());
+            clientDetails.setIs_client_active(true);
+            clientDetails.setIs_allowed_video(false);
+            clientDetails.setDate_of_entry(theLatestTimestamp);
+            // use it to create a client
+            int clientId = clientDetailsDao.createNewClient(clientDetails).getClient_id();
+
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value="/registerNewClient", method = RequestMethod.POST)
+    public void registerNewClient(@RequestBody ClientDetails newClientDetails) {
+
+        int leftLimit = 48; // numeral '0'
+        int rightLimit = 122; // letter 'z'
+        int targetStringLength = 10;
+        Random random = new Random();
+
+        // create password
+        String generatedPassword = random.ints(leftLimit, rightLimit + 1)
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                .limit(targetStringLength)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+
+
+        // create username
+        String generatedUsername = random.ints(leftLimit, rightLimit + 1)
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                .limit(targetStringLength)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+
+        generatedUsername = "user" + generatedUsername;
+
+        // create user with username and password
+        userDao.create(generatedUsername,generatedPassword, "user");
+
+        // retrieve the user ID,
+        YogaUser newUser = userDao.findByUsername(generatedUsername);
+        int userId = newUser.getId();
+
+        ClientDetails clientDetails = new ClientDetails();
+
+        clientDetails.setFirst_name(newClientDetails.getFirst_name());
+        clientDetails.setLast_name(newClientDetails.getLast_name());
+        clientDetails.setUser_id(userId);
+
+        Date date = new Date();
+        Timestamp theLatestTimestamp = new Timestamp(date.getTime());
+        clientDetails.setEmail(newClientDetails.getEmail());
+        clientDetails.setIs_client_active(false);
+        clientDetails.setIs_on_email_list(newClientDetails.isIs_on_email_list());
+        clientDetails.setIs_allowed_video(newClientDetails.isIs_allowed_video());
+        clientDetails.setIs_new_client(true);
+        clientDetails.setDate_of_entry(theLatestTimestamp);
+        // use it to create a client
+        int clientId = clientDetailsDao.createNewClient(clientDetails).getClient_id();
+    }
+
     @RequestMapping(value = "/updateClientDetails", method = RequestMethod.PUT)
     public void updateClientDetails(@RequestBody ClientDetails clientDetails) {
 
@@ -42,7 +180,7 @@ public class ClientDetailsController {
             foundEmail = clientDetailsDao.isEmailDuplicate(clientDetails.getClient_id(),clientDetails.getEmail());
         }
 
-        if (foundEmail) {
+        if (foundEmail || (clientDetails.getEmail() != null && ( clientDetails.getEmail().equalsIgnoreCase("info@sattva-yoga-center.com") || clientDetails.getEmail().equalsIgnoreCase("sattva.yoga.center.michigan@gmail.com")))) {
             throw new EmailAlreadyExistsException();
         } else {
             clientDetailsDao.updateClientDetails(clientDetails);
@@ -68,7 +206,7 @@ public class ClientDetailsController {
             foundEmail = clientDetailsDao.isEmailDuplicate(clientDetails.get(0).getClient_id(),clientDetails.get(0).getEmail());
         }
 
-        if (foundEmail) {
+        if (foundEmail || (clientDetails.get(0).getEmail() != null && ( clientDetails.get(0).getEmail().equalsIgnoreCase("info@sattva-yoga-center.com") || clientDetails.get(0).getEmail().equalsIgnoreCase("sattva.yoga.center.michigan@gmail.com")))) {
             clientDetails.get(0).setEmail("");
             clientDetailsDao.updateClientDetails(clientDetails.get(0));
             throw new EmailAlreadyExistsException();
@@ -88,16 +226,18 @@ public class ClientDetailsController {
             foundEmail = clientDetailsDao.isEmailDuplicate(0,client.getEmail());
         }
 
-        if (foundEmail) {
+        if (foundEmail || (client.getEmail() != null && ( client.getEmail().equalsIgnoreCase("info@sattva-yoga-center.com") || client.getEmail().equalsIgnoreCase("sattva.yoga.center.michigan@gmail.com")))) {
             throw new EmailAlreadyExistsException();
         } else {
             // if we don't want all the hardcoded values passed in from the user we can call the setters and
-            // set them before the following method happens:
+            // set them before the following method ha@ppens:
             ClientDetails clientDetails = clientDetailsDao.createClient(client);
             HttpHeaders httpHeaders = new HttpHeaders();
             return new ResponseEntity<>(new ClientDetailsResponse(clientDetails.getClient_id(), clientDetails), httpHeaders, HttpStatus.CREATED);
         }
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/removeClient/{clientId}", method = RequestMethod.DELETE)
     public void deleteClient(@PathVariable int clientId) {
         clientDetailsDao.deleteClient(clientId);
@@ -121,19 +261,6 @@ public class ClientDetailsController {
         return clientDetails;
     }
 
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @RequestMapping(path = "/clientList", method = RequestMethod.GET)
-    public List<ClientDetails> getAllClients() {
-
-        return clientDetailsDao.getAllClients();
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @RequestMapping(path="/duplicateList", method = RequestMethod.GET)
-    public List<ClientDetails> getAllDuplicateClients(){
-        return clientDetailsDao.getAllDuplicateClients();
-    }
 
 
 

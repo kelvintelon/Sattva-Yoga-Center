@@ -2,6 +2,7 @@ package com.sattvayoga.dao;
 
 import com.sattvayoga.model.ClientDetails;
 import com.sattvayoga.model.PackageDetails;
+import com.sattvayoga.model.PaginatedListOfClients;
 
 import java.util.List;
 
@@ -24,6 +25,10 @@ public interface ClientDetailsDao {
     boolean isEmailDuplicate(int clientId, String email);
 
     List<ClientDetails> getAllDuplicateClients();
+
+    PaginatedListOfClients getAllPaginatedClients(int page, int pageSize, String search, String sortBy, boolean sortDesc);
+
+    PaginatedListOfClients getAllPaginatedDuplicateClients(int page, int pageSize, String search);
 
     void removeDuplicateClients(int clientIdToKeep, int clientIdToRemove);
 }

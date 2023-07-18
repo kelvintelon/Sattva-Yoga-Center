@@ -3,7 +3,7 @@
     <v-row><br /></v-row>
     <v-row>
       <v-spacer></v-spacer>
-      <h1>Sign up for classes</h1>
+      <h1 style="color: rgba(245, 104, 71, 0.95)">Sign up for classes</h1>
       <v-spacer></v-spacer
     ></v-row>
     <br />
@@ -23,6 +23,7 @@
           v-bind="attrs"
           @click="snackBarNoPurchaseWarning = false"
           left
+          top
         >
           Close
         </v-btn>
@@ -31,8 +32,9 @@
           text
           v-bind="attrs"
           @click="sendThemToPurchasePackage"
+          bottom
         >
-          Buy a Package
+          Buy Package
         </v-btn>
       </template>
     </v-snackbar>
@@ -62,8 +64,7 @@
         :headers="clientEventHeaders"
         :items="clientEvents"
         class="elevation-5"
-        sort-by="date"
-        :sort-desc="[true]"
+       
         dense
       >
         <template v-slot:top>
@@ -85,7 +86,7 @@
         :headers="allClientEventHeaders"
         :items="allClientEvents"
         class="elevation-5"
-        sort-by="date"
+        :sort-by="date"
         :sort-desc="[true]"
         dense
       >
@@ -122,7 +123,7 @@ export default {
           value: "event_name",
           align: "start",
         },
-        { text: "Date", value: "date", sortable: false },
+        { text: "Date", value: "date", sortable: true },
         { text: "Start Time", value: "start_time", sortable: false },
         { text: "End Time", value: "end_time", sortable: false },
         { text: "Sign Up", value: "actions", sortable: false },
@@ -132,7 +133,7 @@ export default {
           text: "Class Description",
           value: "event_name",
         },
-        { text: "Date", value: "date", sortable: true, align: "start" },
+        { text: "Date", value: "date", sortable: true},
         { text: "Start Time", value: "start_time", sortable: false },
         { text: "End Time", value: "end_time", sortable: false },
         { text: "Cancel Signup", value: "actions", sortable: false },
@@ -142,7 +143,7 @@ export default {
           text: "Class Description",
           value: "event_name",
         },
-        { text: "Date", value: "date", sortable: true, align: "start" },
+        { text: "Date", value: "date", sortable: true },
         { text: "Start Time", value: "start_time", sortable: false },
         { text: "End Time", value: "end_time", sortable: false },
       ],
@@ -170,6 +171,7 @@ export default {
       initial: 0,
       initial1: 0,
       freeloading: false,
+      freeClass: false,
     };
   },
   methods: {
@@ -178,7 +180,7 @@ export default {
       this.eventClientSignUp.date = item.dateRef;
       this.eventClientSignUp.client_id =
         this.$store.state.clientDetails.client_id;
-
+      this.freeClass = item.is_paid;
       this.allowSignUp = false;
 
       // object to hold item passed in just in case
@@ -192,7 +194,7 @@ export default {
       // this.$root.$emit("getActivePurchasePackageTable");
     },
     getActivePurchaseServerRequest() {
-      packagePurchaseService.getUserPurchasedPackages().then((response) => {
+      packagePurchaseService.getActiveUserPurchasedPackages().then((response) => {
         if (response.status == 200) {
           this.getSharedActivePackages();
           // focus on if it's expired or not
@@ -239,7 +241,8 @@ export default {
       // this.activePackageList = this.$store.state.activePackageList;
       if (
         this.$store.state.activePackageList.length == 0 &&
-        this.$store.state.sharedPackages.length == 0
+        this.$store.state.sharedPackages.length == 0 &&
+        this.freeClass == false
       ) {
         this.allowSignUp = false;
         this.snackBarNoPurchaseWarning = true;
@@ -310,6 +313,9 @@ export default {
         this.quantityPackageIdToDecrement =
           this.$store.state.sharedPackages[0].package_purchase_id;
         this.freeloading = true;
+      } else if (this.freeClass == true) {
+        this.allowSignUp = true;
+        this.eventClientSignUp.package_purchase_id = -1;
       }
 
       // if they have an active package then they are allowed to sign up
@@ -326,17 +332,18 @@ export default {
           }
           if (
             this.hasSubscriptionPackage &&
-            this.eventClientSignUp.date > this.initial1.expiration_date
+            this.eventClientSignUp.date > this.initial1.expiration_date && this.freeClass == false
           ) {
             alert("Error! Your unlimited package will be expired by then.");
             this.validSignUp = false;
           }
         });
-        if (this.freeloading) {
+
+        if (this.freeloading && this.freeClass == false) {
           if (
             confirm("You will use up packages shared by the group") == false
           ) {
-            this.validSignUp == false;
+            this.validSignUp = false;
           }
         }
 
@@ -345,7 +352,7 @@ export default {
             .registerForEvent(this.eventClientSignUp)
             .then((response) => {
               if (response.status == 201) {
-                if (this.hasSubscriptionPackage == false) {
+                if (this.hasSubscriptionPackage == false && this.freeClass == false) {
                   packagePurchaseService.decrementByOne(
                     this.quantityPackageIdToDecrement
                   );
@@ -389,7 +396,7 @@ export default {
       this.classSignUpItem = Object.assign({}, item);
 
       // get active packages from API service request
-      if (item.package_purchase_id == 0) {
+      if (item.package_purchase_id <= 0) {
         this.allowSignUp = true;
         alert("Success");
         this.cancelCheck();
@@ -402,7 +409,7 @@ export default {
       // this.$root.$emit("getActivePurchasePackageTable");
     },
     getActivePurchaseServerRequest2() {
-      packagePurchaseService.getUserPurchasedPackages().then((response) => {
+      packagePurchaseService.getActiveUserPurchasedPackages().then((response) => {
         if (response.status == 200) {
           this.allHistoricalPackages = response.data;
           // focus on if it's expired or not
@@ -432,7 +439,7 @@ export default {
               this.eventClientSignUp.package_purchase_id
             );
           });
-          console.log(refundPackage);
+          //console.log(refundPackage);
           if (refundPackage.length > 0) {
             if (refundPackage[0].is_subscription == true) {
               this.hasSubscriptionPackage = true;
@@ -446,11 +453,11 @@ export default {
       });
     },
     cancelCheck() {
-      if (this.allowSignUp || this.eventClientSignUp.package_purchase_id == 0) {
-        console.log(this.hasSubscriptionPackage);
+      if (this.allowSignUp || this.eventClientSignUp.package_purchase_id <= 0) {
+        //console.log(this.hasSubscriptionPackage);
         if (
           this.validSignUp == true ||
-          this.eventClientSignUp.package_purchase_id == 0
+          this.eventClientSignUp.package_purchase_id <= 0
         ) {
           eventService
             .removeEventForClient(this.eventClientSignUp.event_id)

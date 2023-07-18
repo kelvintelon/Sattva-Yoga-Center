@@ -26,7 +26,7 @@ export default {
   methods: {
     submit () {
       // You will be redirected to Stripe's secure checkout page
-      console.log('lineItems: ', this.$store.state.lineItems);
+      // console.log('lineItems: ', this.$store.state.lineItems);
       axios
         .post(
           `/stripe/create-checkout-session`,
@@ -35,7 +35,7 @@ export default {
         .then((response) => {
           this.sessionId= response.data.sessionId;
           localStorage.setItem('sessionId', response.data.sessionId);
-          console.log('session', response.data);
+          // console.log('session', response.data);
           this.$refs.checkoutRef.redirectToCheckout({
             sessionId: response.data.sessionId,
           });

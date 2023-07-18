@@ -1,45 +1,38 @@
 <template>
-  <v-footer
-    
-    padless
-    light
-    min-height="250px"
-    color="rgba(252, 142, 1, 0.22)"
-  >
- 
-  <v-row justify="center" align="center">
-  
-   <v-col justify="center" align="center">
-    <h5>Find Us</h5>
-     <div id="map"></div>
-   </v-col>
-  <v-col justify="center" align="center">
-    <h5> Contact Us</h5>
-    <div class="contactUs" style="font-size: 18px ">
-     <p>835 Mason St, Suite B120 Dearborn, MI 48124, USA (Parking lot entrance on Garrison Street between Mason and Monroe Streets)</p>
+  <v-footer padless light min-height="220px" color="rgba(252, 142, 1, 0.22)">
+    <v-row justify="center" align="center">
+
+      <v-col justify="center" align="center">
+        <h5>Find Us</h5>
+        <div id="map"></div>
+      </v-col>
+    </v-row>
+    <v-row justify="center" align="center">
+      <v-col justify="center" align="center">
+        <h5> Contact Us</h5>
+        <div class="contactUs" style="font-size: 18px ">
+          <p>835 Mason St, Suite B120 Dearborn, MI 48124, USA (Parking lot entrance on Garrison Street between Mason and
+            Monroe Streets)</p>
 
 
 
-<p class="emailLink" @click="openEmailAddress">info@sattva-yoga-center.com</p>
+          <p class="emailLink" @click="openEmailAddress">info@sattva-yoga-center.com</p>
 
 
-(313) 274-3995 (touch number to dial)
+          (313) 274-3995 (touch number to dial)
+          <v-col justify="center" align="center">
+            <div style="font-size: 16px">©2023 by Sattva Yoga Center</div>
 
-    </div>
-  </v-col>
-   </v-row>
-   <v-row justify="center" align="center">
-    
-    <v-col justify="center" align="center">
-      <div style="font-size: 16px" >©2023 by Sattva Yoga Center</div>
-      
-    </v-col>
-   
-   </v-row>
+          </v-col>
+        </div>
+      </v-col>
+    </v-row>
   </v-footer>
 </template>
 
 <script>
+import awsService from "../services/AWSService"
+
 export default {
   name: "AppFooter",
   data() {
@@ -50,17 +43,30 @@ export default {
     }
   },
   mounted() {
-    this.initMap();
-  },
+  
+    // API key does not exist in local storage, make API call to retrieve it
+    awsService.getMap().then((response) => {
+      const retrievedApiKey = response.data.VUE_APP_MAPS_KEY;
+
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${retrievedApiKey}`;
+      script.onload = () => {
+        this.initMap();
+      };
+      
+      document.body.appendChild(script);
+    });
+  
+},
   methods: {
     initMap() {
-     
-     this.map = new window.google.maps.Map(document.getElementById("map"), {
-      center: this.mapCenter,
+
+      this.map = new window.google.maps.Map(document.getElementById("map"), {
+        center: this.mapCenter,
         zoom: 14,
         maxZoom: 20,
         minZoom: 3,
-        mapTypeControl:true,
+        mapTypeControl: true,
         zoomControl: true,
       });
       // let noPOIStyle = [
@@ -73,8 +79,8 @@ export default {
 
       // this.map.setOptions({ styles: noPOIStyle });
 
-      const markerObj = { coord: { lat: 42.307550, lng: -83.245910  }, name: "Sattva Yoga Center" };
-      
+      const markerObj = { coord: { lat: 42.307550, lng: -83.245910 }, name: "Sattva Yoga Center" };
+
       new window.google.maps.Marker({
         position: markerObj.coord,
         map: this.map,
@@ -94,8 +100,9 @@ export default {
 
 <style scoped>
 .contactUs {
-  display:block;
+  display: block;
 }
+
 #map {
   height: 20vh;
   width: 40vh;
@@ -106,5 +113,4 @@ export default {
   text-decoration: underline;
   color: blue;
 }
-
 </style>

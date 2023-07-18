@@ -16,7 +16,11 @@
           <br/>
           <div>
           <class-table-list v-show="showTable"></class-table-list></div>
-         <div> <class-week-table v-show="showWeek"></class-week-table></div>
+         <div>
+          
+           <class-week-table v-show="showWeek"></class-week-table>
+          
+          </div>
         </v-col>
       </v-row>
     </v-container>
@@ -52,7 +56,9 @@ export default {
     }
   },
   created() {
-  
+    if (this.$store.state.user.username != 'admin') {
+      this.$router.push({name: 'home'})
+    }
   },
 };
 </script>

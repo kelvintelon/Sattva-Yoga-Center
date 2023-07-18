@@ -1,22 +1,16 @@
 <template>
-  <div class="client-form-template">
+  <v-card class="mx-auto my-12 pb-12">
+    <v-row justify="center" align="center">
+      <v-spacer></v-spacer>
+      <v-col lg="4" sm="10" justify="center" align="center">
     <v-form
       ref="form"
       v-model="valid"
       lazy-validation
-      class="client-form"
+      class="client-form-template"
       @submit.prevent="submit"
-      justify="center"
-      align="center"
     >
-      <h1>Set Up Your Profile</h1>
-      <div
-            class="alert alert-danger"
-            role="alert"
-            v-if="emailRegistrationErrors"
-          >
-            {{ emailRegistrationErrorMsg }}
-          </div>
+      <h1 style="color: rgba(245, 104, 71, 0.95)">Set Up Your Profile</h1>
       <v-text-field
         v-model="clientDetails.first_name"
         :counter="10"
@@ -38,15 +32,13 @@
         :counter="30"
         :rules="addressRules"
         label="Street Address"
-        required
       ></v-text-field>
 
       <v-text-field
         v-model="clientDetails.city"
         :counter="10"
-        :rules="nameRules"
+        :rules="cityRules"
         label="City"
-        required
       ></v-text-field>
 
       <v-select
@@ -54,15 +46,13 @@
         :items="items"
         :rules="[(v) => !!v || 'Item is required']"
         label="State"
-        required
       ></v-select>
 
       <v-text-field
         v-model="clientDetails.zip_code"
         :counter="10"
-        :rules="nameRules"
+        :rules="zipRules"
         label="ZIP"
-        required
       ></v-text-field>
 
       <v-text-field
@@ -70,27 +60,47 @@
         :counter="15"
         :rules="phoneRules"
         label="Phone Number"
-        required
       ></v-text-field>
 
       <v-text-field
         v-model="clientDetails.email"
         :rules="emailRules"
         label="E-mail"
-        required
       ></v-text-field>
 
       <v-checkbox
         v-model="clientDetails.is_on_email_list"
         label="Join Email List?"
+      ></v-checkbox>
+      <v-btn v-if="!readLiabilityRelease" @click="readLiabilityRelease = true">
+        Read Studio Liability Release
+      </v-btn>
+      <div v-else>
+        Studio Liability Release:
+I understand that yoga can be physically intensive and I voluntarily assume the risk inherent in my participation in classes provided by Sattva Yoga Center, including the risk of injury, accident, death, loss, cost or damage to my person, my family members or to my guests, and I release and indemnify Sattva Yoga Center from and against any and all such claims and liabilities, including attorneys’ fees. I further attest that I am in sufficient physical health, and/or that I have consulted with a physician and I am able to undertake and engage in the physical movements and exercises in classes that I have chosen to take provided by Sattva Yoga Center. I assume responsibility to update Sattva Yoga Center of any changes in my medical condition that might affect my safety or participation in classes at Sattva Yoga Center.
+      </div>
+      <v-checkbox
+        v-model="acceptTerms"
+        label="I Understand."
+        :rules="[v => !!v || 'You must agree to continue!']"
         required
       ></v-checkbox>
-
-      <v-btn color="error" class="mr-4" @click="reset"> Reset Form </v-btn>
+      <v-btn color="error" class="mr-4 my-4" @click="reset"> Reset Form </v-btn>
 
       <v-btn class="mr-4" type="submit" :disabled="invalid"> submit </v-btn>
+      <div
+            class="alert alert-danger"
+            role="alert"
+            style="color: red"
+            v-if="emailRegistrationErrors"
+          >
+            {{ emailRegistrationErrorMsg }}
+          </div>
     </v-form>
-  </div>
+    </v-col>
+    <v-spacer></v-spacer>
+  </v-row>
+  </v-card>
 </template>
 
 <script>
@@ -103,7 +113,7 @@ export default {
     clientDetails: {
       last_name: "",
       first_name: "",
-      is_client_active: true,
+      is_client_active: false,
       is_new_client: true,
       street_address: "",
       city: "",
@@ -115,25 +125,27 @@ export default {
       has_record_of_liability: false,
       date_of_entry: "",
       user_id: 0,
+      is_allowed_video: false
     },
      emailRegistrationErrors: false,
       emailRegistrationErrorMsg: 'There were problems registering with this email.',
     nameRules: [
-      (v) => !!v || "Name is required",
       (v) => (v && v.length <= 30) || "Name must be less than 30 characters",
     ],
-
+    cityRules: [
+      (v) => (v && v.length <= 30) || "City must be less than 30 characters",
+    ],
+    zipRules:[
+      (v) => (v && v.length <= 10) || "Zip must be less than 10 characters",
+    ],
     addressRules: [
-      (v) => !!v || "Name is required",
       (v) => (v && v.length <= 30) || "Street must be less than 40 characters",
     ],
     email: "",
     emailRules: [
-      (v) => !!v || "E-mail is required",
       (v) => /.+@.+\..+/.test(v) || "E-mail must be valid",
     ],
     phoneRules: [
-      (v) => !!v || "Phone is required",
       (v) => (v && v.length <= 30) || "Name must be less than 30 characters",
     ],
     select: null,
@@ -190,7 +202,9 @@ export default {
       "WV",
       "WY",
     ],
-    formIncomplete: true,
+    formComplete: false,
+    acceptTerms: false,
+    readLiabilityRelease: false,
   }),
 
   methods: {
@@ -200,22 +214,17 @@ export default {
     checkForm() {
       if (
         this.clientDetails.last_name == "" ||
-        this.clientDetails.first_name == "" ||
-        this.clientDetails.street_address == "" ||
-        this.clientDetails.city == "" ||
-        this.clientDetails.state_abbreviation == "" ||
-        this.clientDetails.zip_code == "" ||
-        this.clientDetails.phone_number == "" ||
-        this.clientDetails.email == ""
+        this.clientDetails.first_name == "" || 
+        this.acceptTerms == false
       ) {
         alert("Please fill out your form");
       } else {
-        this.formIncomplete = false;
+        this.formComplete = true;
       }
     },
     submit() {
       this.checkForm();
-      if (this.formIncomplete == false) {
+      if (this.formComplete) {
         this.clientDetails.user_id = this.$store.state.user.id;
         this.clientDetails.date_of_entry = new Date().toISOString();
 
@@ -241,7 +250,7 @@ export default {
               const response = error.response;
               this.emailRegistrationErrors = true;
               if (response.status === 400) {
-                this.emailRegistrationErrorMsg = "There were problems registering this user/email.";
+                this.emailRegistrationErrorMsg = "There were problems registering this email.";
               }
             });
         } else {
@@ -255,7 +264,11 @@ export default {
       this.emailRegistrationErrorMsg = 'There were problems registering this email.';
     },
   },
-  created() {},
+  created() {
+    if(this.$store.state.clientDetails.client_id > 0) {
+      this.$router.push({ name: 'home' });
+    }
+  },
 };
 </script>
 
@@ -263,7 +276,7 @@ export default {
 <style scoped>
 .client-form-template {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
 }
 
 .client-form {

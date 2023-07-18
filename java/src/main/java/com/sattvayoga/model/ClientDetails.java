@@ -31,6 +31,9 @@ public class ClientDetails {
     //HELPER
     private String username;
 
+    private boolean is_allowed_video;
+
+
     public ClientDetails(int client_id, String last_name, String first_name, boolean is_client_active, boolean is_new_client,String street_address, String city, String state_abbreviation, String zip_code, String phone_number, boolean is_on_email_list, String email, boolean has_record_of_liability, Timestamp date_of_entry, int user_id) {
         this.client_id = client_id;
         this.last_name = last_name;
@@ -78,6 +81,14 @@ public class ClientDetails {
         this.client_id = client_id;
         this.last_name = last_name;
         this.first_name = first_name;
+    }
+
+    public boolean isIs_allowed_video() {
+        return is_allowed_video;
+    }
+
+    public void setIs_allowed_video(boolean is_allowed_video) {
+        this.is_allowed_video = is_allowed_video;
     }
 
     public boolean isRedFlag() {

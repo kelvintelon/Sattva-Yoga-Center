@@ -3,9 +3,9 @@
     <v-row><br /></v-row>
     <v-row>
       <v-spacer></v-spacer>
-      <h1>Purchase a Package</h1>
-      <v-spacer></v-spacer>
-    </v-row>
+      <h1 style="color: rgba(245, 104, 71, 0.95)">Purchase a Package</h1>
+      <v-spacer></v-spacer
+    ></v-row>
     <br />
 
     <v-snackbar v-model="snackBarSecondPurchaseWarning" color="red darken-2" elevation="24" :vertical="vertical" shaped>
@@ -216,7 +216,7 @@ export default {
               this.packagePurchase.activation_date = latestExpDate;
 
               if (this.purchaseItem.subscription_duration > 0) {
-                console.log(new Date(this.packagePurchase.activation_date));
+               // console.log(new Date(this.packagePurchase.activation_date))
                 this.packagePurchase.expiration_date = this.addMonths(
                   new Date(this.packagePurchase.activation_date),
                   this.purchaseItem.subscription_duration

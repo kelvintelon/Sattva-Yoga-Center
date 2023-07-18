@@ -3,7 +3,7 @@
     <v-row><br /></v-row>
     <v-row>
       <v-spacer></v-spacer>
-      <h1 v-if="$store.state.user.username != 'admin'">Purchase History</h1>
+      <h1 v-if="$store.state.user.username != 'admin'" style="color: rgba(245, 104, 71, 0.95)">Purchase History</h1>
       <v-spacer></v-spacer
     ></v-row>
     <br />
@@ -12,11 +12,15 @@
       :headers="headers"
       :items="packageHistoryList"
       class="elevation-5"
-      sort-by="date_purchased"
-      sort-desc="[true]"
+      :sort-by.sync="sortBy"
+      :sort-desc.sync="sortDesc"
+      @update:sort-by="sortTable"
+      @update:sort-desc="sortTable"
        :loading="loading"
         loading-text="Loading... Please wait"
-      dense
+      :options.sync="options"
+      :server-items-length="totalPackagesPurchased"
+      hide-default-footer
     >
       <template v-slot:top>
         <v-toolbar flat>
@@ -143,6 +147,27 @@
         <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
       </template>
     </v-data-table>
+    <v-row>
+      <v-col lg="10" md="9" sm="8">
+        <v-pagination
+          v-model="page"
+          :length="Math.ceil(totalPackagesPurchased / pageSize)"
+          @input="temporaryPageMethod"
+          total-visible="8"
+        ></v-pagination>
+      </v-col>
+      <v-col lg="2" md="3" sm="3" class="mt-2">
+        <v-select
+          v-model="pageSize"
+          :items="[10, 20, 30, 40, 50]"
+          outlined
+          filled
+          @change="temporaryPageSizeMethod"
+        >
+        </v-select>
+      </v-col>
+      <v-spacer></v-spacer>
+    </v-row>
     <br />
     <br />
     <v-overlay :value="overlay">
@@ -165,8 +190,8 @@ export default {
       headers: [
         {
           text: "Package Description",
-          align: "start",
           value: "package_description",
+          sortable: false,
         },
         { text: "Purchase Date", value: "date_purchased", sortable: true },
         {
@@ -193,6 +218,12 @@ export default {
           value: "is_monthly_renew",
         },
       ],
+      page: 1,
+      pageSize: 10,
+      sortBy: 'package_purchase_id',
+      sortDesc: true,
+      totalPackagesPurchased: 0,
+      paginatedObject: {},
       packageHistoryList: [],
       packagePurchase: {
         package_purchase_id: "",
@@ -320,6 +351,14 @@ export default {
     overlay: false,
     };
   },
+  watch: {
+    options: {
+      handler() {
+        this.getPackageHistoryTable();
+      },
+      deep: true,
+    },
+  },
   created() {
     this.getPackageHistoryTable();
 
@@ -327,21 +366,42 @@ export default {
 
     if (this.$store.state.user.username == "admin") {
       this.headers.push({ text: "Edit", value: "actions", sortable: false });
-       this.headers.unshift({ text: "Package ID", value: "package_purchase_id" });
+       this.headers.unshift({ text: "Package ID", value: "package_purchase_id", sortable: true });
         this.headers.splice(-5, 0, { text: "Discount", value: "discount", sortable: false });
     }
     
   },
   methods: {
+    temporaryPageMethod() {
+     
+      this.getPackageHistoryTable();
+    },
+    temporaryPageSizeMethod() {
+      if (this.page == 1) {
+        this.getPackageHistoryTable();
+      } else {
+       
+        this.page = 1;
+        this.getPackageHistoryTable();
+      }
+    },
+    sortTable() {
+      if (this.sortDesc == undefined) {
+        this.sortDesc = false;
+      } 
+      this.getPackageHistoryTable();
+    },
     getPackageHistoryTable() {
       this.loading = true;
       if (this.$store.state.user.username == "admin") {
         packagePurchaseService
-          .getUserPurchasedPackagesByClientId(this.$route.params.clientId)
+        .getPaginatedUserPurchasedPackagesByClientId(this.$route.params.clientId,this.page, this.pageSize, this.sortBy, this.sortDesc)
           .then((response) => {
             if (response.status == 200) {
               this.loading = false;
-              this.packageHistoryList = response.data;
+              this.paginatedObject = response.data;
+              this.totalPackagesPurchased = this.paginatedObject.totalRows;
+              this.packageHistoryList = this.paginatedObject.listOfPurchasedPackages;
               this.packageHistoryList.forEach((item) => {
                 item.date_purchased = new Date(
                   item.date_purchased
@@ -356,11 +416,13 @@ export default {
             }
           });
       } else {
-        packagePurchaseService.getUserPurchasedPackages().then((response) => {
+        packagePurchaseService.getPaginatedUserPurchasedPackages(this.page, this.pageSize, this.sortBy, this.sortDesc).then((response) => {
           if (response.status == 200) {
-            this.loading = false;
-            this.packageHistoryList = response.data;
-            this.packageHistoryList.forEach((item) => {
+              this.loading = false;
+              this.paginatedObject = response.data;
+              this.totalPackagesPurchased = this.paginatedObject.totalRows;
+              this.packageHistoryList = this.paginatedObject.listOfPurchasedPackages;
+              this.packageHistoryList.forEach((item) => {
               item.date_purchased = new Date(
                 item.date_purchased
               ).toLocaleString();
@@ -404,7 +466,7 @@ export default {
         .updatePackagePurchase(this.editedItem)
         .then((response) => {
           if (response.status == 200) {
-            this.overlay = true;
+            this.overlay = false;
             this.loading = false;
             response;
             alert("success");

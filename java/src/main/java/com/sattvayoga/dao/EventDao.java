@@ -50,4 +50,6 @@ public interface EventDao {
     boolean isThereExistingEventWithStartTime(Event newEvent);
 
     void createNewEventsFromClass(ClassDetails classDetails) throws Exception;
+
+    void updateAllClientsByLookingAtEvents();
 }

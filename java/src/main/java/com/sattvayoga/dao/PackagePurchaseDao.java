@@ -2,6 +2,7 @@ package com.sattvayoga.dao;
 
 import com.sattvayoga.model.Event;
 import com.sattvayoga.model.PackagePurchase;
+import com.sattvayoga.model.PaginatedListOfPurchasedPackages;
 
 import java.util.List;
 
@@ -24,4 +25,10 @@ public interface PackagePurchaseDao {
     PackagePurchase filterPackageList(List<PackagePurchase> packagePurchaseList, Event event);
 
     List<PackagePurchase> getAllSharedActiveQuantityPackages(int client_id);
+
+    PaginatedListOfPurchasedPackages getAllUserPaginatedPackagePurchases(int userId, int page, int limit, String sortBy, boolean sortDesc);
+
+    PaginatedListOfPurchasedPackages getAllActiveUserPaginatedPackagePurchases(int userId, int page, int pageSize, String sortBy, boolean sortDesc);
+
+    List<PackagePurchase> getAllActiveUserPackagePurchases(int userId);
 }

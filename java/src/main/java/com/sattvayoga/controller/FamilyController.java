@@ -14,14 +14,15 @@ import java.util.List;
 @RestController
 @CrossOrigin
 public class FamilyController {
+
     private FamilyDao familyDao;
 
     public FamilyController(FamilyDao familyDao){
         this.familyDao = familyDao;
     }
 
-    @PreAuthorize("permitAll")
-    @GetMapping(path = "/getFamilyList")
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(path = "/getFamilyList", method = RequestMethod.GET)
     public List<Family> getAllFamilies() throws SQLException {
         return familyDao.getAllFamilies();
     }

@@ -1,4 +1,24 @@
 <template>
+   <div>
+     <VueHtml2pdf
+        :show-layout="true"
+        :float-layout="false"
+        :enable-download="true"
+        :preview-modal="true"
+        :paginate-elements-by-height="1400"
+        filename="SattvaYogaClassSchedule"
+        :pdf-quality="2"
+        :manual-pagination="false"
+        pdf-format="a4"
+        pdf-orientation="portrait"
+        pdf-content-width="800px"
+
+        @progress="onProgress($event)"
+        @hasStartedGeneration="hasStartedGeneration()"
+        @hasGenerated="hasGenerated($event)"
+        ref="html2Pdf"
+    >
+        <section slot="pdf-content">
   <v-container class="weekContainer">
     <v-row>
       <v-col align="center" class="rowClass">Monday</v-col>
@@ -62,16 +82,23 @@
     <v-row>
       <v-col align="center">Effective {{todaysDate.toLocaleString()}}</v-col>
     </v-row>
+    <v-btn color="orange" @click.prevent="generateReport"><v-icon x-large> mdi-file-pdf-box</v-icon></v-btn>
   </v-container>
+</section>
+    </VueHtml2pdf>
+   </div>
 </template>
 
 <script>
 import classDetailService from "../services/ClassDetailService";
 import teacherService from "../services/TeacherService";
+import VueHtml2pdf from 'vue-html2pdf'
 
 export default {
   name: "class-week-table-list",
-  components: {},
+  components: {
+    VueHtml2pdf
+  },
   props: ["value"],
   data() {  
     return {
@@ -198,6 +225,9 @@ export default {
     }
   },
   methods: {
+    generateReport () {
+            this.$refs.html2Pdf.generatePdf()
+        },
     // ==================== this is table stuff vvvv
     getClassTable() {
       classDetailService.getAllClasses().then((response) => {

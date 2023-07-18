@@ -1,12 +1,26 @@
 import axios from 'axios';
 
 export default {
-
-    createPackagePurchase(packagePurchase) {
-        return axios.post('/createPackagePurchase', packagePurchase)
-    },
     getUserPurchasedPackages() {
         return axios.get('userPackagePurchaseList')
+    },
+    getActiveUserPurchasedPackages() {
+      return axios.get('activeUserPackagePurchaseList')  
+    },
+    getUserPurchasedPackagesByClientId(clientId) {
+        return axios.get(`userPackagePurchaseListByClientId/${clientId}`)
+    },
+    getPaginatedUserPurchasedPackages(thisPage, thisPageSize,thisSortBy, thisSortDesc) {
+        return axios.get('userPaginatedPackagePurchaseList', {params: {page: thisPage, pageSize: thisPageSize, sortBy: thisSortBy, sortDesc: thisSortDesc} })
+    },
+    getPaginatedUserPurchasedPackagesByClientId(clientId, thisPage, thisPageSize,thisSortBy, thisSortDesc) {
+        return axios.get(`userPaginatedPackagePurchaseListByClientId/${clientId}`, {params: {page: thisPage, pageSize: thisPageSize, sortBy: thisSortBy, sortDesc: thisSortDesc} })
+    },
+    getActivePaginatedUserPurchasedPackagesByClientId(clientId, thisPage, thisPageSize,thisSortBy, thisSortDesc) {
+        return axios.get(`userActivePaginatedPackagePurchaseListByClientId/${clientId}`, {params: {page: thisPage, pageSize: thisPageSize, sortBy: thisSortBy, sortDesc: thisSortDesc} })
+    },
+    createPackagePurchase(packagePurchase) {
+        return axios.post('/createPackagePurchase', packagePurchase)
     },
     expirePackage(packagePurchaseObject) {
         return axios.put(`/expirePackage`, packagePurchaseObject)
@@ -19,9 +33,6 @@ export default {
     },
     getUserPurchasedPackagesByUserId(userId) {
         return axios.get(`userPackagePurchaseListByUserId/${userId}`)
-    },
-    getUserPurchasedPackagesByClientId(clientId) {
-        return axios.get(`userPackagePurchaseListByClientId/${clientId}`)
     },
     updatePackagePurchase(object){
         return axios.put(`/updatePackagePurchase`, object)

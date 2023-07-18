@@ -1,23 +1,11 @@
 <template>
   <v-container>
     <!-- DELETE SNACKBAR -->
-    <v-snackbar
-      v-model="snackBarDeleteEventWarning"
-      color="red darken-2"
-      elevation="24"
-      :vertical="vertical"
-      shaped
-    >
+    <v-snackbar v-model="snackBarDeleteEventWarning" color="red darken-2" elevation="24" :vertical="vertical" shaped>
       Warning: This Event Has A Roster - Can't Be Deleted
 
       <template v-slot:action="{ attrs }">
-        <v-btn
-          color="white"
-          text
-          v-bind="attrs"
-          @click="snackBarDeleteEventWarning = false"
-          left
-        >
+        <v-btn color="white" text v-bind="attrs" @click="snackBarDeleteEventWarning = false" left>
           Close
         </v-btn>
         <!-- <v-btn color="white" text v-bind="attrs" @click="allowEventDelete">
@@ -25,22 +13,10 @@
         </v-btn> -->
       </template>
     </v-snackbar>
-    <v-snackbar
-      v-model="snackBarDeleteEventConfirmation"
-      color="red darken-2"
-      elevation="24"
-      :vertical="vertical"
-      shaped
-    >
+    <v-snackbar v-model="snackBarDeleteEventConfirmation" color="red darken-2" elevation="24" :vertical="vertical" shaped>
       Warning: Delete this Event?
       <template v-slot:action="{ attrs }">
-        <v-btn
-          color="white"
-          text
-          v-bind="attrs"
-          @click="snackBarDeleteEventConfirmation = false"
-          left
-        >
+        <v-btn color="white" text v-bind="attrs" @click="snackBarDeleteEventConfirmation = false" left>
           Close
         </v-btn>
         <v-btn color="white" text v-bind="attrs" @click="allowEventDelete">
@@ -77,12 +53,7 @@
       <v-col>
         <v-sheet tile height="64" class="d-flex">
           <v-toolbar flat>
-            <v-btn
-              outlined
-              class="mr-4"
-              color="grey darken-2"
-              @click="setToday"
-            >
+            <v-btn outlined class="mr-4" color="grey darken-2" @click="setToday">
               Today
             </v-btn>
             <v-btn fab text small color="grey darken-2" @click="prev">
@@ -99,13 +70,7 @@
             <v-spacer></v-spacer>
             <v-dialog v-model="dialog" max-width="500px">
               <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                  color="primary"
-                  dark
-                  class="mb-2"
-                  v-bind="attrs"
-                  v-on="on"
-                >
+                <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
                   Create A Event
                 </v-btn>
               </template>
@@ -122,119 +87,57 @@
                 <v-container>
                   <v-row justify="center" style="min-height: 160px">
                     <v-col cols="10">
-                      <v-form
-                        ref="form"
-                        height="100"
-                        width="500"
-                        v-model="valid"
-                        lazy-validation
-                        class="class-form mx-auto white"
-                        @submit.prevent="submit"
-                        justify="center"
-                        align="center"
-                      >
-                        <v-text-field
-                          v-model="event.event_name"
-                          :rules="titleRules"
-                          label="Add title"
-                          required
-                        ></v-text-field>
+                      <v-form ref="form" height="100" width="500" v-model="valid" lazy-validation
+                        class="class-form mx-auto white" @submit.prevent="submit" justify="center" align="center">
+                        <v-text-field v-model="event.event_name" :rules="titleRules" label="Add title"
+                          required></v-text-field>
                         <!-- DATE PICKER -->
 
                         <v-row>
                           <v-col>
-                            <v-menu
-                              v-model="menu"
-                              :close-on-content-click="false"
-                              :nudge-right="40"
-                              transition="scale-transition"
-                              offset-y
-                              min-width="auto"
-                            >
+                            <v-menu v-model="menu" :close-on-content-click="false" :nudge-right="40"
+                              transition="scale-transition" offset-y min-width="auto">
                               <template v-slot:activator="{ on, attrs }">
-                                <v-text-field
-                                  v-model="dateRangeText"
-                                  :rules="timeRules"
-                                  readonly
-                                  v-bind="attrs"
-                                  v-on="on"
-                                ></v-text-field>
+                                <v-text-field v-model="dateRangeText" :rules="timeRules" readonly v-bind="attrs"
+                                  v-on="on"></v-text-field>
                               </template>
-                              <v-date-picker
-                                v-model="dates"
-                                multiple
-                              ></v-date-picker>
-                            </v-menu> </v-col
-                          ><v-col>
-                            <v-checkbox
-                              v-model="event.is_visible_online"
-                              label="Visible Online?"
-                              required
-                            ></v-checkbox></v-col
-                        ></v-row>
+                              <v-date-picker v-model="dates" multiple></v-date-picker>
+                            </v-menu> </v-col><v-col>
+                            <v-checkbox v-model="event.is_visible_online" label="Visible Online?"
+                              required></v-checkbox></v-col></v-row>
                         <!-- FIRST TIME PICKER -->
                         <v-row>
                           <v-col>
-                            <v-select
-                              label="Start Time"
-                              :items="allTimes"
-                              v-model="event.start_time"
-                              variant="underlined"
-                            ></v-select>
+                            <v-select label="Start Time" :items="allTimes" v-model="event.start_time"
+                              variant="underlined"></v-select>
                           </v-col>
                           <!-- SECOND TIME PICKER -->
                           <v-col>
-                            <v-select
-                              label="End Time"
-                              :items="returnCorrectEndTime"
-                              v-model="event.end_time"
-                              variant="underlined"
-                            ></v-select>
-                          </v-col> </v-row
-                        ><v-row>
+                            <v-select label="End Time" :items="returnCorrectEndTime" v-model="event.end_time"
+                              variant="underlined"></v-select>
+                          </v-col> </v-row><v-row>
                           <v-spacer></v-spacer>
                           <!-- COLOR PICKER -->
-                          <v-col cols="3">
-                            <v-menu
-                              v-model="colorPickerMenu1"
-                              :close-on-content-click="false"
-                              :nudge-right="40"
-                              transition="scale-transition"
-                              offset-y
-                              min-width="auto"
-                            >
+                          <v-col cols="6">
+                            <v-menu v-model="colorPickerMenu1" :close-on-content-click="false" :nudge-right="40"
+                              transition="scale-transition" offset-y min-width="auto">
                               <template v-slot:activator="{ on, attrs }">
-                                <v-text-field
-                                  label="Color"
-                                  v-model="event.color"
-                                  readonly
-                                  v-bind="attrs"
-                                  v-on="on"
-                                ></v-text-field>
+                                <v-text-field label="Color" v-model="event.color" readonly v-bind="attrs"
+                                  v-on="on"></v-text-field>
                               </template>
-                              <v-color-picker
-                                v-model="event.color"
-                                hide-inputs
-                              ></v-color-picker> </v-menu
-                          ></v-col>
-                          <v-spacer></v-spacer>
+                              <v-color-picker v-model="event.color" hide-inputs></v-color-picker> </v-menu></v-col>
+                          <v-col cols="4">
+                            <v-checkbox v-model="event.is_paid" label="Is Paid?" required></v-checkbox></v-col>
                         </v-row>
-                        <v-row justify="center" align="center"
-                          ><v-col cols="10">
+                        <v-row justify="center" align="center"><v-col cols="10">
                             <v-btn color="error" class="mr-4" @click="reset">
                               Reset Form
                             </v-btn>
                           </v-col>
                           <v-col>
-                            <v-btn
-                              class="mr-4"
-                              type="submit"
-                              :disabled="invalid"
-                            >
+                            <v-btn class="mr-4" type="submit" :disabled="invalid">
                               submit
-                            </v-btn></v-col
-                          ></v-row
-                        >
+                            </v-btn></v-col></v-row>
                       </v-form>
                       <!-- End of Create Form -->
                     </v-col>
@@ -265,34 +168,15 @@
           </v-toolbar>
         </v-sheet>
         <v-sheet height="600">
-          <v-calendar
-            ref="calendar"
-            v-model="value"
-            color="primary"
-            :type="type"
-            :events="events"
-            :event-overlap-mode="mode"
-            :event-overlap-threshold="30"
-            :event-color="getEventColor"
-            @change="getEvents"
-            @click:event="showEvent"
-            @click:more="viewWeek"
-            @click:date="viewDay"
-          ><template v-slot:day-body="{ date, week, timeToY }">
-            <div
-              class="v-current-time"
-              :class="{ first: date === week[0].date }"
-              :style="{ top: nowY(timeToY) }"
-            ></div>
-          </template></v-calendar>
+          <v-calendar ref="calendar" v-model="value" color="primary" :type="type" :events="events"
+            :event-overlap-mode="mode" :event-overlap-threshold="30" :event-color="getEventColor" @change="getEvents"
+            @click:event="showEvent" @click:more="viewWeek" @click:date="viewDay"><template
+              v-slot:day-body="{ date, week, timeToY }">
+              <div class="v-current-time" :class="{ first: date === week[0].date }" :style="{ top: nowY(timeToY) }"></div>
+            </template></v-calendar>
           <!-- Show Selected Event -->
-          <v-menu
-            v-model="selectedOpen"
-            :close-on-content-click="false"
-            :activator="selectedElement"
-            offset-x
-          >
-            <v-card color="grey lighten-4" min-width="350px" flat>
+          <v-menu v-model="selectedOpen" :close-on-content-click="false" :activator="selectedElement" offset-x>
+            <v-card color="grey lighten-4" min-width="350px" flat class="d-flex flex-sm-column">
               <v-toolbar :color="selectedEvent.color" dark>
                 <v-btn icon>
                   <v-icon @click="showCardEditForm">mdi-pencil</v-icon>
@@ -300,18 +184,10 @@
                 <v-toolbar-title v-html="selectedEvent.name"></v-toolbar-title>
                 <v-spacer></v-spacer>
 
-                <v-btn
-                  icon
-                  @click="toggleVisibleEvent(false)"
-                  v-show="toggleVisibilityButton == false"
-                >
+                <v-btn icon @click="toggleVisibleEvent(false)" v-show="toggleVisibilityButton == false">
                   <v-icon>mdi-eye-off</v-icon>
                 </v-btn>
-                <v-btn
-                  icon
-                  @click="toggleVisibleEvent(true)"
-                  v-show="toggleVisibilityButton == true"
-                >
+                <v-btn icon @click="toggleVisibleEvent(true)" v-show="toggleVisibilityButton == true">
                   <v-icon>mdi-eye-check</v-icon>
                 </v-btn>
 
@@ -320,14 +196,11 @@
                 </v-btn>
               </v-toolbar>
               <v-card-text v-show="!showEditForm">
-                <span
-                  >{{ new Date(selectedEvent.start).getFullYear() }}-{{
-                    new Date(selectedEvent.start).getMonth() + 1
-                  }}-{{ new Date(selectedEvent.start).getDate() }}</span
-                >
+                <span>{{ new Date(selectedEvent.start).getFullYear() }}-{{
+                  new Date(selectedEvent.start).getMonth() + 1
+                }}-{{ new Date(selectedEvent.start).getDate() }}</span>
                 <br />
-                <span
-                  >Starts at:
+                <span>Starts at:
                   {{
                     new Date(selectedEvent.start).toLocaleString("en-US", {
                       hour: "numeric",
@@ -337,117 +210,59 @@
                   }}
                 </span>
                 <br />
-                <span
-                  >Ends at:
+                <span>Ends at:
                   {{
                     new Date(selectedEvent.end).toLocaleString("en-US", {
                       hour: "numeric",
                       minute: "numeric",
                       hour12: true,
                     })
-                  }}</span
-                >
+                  }}</span>
               </v-card-text>
               <!-- UPDATE EVENT FORM -->
               <v-card-text v-show="showEditForm">
-                <v-form
-                  ref="form"
-                  height="100"
-                  width="400"
-                  v-model="valid"
-                  lazy-validation
-                  class="class-form mx-auto"
-                  @submit.prevent="submitUpdate"
-                  justify="center"
-                  align="center"
-                >
-                  <v-text-field
-                    v-model="editedEvent.event_name"
-                    :rules="titleRules"
-                    label="Edit title"
-                    required
-                  ></v-text-field>
+                <v-form ref="form" height="100" width="400" v-model="valid" lazy-validation class="class-form mx-auto"
+                  @submit.prevent="submitUpdate" justify="center" align="center">
+                  <v-text-field v-model="editedEvent.event_name" :rules="titleRules" label="Edit title"
+                    required></v-text-field>
                   <!-- DATE PICKER -->
-                  <v-row>
+                  <v-row sm="3">
                     <v-col>
-                      <v-menu
-                        v-model="editMenu"
-                        :close-on-content-click="false"
-                        :nudge-right="40"
-                        transition="scale-transition"
-                        offset-y
-                        min-width="auto"
-                      >
+                      <v-menu v-model="editMenu" :close-on-content-click="false" :nudge-right="40"
+                        transition="scale-transition" offset-y min-width="auto">
                         <template v-slot:activator="{ on, attrs }">
-                          <v-text-field
-                            v-model="date2"
-                            :rules="timeRules"
-                            readonly
-                            v-bind="attrs"
-                            v-on="on"
-                          ></v-text-field>
+                          <v-text-field v-model="date2" :rules="timeRules" readonly v-bind="attrs"
+                            v-on="on"></v-text-field>
                         </template>
-                        <v-date-picker
-                          v-model="date2"
-                          @input="editMenu = false"
-                        ></v-date-picker>
+                        <v-date-picker v-model="date2" @input="editMenu = false"></v-date-picker>
                       </v-menu>
                     </v-col>
                     <!-- FIRST TIME PICKER -->
                     <v-col>
-                      <v-select
-                        label="Start Time"
-                        :items="allTimes"
-                        v-model="editedEvent.start_time"
-                        variant="underlined"
-                      ></v-select>
+                      <v-select label="Start Time" :items="allTimes" v-model="editedEvent.start_time"
+                        variant="underlined"></v-select>
                     </v-col>
                     <!-- SECOND TIME PICKER -->
                     <v-col>
-                      <v-select
-                        label="End Time"
-                        :items="returnCorrectEndTime"
-                        v-model="editedEvent.end_time"
-                        variant="underlined"
-                      ></v-select>
-                    </v-col> </v-row
-                  ><v-row>
+                      <v-select label="End Time" :items="returnCorrectEndTime" v-model="editedEvent.end_time"
+                        variant="underlined"></v-select>
+                    </v-col> </v-row><v-row>
                     <v-spacer></v-spacer>
                     <!-- COLOR PICKER -->
                     <v-col cols="3">
-                      <v-menu
-                        v-model="colorPickerMenu2"
-                        :close-on-content-click="false"
-                        :nudge-right="40"
-                        transition="scale-transition"
-                        offset-y
-                        min-width="auto"
-                      >
+                      <v-menu v-model="colorPickerMenu2" :close-on-content-click="false" :nudge-right="40"
+                        transition="scale-transition" offset-y min-width="auto">
                         <template v-slot:activator="{ on, attrs }">
-                          <v-text-field
-                            label="Color"
-                            v-model="editedEvent.color"
-                            readonly
-                            v-bind="attrs"
-                            v-on="on"
-                          ></v-text-field>
+                          <v-text-field label="Color" v-model="editedEvent.color" readonly v-bind="attrs"
+                            v-on="on"></v-text-field>
                         </template>
-                        <v-color-picker
-                          v-model="editedEvent.color"
-                          hide-inputs
-                        ></v-color-picker> </v-menu
-                    ></v-col>
-                    <v-spacer></v-spacer>
-                    <v-checkbox
-                      v-model="editedEvent.is_visible_online"
-                      label="Visible Online?"
-                      required
-                    ></v-checkbox>
-                    <v-spacer></v-spacer>
+                        <v-color-picker v-model="editedEvent.color" hide-inputs></v-color-picker> </v-menu></v-col>
+                    <v-col cols="4">
+                      <v-checkbox v-model="editedEvent.is_visible_online" label="Visible Online?" required></v-checkbox>
+                    </v-col> <v-col cols="4">
+                      <v-checkbox v-model="editedEvent.is_paid" label="Is Paid?" required></v-checkbox></v-col>
                   </v-row>
-                  <v-row justify="center" align="center"
-                    ><v-spacer></v-spacer
-                    ><v-col cols="3">
+                  <v-row justify="center" align="center"><v-spacer></v-spacer><v-col cols="3">
                       <v-btn color="error" class="mr-4" @click="reset">
                         Reset Form
                       </v-btn>
@@ -456,9 +271,7 @@
                     <v-col>
                       <v-btn class="mr-4" type="submit" :disabled="invalid">
                         submit
-                      </v-btn></v-col
-                    ><v-spacer></v-spacer></v-row
-                  ><v-spacer></v-spacer>
+                      </v-btn></v-col><v-spacer></v-spacer></v-row><v-spacer></v-spacer>
                 </v-form>
               </v-card-text>
               <v-card-actions>
@@ -470,9 +283,7 @@
                 </v-btn>
                 <v-spacer></v-spacer>
                 <v-btn icon>
-                  <v-icon @click="sendToEventDetailsPage"
-                    >mdi-account-multiple</v-icon
-                  >
+                  <v-icon @click="sendToEventDetailsPage">mdi-account-multiple</v-icon>
                 </v-btn>
               </v-card-actions>
             </v-card>
@@ -481,10 +292,7 @@
       </v-col>
     </v-row>
     <v-overlay :value="overlay">
-      <v-progress-circular
-        indeterminate
-        size="70"
-      ></v-progress-circular>
+      <v-progress-circular indeterminate size="70"></v-progress-circular>
     </v-overlay>
   </v-container>
 </template>
@@ -628,6 +436,7 @@ export default {
       color: "#3388FF",
       timed: true,
       is_visible_online: true,
+      is_paid: false,
     },
     editedEvent: {
       class_id: 0,
@@ -637,6 +446,7 @@ export default {
       color: "#3388FF",
       timed: true,
       is_visible_online: true,
+      is_paid: false,
     },
 
     typeToLabel: {
@@ -692,7 +502,7 @@ export default {
       this.showEditForm = !this.showEditForm;
     },
     getEventDetailsCallBeforeDeleting() {
-      
+
       eventService
         .getEventDetailsByEventId(this.serverEvents[this.selectedEventIndex].event_id)
         .then((response) => {
@@ -700,7 +510,7 @@ export default {
             this.locatedEvent = response.data;
 
             this.listOfSignedUpClients = this.locatedEvent.attendanceList;
-           
+
             if (this.listOfSignedUpClients.length > 0) {
               this.snackBarDeleteEventWarning = true;
             } else {
@@ -732,14 +542,18 @@ export default {
       });
     },
     submitUpdate() {
-      this.findsMatch();
+      // TODO: FOLLOWING LINE BREAKS UPDATING EVENTS
+      // this.findsMatch();
+
+      // alert(this.editedEvent.start_time)
+      // alert(this.editedEvent.end_time)
       // find the ID of selected event
       for (let i = 0; i < this.serverEvents.length; i++) {
         if (
           new Date(this.serverEvents[i].start_time).getTime() ==
-            new Date(this.selectedEvent.start).getTime() &&
+          new Date(this.selectedEvent.start).getTime() &&
           new Date(this.serverEvents[i].end_time).getTime() ==
-            new Date(this.selectedEvent.end).getTime() &&
+          new Date(this.selectedEvent.end).getTime() &&
           this.serverEvents[i].event_name == this.selectedEvent.name
         ) {
           this.selectedEventIndex = this.serverEvents[i].event_id;
@@ -794,17 +608,18 @@ export default {
       let endTime = `${hours2}:${minutes2}`;
 
       let chosenDate = this.date2;
-      let newStartDate = new Date(chosenDate + " " + startTime).toJSON();
-      let newEndDate = new Date(chosenDate + " " + endTime).toJSON();
+      let newStartDate = new Date(chosenDate + " " + startTime);
+      let newEndDate = new Date(chosenDate + " " + endTime);
       // alert(newStartDate)
       // alert(newEndDate)
       this.editedEvent.start_time = newStartDate;
       this.editedEvent.end_time = newEndDate;
+      if (this.editedEvent.start_time != "" && this.editedEvent.end_time != "" ) {
       // this will eventually be an update instead,
       eventService.updateEvent(this.editedEvent).then((response) => {
         if (response.status == 200) {
           // alert("Event successfully updated!");
-          if (response.data=="Fail") {
+          if (response.data == "Fail") {
             alert("Double Book Error. Failed to Update. Change event name")
             this.closeSelectedCard();
             this.findsMatch();
@@ -814,11 +629,14 @@ export default {
             this.closeSelectedCard();
             this.getAllEvents();
           }
-          
+
         } else {
           alert("Error removing event!");
         }
       });
+    } else {
+      alert("Please edit the time")
+    }
     },
     confirmUpdate() {
       this.snackBarUpdateEventWarning = true;
@@ -826,11 +644,11 @@ export default {
     toggleVisibleEvent(value) {
       this.snackBarupdateEventWarning = false;
       this.findsMatch();
-      
+
       this.editedEvent.is_visible_online = value;
       if (value) {
         // make it colorful again
-      
+
         this.editedEvent.color = "orange";
         this.events[this.selectedEventIndex].color = "orange";
         this.serverEvents[this.selectedEventIndex].color = "orange";
@@ -838,7 +656,7 @@ export default {
         this.toggleVisibilityButton = false;
       } else {
         // make it grey
-       
+
         this.editedEvent.color = "#808080";
         // this.events[this.selectedEventIndex].color = "#808080";
         // this.serverEvents[this.selectedEventIndex].color = "#808080";
@@ -853,15 +671,15 @@ export default {
 
       eventService.updateEvent(this.editedEvent).then((response) => {
         if (response.status == 200) {
-          if (response.data=="Fail") {
+          if (response.data == "Fail") {
             alert("Double Book Error. Failed to Create. Change event name")
             this.closeSelectedCard();
-            
+
           } else {
-            
+
             this.closeSelectedCard();
             this.getAllEvents();
-            
+
           }
           this.getAllEvents();
           // alert("Event successfully updated!");
@@ -921,21 +739,20 @@ export default {
         .split("/");
       this.date2 = selectedYear + "-" + selectedMonth + "-" + selectedDay;
 
-      // converts Date Object to 12:00 AM/PM string
-      this.editedEvent.start_time = new Date(
-        this.selectedEvent.start
-      ).toLocaleString("en-US", {
-        hour: "numeric",
-        minute: "numeric",
-        hour12: true,
-      });
-      this.editedEvent.end_time = new Date(
-        this.selectedEvent.end
-      ).toLocaleString("en-US", {
-        hour: "numeric",
-        minute: "numeric",
-        hour12: true,
-      });
+      // this.editedEvent.start_time = new Date(
+      //   this.selectedEvent.start
+      // ).toLocaleString("en-US", {
+      //   hour: "numeric",
+      //   minute: "numeric",
+      //   hour12: true,
+      // });
+      // this.editedEvent.end_time = new Date(
+      //   this.selectedEvent.end
+      // ).toLocaleString("en-US", {
+      //   hour: "numeric",
+      //   minute: "numeric",
+      //   hour12: true,
+      // });
 
       // assigns the correct color pulled from what was selected
       this.editedEvent.color = this.selectedEvent.color;
@@ -944,11 +761,19 @@ export default {
       for (let i = 0; i < this.serverEvents.length; i++) {
         if (
           new Date(this.serverEvents[i].start_time).getTime() ==
-            new Date(this.selectedEvent.start).getTime() &&
+          new Date(this.selectedEvent.start).getTime() &&
           new Date(this.serverEvents[i].end_time).getTime() ==
-            new Date(this.selectedEvent.end).getTime() &&
+          new Date(this.selectedEvent.end).getTime() &&
           this.serverEvents[i].event_name == this.selectedEvent.name
         ) {
+          let startTime = new Date(this.serverEvents[i].start_time)
+          startTime =  startTime.toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+          this.editedEvent.start_time = startTime;
+
+          let endTime = new Date(this.serverEvents[i].end_time)
+          endTime =  endTime.toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+          this.editedEvent.end_time = endTime;
+
           // match the event_id
           this.editedEvent.event_id = this.serverEvents[i].event_id;
           // match the class id
@@ -956,6 +781,9 @@ export default {
           // match the visibility boolean
           this.editedEvent.is_visible_online =
             this.serverEvents[i].is_visible_online;
+          // match the is_paid boolean
+           this.editedEvent.is_paid =
+            this.serverEvents[i].is_paid;
           // log the ID in this variable
           this.selectedEventIndex = this.serverEvents[i].event_id;
           // log the index in this variable
@@ -963,10 +791,10 @@ export default {
 
           // toggle the eye icon
           if (!this.serverEvents[i].is_visible_online) {
-           
+
             this.toggleVisibilityButton = true;
           } else {
-            
+
             this.toggleVisibilityButton = false;
           }
         }
@@ -1084,13 +912,13 @@ export default {
               this.overlay = false;
               // VERY EXPENSIVE API CALL please optimizie
 
-               if (response.data=="Fail") {
-            alert("Double Book Error. Failed to Create. Change event name")
-            this.closeSelectedCard();
-          } else {
-            this.closeSelectedCard();
-            this.getAllEvents();
-          }
+              if (response.data == "Fail") {
+                alert("Double Book Error. Failed to Create. Change event name")
+                this.closeSelectedCard();
+              } else {
+                this.closeSelectedCard();
+                this.getAllEvents();
+              }
 
               // the following condition calls the api service to retrieve all events from DB after the last one (expensive way))
               //   if ((index += 1) == this.dates.length) {
@@ -1211,24 +1039,27 @@ export default {
         tms.minute
       ).getTime();
     },
-     getCurrentTime () {
-        return this.cal ? this.cal.times.now.hour * 60 + this.cal.times.now.minute : 0
-      },
-      scrollToTime () {
-        const time = this.getCurrentTime()
-        const first = Math.max(0, time - (time % 30) - 30)
+    getCurrentTime() {
+      return this.cal ? this.cal.times.now.hour * 60 + this.cal.times.now.minute : 0
+    },
+    scrollToTime() {
+      const time = this.getCurrentTime()
+      const first = Math.max(0, time - (time % 30) - 30)
 
-        this.cal.scrollToTime(first)
-      },
-      updateTime () {
-        setInterval(() => this.cal.updateTimes(), 60 * 1000)
-      },
-      nowY (timeToY) {
-        
+      this.cal.scrollToTime(first)
+    },
+    updateTime() {
+      setInterval(() => this.cal.updateTimes(), 60 * 1000)
+    },
+    nowY(timeToY) {
+
       return this.cal ? timeToY(this.cal.times.now) + 'px' : '-10px'
     },
   },
   created() {
+    if (this.$store.state.user.username != "admin") {
+      this.$router.push({name: 'home'})
+    }
     this.getAllClasses();
     this.getAllEvents();
 
@@ -1236,10 +1067,10 @@ export default {
   },
   mounted() {
     this.$refs.calendar.checkChange();
-     this.ready = true
-     
-      this.scrollToTime()
-      this.updateTime()
+    this.ready = true
+
+    this.scrollToTime()
+    this.updateTime()
   },
   computed: {
     returnCorrectEndTime() {
@@ -1267,10 +1098,10 @@ export default {
         return this.dates.length + " Days Selected";
       }
     },
-    cal () {
-        return this.ready ? this.$refs.calendar : null
-      },
-      
+    cal() {
+      return this.ready ? this.$refs.calendar : null
+    },
+
   },
 };
 </script>

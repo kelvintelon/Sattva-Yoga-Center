@@ -409,6 +409,10 @@ export default {
   },
 
   created() {
+    if (this.$store.state.user.username != "admin") {
+      this.$router.push({name: 'home'})
+    }
+
     this.getTeachers();
     this.getClassTable();
   },

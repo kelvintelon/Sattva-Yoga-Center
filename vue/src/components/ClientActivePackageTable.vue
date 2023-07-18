@@ -3,7 +3,7 @@
     <v-row><br /></v-row>
     <v-row>
       <v-spacer></v-spacer>
-      <h1 v-if="$store.state.user.username != 'admin'">Active Packages</h1>
+      <h1 v-if="$store.state.user.username != 'admin'" style="color: rgba(245, 104, 71, 0.95)">Active Packages</h1>
       <v-spacer></v-spacer
     ></v-row>
     <br />
@@ -51,11 +51,16 @@
       :headers="headers"
       :items="packages"
       class="elevation-5"
-      sort-by="date_purchased"
-      sort-desc="[true]"
+      :sort-by.sync="sortBy"
+      :sort-desc.sync="sortDesc"
+      @update:sort-by="sortTable"
+      @update:sort-desc="sortTable"
       :loading="loading"
       loading-text="Loading... Please wait"
       dense
+      :options.sync="options"
+      :server-items-length="totalPackagesPurchased"
+      hide-default-footer
     >
       <template v-slot:top>
         <v-toolbar flat>
@@ -167,6 +172,27 @@
         </v-icon>
       </template>
     </v-data-table>
+    <v-row>
+      <v-col lg="10" md="9" sm="9">
+        <v-pagination
+          v-model="page"
+          :length="Math.ceil(totalPackagesPurchased / pageSize)"
+          @input="temporaryPageMethod"
+          total-visible="8"
+        ></v-pagination>
+      </v-col>
+      <v-col lg="2" md="3" class="mt-2" sm="3">
+        <v-select
+          v-model="pageSize"
+          :items="[10, 20, 30, 40, 50]"
+          outlined
+          filled
+          @change="temporaryPageSizeMethod"
+        >
+        </v-select>
+      </v-col>
+      <v-spacer></v-spacer>
+    </v-row>
     <br />
     <br />
     <v-overlay :value="overlay">
@@ -179,7 +205,7 @@
 import packagePurchaseService from "../services/PackagePurchaseService";
 import packageDetailService from "../services/PackageDetailService";
 import eventService from "../services/EventService";
-// import clientDetailService from "../services/ClientDetailService";
+import clientDetailService from "../services/ClientDetailService";
 
 export default {
   name: "client-active-package-table",
@@ -191,6 +217,7 @@ export default {
           text: "Package Description",
           align: "start",
           value: "package_description",
+          sortable: false,
         },
         { text: "Purchase Date", value: "date_purchased", sortable: true },
         {
@@ -217,6 +244,12 @@ export default {
           value: "is_monthly_renew",
         },
       ],
+      page: 1,
+      pageSize: 10,
+      sortBy: 'date_purchased',
+      sortDesc: false,
+      totalPackagesPurchased: 0,
+      paginatedObject: {},
       packages: [],
       packagePurchase: {
         package_purchase_id: "",
@@ -244,6 +277,14 @@ export default {
       sharedPackages: [],
     };
   },
+  watch: {
+    options: {
+      handler() {
+        this.getActivePurchaseServerRequest();
+      },
+      deep: true,
+    },
+  },
   beforeCreate() {
     // clientDetailService.getClientDetailsByClientId(this.$route.params.clientId).then((response) => {
     //     if (response.data.client_id != 0) {
@@ -255,6 +296,16 @@ export default {
     //       }
     //     }
     //   });
+    clientDetailService.getClientDetailsByClientId(this.$route.params.clientId).then((response) => {
+        if (response.data.client_id != 0) {
+          this.clientDetails = response.data;
+          this.$store.commit("SET_CLIENT_DETAILS", response.data);
+          // alert("active package table client details")
+          if (this.clientDetails.redFlag == true) {
+            this.snackBarReconcileWarning = true
+          }
+        }
+      });
     // TODO: CAREFUL DELETING THIS BECAUSE WE FORGOT WHAT IT DOES
     this.$root.$on("getActivePurchasePackageTable", () => {
       this.getActivePurchaseServerRequest();
@@ -272,7 +323,7 @@ export default {
       this.headers.unshift({
         text: "Package ID",
         value: "package_purchase_id",
-        sortable: false,
+        sortable: true,
       });
       this.headers.push({ text: "Cancel", value: "actions", sortable: false });
       this.getPublicPackagesTable();
@@ -287,13 +338,14 @@ export default {
         .reconcileClassesForClient(this.$route.params.clientId)
         .then((response) => {
           if (response.status == 200) {
+            this.$root.$refs.C.getClientDetails();
             this.loading = false;
             this.overlay = false;
             alert("Success");
             this.getSharedActivePackages();
             this.getActivePurchaseServerRequest();
             this.$root.$refs.B.getPackageHistoryTable();
-            this.$root.$refs.C.getClientDetails();
+            
             this.$root.$refs.D.getClientEventTable();
             this.$root.$refs.E.getEventDetailsCall();
             this.snackBarReconcilePackagesSuccessful = true;
@@ -328,12 +380,31 @@ export default {
     // closeReconcile(){
     //   this.snackBarReconcilePackages = false;
     // },
+    temporaryPageMethod() {
+     
+      this.getActivePurchaseServerRequest();
+    },
+    temporaryPageSizeMethod() {
+      if (this.page == 1) {
+        this.getActivePurchaseServerRequest();
+      } else {
+       
+        this.page = 1;
+        this.getActivePurchaseServerRequest();
+      }
+    },
+    sortTable() {
+      if (this.sortDesc == undefined) {
+        this.sortDesc = false;
+      } 
+      this.getActivePurchaseServerRequest();
+    },
     getActivePurchaseServerRequest() {
       this.loading = true;
       this.overlay = !this.overlay;
       if (this.$store.state.user.username == "admin") {
         packagePurchaseService
-          .getUserPurchasedPackagesByClientId(this.$route.params.clientId)
+          .getActivePaginatedUserPurchasedPackagesByClientId(this.$route.params.clientId,this.page, this.pageSize, this.sortBy, this.sortDesc)
           .then((response) => {
             if (response.status == 200) {
               this.loading = false;
@@ -344,15 +415,17 @@ export default {
               var mm = String(today.getMonth() + 1).padStart(2, "0"); //January is 0!
               var yyyy = today.getFullYear();
               today = yyyy + "-" + mm + "-" + dd;
-
-              this.packages = response.data.filter((item) => {
-                return (
-                  (item.is_subscription && item.expiration_date >= today) ||
-                  (!item.is_subscription &&
-                    item.expiration_date >= today &&
-                    item.classes_remaining > 0)
-                );
-              });
+              this.paginatedObject = response.data;
+              this.totalPackagesPurchased = this.paginatedObject.totalRows;
+              this.packages = this.paginatedObject.listOfPurchasedPackages;
+              // this.packages = this.paginatedObject.listOfPurchasedPackages.filter((item) => {
+              //   return (
+              //     (item.is_subscription && item.expiration_date >= today) ||
+              //     (!item.is_subscription &&
+              //       item.expiration_date >= today &&
+              //       item.classes_remaining > 0)
+              //   );
+              // });
               this.packages.forEach((item) => {
                 item.date_purchased = new Date(item.date_purchased);
               });
@@ -364,6 +437,13 @@ export default {
               //     (this.packages.length > 0 || this.sharedPackages.length > 0)
               // );
               // alert(this.$store.state.clientDetails.redFlag)
+              // console.log(this.$store.state.clientDetails.redFlag)
+              // console.log(this.packages.length > 0)
+              // console.log(this.$store.state.sharedPackages.length > 0)
+              // console.log(this.$store.state.clientDetails.redFlag &&
+                // (this.packages.length > 0 ||
+                // this.sharedPackages.length > 0);
+                // alert(this.$store.state.clientDetails.redFlag)
               if (
                 this.$store.state.clientDetails.redFlag &&
                 (this.packages.length > 0 || this.sharedPackages.length > 0)
@@ -376,7 +456,7 @@ export default {
             }
           });
       } else {
-        packagePurchaseService.getUserPurchasedPackages().then((response) => {
+        packagePurchaseService.getActivePaginatedUserPurchasedPackagesByClientId(this.$store.state.clientDetails.client_id,this.page, this.pageSize, this.sortBy, this.sortDesc).then((response) => {
           if (response.status == 200) {
             this.loading = false;
             this.overlay = false;
@@ -386,8 +466,9 @@ export default {
             var mm = String(today.getMonth() + 1).padStart(2, "0"); //January is 0!
             var yyyy = today.getFullYear();
             today = yyyy + "-" + mm + "-" + dd;
-
-            this.packages = response.data.filter((item) => {
+            this.paginatedObject = response.data;
+              this.totalPackagesPurchased = this.paginatedObject.totalRows;
+              this.packages = this.paginatedObject.listOfPurchasedPackages.filter((item) => {
               // return (item.expiration_date >= today) || (item.expiration_date == null && item.classes_remaining > 0) || (item.expiration_date >= today && item.classes_remaining > 0);
               return (
                 (item.is_subscription && item.expiration_date) ||

@@ -1,6 +1,6 @@
 BEGIN TRANSACTION;
 
-DROP TABLE IF EXISTS users,teacher_details,class_details,client_details,client_class,package_purchase,package_details,events,client_event CASCADE;
+DROP TABLE IF EXISTS users,teacher_details,class_details,client_details,client_class,package_purchase,package_details,events,client_event,client_family,families,website_descriptions CASCADE;
 
 
 CREATE TABLE users 
@@ -53,6 +53,7 @@ CREATE TABLE client_details
     email                   varchar(30) ,
     has_record_of_liability boolean     ,
     date_of_entry           timestamp   ,
+	is_allowed_video		boolean		NOT NULL,
 	user_id 				int 		,
     CONSTRAINT PK_client_id PRIMARY KEY (client_id),
 	CONSTRAINT FK_client_id_user_id FOREIGN KEY (user_id) REFERENCES users (user_id)
@@ -104,6 +105,7 @@ CREATE TABLE events (
 	end_time timestamp NOT NULL,
 	color varchar(10) NOT NULL,
 	timed boolean NOT NULL,
+	is_paid boolean,
 	is_visible_online boolean,
 	CONSTRAINT PK_event PRIMARY KEY (event_id)
 -- 	CONSTRAINT FK_event_class_id FOREIGN KEY (class_id) REFERENCES class_details (class_id)
@@ -112,7 +114,7 @@ CREATE TABLE events (
 CREATE TABLE client_event (
 	client_id int NOT NULL,
 	event_id int NOT NULL,
-	package_purchase_id int NOT NULL,
+	package_purchase_id int,
 	CONSTRAINT PK_client_event PRIMARY KEY (client_id, event_id),
 	CONSTRAINT FK_client_event_client_id FOREIGN KEY (client_id) REFERENCES client_details (client_id),
 	CONSTRAINT FK_client_event_event_id FOREIGN KEY (event_id) REFERENCES events(event_id)
@@ -131,6 +133,13 @@ CREATE TABLE client_family(
 	CONSTRAINT PK_client_family PRIMARY KEY (client_id,family_id),
 	CONSTRAINT FK_client_family_client_id FOREIGN KEY (client_id) REFERENCES client_details (client_id),
 	CONSTRAINT FK_client_family_family_id FOREIGN KEY (family_id) REFERENCES families (family_id)
+);
+
+CREATE TABLE website_descriptions (
+	webdescription_id serial NOT NULL,
+	location_name varchar(30) NOT NULL,
+	description text NOT NULL,
+	CONSTRAINT PK_website_descriptions PRIMARY KEY (webdescription_id)
 );
 
 COMMIT TRANSACTION;

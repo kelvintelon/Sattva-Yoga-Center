@@ -2,40 +2,21 @@
   <v-card>
     <v-card-title>
       Client List
-       <v-divider class="mx-4" inset vertical></v-divider>
-          <v-btn
-            color="primary"
-            dark
-            class="mb-2"
-            v-bind="attrs"
-            v-on="on"
-            @click.prevent="emailRecipients"
-            title="Email Selected Client(s)"
-          >
-            <v-icon>mdi-order-bool-ascending-variant</v-icon>
-            <v-icon>mdi-email</v-icon>
-          </v-btn>
-          <v-divider class="mx-4" inset vertical></v-divider>
-          <v-btn
-            color="#9948B6ED"
-            dark
-            class="mb-2"
-            v-bind="attrs"
-            v-on="on"
-            @click.prevent="emailRecipientsFromEmailList"
-            title="Email List"
-          >
-            <v-icon>mdi-email-plus</v-icon>
-          </v-btn>
+      <v-divider class="mx-4" inset vertical></v-divider>
+      <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on" @click.prevent="emailRecipients"
+        title="Email Selected Client(s)">
+        <v-icon>mdi-order-bool-ascending-variant</v-icon>
+        <v-icon>mdi-email</v-icon>
+      </v-btn>
+      <v-divider class="mx-4" inset vertical></v-divider>
+      <v-btn color="#9948B6ED" dark class="mb-2" v-bind="attrs" v-on="on" @click.prevent="emailRecipientsFromEmailList"
+        title="Email List">
+        <v-icon>mdi-email-plus</v-icon>
+      </v-btn>
       <v-spacer></v-spacer>
 
-      <v-text-field
-        v-model="search"
-        append-icon="mdi-magnify"
-        label="Search"
-        single-line
-        hide-details
-      ></v-text-field>
+      <v-text-field v-model="search" append-icon="mdi-magnify" label="Search" single-line hide-details
+        @keypress="getSearchedClientTablePaginated" @keyup.delete="resetThePageOnEmptyLength"></v-text-field>
       <v-spacer></v-spacer>
 
       <v-dialog v-model="mergeDialog" max-width="500px">
@@ -55,120 +36,86 @@
             <v-container>
               <v-row>
                 <v-col>
-                <!-- Full list of clients autocomplete here -->
-                  
-                  <v-autocomplete
-              v-model="selectedClients"
-              :disabled="isUpdating"
-              :items="listOfDuplicateClients"
-              filled
-              chips
-              color="blue-grey lighten-2"
-              label="Possible Duplicates"
-              item-text="quick_details"
-              return-object
-              multiple
-            >
-              <template v-slot:selection="data">
-                <v-chip
-                color="red lighten-3"
-                  v-bind="data.attrs"
-                  :input-value="data.selected"
-                  close
-                  @click="data.select"
-                  @click:close="remove(data.item)"
-                >
-                  {{ data.item.quick_details }}
-                </v-chip>
-              </template>
-              <template v-slot:item="data">
-                <template v-if="typeof data.item !== 'object'">
-                  <v-list-item-content v-text="data.item"></v-list-item-content>
-                </template>
-                <template v-else>
-                 
-                  <v-list-item-content>
-                    <v-list-item-title v-html="data.item.quick_details"></v-list-item-title>
-                    <!-- <v-list-item-subtitle v-html="data.item.group"></v-list-item-subtitle> -->
-                  </v-list-item-content>
-                </template>
-              </template>
-            </v-autocomplete>
-                  <v-autocomplete
-              v-model="selectedClients"
-              :disabled="isUpdating"
-              :items="clientList"
-              filled
-              chips
-              color="blue-grey lighten-2"
-              label="Clients to Remove"
-              item-text="quick_details"
-              return-object
-              multiple
-            >
-              <template v-slot:selection="data">
-                <v-chip
-                color="red lighten-3"
-                  v-bind="data.attrs"
-                  :input-value="data.selected"
-                  close
-                  @click="data.select"
-                  @click:close="remove(data.item)"
-                >
-                  {{ data.item.quick_details }}
-                </v-chip>
-              </template>
-              <template v-slot:item="data">
-                <template v-if="typeof data.item !== 'object'">
-                  <v-list-item-content v-text="data.item"></v-list-item-content>
-                </template>
-                <template v-else>
-                 
-                  <v-list-item-content>
-                    <v-list-item-title v-html="data.item.quick_details"></v-list-item-title>
-                    <!-- <v-list-item-subtitle v-html="data.item.group"></v-list-item-subtitle> -->
-                  </v-list-item-content>
-                </template>
-              </template>
-            </v-autocomplete>
-            <!-- Client to Keep starts here -->
-            <v-autocomplete
-              v-model="clientToMergeInto"
-              :disabled="isUpdating"
-              :items="clientList"
-              filled
-              chips
-              color="blue-grey lighten-2"
-              label="Clients to Keep"
-              item-text="quick_details"
-              return-object
-              
-            >
-              <template v-slot:selection="data">
-                <v-chip
-                color="green lighten-3"
-                  v-bind="data.attrs"
-                  :input-value="data.selected"
-                  close
-                  @click="data.select"
-                  @click:close="removeClientToKeep()"
-                >
-                  {{ data.item.quick_details }}
-                </v-chip>
-              </template>
-              <template v-slot:item="data">
-                <template v-if="typeof data.item !== 'object'">
-                  <v-list-item-content v-text="data.item"></v-list-item-content>
-                </template>
-                <template v-else>
-                 
-                  <v-list-item-content>
-                    <v-list-item-title v-html="data.item.quick_details"></v-list-item-title>
-                    <!-- <v-list-item-subtitle v-html="data.item.group"></v-list-item-subtitle> -->
-                  </v-list-item-content>
-                </template>
-              </template>
-            </v-autocomplete>
+                   <!-- Client to Keep starts here -->
+                   <v-autocomplete v-model="clientToMergeInto" :disabled="isUpdating" :items="autocompleteSecondClientList"
+                    :loading="loadingSecondClientList" filled chips color="blue-grey lighten-2" label="Clients to Keep"
+                    item-text="quick_details" return-object cache-items="true"
+                    @keypress="getSearchedSecondClientTableForAutocomplete">
+                    <template v-slot:append-item>
+                      <div v-intersect="endSecondIntersect" />
+                    </template>
+                    <template v-slot:selection="data">
+                      <v-chip color="green lighten-3" v-bind="data.attrs" :input-value="data.selected" close
+                        @click="data.select" @click:close="removeClientToKeep()">
+                        {{ data.item.quick_details }}
+                      </v-chip>
+                    </template>
+                    <template v-slot:item="data">
+                      <template v-if="typeof data.item !== 'object'">
+                        <v-list-item-content v-text="data.item"></v-list-item-content>
+                      </template>
+                      <template v-else>
+                        <v-list-item-content>
+                          <v-list-item-title v-text="data.item.quick_details"></v-list-item-title>
+                          <!-- <v-list-item-subtitle v-html="data.item.group"></v-list-item-subtitle> -->
+                        </v-list-item-content>
+                      </template>
+                    </template>
+                  </v-autocomplete>
+                  <!-- Possible Duplicate list of clients autocomplete here -->
+
+                  <v-autocomplete v-model="selectedClients" :disabled="isUpdating"
+                    :items="autocompleteDuplicateClientList" :loading="loadingDuplicateClientList" filled chips
+                    color="blue-grey lighten-2" label="Possible Duplicates" item-text="quick_details" return-object
+                    multiple cache-items="true" @keypress="getSearchedDuplicateClientTableForAutocomplete">
+                    <template v-slot:append-item>
+                      <div v-intersect="endDuplicateIntersect" />
+                    </template>
+                    <template v-slot:selection="data">
+                      <v-chip color="red lighten-3" v-bind="data.attrs" :input-value="data.selected" close
+                        @click="data.select" @click:close="remove(data.item)">
+                        {{ data.item.quick_details }}
+                      </v-chip>
+                    </template>
+                    <template v-slot:item="data">
+                      <template v-if="typeof data.item !== 'object'">
+                        <v-list-item-content v-text="data.item"></v-list-item-content>
+                      </template>
+                      <template v-else>
+                        <v-list-item-content>
+                          <v-list-item-title v-text="data.item.quick_details"></v-list-item-title>
+                          <!-- <v-list-item-subtitle v-html="data.item.group"></v-list-item-subtitle> -->
+                        </v-list-item-content>
+                      </template>
+                    </template>
+                  </v-autocomplete>
+                  <!-- First Client List of Selected clients -->
+                  <v-autocomplete v-model="selectedClients" :disabled="isUpdating" :items="autocompleteFirstClientList"
+                    :loading="loadingFirstClientList" filled chips color="blue-grey lighten-2" label="Clients to Remove"
+                    item-text="quick_details" return-object multiple cache-items="true"
+                    @keypress="getSearchedFirstClientTableForAutocomplete">
+                    <template v-slot:append-item>
+                      <div v-intersect="endFirstIntersect" />
+                    </template>
+                    <template v-slot:selection="data">
+                      <v-chip color="red lighten-3" v-bind="data.attrs" :input-value="data.selected" close
+                        @click="data.select" @click:close="remove(data.item)">
+                        {{ data.item.quick_details }}
+                      </v-chip>
+                    </template>
+                    <template v-slot:item="data">
+                      <template v-if="typeof data.item !== 'object'">
+                        <v-list-item-content v-text="data.item"></v-list-item-content>
+                      </template>
+                      <template v-else>
+                        <v-list-item-content>
+                          <v-list-item-title v-text="data.item.quick_details"></v-list-item-title>
+                          <!-- <v-list-item-subtitle v-html="data.item.group"></v-list-item-subtitle> -->
+                        </v-list-item-content>
+                      </template>
+                    </template>
+                  </v-autocomplete>
+                
                 </v-col>
               </v-row>
             </v-container>
@@ -176,151 +123,118 @@
 
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="blue darken-1" text @click="closeMergeAccountsDialog"> Cancel </v-btn>
-            <v-btn
-              color="blue darken-1"
-              text
-              @click="confirmMerge"
-            >
-              Start Merge</v-btn
-            >
+            <v-btn color="blue darken-1" text @click="closeMergeAccountsDialog">
+              Cancel
+            </v-btn>
+            <v-btn color="blue darken-1" text @click="confirmMerge">
+              Start Merge</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
       <!-- Carousel forms starts here -->
       <v-dialog v-model="profileChoiceDialog" max-width="500px">
-              <v-card justify="center">
-                <v-card-title>
-                  <span class="text-h5">Store Client Info</span>
-                </v-card-title>
-                <v-carousel hide-delimiters height="900"><v-carousel-item 
-                  v-for="(item,i) in listOfClientForms" :key="i">
-                  <v-row justify="center" >
-                    <v-col cols="6">
-                      <v-form
-                        ref="clientForm"
-                        height="200"
-                        width="500"
-                        v-model="valid"
-                        lazy-validation
-                        class="class-form mx-auto white"
-                        @submit.prevent="keepClientInfo(item)"
-                        justify="center"
-                        align="center"
-                      >
-                       <v-text-field
-                        v-model="item.first_name"        
-                        :counter="20"
-                        :rules="nameRules"
-                        label="First Name"
-                        required
-                      ></v-text-field>
+        <v-card justify="center">
+          <v-card-title>
+            <span class="text-h5">Store Client Info</span>
+          </v-card-title>
+          <v-carousel hide-delimiters height="900"><v-carousel-item v-for="(item, i) in listOfClientForms" :key="i">
+              <v-row justify="center">
+                <v-col cols="6">
+                  <v-form ref="clientForm" height="200" width="500" v-model="valid" lazy-validation
+                    class="class-form mx-auto white" @submit.prevent="keepClientInfo(item)" justify="center"
+                    align="center">
+                    <v-text-field v-model="item.first_name" :counter="20" :rules="nameRules" label="First Name"
+                      required></v-text-field>
 
-                      <v-text-field
-                        v-model="item.last_name"
-                        :counter="20"
-                        :rules="nameRules"
-                        label="Last Name"
-                        required
-                      ></v-text-field>
+                    <v-text-field v-model="item.last_name" :counter="20" :rules="nameRules" label="Last Name"
+                      required></v-text-field>
 
-                      <v-text-field
-                        v-model="item.street_address"
-                        :counter="30"
-                        :rules="addressRules"
-                        label="Street Address"
-                        required
-                      ></v-text-field>
+                    <v-text-field v-model="item.street_address" :counter="30" :rules="addressRules" label="Street Address"
+                      required></v-text-field>
 
-                      <v-text-field
-                        v-model="item.city"
-                        :counter="10"
-                        :rules="nameRules"
-                        label="City"
-                        required
-                      ></v-text-field>
+                    <v-text-field v-model="item.city" :counter="10" :rules="nameRules" label="City"
+                      required></v-text-field>
 
-                      <v-select
-                        v-model="item.state_abbreviation"
-                        :items="states"
-                        :rules="[(v) => !!v || 'Item is required']"
-                        label="State"
-                        required
-                      ></v-select>
+                    <v-select v-model="item.state_abbreviation" :items="states"
+                      :rules="[(v) => !!v || 'Item is required']" label="State" required></v-select>
 
-                      <v-text-field
-                        v-model="item.zip_code"
-                        :counter="10"
-                        :rules="nameRules"
-                        label="ZIP"
-                        required
-                      ></v-text-field>
+                    <v-text-field v-model="item.zip_code" :counter="10" :rules="nameRules" label="ZIP"
+                      required></v-text-field>
 
-                      <v-text-field
-                        v-model="item.phone_number"
-                        :counter="15"
-                        :rules="nameRules"
-                        label="Phone Number"
-                        required
-                      ></v-text-field>
+                    <v-text-field v-model="item.phone_number" :counter="15" :rules="nameRules" label="Phone Number"
+                      required></v-text-field>
 
-                      <v-text-field
-                        v-model="item.email"
-                        :rules="emailRules"
-                        label="E-mail"
-                        required
-                      ></v-text-field>
-                      <v-checkbox
-                        v-model="item.is_new_client"
-                        label="Is New Client?"
-                        required
-                      ></v-checkbox>
-                      <v-checkbox
-                        v-model="item.has_record_of_liability"
-                        label="Record of Liability"
-                        required
-                      ></v-checkbox>
-                      <v-checkbox
-                        v-model="item.is_client_active"
-                        label="Is Client Active?"
-                        required
-                      ></v-checkbox>
+                    <v-text-field v-model="item.email" :rules="emailRules" label="E-mail" required></v-text-field>
+                    <v-checkbox v-model="item.is_new_client" label="Is New Client?" required></v-checkbox>
+                    <v-checkbox v-model="item.has_record_of_liability" label="Record of Liability" required></v-checkbox>
+                    <v-checkbox v-model="item.is_client_active" label="Is Client Active?" required></v-checkbox>
 
-                      <v-checkbox
-                        v-model="item.is_on_email_list"
-                        label="Stay on Email List?"
-                        required
-                      ></v-checkbox>
-                      
-                        <v-row justify="center" align="center"
-                          ><v-col>
-                            <v-btn
-                            color="green lighten-3"
-                              class="mr-4"
-                              type="submit"
-                              :disabled="invalid"
-                            >
-                              Keep
-                            </v-btn></v-col
-                          >
-                          </v-row
-                        >
-                      </v-form>
-                    </v-col>
-                  </v-row>
-                
-              </v-carousel-item></v-carousel>
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn color="blue darken-1" text @click="closeProfileChoice">
-                    Cancel
-                  </v-btn>
-                  <!-- <v-btn color="blue darken-1" text @click="save"> Save </v-btn> -->
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
+                    <v-checkbox v-model="item.is_on_email_list" label="Stay on Email List?" required></v-checkbox>
+
+                    <v-row justify="center" align="center"><v-col>
+                      <div class="alert alert-danger" role="alert" v-if="emailRegistrationErrors" style="color: red">
+                            {{ emailRegistrationErrorMsg }}
+                          </div>
+                        <v-btn color="green lighten-3" class="mr-4" type="submit" :disabled="invalid">
+                          Keep
+                        </v-btn></v-col>
+                    </v-row>
+                  </v-form>
+                </v-col>
+              </v-row>
+            </v-carousel-item></v-carousel>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="blue darken-1" text @click="closeProfileChoice">
+              Cancel
+            </v-btn>
+            <!-- <v-btn color="blue darken-1" text @click="save"> Save </v-btn> -->
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
       <v-spacer></v-spacer>
+      <!-- Add a new client -->
+      <v-dialog v-model="newClientDialog" max-width="500px">
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn color="primary" dark fab class="mx-2" v-bind="attrs" v-on="on">
+            <v-icon large>mdi-new-box</v-icon>
+          </v-btn>
+        </template>
+        <v-card>
+          <!-- Add a Client Form starts here -->
+          <v-card-title>
+            <span class="text-h5">Add Client To Roster</span>
+          </v-card-title>
 
+          <v-card-text>
+            <v-container>
+              <v-row>
+                <v-col>
+                  <v-text-field v-model="newClientDetails.first_name" :counter="20" :rules="nameRules" label="First Name"
+                    required></v-text-field>
+
+                  <v-text-field v-model="newClientDetails.last_name" :counter="20" :rules="nameRules" label="Last Name"
+                    required></v-text-field>
+                  <v-text-field v-model="newClientDetails.email" :counter="30" label="Email (Optional)"></v-text-field>
+                  <v-checkbox v-model="newClientDetails.is_on_email_list" label="Join Email List? (Optional)"></v-checkbox>
+                  <v-checkbox v-model="newClientDetails.is_allowed_video" label="Allowed Video? (Optional)"></v-checkbox>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+
+          <v-card-actions>
+            <div class="alert alert-danger" role="alert" v-if="emailRegistrationErrors" style="color: red">
+                            {{ emailRegistrationErrorMsg }}
+                          </div>
+            <v-spacer></v-spacer>
+            <v-btn color="blue darken-1" text @click="closeNewClient"> Cancel </v-btn>
+            <v-btn color="blue darken-1" text @click="saveNewClientRegistration">
+              Save New Client</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-spacer></v-spacer>
       <v-dialog v-model="dialog2" max-width="500px">
         <template v-slot:activator="{ on, attrs }">
           <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
@@ -332,46 +246,20 @@
           <v-card-title>
             <span class="text-h5">Add Client To Shared Group</span>
             <v-spacer></v-spacer>
-            <v-btn
-              class="mx-2"
-              fab
-              dark
-              color="primary"
-              @click="showNewClientForm = !showNewClientForm"
-              v-if="!showNewClientForm"
-              ><v-icon large>mdi-new-box</v-icon></v-btn
-            >
-            <v-btn
-              class="mx-2"
-              fab
-              dark
-              color="primary"
-              @click="showNewClientForm = !showNewClientForm"
-              v-if="showNewClientForm"
-              ><v-icon large>mdi-account-multiple-plus</v-icon></v-btn
-            >
+            <v-btn class="mx-2" fab dark color="primary" @click="showNewClientForm = !showNewClientForm"
+              v-if="!showNewClientForm"><v-icon large>mdi-new-box</v-icon></v-btn>
+            <v-btn class="mx-2" fab dark color="primary" @click="showNewClientForm = !showNewClientForm"
+              v-if="showNewClientForm"><v-icon large>mdi-account-multiple-plus</v-icon></v-btn>
           </v-card-title>
 
           <v-card-text>
             <v-container>
               <v-row>
                 <v-col>
-                  <v-select
-                    v-if="!showNewClientForm"
-                    label="Choose one or multiple"
-                    :items="familyList"
-                    v-model="selectedFamily"
-                    item-text="quick_details"
-                    return-object
-                  ></v-select>
-                  <v-text-field
-                    v-if="showNewClientForm"
-                    v-model="newFamily"
-                    :counter="30"
-                    :rules="nameRules"
-                    label="New Family Name"
-                    required
-                  ></v-text-field>
+                  <v-select v-if="!showNewClientForm" label="Choose one or multiple" :items="familyList"
+                    v-model="selectedFamily" item-text="quick_details" return-object></v-select>
+                  <v-text-field v-if="showNewClientForm" v-model="newFamily" :counter="30" :rules="nameRules"
+                    label="New Family Name" required></v-text-field>
                 </v-col>
               </v-row>
             </v-container>
@@ -380,168 +268,77 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn color="blue darken-1" text @click="close1"> Cancel </v-btn>
-            <v-btn
-              color="blue darken-1"
-              text
-              @click="save"
-              v-if="!showNewClientForm"
-            >
-              Add to selected family</v-btn
-            >
-            <v-btn
-              color="blue darken-1"
-              text
-              @click="saveNewClient"
-              v-if="showNewClientForm"
-            >
-              Create New Family</v-btn
-            >
+            <v-btn color="blue darken-1" text @click="save" v-if="!showNewClientForm">
+              Add to selected family</v-btn>
+            <v-btn color="blue darken-1" text @click="saveNewClient" v-if="showNewClientForm">
+              Create New Family</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
     </v-card-title>
-    <v-data-table
-      :headers="headers"
-      :items="clientList"
-      item-key="client_id"
-      v-model="selectedClients"
-      sort-by="client_id"
-      :loading="loading"
-      loading-text="Loading... Please wait"
-      :search="search"
-      show-select
-      dense
-      class="elevation-5"
-    >
+    <v-data-table :headers="headers" :items="clientList" item-key="client_id" v-model="selectedClients"
+      :options.sync="options" :server-items-length="totalClients" :loading="loading" loading-text="Loading... Please wait"
+      :search="search" show-select dense class="elevation-5" hide-default-footer :sort-by.sync="sortBy"
+      :sort-desc.sync="sortDesc" @update:sort-by="sortTable" @update:sort-desc="sortTable">
       <template v-slot:top>
-        <v-toolbar flat>
+        <v-toolbar flat max-height="10px">
           <!-- START OF EDIT CLIENT FORM -->
           <v-dialog v-model="dialog" max-width="500px">
             <v-card justify="center" align="center">
               <v-card-title justify="center" align="center">
                 <span class="text-h5" align="center"> Edit Client </span>
               </v-card-title>
-              
+
               <v-container>
                 <v-row justify="center" style="min-height: 160px">
                   <v-col cols="11">
-                    <v-form
-                      ref="form"
-                      height="100"
-                      width="500"
-                      v-model="valid"
-                      lazy-validation
-                      class="class-form mx-auto white"
-                      @submit.prevent="update"
-                      justify="center"
-                      align="center"
-                    >
-                      <v-text-field
-                        v-model="editedItem.first_name"
-                        :counter="20"
-                        :rules="nameRules"
-                        label="First Name"
-                        required
-                      ></v-text-field>
+                    <v-form ref="form" height="100" width="500" v-model="valid" lazy-validation
+                      class="class-form mx-auto white" @submit.prevent="update" justify="center" align="center">
+                      <v-text-field v-model="editedItem.first_name" :counter="20" :rules="nameRules" label="First Name"
+                        required></v-text-field>
 
-                      <v-text-field
-                        v-model="editedItem.last_name"
-                        :counter="20"
-                        :rules="nameRules"
-                        label="Last Name"
-                        required
-                      ></v-text-field>
+                      <v-text-field v-model="editedItem.last_name" :counter="20" :rules="nameRules" label="Last Name"
+                        required></v-text-field>
 
-                      <v-text-field
-                        v-model="editedItem.street_address"
-                        :counter="30"
-                        :rules="addressRules"
-                        label="Street Address"
-                        required
-                      ></v-text-field>
+                      <v-text-field v-model="editedItem.street_address" :counter="30" :rules="addressRules"
+                        label="Street Address" required></v-text-field>
 
-                      <v-text-field
-                        v-model="editedItem.city"
-                        :counter="10"
-                        :rules="nameRules"
-                        label="City"
-                        required
-                      ></v-text-field>
+                      <v-text-field v-model="editedItem.city" :counter="10" :rules="nameRules" label="City"
+                        required></v-text-field>
 
-                      <v-select
-                        v-model="editedItem.state_abbreviation"
-                        :items="states"
-                        :rules="[(v) => !!v || 'Item is required']"
-                        label="State"
-                        required
-                      ></v-select>
+                      <v-select v-model="editedItem.state_abbreviation" :items="states"
+                        :rules="[(v) => !!v || 'Item is required']" label="State" required></v-select>
 
-                      <v-text-field
-                        v-model="editedItem.zip_code"
-                        :counter="10"
-                        :rules="nameRules"
-                        label="ZIP"
-                        required
-                      ></v-text-field>
+                      <v-text-field v-model="editedItem.zip_code" :counter="10" :rules="nameRules" label="ZIP"
+                        required></v-text-field>
 
-                      <v-text-field
-                        v-model="editedItem.phone_number"
-                        :counter="15"
-                        :rules="nameRules"
-                        label="Phone Number"
-                        required
-                      ></v-text-field>
+                      <v-text-field v-model="editedItem.phone_number" :counter="15" :rules="nameRules"
+                        label="Phone Number" required></v-text-field>
 
-                      <v-text-field
-                        v-model="editedItem.email"
-                        :rules="emailRules"
-                        label="E-mail"
-                        required
-                      ></v-text-field>
-                      <v-checkbox
-                        v-model="editedItem.is_new_client"
-                        label="Is New Client?"
-                        required
-                      ></v-checkbox>
-                      <v-checkbox
-                        v-model="editedItem.has_record_of_liability"
-                        label="Record of Liability"
-                        required
-                      ></v-checkbox>
-                      <v-checkbox
-                        v-model="editedItem.is_client_active"
-                        label="Is Client Active?"
-                        required
-                      ></v-checkbox>
+                      <v-text-field v-model="editedItem.email" :rules="emailRules" label="E-mail" required></v-text-field>
+                      <v-checkbox v-model="editedItem.is_new_client" label="Is New Client?" required></v-checkbox>
+                      <v-checkbox v-model="editedItem.has_record_of_liability" label="Record of Liability"
+                        required></v-checkbox>
+                      <v-checkbox v-model="editedItem.is_client_active" label="Is Client Active?" required></v-checkbox>
 
-                      <v-checkbox
-                        v-model="editedItem.is_on_email_list"
-                        label="Stay on Email List?"
-                        required
-                      ></v-checkbox>
-
-                      <v-row justify="center" align="center"
-                        >
-                        <v-col justify="center" align="center">
-                          <div
-            class="alert alert-danger"
-            role="alert"
-            v-if="emailRegistrationErrors"
-            style="color: red"
-          >
-            {{ emailRegistrationErrorMsg }}
-          </div>
-                          <v-btn class="mr-4" type="submit" :disabled="invalid">
-                            update
-                          </v-btn>
-                          </v-col
-                        >
+                      <v-checkbox v-model="editedItem.is_on_email_list" label="Stay on Email List?" required></v-checkbox>
+                      <v-checkbox v-model="editedItem.is_allowed_video" label="Allow Video?" required></v-checkbox>
+                      <v-row justify="center" align="center">
+                        
                         <v-col cols="10" justify="center" align="center">
                           <v-btn color="error" class="mr-4" @click="reset">
                             Reset Form
                           </v-btn>
-                        </v-col></v-row
-                      >
+                        </v-col>
+                        <v-col justify="center" align="center">
+                         
+                         <v-btn class="mr-4" type="submit" :disabled="invalid">
+                           update
+                         </v-btn>
+                         <div class="alert alert-danger" role="alert" v-if="emailRegistrationErrors" style="color: red">
+                           {{ emailRegistrationErrorMsg }}
+                         </div>
+                       </v-col></v-row>
                     </v-form>
                   </v-col>
                 </v-row>
@@ -559,20 +356,12 @@
           <!-- END OF EDIT CLIENT FORM -->
           <v-dialog v-model="dialogDelete" max-width="600px">
             <v-card>
-              <v-card-title class="text-h5"
-                >Are you sure you want to delete this client?</v-card-title
-              >
-              <v-card-title class="text-h6" style="color: red"
-                >This will delete all traces</v-card-title
-              >
+              <v-card-title class="text-h5">Are you sure you want to delete this client?</v-card-title>
+              <v-card-title class="text-h6" style="color: red">This will delete all traces</v-card-title>
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="closeDelete"
-                  >Cancel</v-btn
-                >
-                <v-btn color="blue darken-1" text @click="deleteItemConfirm"
-                  >OK</v-btn
-                >
+                <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
+                <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
                 <v-spacer></v-spacer>
               </v-card-actions>
             </v-card>
@@ -580,34 +369,18 @@
         </v-toolbar>
       </template>
       <template v-slot:[`item.is_client_active`]="{ item }">
-        <v-simple-checkbox
-          v-model="item.is_client_active"
-          disabled
-        ></v-simple-checkbox>
+        <v-simple-checkbox v-model="item.is_client_active" disabled></v-simple-checkbox>
       </template>
       <template v-slot:[`item.is_new_client`]="{ item }">
-        <v-simple-checkbox
-          v-model="item.is_new_client"
-          disabled
-        ></v-simple-checkbox>
+        <v-simple-checkbox v-model="item.is_new_client" disabled></v-simple-checkbox>
       </template>
       <template v-slot:[`item.is_on_email_list`]="{ item }">
-        <v-simple-checkbox
-          v-model="item.is_on_email_list"
-          disabled
-        ></v-simple-checkbox>
+        <v-simple-checkbox v-model="item.is_on_email_list" disabled></v-simple-checkbox>
       </template>
       <template v-slot:[`item.has_record_of_liability`]="{ item }">
-        <v-simple-checkbox
-          v-model="item.has_record_of_liability"
-          disabled
-        ></v-simple-checkbox> </template
-      ><template v-slot:[`item.actions`]="{ item }">
-        <v-icon
-          small
-          class="mr-2"
-          @click.prevent="sendToUserPageAdminView(item)"
-        >
+        <v-simple-checkbox v-model="item.has_record_of_liability" disabled></v-simple-checkbox> </template><template
+        v-slot:[`item.actions`]="{ item }">
+        <v-icon small class="mr-2" @click.prevent="sendToUserPageAdminView(item)">
           mdi-account-search
         </v-icon>
         <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
@@ -617,11 +390,19 @@
         <v-btn color="primary" @click="initialize"> Reset </v-btn>
       </template>
     </v-data-table>
+    <v-row>
+      <v-col cols="11">
+        <v-pagination v-model="page" :length="Math.ceil(totalClients / pageSize)" @input="temporaryPageMethod"
+          total-visible="8"></v-pagination>
+      </v-col>
+      <v-col col="1" class="mt-2">
+        <v-select v-model="pageSize" :items="[10, 20, 30, 40, 50]" outlined filled @change="temporaryPageSizeMethod">
+        </v-select>
+      </v-col>
+      <v-spacer></v-spacer>
+    </v-row>
     <v-overlay :value="overlay">
-      <v-progress-circular
-        indeterminate
-        size="70"
-      ></v-progress-circular>
+      <v-progress-circular indeterminate size="70"></v-progress-circular>
     </v-overlay>
   </v-card>
 </template>
@@ -634,10 +415,12 @@ export default {
   data() {
     return {
       search: "",
+      page: 1,
+      pageSize: 10,
+      sortBy: 'client_id',
+      sortDesc: false,
       headers: [
-        {text:"ID",
-        sortable: true,
-      value:"client_id"},
+        { text: "ID", sortable: true, value: "client_id" },
         {
           text: "First Name",
           align: "start",
@@ -645,22 +428,24 @@ export default {
           value: "first_name",
         },
         { text: "Last Name", value: "last_name", sortable: true },
-        { text: "Active", value: "is_client_active" },
-        { text: "New Client", value: "is_new_client" },
+        { text: "Active", value: "is_client_active", sortable: false },
+        { text: "New Client", value: "is_new_client", sortable: false },
         { text: "Address", value: "full_address", sortable: false },
         { text: "Phone Number", value: "phone_number", sortable: false },
-        { text: "Email List", value: "is_on_email_list", sortable: true },
+        { text: "Email List", value: "is_on_email_list", sortable: false },
         { text: "Email", value: "email", sortable: false },
-        { text: "Shared Group", value: "family_name", sortable: true },
+        { text: "Shared Group", value: "family_name", sortable: false },
         {
           text: "Record of Liability",
           value: "has_record_of_liability",
-          sortable: true,
+          sortable: false,
         },
-        { text: "Date of Entry", value: "date_of_entry", sortable: true },
+        { text: "Date of Entry", value: "date_of_entry", sortable: false },
         { text: "Actions", value: "actions", sortable: false },
       ],
       clientList: [],
+      totalClients: 0,
+      paginatedObject: {},
       dialogDelete: false,
       dialog: false,
       editedIndex: -1,
@@ -675,14 +460,16 @@ export default {
         zip_code: "",
         phone_number: "",
         is_on_email_list: false,
+        is_allowed_video: false,
         email: "",
         has_record_of_liability: false,
         loading: true,
         date_of_entry: "",
         user_id: 0,
       },
-       emailRegistrationErrors: false,
-      emailRegistrationErrorMsg: 'There were problems registering with this email.',
+      emailRegistrationErrors: false,
+      emailRegistrationErrorMsg:
+        "There were problems registering with this email.",
       states: [
         "AK",
         "AL",
@@ -769,9 +556,40 @@ export default {
       autoUpdate: true,
       clientToMergeInto: {},
       listOfDuplicateClients: [],
+      newClientDetails: {
+        last_name: "",
+        first_name: "",
+        is_client_active: false,
+        is_new_client: true,
+        street_address: "",
+        city: "",
+        state_abbreviation: "",
+        zip_code: "",
+        phone_number: "",
+        is_on_email_list: false,
+        is_allowed_video: false,
+        email: "",
+        has_record_of_liability: false,
+        loading: true,
+        date_of_entry: "",
+        user_id: 0,
+      },
       listOfClientForms: [],
       profileChoiceDialog: false,
       overlay: false,
+      newClientDialog: false,
+      firstAutocompletePage: 1,
+      firstAutocompleteSearch: "",
+      secondAutocompletePage: 1,
+      secondAutocompleteSearch: "",
+      duplicateAutocompletePage: 1,
+      duplicateAutocompleteSearch: "",
+      autocompleteFirstClientList: [],
+      autocompleteSecondClientList: [],
+      autocompleteDuplicateClientList: [],
+      loadingFirstClientList: false,
+      loadingSecondClientList: false,
+      loadingDuplicateClientList: false,
     };
   },
   created() {
@@ -779,32 +597,229 @@ export default {
     this.getFamilyList();
   },
   watch: {
-      isUpdating (val) {
-        if (val) {
-          setTimeout(() => (this.isUpdating = false), 3000)
-        }
-      },
+    isUpdating(val) {
+      if (val) {
+        setTimeout(() => (this.isUpdating = false), 3000);
+      }
     },
+  },
   methods: {
+    endFirstIntersect(entries, observer, isIntersecting) {
+      if (isIntersecting && this.firstAutocompleteSearch == "") {
+        // alert("intersected")
+
+
+        this.firstAutocompletePage++;
+
+        setTimeout(
+          () =>
+          // alert(this.search)
+          (this.getAutoCompletedFirstClientTable()
+          ),
+          // this.getPaginatedClientTable(),
+
+          // logic goes in here
+          250
+        );
+
+      }
+    },
+    getSearchedFirstClientTableForAutocomplete(event) {
+      this.firstAutocompletePage = 1;
+      var charTyped = String.fromCharCode(event.which);
+      if (/[a-z\d]/i.test(charTyped)) {
+
+
+        setTimeout(
+          () =>
+
+          (this.setFirstAutcompleteSearch(event.target.value)
+          ),
+
+          250
+        );
+
+      }
+    },
+    setFirstAutcompleteSearch(search) {
+      if (search != undefined && search.length > 0) {
+        this.firstAutocompleteSearch = search;
+        this.firstAutocompletePage = 1;
+        // alert(this.firstAutocompleteSearch)
+      } else {
+        this.firstAutocompleteSearch = "";
+      }
+      this.loadingFirstClientList = true;
+      this.getAutoCompletedFirstClientTable();
+    },
+    getAutoCompletedFirstClientTable() {
+
+      clientDetailService
+        .getPaginatedClients(this.firstAutocompletePage, this.pageSize, this.firstAutocompleteSearch)
+        .then((response) => {
+          if (response.status == 200) {
+            this.paginatedObject = response.data;
+
+            this.autocompleteFirstClientList = this.paginatedObject.listOfClients;
+            this.loadingFirstClientList = false;
+            this.autocompleteFirstClientList.forEach((item) => {
+              if (item.full_address.includes("null")) {
+                item.full_address = item.full_address.replaceAll("null", " ");
+              }
+              item.date_of_entry = new Date(item.date_of_entry);
+            });
+          } else {
+            alert("Error retrieving client information");
+          }
+        })
+        .catch((error) => {
+          const response = error.response;
+          if (response.status === 401) {
+            this.$router.push("/login");
+          }
+        });
+    },
+    endSecondIntersect(entries, observer, isIntersecting) {
+      if (isIntersecting && this.secondAutocompleteSearch == "") {
+        // alert("intersected")
+
+        this.secondAutocompletePage++;
+
+        setTimeout(
+          () =>
+          // alert(this.search)
+          (this.getAutoCompletedSecondClientTable()
+          ),
+          // this.getPaginatedClientTable(),
+
+          // logic goes in here
+          250
+        );
+
+      }
+    },
+    getSearchedSecondClientTableForAutocomplete(event) {
+      this.firstAutocompletePage = 1;
+      var charTyped = String.fromCharCode(event.which);
+      if (/[a-z\d]/i.test(charTyped)) {
+
+
+        setTimeout(
+          () =>
+
+          (this.setSecondAutcompleteSearch(event.target.value)
+          ),
+
+          250
+        );
+
+      }
+    },
+    setSecondAutcompleteSearch(search) {
+      if (search != undefined && search.length > 0) {
+        this.secondAutocompleteSearch = search;
+        this.secondAutocompletePage = 1;
+        // alert(this.firstAutocompleteSearch)
+      } else {
+        this.secondAutocompleteSearch = "";
+      }
+      this.loadingSecondClientList = true;
+      this.getAutoCompletedsecondClientTable();
+    },
+    getAutoCompletedSecondClientTable() {
+      clientDetailService
+        .getPaginatedClients(this.secondAutocompletePage, this.pageSize, this.secondAutocompleteSearch)
+        .then((response) => {
+          if (response.status == 200) {
+            this.paginatedObject = response.data;
+
+            this.autocompleteSecondClientList = this.paginatedObject.listOfClients;
+
+            this.autocompleteSecondClientList.forEach((item) => {
+              if (item.full_address.includes("null")) {
+                item.full_address = item.full_address.replaceAll("null", " ");
+              }
+              item.date_of_entry = new Date(item.date_of_entry);
+            });
+          } else {
+            alert("Error retrieving client information");
+          }
+        })
+        .catch((error) => {
+          const response = error.response;
+          if (response.status === 401) {
+            this.$router.push("/login");
+          }
+        });
+    },
+    endDuplicateIntersect(entries, observer, isIntersecting) {
+      if (isIntersecting && this.duplicateAutocompleteSearch == "") {
+        // alert("intersected")
+
+        this.duplicateAutocompletePage++;
+
+        setTimeout(
+          () =>
+          // alert(this.search)
+          (this.retrieveDuplicateClients()
+          ),
+
+
+          // logic goes in here
+          250
+        );
+
+      }
+    },
+    getSearchedDuplicateClientTableForAutocomplete(event) {
+      this.duplicateAutocompletePage = 1;
+      var charTyped = String.fromCharCode(event.which);
+      if (/[a-z\d]/i.test(charTyped)) {
+
+
+        setTimeout(
+          () =>
+
+          (this.setDuplicateAutcompleteSearch(event.target.value)
+          ),
+
+          250
+        );
+
+      }
+    },
+    setDuplicateAutcompleteSearch(search) {
+      if (search != undefined && search.length > 0) {
+        this.duplicateAutocompleteSearch = search;
+        this.duplicateAutocompletePage = 1;
+        // alert(this.firstAutocompleteSearch)
+      } else {
+        this.duplicateAutocompleteSearch = "";
+      }
+      this.loadingDuplicateClientList = true;
+      this.retrieveDuplicateClients();
+    },
     keepClientInfo(item) {
       this.overlay = !this.overlay;
-            this.clientToMergeInto.email = item.email
-            this.clientToMergeInto.phone_number = item.phone_number
-            this.clientToMergeInto.street_address = item.street_address
-            this.clientToMergeInto.state_abbreviation = item.state_abbreviation
-            this.clientToMergeInto.city = item.city
-            this.clientToMergeInto.zip_code = item.zip_code
-            this.clientToMergeInto.is_new_client = item.is_new_client
-            this.clientToMergeInto.has_record_of_liability = item.has_record_of_liability
-            this.clientToMergeInto.is_client_active = item.is_client_active
-            this.clientToMergeInto.is_on_email_list = item.is_on_email_list
+      this.clientToMergeInto.email = item.email;
+      this.clientToMergeInto.phone_number = item.phone_number;
+      this.clientToMergeInto.street_address = item.street_address;
+      this.clientToMergeInto.state_abbreviation = item.state_abbreviation;
+      this.clientToMergeInto.city = item.city;
+      this.clientToMergeInto.zip_code = item.zip_code;
+      this.clientToMergeInto.is_new_client = item.is_new_client;
+      this.clientToMergeInto.has_record_of_liability =
+        item.has_record_of_liability;
+      this.clientToMergeInto.is_client_active = item.is_client_active;
+      this.clientToMergeInto.is_on_email_list = item.is_on_email_list;
 
-            // TODO: Call method from server here immediately
-        // Method that takes in a list of selected Clients 
-        //and adds the clientToMerge at the zero index
-        this.selectedClients.unshift(this.clientToMergeInto);
+      // TODO: Call method from server here immediately
+      // Method that takes in a list of selected Clients
+      //and adds the clientToMerge at the zero index
+      this.selectedClients.unshift(this.clientToMergeInto);
 
-        clientDetailService.mergeClients(this.selectedClients)
+      clientDetailService
+        .mergeClients(this.selectedClients)
         .then((response) => {
           if (response.status === 200) {
             this.overlay = false;
@@ -814,62 +829,63 @@ export default {
           }
         })
         .catch((error) => {
-              const response = error.response;
-              if (response.status === 400) {
-                alert("Email already in use, or different error.")
-              }
-            });
+          const response = error.response;
+          if (response.status === 400) {
+            this.getClientTable();
+            alert("Email already in use, or different error. Refresh");
+          }
+        });
     },
-    confirmMerge(){
-      
-      if (Object.keys(this.clientToMergeInto).length == 0 || this.selectedClients.length == 0) {
-        alert("Please Choose Clients to Remove and Keep")
+    confirmMerge() {
+      if (
+        Object.keys(this.clientToMergeInto).length == 0 ||
+        this.selectedClients.length == 0 || this.selectedClients.includes(this.clientToMergeInto)
+      ) {
+        alert("Please Choose Clients to Remove and Keep");
       } else {
         this.listOfClientForms = [];
         
-        this.listOfClientForms.push(this.clientToMergeInto)
-        
-        
+        // push the client to keep to the front
+        this.listOfClientForms.push(this.clientToMergeInto);
+
         for (let index = 0; index < this.selectedClients.length; index++) {
-          
-          if (this.selectedClients[index].email  ||
-            this.selectedClients[index].phone_number  |
-            this.selectedClients[index].street_address  ||
-            this.selectedClients[index].state_abbreviation  ||
-            this.selectedClients[index].city  || 
-            this.selectedClients[index].zip_code  ) {
-              this.selectedClients[index].first_name = this.clientToMergeInto.first_name
-              this.selectedClients[index].last_name = this.clientToMergeInto.last_name;
-              this.listOfClientForms.push(this.selectedClients[index])
-            }
+          if (
+            this.selectedClients[index].email ||
+            this.selectedClients[index].phone_number |
+            this.selectedClients[index].street_address ||
+            this.selectedClients[index].state_abbreviation ||
+            this.selectedClients[index].city ||
+            this.selectedClients[index].zip_code
+          ) {
+            this.selectedClients[index].first_name =
+              this.clientToMergeInto.first_name;
+            this.selectedClients[index].last_name =
+              this.clientToMergeInto.last_name;
+            this.listOfClientForms.push(this.selectedClients[index]);
+          }
         }
-        
+
         this.mergeDialog = false;
         this.profileChoiceDialog = true;
-        
-      
-    }
-
+      }
     },
-    
+
     closeProfileChoice() {
       this.profileChoiceDialog = false;
       this.listOfClientForms = [];
-      
     },
-    remove (item) {
+    remove(item) {
       let itemIndex = 0;
       for (let index = 0; index < this.selectedClients.length; index++) {
         if (this.selectedClients[index.client_id] == item.client_id) {
           itemIndex = index;
         }
-        
       }
-        if (itemIndex >= 0) this.selectedClients.splice(itemIndex, 1)
-      },
-      removeClientToKeep () {
+      if (itemIndex >= 0) this.selectedClients.splice(itemIndex, 1);
+    },
+    removeClientToKeep() {
       this.clientToMergeInto = [];
-      },
+    },
     sendToUserPageAdminView(object) {
       this.$store.commit("SET_CLIENT_DETAILS", object);
       this.$router.push({
@@ -879,14 +895,14 @@ export default {
     },
     emailRecipients() {
       if (this.selectedClients.length > 0) {
-      this.selectedClients.forEach((item) => {
-        this.emailLink = this.emailLink + item.email + ";";
-      });
-      // window.location.href = this.emailLink;
-      window.open(this.emailLink, '_blank').focus();
-      this.emailLink = "https://mail.google.com/mail/u/0/?fs=1&tf=cm&to=";
+        this.selectedClients.forEach((item) => {
+          this.emailLink = this.emailLink + item.email + ";";
+        });
+        // window.location.href = this.emailLink;
+        window.open(this.emailLink, "_blank").focus();
+        this.emailLink = "https://mail.google.com/mail/u/0/?fs=1&tf=cm&to=";
       } else {
-        alert("Please select at least one user to email")
+        alert("Please select at least one user to email");
       }
     },
     emailRecipientsFromEmailList() {
@@ -896,7 +912,7 @@ export default {
         }
       });
       // window.location.href = this.emailLink;
-      window.open(this.emailLink, '_blank').focus();
+      window.open(this.emailLink, "_blank").focus();
       this.emailLink = "https://mail.google.com/mail/u/0/?fs=1&tf=cm&to=";
     },
     update() {
@@ -913,55 +929,110 @@ export default {
             this.close();
           })
           .catch((error) => {
-              const response = error.response;
-              this.emailRegistrationErrors = true;
-              if (response.status === 400) {
-                this.emailRegistrationErrorMsg = "Could not update. Email is already being used by an account";
-              }
-            });
+            const response = error.response;
+            this.emailRegistrationErrors = true;
+            if (response.status === 400) {
+         
+              this.emailRegistrationErrorMsg =
+                "Email is already being used by an account. Refresh";
+            }
+          });
       }
     },
     clearErrors() {
       this.emailRegistrationErrors = false;
-      this.emailRegistrationErrorMsg = 'There were problems updating this email.';
+      this.emailRegistrationErrorMsg =
+        "There were problems updating this email.";
+    },
+    getSearchedClientTablePaginated(event) {
+      var charTyped = String.fromCharCode(event.which);
+      if (/[a-z\d]/i.test(charTyped)) {
+        // alert("Letter or number typed: " + charTyped);
+        // this.search = charTyped;
+        setTimeout(
+          () =>
+            // alert(this.search)
+
+            this.getClientTable(),
+
+          // logic goes in here
+          250
+        );
+      }
+    },
+    resetThePageOnEmptyLength() {
+      if (this.search == 0) {
+        this.page = 1;
+        this.getClientTable();
+      }
     },
     getClientTable() {
       this.loading = true;
       this.overlay = !this.overlay;
-      clientDetailService.getClientList().then((response) => {
-        if (response.status == 200) {
-          this.loading = false;
-          this.overlay = false;
-          this.clientList = response.data;
-           this.clientList.forEach((item) => {
-             if (item.full_address.includes("null")) {
-               item.full_address = item.full_address.replaceAll("null", " ")
-             }
-            item.date_of_entry = new Date(item.date_of_entry);
-          });
-          this.$store.commit("SET_CLIENT_LIST", response.data);
-        } else {
-          alert("Error retrieving client information");
-        }
-      })
-      .catch((error) => {
+      clientDetailService
+        .getPaginatedClients(this.page, this.pageSize, this.search, this.sortBy, this.sortDesc)
+        .then((response) => {
+          if (response.status == 200) {
+            this.loading = false;
+            this.overlay = false;
+            this.paginatedObject = response.data;
+            this.clientList = this.paginatedObject.listOfClients;
+            this.autocompleteFirstClientList = this.paginatedObject.listOfClients;
+            this.autocompleteSecondClientList = this.paginatedObject.listOfClients;
+            this.totalClients = this.paginatedObject.totalRows;
+            this.clientList.forEach((item) => {
+              if (item.full_address.includes("null")) {
+                item.full_address = item.full_address.replaceAll("null", " ");
+              }
+
+              let dateEntry = item.date_of_entry.toString();
+              item.date_of_entry = dateEntry.substring(0, 10);
+            });
+            this.$store.commit("SET_CLIENT_LIST", response.data);
+          } else {
+            alert("Error retrieving client information");
+          }
+        })
+        .catch((error) => {
           const response = error.response;
           if (response.status === 401) {
-            this.$router.push('/login')
+            this.$router.push("/login");
           }
         });
-      
+    },
+    sortTable() {
+      if (this.sortDesc == undefined) {
+        this.sortDesc = false;
+      }
+      this.getClientTable();
+    },
+    temporaryPageMethod() {
+      this.$vuetify.goTo(0);
+      this.getClientTable();
+    },
+    temporaryPageSizeMethod() {
+      if (this.page == 1) {
+        this.getClientTable();
+      } else {
+        this.$vuetify.goTo(0);
+        this.page = 1;
+        this.getClientTable();
+      }
     },
     retrieveDuplicateClients() {
-      this.loading = true;
-      this.overlay = !this.overlay;
-      clientDetailService.getDuplicateClients().then((response) => {
+
+
+      clientDetailService.getPaginatedDuplicateClients(this.duplicateAutocompletePage, this.pageSize, this.duplicateAutocompleteSearch).then((response) => {
         if (response.status == 200) {
-          this.loading = false;
-          this.overlay = false;
-          this.listOfDuplicateClients = response.data;
+          let paginatedObject = response.data;
+          this.autocompleteDuplicateClientList = paginatedObject.listOfClients;
+          this.loadingDuplicateClientList = false;
+
+
+
+          // this.listOfDuplicateClients = response.data;
         }
-      })
+      });
     },
     editItem(item) {
       this.editedIndex = this.clientList.indexOf(item);
@@ -997,20 +1068,38 @@ export default {
       this.reset();
       this.clearErrors();
     },
+    closeNewClient() {
+      this.newClientDialog = false;
+      this.newClientDetails = {
+        last_name: "",
+        first_name: "",
+        is_client_active: false,
+        is_new_client: true,
+        street_address: "",
+        city: "",
+        state_abbreviation: "",
+        zip_code: "",
+        phone_number: "",
+        is_on_email_list: false,
+        is_allowed_video: false,
+        email: "",
+        has_record_of_liability: false,
+        loading: true,
+        date_of_entry: "",
+        user_id: 0,
+      };
+    },
     reset() {
       this.$refs.form.reset();
       this.clearErrors();
     },
     resetByIndex(index) {
       this.$refs.clientForm.reset();
-      alert(index)
-      this.listOfClientForms[index] = {}
+      alert(index);
+      this.listOfClientForms[index] = {};
     },
     checkEditForm() {
-      if (
-        this.editedItem.last_name == "" ||
-        this.editedItem.first_name == ""
-      ) {
+      if (this.editedItem.last_name == "" || this.editedItem.first_name == "") {
         alert("Please fill out your form");
       } else {
         this.editFormIncomplete = false;
@@ -1026,37 +1115,36 @@ export default {
       });
     },
     save() {
-
-      if(this.selectedClients.length == 0){
+      if (this.selectedClients.length == 0) {
         alert("You need to select at least one client.");
         this.close1();
-      }else{
-      // check for length > 0 here if bug
-      for (let index = 0; index < this.selectedClients.length; index++) {
-        // this.allowSignUp = false;
+      } else {
+        // check for length > 0 here if bug
+        for (let index = 0; index < this.selectedClients.length; index++) {
+          // this.allowSignUp = false;
 
-        this.selectedClients[index].family_id = this.selectedFamily.family_id;
+          this.selectedClients[index].family_id = this.selectedFamily.family_id;
 
-        // this.individualClientFromLoop = this.selectedClients[index];
+          // this.individualClientFromLoop = this.selectedClients[index];
 
-        // END OF LOOP BLOCK
-      }
+          // END OF LOOP BLOCK
+        }
 
-      familyService
-        .addMultipleClientsForFamily(this.selectedClients)
-        .then((response) => {
-          if (response.status == 201) {
-            alert("Successfully added clients to selected family");
-            this.getClientTable();
-            // this.getEventDetailsCall();
-            this.selectedClients = [];
-            this.selectedFamily = {};
-          } else {
-            alert("Error adding clients to roster");
-          }
-        });
+        familyService
+          .addMultipleClientsForFamily(this.selectedClients)
+          .then((response) => {
+            if (response.status == 201) {
+              alert("Successfully added clients to selected family");
+              this.getClientTable();
+              // this.getEventDetailsCall();
+              this.selectedClients = [];
+              this.selectedFamily = {};
+            } else {
+              alert("Error adding clients to roster");
+            }
+          });
 
-      this.close1();
+        this.close1();
       }
     },
 
@@ -1080,6 +1168,51 @@ export default {
 
       this.close1();
     },
+    saveNewClientRegistration() {
+      if (
+        this.newClientDetails.first_name != "" &&
+        this.newClientDetails.last_name != ""
+      ) {
+        clientDetailService
+          .registerNewClient(this.newClientDetails)
+          .then((response) => {
+            if (response.status == 200) {
+              alert("Successfully added client");
+              this.getClientTable();
+            } else {
+              alert("Error adding clients to roster");
+            }
+          })
+          .catch((error) => {
+              const response = error.response;
+              this.emailRegistrationErrors = true;
+              if (response.status === 400) {
+                this.getClientTable();
+               alert("There were problems registering this user with this email.");
+              }
+            })
+        this.newClientDialog = false
+        this.newClientDetails = {
+          last_name: "",
+          first_name: "",
+          is_client_active: false,
+          is_new_client: true,
+          street_address: "",
+          city: "",
+          state_abbreviation: "",
+          zip_code: "",
+          phone_number: "",
+          is_on_email_list: false,
+          email: "",
+          has_record_of_liability: false,
+          loading: true,
+          date_of_entry: "",
+          user_id: 0,
+        };
+      } else {
+        alert("Please Fill Out Both First and Last Name");
+      }
+    },
     close1() {
       this.dialog2 = false;
       this.newFamily = "";
@@ -1093,6 +1226,7 @@ export default {
       this.mergeDialog = false;
       this.selectedClients = [];
       this.listOfClientForms = [];
+      this.clientToMergeInto = {};
       // this.$nextTick(() => {
       //   this.editedItem = Object.assign({}, this.defaultItem);
       //   this.editedIndex = -1;
@@ -1102,5 +1236,4 @@ export default {
 };
 </script>
 
-<style>
-</style>
+<style></style>

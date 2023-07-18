@@ -6,15 +6,16 @@ import com.sattvayoga.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.security.Principal;
 import java.sql.SQLException;
+import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.time.LocalDate;
+import java.util.*;
 
 
 @RestController
@@ -124,7 +125,7 @@ public class EventController {
         }
 
         // grab a list of packages
-        List<PackagePurchase> allUserPackagePurchase = packagePurchaseDao.getAllUserPackagePurchases(userId);
+        List<PackagePurchase> allUserPackagePurchase = packagePurchaseDao.getAllActiveUserPackagePurchases(userId);
 
         for (int i = 0; i < eventList.size(); i++) {
             // filter the list of packages to just one
@@ -216,11 +217,10 @@ public class EventController {
         eventDao.registerForEvent(clientEvent.getClient_id(),clientEvent.getEvent_id(),clientEvent.getPackage_purchase_id());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/registerNewClientToEvent", method = RequestMethod.POST)
     public void registerNewClientForEvent(@RequestBody NewClientSignUp newClientSignUp) {
-
-
 
         int leftLimit = 48; // numeral '0'
         int rightLimit = 122; // letter 'z'
@@ -255,6 +255,7 @@ public class EventController {
 
         clientDetails.setFirst_name(newClientSignUp.getFirst_name());
         clientDetails.setLast_name(newClientSignUp.getLast_name());
+        clientDetails.setEmail(newClientSignUp.getEmail());
         clientDetails.setUser_id(userId);
 
         Date date = new Date();
@@ -283,28 +284,38 @@ public class EventController {
         for (int i = 0; i < clientEventObjects.size(); i++) {
             // current clientEvent object
             ClientEvent clientEvent = clientEventObjects.get(i);
-            // client details
-            ClientDetails clientDetailsObj = clientDetailsDao.findClientByClientId(clientEvent.getClient_id());
-            // user Id
-            int userIdNum = clientDetailsObj.getUser_id();
-            // find active packages for each client/user
-            List<PackagePurchase> allUserPackagePurchase = packagePurchaseDao.getAllUserPackagePurchases(userIdNum);
-            // filter the list of packages to just one
-            PackagePurchase packagePurchase = packagePurchaseDao.filterPackageList(allUserPackagePurchase, event);
-            // finally once you've pinpointed the package, set the package purchase ID into the object
-            if (packagePurchase.getPackage_purchase_id() > 0) {
-                clientEvent.setPackage_purchase_id(packagePurchase.getPackage_purchase_id());
-            }
 
-            // decrement if it's a quantity bundle but register it into the table either way
-            if (!packagePurchase.isIs_subscription()) {
-                packagePurchaseDao.decrementByOne(packagePurchase.getPackage_purchase_id());
+            // if the event is free or not
+            if (!event.isIs_paid()) {
+
+                // client details
+                ClientDetails clientDetailsObj = clientDetailsDao.findClientByClientId(clientEvent.getClient_id());
+                // user Id
+                int userIdNum = clientDetailsObj.getUser_id();
+                // find active packages for each client/user
+                List<PackagePurchase> allUserPackagePurchase = packagePurchaseDao.getAllUserPackagePurchases(userIdNum);
+                // filter the list of packages to just one
+                PackagePurchase packagePurchase = packagePurchaseDao.filterPackageList(allUserPackagePurchase, event);
+
+                // finally once you've pinpointed the package, set the package purchase ID into the object
+                if (packagePurchase.getPackage_purchase_id() > 0) {
+                    clientEvent.setPackage_purchase_id(packagePurchase.getPackage_purchase_id());
+                }
+
+                // decrement if it's a quantity bundle but register it into the table either way
+                if (!packagePurchase.isIs_subscription()) {
+                    packagePurchaseDao.decrementByOne(packagePurchase.getPackage_purchase_id());
+                }
+
+            } else {
+                clientEvent.setPackage_purchase_id(-1);
             }
             eventDao.registerForEvent(clientEvent.getClient_id(),clientEvent.getEvent_id(),clientEvent.getPackage_purchase_id());
         }
 
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/registerMultipleClientsForEvent", method = RequestMethod.POST)
     public void registerMultipleClientsForEvent(@RequestBody List<ClientEvent> clientEventObjects) {
@@ -313,37 +324,71 @@ public class EventController {
         Event event = eventDao.getEventByEventId(clientEventObjects.get(0).getEvent_id());
 
 
-
         for (int i = 0; i < clientEventObjects.size(); i++) {
             // current clientEvent object
             ClientEvent clientEvent = clientEventObjects.get(i);
-            // client details
-            ClientDetails clientDetails = clientDetailsDao.findClientByClientId(clientEvent.getClient_id());
-            // user Id
-            int userId = clientDetails.getUser_id();
-            // find active packages for each client/user
-            List<PackagePurchase> allUserPackagePurchase = packagePurchaseDao.getAllUserPackagePurchases(userId);
-            // filter the list of packages to just one
-            PackagePurchase packagePurchase = packagePurchaseDao.filterPackageList(allUserPackagePurchase, event);
-            // if user doesn't have any usable package, look for shared packages;
-            if (packagePurchase.getPackage_purchase_id() == 0){
-                List<PackagePurchase> allActiveSharedPackages = packagePurchaseDao.getAllSharedActiveQuantityPackages(clientEvent.getClient_id());
-                if(allActiveSharedPackages.size()>0){
-                    packagePurchase = allActiveSharedPackages.get(0);
+
+            // if the event is free or not
+            if (!event.isIs_paid()) {
+                // client details
+                ClientDetails clientDetails = clientDetailsDao.findClientByClientId(clientEvent.getClient_id());
+                // user Id
+                int userId = clientDetails.getUser_id();
+                // find active packages for each client/user
+                List<PackagePurchase> allUserPackagePurchase = packagePurchaseDao.getAllActiveUserPackagePurchases(userId);
+                // filter the list of packages to just one
+                PackagePurchase packagePurchase = packagePurchaseDao.filterPackageList(allUserPackagePurchase, event);
+
+
+                // if user doesn't have any usable package, look for shared packages;
+                if (packagePurchase.getPackage_purchase_id() == 0) {
+                    List<PackagePurchase> allActiveSharedPackages = packagePurchaseDao.getAllSharedActiveQuantityPackages(clientEvent.getClient_id());
+                    if (allActiveSharedPackages.size() > 0) {
+                        packagePurchase = allActiveSharedPackages.get(0);
+                    }
                 }
-            }
 
 
-            // finally once you've pinpointed the package, set the package purchase ID into the object
-            if (packagePurchase.getPackage_purchase_id() > 0) {
-                clientEvent.setPackage_purchase_id(packagePurchase.getPackage_purchase_id());
-            }
+                // finally once you've pinpointed the package, set the package purchase ID into the object
+                if (packagePurchase.getPackage_purchase_id() > 0) {
+                    clientEvent.setPackage_purchase_id(packagePurchase.getPackage_purchase_id());
+                }
 
-            // decrement if it's a quantity bundle but register it into the table either way
-            if (!packagePurchase.isIs_subscription()) {
-                packagePurchaseDao.decrementByOne(packagePurchase.getPackage_purchase_id());
+                // decrement if it's a quantity bundle but register it into the table either way
+                if (!packagePurchase.isIs_subscription()) {
+                    packagePurchaseDao.decrementByOne(packagePurchase.getPackage_purchase_id());
+                }
+            } else {
+                clientEvent.setPackage_purchase_id(-1);
             }
             eventDao.registerForEvent(clientEvent.getClient_id(),clientEvent.getEvent_id(),clientEvent.getPackage_purchase_id());
+        }
+
+    }
+
+    //TODO: This is for package+client testing purposes
+    @PreAuthorize("hasRole('ADMIN')")
+    @ResponseStatus(HttpStatus.CREATED)
+    @RequestMapping(value = "/registerAClientAndPurchasePackage/{id}", method = RequestMethod.POST)
+    public void registerAClientAndPurchasePackage(@PathVariable int id) {
+
+        for (int i = 1; i < 1664; i++) {
+            PackagePurchase packagePurchase = new PackagePurchase();
+            packagePurchase.setClient_id(id);
+            packagePurchase.setPackage_id(3);
+            packagePurchase.setDate_purchased( new Timestamp(System.currentTimeMillis()));
+
+
+            LocalDate ld = LocalDate.now();
+            LocalDate monthLater = ld.plusMonths( 12 );
+            java.sql.Date sqlDate = java.sql.Date.valueOf( monthLater );
+
+            packagePurchase.setClasses_remaining(0);
+            packagePurchase.setExpiration_date(sqlDate);
+            packagePurchase.setTotal_amount_paid(new BigDecimal(14));
+            packagePurchase.setIs_monthly_renew(false);
+            packagePurchaseDao.createPackagePurchase(packagePurchase);
+            eventDao.registerForEvent(id,i,i);
         }
 
     }
@@ -393,6 +438,7 @@ public class EventController {
         private int event_id;
         private String first_name;
         private String last_name;
+        private String email;
 
         public NewClientSignUp() {
         }
@@ -401,6 +447,21 @@ public class EventController {
             this.event_id = event_id;
             this.first_name = first_name;
             this.last_name = last_name;
+        }
+
+        public NewClientSignUp(int event_id, String first_name, String last_name, String email) {
+            this.event_id = event_id;
+            this.first_name = first_name;
+            this.last_name = last_name;
+            this.email = email;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
         }
 
         public int getEvent_id() {

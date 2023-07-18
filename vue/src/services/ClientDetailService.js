@@ -1,6 +1,18 @@
 import axios from 'axios';
 
 export default {
+    getClientList() {
+        return axios.get('/clientList')
+    },
+
+    getPaginatedClients(thisPage, thisPageSize, thisSearch, thisSortBy, thisSortDesc) {
+        // , {params: {page: 1, pageSize: 20} }
+        return axios.get('/getPaginatedClients', {params: {page: thisPage, pageSize: thisPageSize, search: thisSearch, sortBy: thisSortBy, sortDesc: thisSortDesc} })
+    },
+    getPaginatedDuplicateClients(thisPage, thisPageSize, thisSearch) {
+        // , {params: {page: 1, pageSize: 20} }
+        return axios.get('/getPaginatedDuplicateClients', {params: {page: thisPage, pageSize: thisPageSize, search: thisSearch} })
+    },
 
     registerClient(clientDetails) {
         return axios.post('/registerClient', clientDetails)
@@ -17,9 +29,7 @@ export default {
         return axios.put(`/updateClientDetails`, clientDetails )
     },
 
-    getClientList() {
-        return axios.get('/clientList')
-    },
+   
 
     removeClient(clientId) {
         return axios.delete(`/removeClient/${clientId}`)
@@ -29,6 +39,9 @@ export default {
     },
     mergeClients(listOfClients) {
         return axios.put('/mergeClients', listOfClients)
+    },
+    registerNewClient(newClient) {
+        return axios.post('/registerNewClient', newClient)
     }
 
 }
