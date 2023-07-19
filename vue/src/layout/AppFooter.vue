@@ -4,7 +4,7 @@
 
       <v-col justify="center" align="center">
         <h5>Find Us</h5>
-        <div id="map"></div>
+        <iframe width="400" height="200" style="border:0" loading="lazy" allowfullscreen src="https://www.google.com/maps/embed/v1/place?q=place_id:ChIJUXrXsYc1O4gRrtZNByr49G0&key=AIzaSyB82Tecv8cDFbfa0bWP3261t3I5nTlrzWc"></iframe>
       </v-col>
     </v-row>
     <v-row justify="center" align="center">
@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import awsService from "../services/AWSService"
+// import awsService from "../services/AWSService"
 
 export default {
   name: "AppFooter",
@@ -45,17 +45,17 @@ export default {
   mounted() {
   
     // API key does not exist in local storage, make API call to retrieve it
-    awsService.getMap().then((response) => {
-      const retrievedApiKey = response.data.VUE_APP_MAPS_KEY;
+    // awsService.getMap().then((response) => {
+    //   const retrievedApiKey = response.data.VUE_APP_MAPS_KEY;
 
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${retrievedApiKey}`;
-      script.onload = () => {
-        this.initMap();
-      };
+    //   const script = document.createElement('script');
+    //   script.src = `https://maps.googleapis.com/maps/api/js?key=${retrievedApiKey}`;
+    //   script.onload = () => {
+    //     this.initMap();
+    //   };
       
-      document.body.appendChild(script);
-    });
+    //   document.body.appendChild(script);
+    // });
   
 },
   methods: {
