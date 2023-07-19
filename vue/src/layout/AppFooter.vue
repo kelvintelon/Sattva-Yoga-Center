@@ -4,13 +4,7 @@
 
       <v-col justify="center" align="center">
         <h5>Find Us</h5>
-        <iframe width="400"
-         height="200" 
-         style="border:0" 
-         loading="lazy" 
-         allowfullscreen 
-         referrerpolicy="no-referrer-when-downgrade"
-         src="https://www.google.com/maps/embed/v1/place?q=place_id:ChIJUXrXsYc1O4gRrtZNByr49G0&key=AIzaSyB82Tecv8cDFbfa0bWP3261t3I5nTlrzWc"></iframe>
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2950.62814395723!2d-83.24889262415292!3d42.30779937119786!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x883b3587b1d77a51%3A0x6df4f82a074dd6ae!2sSattva%20Yoga%20Center!5e0!3m2!1sen!2sus!4v1689775920839!5m2!1sen!2sus" width="400" height="200" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
       </v-col>
     </v-row>
     <v-row justify="center" align="center">
