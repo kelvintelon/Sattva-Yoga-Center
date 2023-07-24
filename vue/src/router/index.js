@@ -7,7 +7,6 @@ import Register from '../views/Register.vue'
 import store from '../store/index'
 import ClientRegistration from '../views/ClientRegistration.vue'
 import ClassRegistration from '../views/ClassRegistration.vue'
-import Checkout from '../views/Checkout.vue'
 import ProfilePage from '../views/ProfilePage.vue'
 import LoginLoader from '../views/LoginLoader.vue'
 import EditProfilePage from '../views/EditProfilePage.vue'
@@ -19,6 +18,12 @@ import ClientPackageManagement from '../views/ClientPackageManagement.vue'
 import EventAttendanceDetails from '../views/EventAttendanceDetails.vue'
 import ClientDetailsAdminView from '../views/ClientDetailsAdminView.vue'
 import ResetLinkEmailToken from '../views/ResetLinkEmailToken.vue'
+import CheckoutQuantity from '../views/CheckoutQuantity.vue'
+import Checkout1Month from '../views/stripe/Checkout1Month.vue'
+import Checkout6Month from '../views/stripe/Checkout6Month.vue'
+import CheckoutSuccess from '../views/stripe/CheckoutSuccess.vue'
+import CheckoutFail from '../views/stripe/CheckoutFail.vue'
+import ShoppingCart from '../views/stripe/ShoppingCart.vue'
 import VideoPage from '../views/VideoPage.vue'
 import ResetPasswordLoggedIn from '../views/ResetPasswordLoggedIn.vue'
 
@@ -70,116 +75,157 @@ const router = new Router({
       }
     },
     {
-      path:"/clientRegistration",
-      name:"clientRegistration",
+      path: "/clientRegistration",
+      name: "clientRegistration",
       component: ClientRegistration,
       meta: {
         requiresAuth: false
       }
     },
     {
-      path:"/registerForClass",
-      name:"class-registration",
+      path: "/registerForClass",
+      name: "class-registration",
       component: ClassRegistration,
       meta: {
         requiresAuth: true
       }
     },
     {
-      path:"/checkout",
-      name:"checkout",
-      component: Checkout,
+      path: "/checkoutQuantity",
+      name: "checkoutQuantity",
+      component: CheckoutQuantity,
       meta: {
         requiresAuth: true
       }
     },
     {
-      path:"/myProfile",
-      name:"profile-page",
+      path: "/checkout1Month",
+      name: "checkout1Month",
+      component: Checkout1Month,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: "/Checkout6Month",
+      name: "Checkout6Month",
+      component: Checkout6Month,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: "/myProfile",
+      name: "profile-page",
       component: ProfilePage,
       meta: {
         requiresAuth: true
       }
     },
     {
-      path:"/loading",
-      name:"login-loader",
+      path: "/loading",
+      name: "login-loader",
       component: LoginLoader,
       meta: {
         requiresAuth: true
       }
     },
     {
-      path:"/editProfile",
-      name:"edit-profile-page",
+      path: "/editProfile",
+      name: "edit-profile-page",
       component: EditProfilePage,
       meta: {
         requiresAuth: true
       }
     },
     {
-      path:"/teacherManagement",
-      name:"teacher-management",
+      path: "/teacherManagement",
+      name: "teacher-management",
       component: TeacherManagementPage,
       meta: {
         requiresAuth: true
       }
     },
     {
-      path:"/classManagement",
-      name:"class-management",
+      path: "/classManagement",
+      name: "class-management",
       component: ClassManagement,
       meta: {
         requiresAuth: true
       }
     },
     {
-      path:"/clientManagement",
-      name:"client-management",
+      path: "/clientManagement",
+      name: "client-management",
       component: ClientManagement,
       meta: {
         requiresAuth: true
       }
     },
     {
-      path:"/packageManagement",
-      name:"package-management",
+      path: "/packageManagement",
+      name: "package-management",
       component: PackageManagement,
       meta: {
         requiresAuth: true
       }
     },
     {
-      path:"/clientPackageManagement",
-      name:"client-package-management",
+      path: "/clientPackageManagement",
+      name: "client-package-management",
       component: ClientPackageManagement,
       meta: {
         requiresAuth: true
       }
     },
     {
-      path:"/eventDetails/:eventId",
-      name:"event-attendance-details",
+      path: "/eventDetails/:eventId",
+      name: "event-attendance-details",
       component: EventAttendanceDetails,
       meta: {
         requiresAuth: true
       }
     },
     {
-      path:"/clientDetails/:clientId",
-      name:"client-details-admin-view",
+      path: "/clientDetails/:clientId",
+      name: "client-details-admin-view",
       component: ClientDetailsAdminView,
       meta: {
         requiresAuth: true
       }
-    },{
-    path: "/resetLink",
-    query:":emailToken",
-    name:"reset-link-email-token",
-    component: ResetLinkEmailToken,
-    meta: {
-      requiresAuth: false
-    }
+    },
+    {
+      path: "/resetLink",
+      query: ":emailToken",
+      name: "reset-link-email-token",
+      component: ResetLinkEmailToken,
+      meta: {
+        requiresAuth: false
+      }
+    },
+    {
+      path: "/success",
+      name: "success",
+      component: CheckoutSuccess,
+      meta: {
+        requiresAuth: false
+      }
+    },
+    {
+      path: "/checkoutFail",
+      name: "checkoutFail",
+      component: CheckoutFail,
+      meta: {
+        requiresAuth: false
+      }
+    },
+    {
+      path: "/shoppingCart",
+      name: "shoppingCart",
+      component: ShoppingCart,
+      meta: {
+        requiresAuth: false
+      }
     },
     {
       path:"/videos",
@@ -213,4 +259,4 @@ router.beforeEach((to, from, next) => {
   }
 });
 
-export default router;``
+export default router; ``

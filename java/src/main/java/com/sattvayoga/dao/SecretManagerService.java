@@ -60,6 +60,7 @@ public class SecretManagerService {
 
     }
 
+    // if you want to deploy, uncomment below
 //    @Cacheable("emailPasswordCache")
 //    public JavaMailCredentials getEmailPassword() throws Throwable {
 //        String secretName = "Java-Mail";

@@ -8,23 +8,11 @@
     ></v-row>
     <br />
 
-    <v-snackbar
-      v-model="snackBarSecondPurchaseWarning"
-      color="red darken-2"
-      elevation="24"
-      :vertical="vertical"
-      shaped
-    >
+    <v-snackbar v-model="snackBarSecondPurchaseWarning" color="red darken-2" elevation="24" :vertical="vertical" shaped>
       Warning: You Already Have An Active Package
 
       <template v-slot:action="{ attrs }">
-        <v-btn
-          color="white"
-          text
-          v-bind="attrs"
-          @click="snackBarSecondPurchaseWarning = false"
-          left
-        >
+        <v-btn color="white" text v-bind="attrs" @click="snackBarSecondPurchaseWarning = false" left>
           Close
         </v-btn>
         <v-btn color="white" text v-bind="attrs" @click="allowPurchaseProcess">
@@ -39,6 +27,9 @@
           <v-toolbar-title>Available Packages</v-toolbar-title>
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-spacer></v-spacer>
+          <router-link to="/shoppingCart">
+            <v-btn color="yellow"> <v-icon>mdi-cart-check</v-icon> Shopping Cart </v-btn>
+          </router-link>
 
           <v-dialog v-model="dialog" max-width="500px">
             <v-card justify="center">
@@ -49,32 +40,17 @@
               <v-container>
                 <v-row justify="center" style="min-height: 160px">
                   <v-col cols="6">
-                    <v-form
-                      ref="form"
-                      height="100"
-                      width="500"
-                      v-model="valid"
-                      lazy-validation
-                      class="class-form mx-auto white"
-                      @submit.prevent="submit"
-                      justify="center"
-                      align="center"
-                    >
-                      <v-text-field
-                        v-model="giftCardCost"
-                        class="mt-0 pt-0"
-                        type="number"
-                        style="width: 300px"
-                        label="Gift Card Amount: $"
-                        min="10"
-                      ></v-text-field>
+                    <v-form ref="form" height="100" width="500" v-model="valid" lazy-validation
+                      class="class-form mx-auto white" @submit.prevent="submit" justify="center" align="center">
+                      <v-text-field v-model="giftCardCost" class="mt-0 pt-0" type="number" style="width: 300px"
+                        label="Gift Card Amount: $" min="10"></v-text-field>
                       <v-row justify="center" align="center">
                         <v-col>
                           <v-btn class="mr-4" type="submit" :disabled="invalid">
                             Purchase
-                          </v-btn></v-col
-                        ></v-row
-                      >
+                          </v-btn>
+                        </v-col>
+                      </v-row>
                     </v-form>
                   </v-col>
                 </v-row>
@@ -91,9 +67,15 @@
         </v-toolbar>
       </template>
       <template v-slot:[`item.actions`]="{ item }">
-        <v-icon small class="mr-2" @click="purchasePackage(item)">
-          mdi-card-plus
+        <v-btn v-if="subscribeBtn(item)" color="green" small class="mr-2" @click="redirectSubscription(item)">
+          Subscribe!
+        </v-btn>
+        <v-icon v-else class="mr-2" justify="center" @click="addToCart(item)">
+          mdi-cart-plus
         </v-icon>
+        <!-- <v-icon v-else  class="mr-2" @click="purchasePackage(item)">
+          mdi-cart-plus
+        </v-icon> -->
       </template>
     </v-data-table>
     <br />
@@ -142,11 +124,11 @@ export default {
       snackBarSecondPurchaseWarning: false,
       allowPurchase: false,
       vertical: true,
+      lineItems: [],
     };
   },
   created() {
     this.getPublicPackagesTable();
-
     if (this.$store.state.clientDetails.is_new_client == false) {
       this.newClient = false;
     }
@@ -186,19 +168,18 @@ export default {
         this.$store.state.clientDetails.is_new_client == false
       ) {
         alert("You are not a new client, please choose a different package");
-      } else { 
-      
+      } else {
         // GIFT CARD LOGIC
         if (this.packageName.includes("gift")) {
           this.dialog = true;
           this.packagePurchase.client_id =
             this.$store.state.clientDetails.client_id;
-            const jsonDate = new Date().toJSON();
+          const jsonDate = new Date().toJSON();
           this.packagePurchase.date_purchased = jsonDate;
           this.packagePurchase.package_id = this.purchaseItem.package_id;
           this.packagePurchase.is_expired = false;
           this.allowPurchase = true;
-        } else { 
+        } else {
           // CURRENTLY ACTIVE PURCHASE PREVENTION SNACK BAR
           if (this.$store.state.activePackageList.length < 1) {
             // if they don't have an active package
@@ -211,7 +192,7 @@ export default {
             this.allowPurchase = false;
             this.openSnackBarWarning();
           }
-          // IF PURCHASE IS ALLOWED BY USER 
+          // IF PURCHASE IS ALLOWED BY USER
           if (this.allowPurchase) {
             this.packagePurchase.activation_date = "";
             this.packagePurchase.expiration_date = "";
@@ -219,19 +200,27 @@ export default {
             if (this.purchaseItem.is_subscription == true) {
               let latestExpDate = new Date();
               this.$store.state.activePackageList.forEach((item) => {
-                let currentIndexExpDate = new Date(item.expiration_date.replaceAll("-","/"));
-                if(currentIndexExpDate > latestExpDate && item.is_subscription){
-                  latestExpDate = currentIndexExpDate.setDate(currentIndexExpDate.getDate()+1);
+                let currentIndexExpDate = new Date(
+                  item.expiration_date.replaceAll("-", "/")
+                );
+                if (
+                  currentIndexExpDate > latestExpDate &&
+                  item.is_subscription
+                ) {
+                  latestExpDate = currentIndexExpDate.setDate(
+                    currentIndexExpDate.getDate() + 1
+                  );
                 }
               });
 
               this.packagePurchase.activation_date = latestExpDate;
-              
+
               if (this.purchaseItem.subscription_duration > 0) {
                // console.log(new Date(this.packagePurchase.activation_date))
                 this.packagePurchase.expiration_date = this.addMonths(
                   new Date(this.packagePurchase.activation_date),
-                  this.purchaseItem.subscription_duration);
+                  this.purchaseItem.subscription_duration
+                );
               }
 
               // if (this.packageName.includes("one month")) {
@@ -252,22 +241,23 @@ export default {
 
             this.packagePurchase.client_id =
               this.$store.state.clientDetails.client_id;
-              const jsonDate = new Date().toJSON();
+            const jsonDate = new Date().toJSON();
             this.packagePurchase.date_purchased = jsonDate;
             this.packagePurchase.package_id = this.purchaseItem.package_id;
             this.packagePurchase.is_expired = false;
             this.packagePurchase.classes_remaining =
               this.purchaseItem.classes_amount;
-            if(this.purchaseItem.is_subscription == false){
+            if (this.purchaseItem.is_subscription == false) {
               this.packagePurchase.expiration_date = this.addMonths(
-                  new Date(),
-                  12);
+                new Date(),
+                12
+              );
             }
             packagePurchaseService
               .createPackagePurchase(this.packagePurchase)
               .then((response) => {
                 if (response.status == 201) {
-                  alert("Succesfully purchased package");
+                  // alert("Succesfully purchased package");
                   // call method that updates the list of active packages
                   this.$root.$refs.A.getActivePurchasePackageTable();
                   this.$root.$refs.B.getPackageHistoryTable();
@@ -278,24 +268,58 @@ export default {
         }
       }
     },
-    submit() {
-      // for gift card form
-      this.packagePurchase.total_amount_paid = this.giftCardCost;
+    addToCart(item) {
+      if(item.description.includes("Gift")){
+        this.dialog = true;
+      }else{
+        this.lineItems = this.$store.state.lineItems;
+      this.lineItems.push(item);
+      this.$store.commit("SET_STRIPE_LINE_ITEMS", this.lineItems);
+      alert("Added to cart.")
+      }
 
-      packagePurchaseService
-        .createPackagePurchase(this.packagePurchase)
-        .then((response) => {
-          if (response.status == 201) {
-            alert("Succesfully purchased gift card");
-            // call method that updates the list of active packages
-            this.$root.$refs.A.getActivePurchasePackageTable();
-            this.$root.$refs.B.getPackageHistoryTable();
-            
-            this.giftCardCost = 10;
-            this.allowPurchase = false;
-            this.close();
-          }
-        });
+    },
+    subscribeBtn(item) {
+      if (item.description.includes("Month Package")) {
+        return true;
+      }
+    },
+    gift(item){
+      if(item.description.includes("Gift")){
+        return true;
+      }
+    },
+    redirectSubscription(item) {
+      if (item.description.includes("One Month Package")) {
+        this.$router.push({ name: "checkout1Month" });
+      } else if (item.description.includes("Six Month Package")) {
+        this.$router.push({ name: "checkout6Month" });
+      }
+    },
+    submit() {
+      let obj = new Object();
+      obj.price = this.giftCardCost;
+      obj.quantity = 1;
+      this.lineItems.push(obj);
+      this.$store.commit("SET_STRIPE_LINE_ITEMS",this.lineItems);
+      this.close();      
+      // old code
+      // // for gift card form
+      // this.packagePurchase.total_amount_paid = this.giftCardCost;
+
+      // packagePurchaseService
+      //   .createPackagePurchase(this.packagePurchase)
+      //   .then((response) => {
+      //     if (response.status == 201) {
+      //       alert("Succesfully purchased gift card");
+      //       // call method that updates the list of active packages
+      //       this.$root.$refs.A.getActivePurchasePackageTable();
+      //       this.$root.$refs.B.getPackageHistoryTable();
+      //       this.giftCardCost = 10;
+      //       this.allowPurchase = false;
+      //       this.close();
+      //     }
+      //   });
     },
     close() {
       this.dialog = false;
@@ -308,12 +332,11 @@ export default {
         date.setDate(0);
       }
       // fixing  fix: (3/3 → 4/2) NOT (3/3 → 4/3)
-      date.setDate(date.getDate()-1);
+      date.setDate(date.getDate() - 1);
       return date;
     },
   },
 };
 </script>
 
-<style>
-</style>
+<style></style>

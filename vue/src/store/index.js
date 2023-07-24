@@ -31,6 +31,35 @@ export default new Vuex.Store({
     packageHistoryList: [],
     eventList: [],
     sharedPackages: [],
+    lineItems: [      
+    {
+      "price": 139,
+      "productId": 4,
+      "productName": "Nike Shoe",
+      "quantity": 1,
+      "userId": 3
+    },
+    {
+      "price": 139,
+      "productId": 4,
+      "productName": "Nike Shoe",
+      "quantity": 1,
+      "userId": 3
+    },
+    {
+      "price": 221,
+      "productId": 34,
+      "productName": "Ipad",
+      "quantity": 1,
+      "userId": 3
+    },
+    {
+      "price": 100,
+      "productId": 34,
+      "productName": "gift card",
+      "quantity": 1,
+      "userId": 3
+    }],
   },
   mutations: {
     SET_AUTH_TOKEN(state, token) {
@@ -84,6 +113,9 @@ export default new Vuex.Store({
     },
     SET_SHARED_PACKAGE_LIST(state, retrievedSharedPackagesList){
       state.sharedPackages = retrievedSharedPackagesList;
+    },
+    SET_STRIPE_LINE_ITEMS(state, retrievedLineItems){
+      state.lineItems = retrievedLineItems;
     }
   }
 })
