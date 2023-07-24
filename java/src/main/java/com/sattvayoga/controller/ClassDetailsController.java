@@ -82,23 +82,42 @@ public class ClassDetailsController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value= "/updateClass", method = RequestMethod.PUT)
-    public void updateClass(@RequestBody ClassDetails classDetails) {
+    public String updateClass(@RequestBody ClassDetails classDetails) {
 
         // find the original class object
         ClassDetails originalClass = classDetailsDao.getClassByClassId(classDetails.getClass_id());
 
 
-        // then apply the changes with the new class object information
-        eventDao.updateEventsByClass(originalClass, classDetails);
+        // then apply the changes with the new class object information but only if none of the classes have an attendance
+        String result = eventDao.updateEventsByClass(originalClass, classDetails);
+
+        if (result.contains("Failed")) {
+            return result;
+        }
 
         // finally, update the class itself
         classDetailsDao.updateClass(classDetails);
+
+        return result;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/deleteClass/{classId}", method = RequestMethod.DELETE)
-    public void deleteClass (@PathVariable int classId) {
+    public String deleteClass (@PathVariable int classId) {
+
+        // find the original class object
+        ClassDetails originalClass = classDetailsDao.getClassByClassId(classId);
+
+
+        String result = eventDao.deleteEventsByClass(originalClass);
+
+        if (result.contains("Failed")) {
+            return result;
+        }
+
         classDetailsDao.deleteClass(classId);
+
+        return result;
     }
 
 

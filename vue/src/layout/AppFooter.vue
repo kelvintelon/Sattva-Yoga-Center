@@ -59,37 +59,37 @@ export default {
   
 },
   methods: {
-    initMap() {
+    // initMap() {
 
-      this.map = new window.google.maps.Map(document.getElementById("map"), {
-        center: this.mapCenter,
-        zoom: 14,
-        maxZoom: 20,
-        minZoom: 3,
-        mapTypeControl: true,
-        zoomControl: true,
-      });
-      // let noPOIStyle = [
-      //   {
-      //     featureType: "poi",
-      //     elementType: "labels",
-      //     stylers: [{ visibility: "off" }],
-      //   },
-      // ];
+    //   this.map = new window.google.maps.Map(document.getElementById("map"), {
+    //     center: this.mapCenter,
+    //     zoom: 14,
+    //     maxZoom: 20,
+    //     minZoom: 3,
+    //     mapTypeControl: true,
+    //     zoomControl: true,
+    //   });
+    //   // let noPOIStyle = [
+    //   //   {
+    //   //     featureType: "poi",
+    //   //     elementType: "labels",
+    //   //     stylers: [{ visibility: "off" }],
+    //   //   },
+    //   // ];
 
-      // this.map.setOptions({ styles: noPOIStyle });
+    //   // this.map.setOptions({ styles: noPOIStyle });
 
-      const markerObj = { coord: { lat: 42.307550, lng: -83.245910 }, name: "Sattva Yoga Center" };
+    //   const markerObj = { coord: { lat: 42.307550, lng: -83.245910 }, name: "Sattva Yoga Center" };
 
-      new window.google.maps.Marker({
-        position: markerObj.coord,
-        map: this.map,
-        label: {
-          text: markerObj.name,
-          color: "blue"
-        },
-      });
-    },
+    //   new window.google.maps.Marker({
+    //     position: markerObj.coord,
+    //     map: this.map,
+    //     label: {
+    //       text: markerObj.name,
+    //       color: "blue"
+    //     },
+    //   });
+    // },
     openEmailAddress() {
 
       window.open('https://mail.google.com/mail/u/0/?fs=1&tf=cm&to=info@sattva-yoga-center.com', '_blank').focus();

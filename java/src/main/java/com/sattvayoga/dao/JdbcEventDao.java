@@ -800,12 +800,133 @@ public class JdbcEventDao implements EventDao {
 
 
     }
+
     @Override
-    public void updateEventsByClass(ClassDetails originalClass, ClassDetails updatedClass) {
+    public String deleteEventsByClass(ClassDetails originalClass) {
         // find all Event objects with the same start time, end time, and class_id
 
         String sql = "SELECT * FROM events WHERE start_time >= now() AND class_id = ? ; ";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, originalClass.getClass_id());
+
+        // Limit to 300 because clients can't sign up farther than that
+        String sqlForAttendance = "SELECT * FROM events WHERE start_time >= now() AND class_id = ? LIMIT 300; ";
+        SqlRowSet resultForAttendanceCheck = jdbcTemplate.queryForRowSet(sqlForAttendance, originalClass.getClass_id());
+
+        while(resultForAttendanceCheck.next()) {
+            // PULL THE EVENT
+            Event event = mapRowToEvent(resultForAttendanceCheck);
+            event.setAttendanceList(getAttendanceByEventId(event.getEvent_id()));
+
+
+            // check this current event and compare if it has the same start-time and end-time as the original
+            // filtering it down so that we don't accidentally change any events that weren't exact matches
+            // CONVERSION ROUTINE TO EXTRACT THE HOUR AND MINUTES am/pm (e.g. "06:00 am")
+            Timestamp startTimeStamp = event.getStart_time();
+            Timestamp endTimeStamp = event.getEnd_time();
+
+
+            LocalDateTime startTimeLocalDate = startTimeStamp.toLocalDateTime();
+            LocalDateTime endTimeLocalDate = endTimeStamp.toLocalDateTime();
+
+            DayOfWeek currentDayOfWeek = startTimeLocalDate.getDayOfWeek();
+            String currentDay = currentDayOfWeek.toString().substring(0, 3).toLowerCase();
+            currentDay = currentDay.substring(0, 1).toUpperCase() + currentDay.substring(1);
+
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
+
+            String startTimeString = dateTimeFormatter.format(startTimeLocalDate);
+            String originalClassStartTime = originalClass.getStart_time();
+
+
+            LocalDateTime nextHourEndTime = startTimeLocalDate;
+
+            int originalClassDuration = originalClass.getClass_duration();
+
+            // GRAB THE CORRECT "06:30" END TIME  If it's not an hour
+            if (originalClassDuration != 60) {
+                nextHourEndTime = startTimeLocalDate.plusMinutes(originalClassDuration);
+            } else {
+                nextHourEndTime = startTimeLocalDate.plusHours(1);
+            }
+
+            String actualEndTimeString = dateTimeFormatter.format(endTimeLocalDate);
+            String expectedEndTimeString = dateTimeFormatter.format(nextHourEndTime);
+
+            // Check if This event had already been updated thus it isn't an exact match and something to change across the board
+
+            if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && event.isIs_visible_online()) {
+                if (event.getAttendanceList().size() > 0) {
+                    return "Failed at: " + event.getStart_time().toString();
+                }
+            }
+        }
+
+        // second while loop deletes it
+        while (result.next()) {
+            // PULL THE EVENT
+            Event event = mapRowToEvent(result);
+
+            // Don't set the attendance since these classes you're deleting shouldnt have any clients signed up
+            //  event.setAttendanceList(getAttendanceByEventId(event.getEvent_id()));
+
+
+            // check this current event and compare if it has the same start-time and end-time as the original
+            // filtering it down so that we don't accidentally change any events that weren't exact matches
+            // CONVERSION ROUTINE TO EXTRACT THE HOUR AND MINUTES am/pm (e.g. "06:00 am")
+            Timestamp startTimeStamp = event.getStart_time();
+            Timestamp endTimeStamp = event.getEnd_time();
+
+
+            LocalDateTime startTimeLocalDate = startTimeStamp.toLocalDateTime();
+            LocalDateTime endTimeLocalDate = endTimeStamp.toLocalDateTime();
+
+            DayOfWeek currentDayOfWeek = startTimeLocalDate.getDayOfWeek();
+            String currentDay = currentDayOfWeek.toString().substring(0, 3).toLowerCase();
+            currentDay = currentDay.substring(0, 1).toUpperCase() + currentDay.substring(1);
+
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
+
+            String startTimeString = dateTimeFormatter.format(startTimeLocalDate);
+            String originalClassStartTime = originalClass.getStart_time();
+
+
+            LocalDateTime nextHourEndTime = startTimeLocalDate;
+
+            int originalClassDuration = originalClass.getClass_duration();
+
+            // GRAB THE CORRECT "06:30" END TIME  If it's not an hour
+            if (originalClassDuration != 60) {
+                nextHourEndTime = startTimeLocalDate.plusMinutes(originalClassDuration);
+            } else {
+                nextHourEndTime = startTimeLocalDate.plusHours(1);
+            }
+
+            String actualEndTimeString = dateTimeFormatter.format(endTimeLocalDate);
+            String expectedEndTimeString = dateTimeFormatter.format(nextHourEndTime);
+
+            // Check if This event had already been updated thus it isn't an exact match and something to change across the board
+
+            if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && event.isIs_visible_online()) {
+                //just delete it while you're here.
+                deleteEvent(event.getEvent_id());
+
+            }
+
+
+        }
+        return "Success";
+
+    }
+    @Override
+    public String updateEventsByClass(ClassDetails originalClass, ClassDetails updatedClass) {
+        // find all Event objects with the same start time, end time, and class_id
+
+        String sql = "SELECT * FROM events WHERE start_time >= now() AND class_id = ? ; ";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, originalClass.getClass_id());
+
+        // Limit to 300 because clients can't sign up farther than that
+        String sqlForAttendance = "SELECT * FROM events WHERE start_time >= now() AND class_id = ? LIMIT 300; ";
+        SqlRowSet resultForAttendanceCheck = jdbcTemplate.queryForRowSet(sqlForAttendance, originalClass.getClass_id());
 
         // A map
         // CREATE YOUR PROPERTIES
@@ -821,10 +942,63 @@ public class JdbcEventDao implements EventDao {
         //Set<String> updatedClassDateRangeSet = new HashSet<>(Arrays.asList(updateDateRangeArray));
         Set<String> originalClassDateRangeSet = new HashSet<>(Arrays.asList(originalDateRangeArray));
 
+        // first while loop just checks the attendance list of all the events
+        while(resultForAttendanceCheck.next()) {
+            // PULL THE EVENT
+            Event event = mapRowToEvent(resultForAttendanceCheck);
+            event.setAttendanceList(getAttendanceByEventId(event.getEvent_id()));
+
+
+            // check this current event and compare if it has the same start-time and end-time as the original
+            // filtering it down so that we don't accidentally change any events that weren't exact matches
+            // CONVERSION ROUTINE TO EXTRACT THE HOUR AND MINUTES am/pm (e.g. "06:00 am")
+            Timestamp startTimeStamp = event.getStart_time();
+            Timestamp endTimeStamp = event.getEnd_time();
+
+
+            LocalDateTime startTimeLocalDate = startTimeStamp.toLocalDateTime();
+            LocalDateTime endTimeLocalDate = endTimeStamp.toLocalDateTime();
+
+            DayOfWeek currentDayOfWeek = startTimeLocalDate.getDayOfWeek();
+            String currentDay = currentDayOfWeek.toString().substring(0, 3).toLowerCase();
+            currentDay = currentDay.substring(0, 1).toUpperCase() + currentDay.substring(1);
+
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
+
+            String startTimeString = dateTimeFormatter.format(startTimeLocalDate);
+            String originalClassStartTime = originalClass.getStart_time();
+            String updatedClassStartTime = updatedClass.getStart_time();
+
+            LocalDateTime nextHourEndTime = startTimeLocalDate;
+
+            int originalClassDuration = originalClass.getClass_duration();
+            int updatedClassDuration = updatedClass.getClass_duration();
+            // GRAB THE CORRECT "06:30" END TIME  If it's not an hour
+            if (originalClassDuration != 60) {
+                nextHourEndTime = startTimeLocalDate.plusMinutes(originalClassDuration);
+            } else {
+                nextHourEndTime = startTimeLocalDate.plusHours(1);
+            }
+
+            String actualEndTimeString = dateTimeFormatter.format(endTimeLocalDate);
+            String expectedEndTimeString = dateTimeFormatter.format(nextHourEndTime);
+
+            // Check if This event had already been updated thus it isn't an exact match and something to change across the board
+
+            if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && event.isIs_visible_online()) {
+                if (event.getAttendanceList().size() > 0) {
+                    return "Failed at: " + event.getStart_time().toString();
+                }
+            }
+        }
+
+        // second while loop updates it
         while (result.next()) {
             // PULL THE EVENT
             Event event = mapRowToEvent(result);
-            event.setAttendanceList(getAttendanceByEventId(event.getEvent_id()));
+
+            // Don't set the attendance since these classes you're updating shouldnt have any clients signed up
+            //  event.setAttendanceList(getAttendanceByEventId(event.getEvent_id()));
 
 
             // check this current event and compare if it has the same start-time and end-time as the original
@@ -1303,7 +1477,7 @@ public class JdbcEventDao implements EventDao {
 
             }
         }
-
+        return "Success";
     }
 
     // helper method
