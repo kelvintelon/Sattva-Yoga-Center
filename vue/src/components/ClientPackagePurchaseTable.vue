@@ -28,7 +28,7 @@
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-spacer></v-spacer>
           <router-link to="/shoppingCart">
-            <v-btn color="yellow"> <v-icon>mdi-cart-check</v-icon> Shopping Cart </v-btn>
+            <v-btn color="yellow" role="button"> <v-icon role="button">mdi-cart-check</v-icon> Shopping Cart </v-btn>
           </router-link>
 
           <v-dialog v-model="dialog" max-width="500px">
@@ -70,9 +70,11 @@
         <v-btn v-if="subscribeBtn(item)" color="green" small class="mr-2" @click="redirectSubscription(item)">
           Subscribe!
         </v-btn>
-        <v-icon v-else class="mr-2" justify="center" @click="addToCart(item)">
+        <v-btn v-else>
+        <v-icon class="mr-2" justify="center" @click="addToCart(item)">
           mdi-cart-plus
-        </v-icon>
+        </v-icon>Purchase
+      </v-btn>
         <!-- <v-icon v-else  class="mr-2" @click="purchasePackage(item)">
           mdi-cart-plus
         </v-icon> -->

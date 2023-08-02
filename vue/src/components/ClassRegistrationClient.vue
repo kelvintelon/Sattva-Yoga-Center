@@ -13,6 +13,7 @@
       elevation="24"
       :vertical="vertical"
       shaped
+      role="alert"
     >
       Warning: You Need An Active Package
 
@@ -24,6 +25,7 @@
           @click="snackBarNoPurchaseWarning = false"
           left
           top
+          role="button"
         >
           Close
         </v-btn>
@@ -33,6 +35,7 @@
           v-bind="attrs"
           @click="sendThemToPurchasePackage"
           bottom
+          role="button"
         >
           Buy Package
         </v-btn>
@@ -53,9 +56,9 @@
           </v-toolbar>
         </template>
         <template v-slot:[`item.actions`]="{ item }">
-          <v-icon class="mr-2" @click="SignUp(item)" style="color: rgba(245, 104, 71, 0.95)">
-            mdi-account-plus
-          </v-icon>
+          <v-btn class="mr-2" @click="SignUp(item)" style="color: rgba(245, 104, 71, 0.95)" role="button" aria-label="Sign up">
+            Sign Up
+          </v-btn>
         </template>
       </v-data-table>
       <br />
@@ -75,9 +78,9 @@
           </v-toolbar>
         </template>
         <template v-slot:[`item.actions`]="{ item }">
-          <v-icon small class="mr-2" @click="RemoveClassForClient(item)">
-            mdi-close-thick
-          </v-icon>
+          <v-btn class="mr-2" @click="RemoveClassForClient(item)" role="Cancel class button" style="color: rgba(245, 104, 71, 0.95)">
+            Cancel
+          </v-btn>
         </template>
       </v-data-table>
       <br />
