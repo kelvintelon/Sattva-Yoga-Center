@@ -812,6 +812,9 @@ public class JdbcEventDao implements EventDao {
         String sqlForAttendance = "SELECT * FROM events WHERE start_time >= now() AND class_id = ? LIMIT 300; ";
         SqlRowSet resultForAttendanceCheck = jdbcTemplate.queryForRowSet(sqlForAttendance, originalClass.getClass_id());
 
+        String stringToReturn = "";
+        boolean returnFailed = false;
+
         while(resultForAttendanceCheck.next()) {
             // PULL THE EVENT
             Event event = mapRowToEvent(resultForAttendanceCheck);
@@ -856,9 +859,19 @@ public class JdbcEventDao implements EventDao {
 
             if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && event.isIs_visible_online()) {
                 if (event.getAttendanceList().size() > 0) {
-                    return "Failed at: " + event.getStart_time().toString();
+                    returnFailed = true;
+                    if (stringToReturn.length() == 0) {
+                        stringToReturn = "Failed at: " + event.getStart_time().toString();
+                    }
+                    else {
+                        stringToReturn += " and " +  event.getStart_time().toString();
+                    }
                 }
             }
+        }
+
+        if (stringToReturn.length() > 0) {
+            return stringToReturn;
         }
 
         // second while loop deletes it
@@ -942,6 +955,9 @@ public class JdbcEventDao implements EventDao {
         //Set<String> updatedClassDateRangeSet = new HashSet<>(Arrays.asList(updateDateRangeArray));
         Set<String> originalClassDateRangeSet = new HashSet<>(Arrays.asList(originalDateRangeArray));
 
+        String stringToReturn = "";
+        boolean returnFailed = false;
+
         // first while loop just checks the attendance list of all the events
         while(resultForAttendanceCheck.next()) {
             // PULL THE EVENT
@@ -987,9 +1003,19 @@ public class JdbcEventDao implements EventDao {
 
             if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && event.isIs_visible_online()) {
                 if (event.getAttendanceList().size() > 0) {
-                    return "Failed at: " + event.getStart_time().toString();
+                    returnFailed = true;
+                    if (stringToReturn.length() == 0) {
+                        stringToReturn = "Failed at: " + event.getStart_time().toString();
+                    }
+                    else {
+                        stringToReturn += " and " +  event.getStart_time().toString();
+                    }
                 }
             }
+        }
+
+        if (stringToReturn.length() > 0) {
+            return stringToReturn;
         }
 
         // second while loop updates it
