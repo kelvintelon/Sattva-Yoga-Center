@@ -90,6 +90,18 @@ public class StripeController {
         }
     }
 
+    @PostMapping("/purchaseOneMonth")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void purchaseOneMonth(@RequestBody CheckoutItemDTO oneMonth){
+        packagePurchaseDao.createOneMonthPurchase(oneMonth);
+    }
+
+    @PostMapping("/purchaseSixMonth")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void purchaseSixMonth(@RequestBody CheckoutItemDTO sixMonth){
+        packagePurchaseDao.createOneMonthPurchase(sixMonth);
+    }
+
 
 
 }

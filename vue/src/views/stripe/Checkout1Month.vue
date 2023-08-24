@@ -32,19 +32,21 @@ export default {
           quantity: 1,
         },
       ],
-      successURL: this.successful1,
+      successURL: 'http://localhost:8080/payment/subscriptionSuccess',
       cancelURL: 'http://localhost:8080/clientPackageManagement',
     };
   },
   methods: {
     submit () {
+      // so users don't abuse the success page
+      localStorage.setItem('checkout1Month', true);
       // You will be redirected to Stripe's secure checkout page
       this.$refs.checkoutRef.redirectToCheckout();
     },
   },
   computed:{
     successful1(){
-      return 'http://localhost:8080';
+      return 'http://localhost:8080/payment/subscriptionSuccess';
     }
   }
 };

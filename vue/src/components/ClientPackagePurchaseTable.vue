@@ -70,8 +70,8 @@
         <v-btn v-if="subscribeBtn(item)" color="green" small class="mr-2" @click="redirectSubscription(item)">
           Subscribe!
         </v-btn>
-        <v-btn v-else>
-        <v-icon class="mr-2" justify="center" @click="addToCart(item)">
+        <v-btn v-else @click="addToCart(item)">
+        <v-icon class="mr-2" justify="center">
           mdi-cart-plus
         </v-icon>Purchase
       </v-btn>
@@ -291,6 +291,8 @@ export default {
         obj.client_id = this.$store.state.clientDetails.client_id;
         obj.package_id = item.package_id;
         obj.classes_remaining = item.classes_amount;
+        obj.is_monthly_renew = item.is_subscription;
+        obj.total_amount_paid = item.package_cost;
         this.lineItems.push(obj);
         this.$store.commit("SET_STRIPE_LINE_ITEMS", this.lineItems);
         alert("Added to cart.")

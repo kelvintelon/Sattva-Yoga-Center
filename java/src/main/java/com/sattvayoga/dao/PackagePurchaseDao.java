@@ -38,4 +38,6 @@ public interface PackagePurchaseDao {
     void createGiftCard(String code, double amount);
 
     void createPackagePurchase2(CheckoutItemDTO checkoutItemDTO);
+
+    void createOneMonthPurchase(CheckoutItemDTO checkoutItemDTO);
 }

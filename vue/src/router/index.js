@@ -22,6 +22,7 @@ import CheckoutQuantity from '../views/CheckoutQuantity.vue'
 import Checkout1Month from '../views/stripe/Checkout1Month.vue'
 import Checkout6Month from '../views/stripe/Checkout6Month.vue'
 import CheckoutSuccess from '../views/stripe/CheckoutSuccess.vue'
+import SubscriptionSuccess from '../views/stripe/SubscriptionSuccess.vue'
 import CheckoutFail from '../views/stripe/CheckoutFail.vue'
 import ShoppingCart from '../views/stripe/ShoppingCart.vue'
 import VideoPage from '../views/VideoPage.vue'
@@ -207,6 +208,14 @@ const router = new Router({
       path: "/payment/success",
       name: "checkoutSuccess",
       component: CheckoutSuccess,
+      meta: {
+        requiresAuth: false
+      }
+    },
+    {
+      path: "/payment/subscriptionSuccess",
+      name: "SubscriptionSuccess",
+      component: SubscriptionSuccess,
       meta: {
         requiresAuth: false
       }

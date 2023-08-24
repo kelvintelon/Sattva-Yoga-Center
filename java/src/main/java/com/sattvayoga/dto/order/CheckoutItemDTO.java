@@ -1,5 +1,6 @@
 package com.sattvayoga.dto.order;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
@@ -11,6 +12,8 @@ public class CheckoutItemDTO {
     private int package_id;
     private LocalDateTime date_purchased;
     private int classes_remaining;
+    private BigDecimal total_amount_paid;
+    private boolean is_monthly_renew;
 
     public CheckoutItemDTO(){
     }
@@ -70,4 +73,21 @@ public class CheckoutItemDTO {
     public void setDate_purchased(LocalDateTime date_purchased) {
         this.date_purchased = date_purchased;
     }
+
+    public BigDecimal getTotal_amount_paid() {
+        return total_amount_paid;
+    }
+
+    public void setTotal_amount_paid(BigDecimal total_amount_paid) {
+        this.total_amount_paid = total_amount_paid;
+    }
+
+    public boolean isIs_monthly_renew() {
+        return is_monthly_renew;
+    }
+
+    public void setIs_monthly_renew(boolean is_monthly_renew) {
+        this.is_monthly_renew = is_monthly_renew;
+    }
+
 }
