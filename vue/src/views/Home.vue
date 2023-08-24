@@ -276,13 +276,13 @@
                   </v-toolbar>
                 </template>
                 <template v-slot:[`item.actions`]="{ item }">
-                  <v-icon
+                  <v-btn
                     class="mr-2"
                     @click="SignUp(item)"
                     style="color: rgba(245, 104, 71, 0.95)"
                   >
-                    mdi-account-plus
-                  </v-icon>
+                    Sign Up
+                  </v-btn>
                 </template>
               </v-data-table>
               <class-schedule-description></class-schedule-description>
@@ -936,7 +936,7 @@ export default {
         value: "quick_details",
         align: "start",
       },
-      { text: "Sign Up", value: "actions", sortable: false },
+      { text: "Register", value: "actions", sortable: false },
     ],
     firstYoutubeVideo: false,
     events: [],

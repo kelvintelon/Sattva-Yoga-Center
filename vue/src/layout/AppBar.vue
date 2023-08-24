@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div role="appBar">
     <!-- src="..\\assets\\stockphoto1.png"-->
     <!-- src="..\\assets\\stockphoto2.png"  color="rgba(255, 183, 0, 0.9)"  -->
     <!-- src="..\\assets\\pexels-neosiam-4498792.png" color="rgba(245, 104, 71, 0.95)" -->
@@ -22,8 +22,11 @@
         </v-list-item>
       </v-list>
     </v-menu> -->
-      <v-btn class="ma-1" x-large icon tile @click="checkToken()">
-        <v-icon x-large>mdi-menu</v-icon>
+      <v-btn class="ma-1" x-large icon tile @click="checkToken()" role="button"
+      :aria-label="menuLabel"
+      tabindex="0"
+>
+        <v-icon  x-large aria-label="Menu Icon">mdi-menu</v-icon>
       </v-btn>
       <v-toolbar-side-icon>
         <HeaderLogo />
@@ -42,11 +45,11 @@
 
     </v-app-bar>
     <v-expand-x-transition appear>
-      <v-navigation-drawer v-if="drawer" v-model="drawer" temporary app hide-overlay>
+      <v-navigation-drawer role="navigation" v-if="drawer" v-model="drawer" temporary app hide-overlay>
 
-        <v-list-item @click="drawer = false">
+        <v-list-item aria-label="Close Menu Navigation" role="button" tabindex="0" @click="drawer = false">
 
-          <v-icon large>mdi-menu-open</v-icon>
+          <v-icon large aria-label="Menu Open Icon">mdi-menu-open</v-icon>
 
         </v-list-item>
 
@@ -54,7 +57,7 @@
 
 
         <v-list dense>
-          <v-list-item v-for="link in links" :key="link.text" link router :to="link.route">
+          <v-list-item tabindex="0" v-for="link in links" :key="link.text" link router :to="link.route">
 
 
             <v-list-item-content>
@@ -76,6 +79,7 @@ export default {
   data() {
     return {
       menu: false,
+      menuLabel: "Open Menu",
       links: [],
       drawer: false,
       selectedTarget: "",

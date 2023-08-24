@@ -39,7 +39,7 @@
           ></v-text-field>
           <v-btn type="submit">Sign in</v-btn> 
           <br>
-          <a v-on:click="goToLogout()"> Don't have an account? Click here to register. </a>
+          <a v-on:click="goToLogout()" alt="Register" tabIndex="0"> Don't have an account? Click here to register. </a>
           <br />
          
           <v-row justify="center">
@@ -93,6 +93,7 @@
           v-bind="attrs"
           v-on="on"
           text
+          alt="Forgot Login or Password button"
         >
           Forgot LOGIN/PASSWORD
         </v-btn>

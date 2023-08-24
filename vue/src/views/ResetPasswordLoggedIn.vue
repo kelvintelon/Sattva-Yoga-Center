@@ -9,7 +9,7 @@
                 <v-row>
 
                     <v-col cols="12">
-                        <v-text-field label="Email*" v-model="emailToSend" required :rules="emailRules"></v-text-field>
+                        <v-text-field label="Enter Email" v-model="emailToSend" required :rules="emailRules"></v-text-field>
                     </v-col>
                 </v-row>
             </v-container>
