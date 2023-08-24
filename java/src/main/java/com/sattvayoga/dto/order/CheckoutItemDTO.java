@@ -1,13 +1,26 @@
 package com.sattvayoga.dto.order;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+
 public class CheckoutItemDTO {
     private String productName;
     private int quantity;
     private double price;
-    private long productId;
-    private int userId;
+    private int client_id;
+    private int package_id;
+    private LocalDateTime date_purchased;
+    private int classes_remaining;
 
     public CheckoutItemDTO(){
+    }
+
+    public int getClasses_remaining() {
+        return classes_remaining;
+    }
+
+    public void setClasses_remaining(int classes_remaining) {
+        this.classes_remaining = classes_remaining;
     }
 
     public String getProductName() {
@@ -34,19 +47,27 @@ public class CheckoutItemDTO {
         this.price = price;
     }
 
-    public long getProductId() {
-        return productId;
+    public int getClient_id() {
+        return client_id;
     }
 
-    public void setProductId(long productId) {
-        this.productId = productId;
+    public void setClient_id(int client_id) {
+        this.client_id = client_id;
     }
 
-    public int getUserId() {
-        return userId;
+    public int getPackage_id() {
+        return package_id;
     }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
+    public void setPackage_id(int package_id) {
+        this.package_id = package_id;
+    }
+
+    public LocalDateTime getDate_purchased() {
+        return date_purchased;
+    }
+
+    public void setDate_purchased(LocalDateTime date_purchased) {
+        this.date_purchased = date_purchased;
     }
 }

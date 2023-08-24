@@ -1,11 +1,40 @@
 <template>
   <div>
+    <v-simple-table dense>
+    <template v-slot:default>
+      <thead>
+        <tr>
+          <th class="text-left">
+            Description
+          </th>
+          <th class="text-left">
+            Price
+          </th>
+          <th class="text-left">
+            Action
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="item in $store.state.lineItems"
+          :key="item.productName"
+        >
+          <td>{{ item.productName }}</td>
+          <td>{{ item.price }}</td>
+          <td> 
+            <button v-on:click="remove(item)">remove</button> 
+          </td>
+        </tr>
+      </tbody>
+    </template>
+  </v-simple-table>
     <stripe-checkout
       ref="checkoutRef"
       :pk="publishableKey"
       :session-id="sessionId"
     />
-    <button @click="submit">Checkout!</button>
+    <v-btn color="orange" @click="submit">Checkout!</v-btn>
   </div>
 </template>
 
@@ -21,12 +50,16 @@ export default {
     return {
       loading: false,
       sessionId: '', // session id from backend
+      localStorageData: [],
+      clone: []
     };
   },
   methods: {
     submit () {
       // You will be redirected to Stripe's secure checkout page
       // console.log('lineItems: ', this.$store.state.lineItems);
+      this.localStorageData = JSON.stringify(this.$store.state.lineItems)
+      localStorage.setItem('lineItems',this.localStorageData);
       axios
         .post(
           `/stripe/create-checkout-session`,
@@ -44,6 +77,12 @@ export default {
           // });
         })
         .catch((err) => console.log(err));
+    },
+
+    remove(item){
+      let index = this.$store.state.lineItems.indexOf(item);
+      this.$store.state.lineItems.splice(index,1);
+      this.$store.commit("SET_STRIPE_LINE_ITEMS",this.$store.state.lineItems);
     },
   },
 };

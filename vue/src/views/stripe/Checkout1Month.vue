@@ -22,7 +22,8 @@ export default {
     StripeCheckout,
   },
   data () {
-    this.publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
+    // this.publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
+    this.publishableKey = "pk_test_51N6PQhHIFPdFs4yBA8bxtYohRmL0sEaDlFLODDgcsMwbwWhUikMipVQACyesgumrDmCZ9a8vNadiYt62bZsgp4wE00TzGiZvSt";
     return {
       loading: false,
       lineItems: [
@@ -43,7 +44,7 @@ export default {
   },
   computed:{
     successful1(){
-      return 'http://localhost:8080/success';
+      return 'http://localhost:8080';
     }
   }
 };

@@ -4,8 +4,8 @@
     <v-row>
       <v-spacer></v-spacer>
       <h1 style="color: rgba(245, 104, 71, 0.95)">Purchase a Package</h1>
-      <v-spacer></v-spacer
-    ></v-row>
+      <v-spacer></v-spacer>
+    </v-row>
     <br />
 
     <v-snackbar v-model="snackBarSecondPurchaseWarning" color="red darken-2" elevation="24" :vertical="vertical" shaped>
@@ -85,7 +85,7 @@
 
 <script>
 import packageDetailService from "../services/PackageDetailService";
-import packagePurchaseService from "../services/PackagePurchaseService";
+// import packagePurchaseService from "../services/PackagePurchaseService";
 
 export default {
   name: "client-package-purchase-table",
@@ -128,10 +128,11 @@ export default {
     };
   },
   created() {
-    this.getPublicPackagesTable();
     if (this.$store.state.clientDetails.is_new_client == false) {
       this.newClient = false;
     }
+    this.getPublicPackagesTable();
+    this.lineItems = this.$store.state.lineItems;
   },
   methods: {
     getPublicPackagesTable() {
@@ -139,8 +140,15 @@ export default {
         if (response.status == 200) {
           // adjust this commit in the future perhaps
           this.$store.commit("SET_PACKAGE_LIST", response.data);
-
-          this.packages = response.data;
+          if(this.newClient == false){
+            this.packages = response.data.filter((item) => {
+            return (
+              !item.description.includes("New Client")
+            );
+          })
+          }else{
+            this.packages = response.data;
+          }
         } else {
           alert("Error retrieving package information");
         }
@@ -154,6 +162,7 @@ export default {
       this.allowPurchase = true;
       this.purchasePackage(this.purchaseItem);
     },
+    /* NOT USING THIS ANYMORE
     purchasePackage(item) {
       // snack bar alert calls this here if they want to proceed
 
@@ -216,7 +225,7 @@ export default {
               this.packagePurchase.activation_date = latestExpDate;
 
               if (this.purchaseItem.subscription_duration > 0) {
-               // console.log(new Date(this.packagePurchase.activation_date))
+                // console.log(new Date(this.packagePurchase.activation_date))
                 this.packagePurchase.expiration_date = this.addMonths(
                   new Date(this.packagePurchase.activation_date),
                   this.purchaseItem.subscription_duration
@@ -268,14 +277,21 @@ export default {
         }
       }
     },
+    */
     addToCart(item) {
-      if(item.description.includes("Gift")){
+      if (item.description.includes("Gift")) {
         this.dialog = true;
-      }else{
-        this.lineItems = this.$store.state.lineItems;
-      this.lineItems.push(item);
-      this.$store.commit("SET_STRIPE_LINE_ITEMS", this.lineItems);
-      alert("Added to cart.")
+      } else {
+        let obj = new Object();
+        obj.price = item.package_cost;
+        obj.quantity = 1;
+        obj.productName = item.description;
+        obj.client_id = this.$store.state.clientDetails.client_id;
+        obj.package_id = item.package_id;
+        obj.classes_remaining = item.classes_amount;
+        this.lineItems.push(obj);
+        this.$store.commit("SET_STRIPE_LINE_ITEMS", this.lineItems);
+        alert("Added to cart.")
       }
 
     },
@@ -284,8 +300,8 @@ export default {
         return true;
       }
     },
-    gift(item){
-      if(item.description.includes("Gift")){
+    gift(item) {
+      if (item.description.includes("Gift")) {
         return true;
       }
     },
@@ -300,9 +316,10 @@ export default {
       let obj = new Object();
       obj.price = this.giftCardCost;
       obj.quantity = 1;
+      obj.productName = "Gift Card"
       this.lineItems.push(obj);
-      this.$store.commit("SET_STRIPE_LINE_ITEMS",this.lineItems);
-      this.close();      
+      this.$store.commit("SET_STRIPE_LINE_ITEMS", this.lineItems);
+      this.close();
       // old code
       // // for gift card form
       // this.packagePurchase.total_amount_paid = this.giftCardCost;

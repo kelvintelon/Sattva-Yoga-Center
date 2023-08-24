@@ -107,8 +107,8 @@ const router = new Router({
       }
     },
     {
-      path: "/Checkout6Month",
-      name: "Checkout6Month",
+      path: "/checkout6Month",
+      name: "checkout6Month",
       component: Checkout6Month,
       meta: {
         requiresAuth: true
@@ -204,8 +204,8 @@ const router = new Router({
       }
     },
     {
-      path: "/success",
-      name: "success",
+      path: "/payment/success",
+      name: "checkoutSuccess",
       component: CheckoutSuccess,
       meta: {
         requiresAuth: false
