@@ -1,5 +1,6 @@
 package com.sattvayoga.dao;
 
+import com.sattvayoga.dto.order.CheckoutItemDTO;
 import com.sattvayoga.model.Event;
 import com.sattvayoga.model.PackagePurchase;
 import com.sattvayoga.model.PaginatedListOfPurchasedPackages;
@@ -31,4 +32,12 @@ public interface PackagePurchaseDao {
     PaginatedListOfPurchasedPackages getAllActiveUserPaginatedPackagePurchases(int userId, int page, int pageSize, String sortBy, boolean sortDesc);
 
     List<PackagePurchase> getAllActiveUserPackagePurchases(int userId);
+
+    String generateGiftCardCode();
+
+    void createGiftCard(String code, double amount);
+
+    void createPackagePurchase2(CheckoutItemDTO checkoutItemDTO);
+
+    void createOneMonthPurchase(CheckoutItemDTO checkoutItemDTO);
 }

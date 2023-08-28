@@ -19,7 +19,7 @@
       bottom right
       dark
       large
-      color="primary"
+      color="orange"
       fixed
       style="z-index:99"
       v-model="anchorFab"
@@ -27,8 +27,8 @@
       <v-icon v-if="anchorFab">
             mdi-close
           </v-icon>
-          <v-icon dark v-else>
-            mdi-anchor
+          <v-icon v-else>
+            mdi-dots-triangle
           </v-icon>
     </v-btn></template>
     <v-container class="hidden-lg-and-up"  v-if="!animationLoader"
@@ -228,7 +228,7 @@
             align="center" justify="center"
             alt="Yoga lotus flower by Rebecca Southall"
           >
-          <v-row align="center" justify="center"><v-col align="center" justify="center" sm="12"> <lottie v-if="animationLoader" :options="defaultOptions" :width="500" :height="500" /></v-col></v-row>
+          <v-row align="center" justify="center"><v-col align="center" justify="center" sm="12"> <lottie v-if="animationLoader" :options="defaultOptions" :width="350" :height="350" /></v-col></v-row>
            
           </v-container>
           <!-- Welcome Card -->
@@ -276,13 +276,13 @@
                   </v-toolbar>
                 </template>
                 <template v-slot:[`item.actions`]="{ item }">
-                  <v-icon
+                  <v-btn
                     class="mr-2"
                     @click="SignUp(item)"
                     style="color: rgba(245, 104, 71, 0.95)"
                   >
-                    mdi-account-plus
-                  </v-icon>
+                    Sign Up
+                  </v-btn>
                 </template>
               </v-data-table>
               <class-schedule-description></class-schedule-description>
@@ -936,7 +936,7 @@ export default {
         value: "quick_details",
         align: "start",
       },
-      { text: "Sign Up", value: "actions", sortable: false },
+      { text: "Register", value: "actions", sortable: false },
     ],
     firstYoutubeVideo: false,
     events: [],

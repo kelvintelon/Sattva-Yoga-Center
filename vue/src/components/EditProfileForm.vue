@@ -13,14 +13,10 @@
     >
     <v-container>
        <v-row justify="center"
-      align="center"><v-col justify="center"
+      align="center">
+      <v-col sm="10" md="12" lg="12" justify="center"
       align="center">
       <h1 style="color: rgba(245, 104, 71, 0.95)">Edit Profile</h1>
-      </v-col>
-      <!-- // TODO: Fix the code here -->
-      <v-col cols="12" md="12" justify="center"
-      align="center">
-
       <v-text-field
         v-model="clientDetails.first_name"
         :counter="20"
@@ -40,48 +36,41 @@
       <v-text-field
         v-model="clientDetails.street_address"
         :counter="30"
-        :rules="addressRules"
+        
         label="Street Address"
-        required
       ></v-text-field>
 
       <v-text-field
         v-model="clientDetails.city"
         :counter="10"
-        :rules="nameRules"
+    
         label="City"
-        required
       ></v-text-field>
 
       <v-select
         v-model="clientDetails.state_abbreviation"
         :items="items"
-        :rules="[(v) => !!v || 'Item is required']"
         label="State"
-        required
       ></v-select>
 
       <v-text-field
         v-model="clientDetails.zip_code"
         :counter="10"
-        :rules="nameRules"
+    
         label="ZIP"
-        required
       ></v-text-field>
 
       <v-text-field
         v-model="clientDetails.phone_number"
         :counter="15"
-        :rules="phoneeRules"
+        
         label="Phone Number"
-        required
       ></v-text-field>
 
       <v-text-field
         v-model="clientDetails.email"
         :rules="emailRules"
         label="E-mail"
-        required
       ></v-text-field>
       <div
             class="alert alert-danger"
@@ -94,9 +83,12 @@
       <v-checkbox
         v-model="clientDetails.is_on_email_list"
         label="Stay on Email List?"
-        required
       ></v-checkbox>
-
+      <v-checkbox
+      v-if="$store.state.user.username == 'admin'"
+        v-model="clientDetails.is_allowed_video"
+        label="Allow Video?"
+      ></v-checkbox>
       <v-alert type="success" v-show="showAlert">
         You edited your profile.
         <v-btn color="warning" @click="clickOkay()"> Okay </v-btn>
@@ -135,6 +127,7 @@ export default {
       zip_code: "",
       phone_number: "",
       is_on_email_list: false,
+      is_allowed_video: false,
       email: "",
       has_record_of_liability: false,
       date_of_entry: "",
@@ -147,14 +140,17 @@ export default {
       (v) => !!v || "Name is required",
       (v) => (v && v.length <= 30) || "Name must be less than 30 characters",
     ],
-
+    cityRules: [
+      (v) => (v && v.length <= 30) || "City must be less than 30 characters",
+    ],
+    zipRules:[
+      (v) => (v && v.length <= 10) || "Zip must be less than 10 characters",
+    ],
     addressRules: [
-      (v) => !!v || "Name is required",
       (v) => (v && v.length <= 30) || "Street must be less than 40 characters",
     ],
     email: "",
     emailRules: [
-      (v) => !!v || "E-mail is required",
       (v) => /.+@.+\..+/.test(v) || "E-mail must be valid",
     ],
     select: null,

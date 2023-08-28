@@ -47,7 +47,7 @@
             required
           ></v-text-field>
           <br />
-          <v-btn class="btn btn-lg btn-primary btn-block" type="submit">
+          <v-btn class="btn btn-lg btn-primary btn-block" type="submit" alt="Create new account button">
             Create New Account
           </v-btn>
           <br>
@@ -55,18 +55,7 @@
           <div>
             <br />
             <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
+
           </div>
         </v-form>
       </v-col>

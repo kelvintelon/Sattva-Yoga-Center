@@ -4,7 +4,7 @@
       <router-link
         style="text-decoration: none; color: inherit"
         v-bind:to="{ name: 'home' }"
-      ><img class="logo" src="@/assets/sattva-logo.png"/>
+      ><img class="logo" src="@/assets/sattva-logo.png" alt="Sattva Yoga Center logo, click for home page"/>
       </router-link>
     </div>
   </div>

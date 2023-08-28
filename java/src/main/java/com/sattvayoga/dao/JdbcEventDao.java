@@ -728,11 +728,218 @@ public class JdbcEventDao implements EventDao {
     }
 
     @Override
-    public void updateEventsByClass(ClassDetails originalClass, ClassDetails updatedClass) {
+    public void updateAllClientsByLookingAtEvents() {
+
+        String sql = "SELECT * FROM client_details ORDER BY client_id;";
+
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+
+        while (result.next()) {
+            ClientDetails clientDetails = mapRowToClient(result);
+            List<Event> clientEvents = new ArrayList<>();
+            Event event = new Event();
+            String sql2 = "SELECT events.event_id, events.class_id, events.event_name, events.start_time, events.end_time, events.color, events.timed, events.is_visible_online, events.is_paid FROM events " +
+                    "JOIN client_event ON events.event_id = client_event.event_id " +
+                    "JOIN client_details ON client_details.client_id = client_event.client_id " +
+                    "WHERE client_details.user_id = ? " +
+                    "ORDER BY events.end_time DESC LIMIT 1";
+            SqlRowSet result2 = jdbcTemplate.queryForRowSet(sql2, clientDetails.getUser_id());
+
+            Date date = new Date();
+            Timestamp theLatestTimestamp = new Timestamp(date.getTime());
+
+            boolean noClasses = false;
+            while (result2.next()) {
+                event = mapRowToEvent(result2);
+                clientEvents.add(event);
+                theLatestTimestamp = event.getEnd_time();
+
+            }
+            if (clientEvents.size()==0) {
+                noClasses = true;
+            }
+
+            if (!noClasses) {
+
+
+                LocalDate latestDatePlusOneMonth = theLatestTimestamp.toLocalDateTime().toLocalDate().plusMonths(1);
+
+                Timestamp oneMonthFromLastEvent = Timestamp.valueOf(getStartTimeStampBuilder(latestDatePlusOneMonth));
+
+                LocalDate today = LocalDate.now();
+
+                String startTimeStampBuilder = getStartTimeStampBuilder(today);
+
+                Timestamp currentDay = Timestamp.valueOf(startTimeStampBuilder);
+
+                int numberValueFromComparison = currentDay.compareTo(oneMonthFromLastEvent);
+
+                // Integer value 0 if this Timestamp object is equal to given Timestamp object.
+                // A value less than 0 if this Timestamp object is before the given argument.
+                // A value greater than 0 if this Timestamp object is after the given argument.
+
+
+                if (numberValueFromComparison > 0) {
+                    // So if it's been more than a month then set them to inactive
+                    String sql3 = "UPDATE client_details SET is_new_client = ? " +
+                            "WHERE user_id = ?";
+
+                    jdbcTemplate.update(sql3, false,
+                            clientDetails.getUser_id());
+
+                }
+            }
+             else {
+                String sql3 = "UPDATE client_details SET is_new_client = ? " +
+                        "WHERE user_id = ?";
+
+                jdbcTemplate.update(sql3, false,
+                        clientDetails.getUser_id());
+            }
+        }
+
+
+    }
+
+    @Override
+    public String deleteEventsByClass(ClassDetails originalClass) {
         // find all Event objects with the same start time, end time, and class_id
 
         String sql = "SELECT * FROM events WHERE start_time >= now() AND class_id = ? ; ";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, originalClass.getClass_id());
+
+        // Limit to 300 because clients can't sign up farther than that
+        String sqlForAttendance = "SELECT * FROM events WHERE start_time >= now() AND class_id = ? LIMIT 300; ";
+        SqlRowSet resultForAttendanceCheck = jdbcTemplate.queryForRowSet(sqlForAttendance, originalClass.getClass_id());
+
+        String stringToReturn = "";
+        boolean returnFailed = false;
+
+        while(resultForAttendanceCheck.next()) {
+            // PULL THE EVENT
+            Event event = mapRowToEvent(resultForAttendanceCheck);
+            event.setAttendanceList(getAttendanceByEventId(event.getEvent_id()));
+
+
+            // check this current event and compare if it has the same start-time and end-time as the original
+            // filtering it down so that we don't accidentally change any events that weren't exact matches
+            // CONVERSION ROUTINE TO EXTRACT THE HOUR AND MINUTES am/pm (e.g. "06:00 am")
+            Timestamp startTimeStamp = event.getStart_time();
+            Timestamp endTimeStamp = event.getEnd_time();
+
+
+            LocalDateTime startTimeLocalDate = startTimeStamp.toLocalDateTime();
+            LocalDateTime endTimeLocalDate = endTimeStamp.toLocalDateTime();
+
+            DayOfWeek currentDayOfWeek = startTimeLocalDate.getDayOfWeek();
+            String currentDay = currentDayOfWeek.toString().substring(0, 3).toLowerCase();
+            currentDay = currentDay.substring(0, 1).toUpperCase() + currentDay.substring(1);
+
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
+
+            String startTimeString = dateTimeFormatter.format(startTimeLocalDate);
+            String originalClassStartTime = originalClass.getStart_time();
+
+
+            LocalDateTime nextHourEndTime = startTimeLocalDate;
+
+            int originalClassDuration = originalClass.getClass_duration();
+
+            // GRAB THE CORRECT "06:30" END TIME  If it's not an hour
+            if (originalClassDuration != 60) {
+                nextHourEndTime = startTimeLocalDate.plusMinutes(originalClassDuration);
+            } else {
+                nextHourEndTime = startTimeLocalDate.plusHours(1);
+            }
+
+            String actualEndTimeString = dateTimeFormatter.format(endTimeLocalDate);
+            String expectedEndTimeString = dateTimeFormatter.format(nextHourEndTime);
+
+            // Check if This event had already been updated thus it isn't an exact match and something to change across the board
+
+            if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && event.isIs_visible_online()) {
+                if (event.getAttendanceList().size() > 0) {
+                    returnFailed = true;
+                    if (stringToReturn.length() == 0) {
+                        stringToReturn = "Failed at: " + event.getStart_time().toString();
+                    }
+                    else {
+                        stringToReturn += " and " +  event.getStart_time().toString();
+                    }
+                }
+            }
+        }
+
+        if (stringToReturn.length() > 0) {
+            return stringToReturn;
+        }
+
+        // second while loop deletes it
+        while (result.next()) {
+            // PULL THE EVENT
+            Event event = mapRowToEvent(result);
+
+            // Don't set the attendance since these classes you're deleting shouldnt have any clients signed up
+            //  event.setAttendanceList(getAttendanceByEventId(event.getEvent_id()));
+
+
+            // check this current event and compare if it has the same start-time and end-time as the original
+            // filtering it down so that we don't accidentally change any events that weren't exact matches
+            // CONVERSION ROUTINE TO EXTRACT THE HOUR AND MINUTES am/pm (e.g. "06:00 am")
+            Timestamp startTimeStamp = event.getStart_time();
+            Timestamp endTimeStamp = event.getEnd_time();
+
+
+            LocalDateTime startTimeLocalDate = startTimeStamp.toLocalDateTime();
+            LocalDateTime endTimeLocalDate = endTimeStamp.toLocalDateTime();
+
+            DayOfWeek currentDayOfWeek = startTimeLocalDate.getDayOfWeek();
+            String currentDay = currentDayOfWeek.toString().substring(0, 3).toLowerCase();
+            currentDay = currentDay.substring(0, 1).toUpperCase() + currentDay.substring(1);
+
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
+
+            String startTimeString = dateTimeFormatter.format(startTimeLocalDate);
+            String originalClassStartTime = originalClass.getStart_time();
+
+
+            LocalDateTime nextHourEndTime = startTimeLocalDate;
+
+            int originalClassDuration = originalClass.getClass_duration();
+
+            // GRAB THE CORRECT "06:30" END TIME  If it's not an hour
+            if (originalClassDuration != 60) {
+                nextHourEndTime = startTimeLocalDate.plusMinutes(originalClassDuration);
+            } else {
+                nextHourEndTime = startTimeLocalDate.plusHours(1);
+            }
+
+            String actualEndTimeString = dateTimeFormatter.format(endTimeLocalDate);
+            String expectedEndTimeString = dateTimeFormatter.format(nextHourEndTime);
+
+            // Check if This event had already been updated thus it isn't an exact match and something to change across the board
+
+            if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && event.isIs_visible_online()) {
+                //just delete it while you're here.
+                deleteEvent(event.getEvent_id());
+
+            }
+
+
+        }
+        return "Success";
+
+    }
+    @Override
+    public String updateEventsByClass(ClassDetails originalClass, ClassDetails updatedClass) {
+        // find all Event objects with the same start time, end time, and class_id
+
+        String sql = "SELECT * FROM events WHERE start_time >= now() AND class_id = ? ; ";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, originalClass.getClass_id());
+
+        // Limit to 300 because clients can't sign up farther than that
+        String sqlForAttendance = "SELECT * FROM events WHERE start_time >= now() AND class_id = ? LIMIT 300; ";
+        SqlRowSet resultForAttendanceCheck = jdbcTemplate.queryForRowSet(sqlForAttendance, originalClass.getClass_id());
 
         // A map
         // CREATE YOUR PROPERTIES
@@ -748,10 +955,76 @@ public class JdbcEventDao implements EventDao {
         //Set<String> updatedClassDateRangeSet = new HashSet<>(Arrays.asList(updateDateRangeArray));
         Set<String> originalClassDateRangeSet = new HashSet<>(Arrays.asList(originalDateRangeArray));
 
+        String stringToReturn = "";
+        boolean returnFailed = false;
+
+        // first while loop just checks the attendance list of all the events
+        while(resultForAttendanceCheck.next()) {
+            // PULL THE EVENT
+            Event event = mapRowToEvent(resultForAttendanceCheck);
+            event.setAttendanceList(getAttendanceByEventId(event.getEvent_id()));
+
+
+            // check this current event and compare if it has the same start-time and end-time as the original
+            // filtering it down so that we don't accidentally change any events that weren't exact matches
+            // CONVERSION ROUTINE TO EXTRACT THE HOUR AND MINUTES am/pm (e.g. "06:00 am")
+            Timestamp startTimeStamp = event.getStart_time();
+            Timestamp endTimeStamp = event.getEnd_time();
+
+
+            LocalDateTime startTimeLocalDate = startTimeStamp.toLocalDateTime();
+            LocalDateTime endTimeLocalDate = endTimeStamp.toLocalDateTime();
+
+            DayOfWeek currentDayOfWeek = startTimeLocalDate.getDayOfWeek();
+            String currentDay = currentDayOfWeek.toString().substring(0, 3).toLowerCase();
+            currentDay = currentDay.substring(0, 1).toUpperCase() + currentDay.substring(1);
+
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
+
+            String startTimeString = dateTimeFormatter.format(startTimeLocalDate);
+            String originalClassStartTime = originalClass.getStart_time();
+            String updatedClassStartTime = updatedClass.getStart_time();
+
+            LocalDateTime nextHourEndTime = startTimeLocalDate;
+
+            int originalClassDuration = originalClass.getClass_duration();
+            int updatedClassDuration = updatedClass.getClass_duration();
+            // GRAB THE CORRECT "06:30" END TIME  If it's not an hour
+            if (originalClassDuration != 60) {
+                nextHourEndTime = startTimeLocalDate.plusMinutes(originalClassDuration);
+            } else {
+                nextHourEndTime = startTimeLocalDate.plusHours(1);
+            }
+
+            String actualEndTimeString = dateTimeFormatter.format(endTimeLocalDate);
+            String expectedEndTimeString = dateTimeFormatter.format(nextHourEndTime);
+
+            // Check if This event had already been updated thus it isn't an exact match and something to change across the board
+
+            if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && event.isIs_visible_online()) {
+                if (event.getAttendanceList().size() > 0) {
+                    returnFailed = true;
+                    if (stringToReturn.length() == 0) {
+                        stringToReturn = "Failed at: " + event.getStart_time().toString();
+                    }
+                    else {
+                        stringToReturn += " and " +  event.getStart_time().toString();
+                    }
+                }
+            }
+        }
+
+        if (stringToReturn.length() > 0) {
+            return stringToReturn;
+        }
+
+        // second while loop updates it
         while (result.next()) {
             // PULL THE EVENT
             Event event = mapRowToEvent(result);
-            event.setAttendanceList(getAttendanceByEventId(event.getEvent_id()));
+
+            // Don't set the attendance since these classes you're updating shouldnt have any clients signed up
+            //  event.setAttendanceList(getAttendanceByEventId(event.getEvent_id()));
 
 
             // check this current event and compare if it has the same start-time and end-time as the original
@@ -1230,7 +1503,7 @@ public class JdbcEventDao implements EventDao {
 
             }
         }
-
+        return "Success";
     }
 
     // helper method

@@ -189,6 +189,8 @@
                         label="Email (Optional)"
                      
                       ></v-text-field>
+                      <v-checkbox v-model="clientDetails.is_on_email_list" label="Join Email List? (Optional)"></v-checkbox>
+                  <v-checkbox v-model="clientDetails.is_allowed_video" label="Allowed Video? (Optional)"></v-checkbox>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -442,6 +444,7 @@ export default {
         zip_code: "",
         phone_number: "",
         is_on_email_list: false,
+        is_allowed_video: false,
         email: "",
         has_record_of_liability: false,
         date_of_entry: "",

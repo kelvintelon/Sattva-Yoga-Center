@@ -1,6 +1,6 @@
 BEGIN TRANSACTION;
 
-DROP TABLE IF EXISTS users,teacher_details,class_details,client_details,client_class,package_purchase,package_details,events,client_event,client_family,families,website_descriptions CASCADE;
+DROP TABLE IF EXISTS users,teacher_details,class_details,client_details,client_class,package_purchase,package_details,events,client_event,client_family,families,website_descriptions, gift_card CASCADE;
 
 
 CREATE TABLE users 
@@ -53,6 +53,7 @@ CREATE TABLE client_details
     email                   varchar(30) ,
     has_record_of_liability boolean     ,
     date_of_entry           timestamp   ,
+	is_allowed_video		boolean		NOT NULL,
 	user_id 				int 		,
     CONSTRAINT PK_client_id PRIMARY KEY (client_id),
 	CONSTRAINT FK_client_id_user_id FOREIGN KEY (user_id) REFERENCES users (user_id)
@@ -140,6 +141,15 @@ CREATE TABLE website_descriptions (
 	description text NOT NULL,
 	CONSTRAINT PK_website_descriptions PRIMARY KEY (webdescription_id)
 );
+
+CREATE TABLE gift_card (
+	code VARCHAR(7) NOT NULL,
+	amount decimal(13, 2),
+	client_id int,
+	CONSTRAINT PK_gift_card PRIMARY KEY (code),
+	CONSTRAINT FK_client_id_client_id FOREIGN KEY (client_id) REFERENCES client_details(client_id)
+);
+	
 
 COMMIT TRANSACTION;
 

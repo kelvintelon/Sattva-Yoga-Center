@@ -4,11 +4,13 @@ import com.sattvayoga.dao.EventDao;
 import com.sattvayoga.spring.config.AppConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @ComponentScan(basePackages = {"com.sattvayoga"})
+@EnableCaching
 public class Application {
 
     public static void main(String[] args) {
@@ -43,15 +45,21 @@ class WorkerThread extends Thread {
             try {
                 eventDao.updateEventServerTask();
             } catch (Exception e) {
-                System.out.println("ERROR ON EVENT THREAD");;
+                System.out.println("ERROR ON EVENTS UPDATE THREAD");;
             }
 
-            System.out.println("Events Up To Date. Thread Initialized at count:  " + ++count);
+            try {
+                eventDao.updateAllClientsByLookingAtEvents();
+            } catch (Exception e) {
+                System.out.println("ERROR ON CLIENTS UPDATE THREAD");
+            }
+
+            System.out.println("Events Up To Date. Clients Up To Date. Thread Initialized at count:  " + ++count);
 
             // 86400000 ms in a day
             // 604800000 in a week
             try {
-                sleep(604800000);
+                sleep(86400000);
             } catch (InterruptedException e) {
                 // handle exception here
                 System.out.println("Thread error");

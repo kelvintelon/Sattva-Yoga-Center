@@ -377,7 +377,7 @@
                   >Sure you want to delete this class?</v-card-title
                 >
                 <v-card-title class="text"
-                  >This will delete the sign up list.</v-card-title
+                  >Click ok delete respective events.</v-card-title
                 >
                 <v-card-actions>
                   <v-spacer></v-spacer>
@@ -684,12 +684,24 @@ export default {
     },
 
     deleteItemConfirm() {
+      this.loading = true;
+      this.overlay = !this.overlay
       classDetailService
         .deleteClass(this.editedItem.class_id)
         .then((response) => {
           if (response.status == 200) {
+            if (response.data == "Success") {
+              this.loading = false;
+            this.overlay = false;
             this.classes.splice(this.editedIndex, 1);
+            this.$root.$refs.Z.getAllEvents();
             alert("Class successfully removed!");
+            } else if (response.data.includes("Failed")) {
+
+              alert(response.data)
+              this.loading = false;
+            this.overlay = false;
+            }
           } else {
             alert("Error removing class!");
           }
@@ -794,12 +806,20 @@ export default {
         // after completing the object do the PUT REQUEST
         classDetailService.updateClass(this.editedItem).then((response) => {
           if (response.status == 200) {
+            if (response.data == "Success") {
+
+            
             this.loading = false;
             this.overlay = false;
             alert("You have updated a class!");
             this.getClassTable();
             this.close2();
             this.$root.$refs.Z.getAllEvents();
+            } else if (response.data.includes("Failed")) {
+              alert(response.data)
+              this.loading = false;
+              this.overlay = false;
+            }
           } else {
             alert("Error updating a class!");
           }

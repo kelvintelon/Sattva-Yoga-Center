@@ -31,6 +31,7 @@ export default new Vuex.Store({
     packageHistoryList: [],
     eventList: [],
     sharedPackages: [],
+    lineItems: [],
   },
   mutations: {
     SET_AUTH_TOKEN(state, token) {
@@ -84,6 +85,9 @@ export default new Vuex.Store({
     },
     SET_SHARED_PACKAGE_LIST(state, retrievedSharedPackagesList){
       state.sharedPackages = retrievedSharedPackagesList;
+    },
+    SET_STRIPE_LINE_ITEMS(state, retrievedLineItems){
+      state.lineItems = retrievedLineItems;
     }
   }
 })

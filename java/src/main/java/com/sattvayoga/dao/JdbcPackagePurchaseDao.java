@@ -1,5 +1,6 @@
 package com.sattvayoga.dao;
 
+import com.sattvayoga.dto.order.CheckoutItemDTO;
 import com.sattvayoga.model.Event;
 import com.sattvayoga.model.PackageDetails;
 import com.sattvayoga.model.PackagePurchase;
@@ -11,9 +12,12 @@ import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 @Component
 public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
@@ -172,8 +176,8 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 packagePurchase.getActivation_date(), packagePurchase.getExpiration_date(),
                 packagePurchase.getTotal_amount_paid(),
                 packagePurchase.isIs_monthly_renew(), packagePurchase.getDiscount());
-
     }
+
     @Override
     public PackagePurchase getPackagePurchaseObjectByPackagePurchaseId(int packagePurchaseId) {
         PackagePurchase packagePurchase = null;
@@ -368,4 +372,51 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
         return packagePurchase;
     }
+
+    public void createGiftCard(String code, double amount){
+        String sql = "INSERT INTO gift_card (code, amount) VALUES (?,?)";
+        jdbcTemplate.update(sql, code, amount);
+    }
+    public String generateGiftCardCode() {
+        int length = 7;
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        StringBuilder coupon = new StringBuilder();
+        Random random = new Random();
+
+        for (int i = 0; i < length; i++) {
+            int index = random.nextInt(characters.length());
+            char randomChar = characters.charAt(index);
+            coupon.append(randomChar);
+        }
+        return coupon.toString();
+    }
+
+    public void createPackagePurchase2(CheckoutItemDTO checkoutItemDTO) {
+        String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, classes_remaining, activation_date, expiration_date, is_monthly_renew, total_amount_paid, discount ) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        jdbcTemplate.update(sql, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
+                checkoutItemDTO.getPackage_id(), checkoutItemDTO.getClasses_remaining(),
+                LocalDate.now(), LocalDate.now().plusYears(1), checkoutItemDTO.isIs_monthly_renew(),
+                checkoutItemDTO.getTotal_amount_paid(), 0);
+    }
+
+    public void createOneMonthPurchase(CheckoutItemDTO checkoutItemDTO){
+        String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, classes_remaining, activation_date, expiration_date, is_monthly_renew, total_amount_paid, discount ) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        jdbcTemplate.update(sql, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
+                checkoutItemDTO.getPackage_id(), 0, LocalDate.now(),
+                LocalDate.now().plusMonths(1), true,
+                checkoutItemDTO.getTotal_amount_paid(), 0);
+    }
+
+    public void createSixMonthPurchase(CheckoutItemDTO checkoutItemDTO){
+        String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, classes_remaining, activation_date, expiration_date, is_monthly_renew, total_amount_paid, discount ) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        jdbcTemplate.update(sql, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
+                checkoutItemDTO.getPackage_id(), 0, LocalDate.now(),
+                LocalDate.now().plusMonths(6), true,
+                checkoutItemDTO.getTotal_amount_paid(), 0);
+    }
+
+
 }
