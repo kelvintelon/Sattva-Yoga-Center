@@ -1,7 +1,7 @@
 <template>
   <!-- https://videojs.com/guides/vue/ -->
-  <v-container>
-    <div>
+  <v-container >
+    <div style='max-height="900px"'>
          <video-player id="vid1" :options="videoOptions" />
     </div>
   </v-container>

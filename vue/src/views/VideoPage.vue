@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-card v-if="showVideo">
+    <v-card v-if="showVideo" class="mb-7">
     <v-row>
       <v-spacer></v-spacer>
       <v-col>
