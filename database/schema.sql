@@ -92,6 +92,7 @@ CREATE TABLE package_purchase
 	is_monthly_renew	boolean,					
 	total_amount_paid	decimal(13, 2),
 	discount			decimal(13, 2),
+	paymentId			varchar(30),
 	CONSTRAINT PK_package_purchase PRIMARY KEY (package_purchase_id),
 	CONSTRAINT FK_package_purchase_client_id FOREIGN KEY (client_id) REFERENCES client_details (client_id),
 	CONSTRAINT FK_package_purchase_package_id FOREIGN KEY (package_id) REFERENCES package_details (package_id)

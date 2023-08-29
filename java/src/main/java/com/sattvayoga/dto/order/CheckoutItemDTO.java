@@ -14,6 +14,7 @@ public class CheckoutItemDTO {
     private int classes_remaining;
     private BigDecimal total_amount_paid;
     private boolean is_monthly_renew;
+    private String paymentId;
 
     public CheckoutItemDTO(){
     }
@@ -90,4 +91,11 @@ public class CheckoutItemDTO {
         this.is_monthly_renew = is_monthly_renew;
     }
 
+    public String getPaymentId() {
+        return paymentId;
+    }
+
+    public void setPaymentId(String paymentId) {
+        this.paymentId = paymentId;
+    }
 }

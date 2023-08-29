@@ -22,12 +22,12 @@ export default {
     StripeCheckout,
   },
   data () {
-    this.publishableKey = "pk_test_51N6PQhHIFPdFs4yBA8bxtYohRmL0sEaDlFLODDgcsMwbwWhUikMipVQACyesgumrDmCZ9a8vNadiYt62bZsgp4wE00TzGiZvSt";
+    this.publishableKey = "pk_test_51NEabUBV0tnIJdW6JIy49Ky1uilERTHoouGeS6ySxpMsLiSwuehx2qo04plqxcFuVk7M5DYIJXXZ532bONj0iXbI00qVJtVHbn";
     return {
       loading: false,
       lineItems: [
         {
-          price: 'price_1N6eNWHIFPdFs4yBQwUDbWZw', // 6 month package
+          price: 'price_1NkWmnBV0tnIJdW6ZGHtezqw', // 6 month package
           quantity: 1,
         },
       ],

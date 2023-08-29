@@ -54,6 +54,10 @@ export default {
       if (serializedData) {
         this.listOfPurchased = JSON.parse(serializedData);
       }
+      for (let index = 0; index < this.listOfPurchased.length; index++) {
+        this.listOfPurchased[index].paymentId = localStorage.getItem('paymentId');
+      }
+     
       this.purchaseLocalStorage(this.listOfPurchased);
     },
     purchaseLocalStorage(listOfPurchased){
@@ -61,6 +65,7 @@ export default {
         if(response.status == 201){
           setTimeout(() => {
             localStorage.removeItem('lineItems');
+            localStorage.removeItem('paymentId');
             this.$router.push({ name: 'client-package-management' })
             }, 3000);
         }

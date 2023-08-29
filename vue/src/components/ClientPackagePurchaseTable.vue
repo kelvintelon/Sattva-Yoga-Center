@@ -28,7 +28,7 @@
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-spacer></v-spacer>
           <router-link to="/shoppingCart">
-            <v-btn color="yellow" role="button"> <v-icon role="button">mdi-cart-check</v-icon> Shopping Cart </v-btn>
+            <v-btn color="yellow" role="button"> <v-icon role="button">mdi-cart-check</v-icon> {{ returnQuantity }} Shopping Cart </v-btn>
           </router-link>
 
           <v-dialog v-model="dialog" max-width="500px">
@@ -282,7 +282,11 @@ export default {
     */
     addToCart(item) {
       if (item.description.includes("Gift")) {
-        this.dialog = true;
+        if (this.$store.state.clientDetails.email == "") {
+          alert("Please add an email to your account")
+        } else {
+          this.dialog = true;
+        }
       } else {
         let obj = new Object();
         obj.price = item.package_cost;
@@ -357,6 +361,14 @@ export default {
       return date;
     },
   },
+  computed: {
+      returnQuantity() {
+        if (this.$store.state.lineItems.length > 0) {
+          return this.$store.state.lineItems.length
+        }
+        return ""
+      }
+  }
 };
 </script>
 

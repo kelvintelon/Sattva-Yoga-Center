@@ -376,6 +376,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     public void createGiftCard(String code, double amount){
         String sql = "INSERT INTO gift_card (code, amount) VALUES (?,?)";
         jdbcTemplate.update(sql, code, amount);
+
     }
     public String generateGiftCardCode() {
         int length = 7;
@@ -391,31 +392,31 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         return coupon.toString();
     }
 
-    public void createPackagePurchase2(CheckoutItemDTO checkoutItemDTO) {
-        String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, classes_remaining, activation_date, expiration_date, is_monthly_renew, total_amount_paid, discount ) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    public void createStripePackagePurchase(CheckoutItemDTO checkoutItemDTO) {
+        String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, classes_remaining, activation_date, expiration_date, is_monthly_renew, total_amount_paid, discount, paymentId ) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
                 checkoutItemDTO.getPackage_id(), checkoutItemDTO.getClasses_remaining(),
                 LocalDate.now(), LocalDate.now().plusYears(1), checkoutItemDTO.isIs_monthly_renew(),
-                checkoutItemDTO.getTotal_amount_paid(), 0);
+                checkoutItemDTO.getTotal_amount_paid(), 0, checkoutItemDTO.getPaymentId());
     }
 
-    public void createOneMonthPurchase(CheckoutItemDTO checkoutItemDTO){
-        String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, classes_remaining, activation_date, expiration_date, is_monthly_renew, total_amount_paid, discount ) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    public void createOneMonthAutoRenewPurchase(CheckoutItemDTO checkoutItemDTO){
+        String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, classes_remaining, activation_date, expiration_date, is_monthly_renew, total_amount_paid, discount, paymentId ) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
                 checkoutItemDTO.getPackage_id(), 0, LocalDate.now(),
                 LocalDate.now().plusMonths(1), true,
-                checkoutItemDTO.getTotal_amount_paid(), 0);
+                checkoutItemDTO.getTotal_amount_paid(), 0, checkoutItemDTO.getPaymentId());
     }
 
-    public void createSixMonthPurchase(CheckoutItemDTO checkoutItemDTO){
-        String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, classes_remaining, activation_date, expiration_date, is_monthly_renew, total_amount_paid, discount ) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    public void createSixMonthAutoRenewPurchase(CheckoutItemDTO checkoutItemDTO){
+        String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, classes_remaining, activation_date, expiration_date, is_monthly_renew, total_amount_paid, discount, paymentId ) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
                 checkoutItemDTO.getPackage_id(), 0, LocalDate.now(),
                 LocalDate.now().plusMonths(6), true,
-                checkoutItemDTO.getTotal_amount_paid(), 0);
+                checkoutItemDTO.getTotal_amount_paid(), 0, checkoutItemDTO.getPaymentId());
     }
 
 

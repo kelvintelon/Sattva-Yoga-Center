@@ -3,92 +3,111 @@
     <v-row justify="center" align="center">
       <v-spacer></v-spacer>
       <v-col lg="4" sm="10" justify="center" align="center">
-    <v-form
-      ref="form"
-      v-model="valid"
-      lazy-validation
-      class="client-form-template"
-      @submit.prevent="submit"
-    >
-      <h1 style="color: rgba(245, 104, 71, 0.95)">Set Up Your Profile</h1>
-      <v-text-field
-        v-model="clientDetails.first_name"
-        :counter="10"
-        :rules="nameRules"
-        label="First Name"
-        required
-      ></v-text-field>
+        <v-form
+          ref="form"
+          v-model="valid"
+          lazy-validation
+          class="client-form-template"
+          @submit.prevent="submit"
+        >
+          <h1 style="color: rgba(245, 104, 71, 0.95)">Set Up Your Profile</h1>
+          <v-text-field
+            v-model="clientDetails.first_name"
+            :counter="10"
+            :rules="nameRules"
+            label="First Name"
+            required
+          ></v-text-field>
 
-      <v-text-field
-        v-model="clientDetails.last_name"
-        :counter="10"
-        :rules="nameRules"
-        label="Last Name"
-        required
-      ></v-text-field>
+          <v-text-field
+            v-model="clientDetails.last_name"
+            :counter="10"
+            :rules="nameRules"
+            label="Last Name"
+            required
+          ></v-text-field>
 
-      <v-text-field
-        v-model="clientDetails.street_address"
-        :counter="30"
-        :rules="addressRules"
-        label="Street Address"
-      ></v-text-field>
+          <v-text-field
+            v-model="clientDetails.street_address"
+            :counter="30"
+            :rules="addressRules"
+            label="Street Address"
+          ></v-text-field>
 
-      <v-text-field
-        v-model="clientDetails.city"
-        :counter="10"
-        :rules="cityRules"
-        label="City"
-      ></v-text-field>
+          <v-text-field
+            v-model="clientDetails.city"
+            :counter="10"
+            :rules="cityRules"
+            label="City"
+          ></v-text-field>
 
-      <v-select
-        v-model="clientDetails.state_abbreviation"
-        :items="items"
-        :rules="[(v) => !!v || 'Item is required']"
-        label="State"
-      ></v-select>
+          <v-select
+            v-model="clientDetails.state_abbreviation"
+            :items="items"
+            :rules="[(v) => !!v || 'Item is required']"
+            label="State"
+          ></v-select>
 
-      <v-text-field
-        v-model="clientDetails.zip_code"
-        :counter="10"
-        :rules="zipRules"
-        label="ZIP"
-      ></v-text-field>
+          <v-text-field
+            v-model="clientDetails.zip_code"
+            :counter="10"
+            :rules="zipRules"
+            label="ZIP"
+          ></v-text-field>
 
-      <v-text-field
-        v-model="clientDetails.phone_number"
-        :counter="15"
-        :rules="phoneRules"
-        label="Phone Number"
-      ></v-text-field>
+          <v-text-field
+            v-model="clientDetails.phone_number"
+            :counter="15"
+            :rules="phoneRules"
+            label="Phone Number"
+            required
+          ></v-text-field>
 
-      <v-text-field
-        v-model="clientDetails.email"
-        :rules="emailRules"
-        label="E-mail"
-      ></v-text-field>
+          <v-text-field
+            v-model="clientDetails.email"
+            :rules="emailRules"
+            label="E-mail"
+            required
+          ></v-text-field>
 
-      <v-checkbox
-        v-model="clientDetails.is_on_email_list"
-        label="Join Email List?"
-      ></v-checkbox>
-      <v-btn v-if="!readLiabilityRelease" @click="readLiabilityRelease = true">
-        Read Studio Liability Release
-      </v-btn>
-      <div v-else>
-        Studio Liability Release:
-I understand that yoga can be physically intensive and I voluntarily assume the risk inherent in my participation in classes provided by Sattva Yoga Center, including the risk of injury, accident, death, loss, cost or damage to my person, my family members or to my guests, and I release and indemnify Sattva Yoga Center from and against any and all such claims and liabilities, including attorneys’ fees. I further attest that I am in sufficient physical health, and/or that I have consulted with a physician and I am able to undertake and engage in the physical movements and exercises in classes that I have chosen to take provided by Sattva Yoga Center. I assume responsibility to update Sattva Yoga Center of any changes in my medical condition that might affect my safety or participation in classes at Sattva Yoga Center.
-      </div>
-      <v-checkbox
-        v-model="acceptTerms"
-        label="I Understand."
-        :rules="[v => !!v || 'You must agree to continue!']"
-        required
-      ></v-checkbox>
-      <v-btn color="error" class="mr-4 my-4" @click="reset"> Reset Form </v-btn>
+          <v-checkbox
+            v-model="clientDetails.is_on_email_list"
+            label="Join Email List?"
+          ></v-checkbox>
+          <v-btn
+            v-if="!readLiabilityRelease"
+            @click="readLiabilityRelease = true"
+          >
+            Read Studio Liability Release
+          </v-btn>
+          <div v-else>
+            Studio Liability Release: I understand that yoga can be physically
+            intensive and I voluntarily assume the risk inherent in my
+            participation in classes provided by Sattva Yoga Center, including
+            the risk of injury, accident, death, loss, cost or damage to my
+            person, my family members or to my guests, and I release and
+            indemnify Sattva Yoga Center from and against any and all such
+            claims and liabilities, including attorneys’ fees. I further attest
+            that I am in sufficient physical health, and/or that I have
+            consulted with a physician and I am able to undertake and engage in
+            the physical movements and exercises in classes that I have chosen
+            to take provided by Sattva Yoga Center. I assume responsibility to
+            update Sattva Yoga Center of any changes in my medical condition
+            that might affect my safety or participation in classes at Sattva
+            Yoga Center.
+          </div>
+          <v-checkbox
+            v-model="acceptTerms"
+            label="I Understand."
+            :rules="[(v) => !!v || 'You must agree to continue!']"
+            required
+          ></v-checkbox>
+          <v-btn color="error" class="mr-4 my-4" @click="reset">
+            Reset Form
+          </v-btn>
 
-      <v-btn class="mr-4" type="submit" :disabled="invalid"> submit </v-btn>
-      <div
+          <v-btn class="mr-4" type="submit" :disabled="invalid"> submit </v-btn>
+          <div
             class="alert alert-danger"
             role="alert"
             style="color: red"
@@ -96,10 +115,10 @@ I understand that yoga can be physically intensive and I voluntarily assume the 
           >
             {{ emailRegistrationErrorMsg }}
           </div>
-    </v-form>
-    </v-col>
-    <v-spacer></v-spacer>
-  </v-row>
+        </v-form>
+      </v-col>
+      <v-spacer></v-spacer>
+    </v-row>
   </v-card>
 </template>
 
@@ -125,26 +144,25 @@ export default {
       has_record_of_liability: false,
       date_of_entry: "",
       user_id: 0,
-      is_allowed_video: false
+      is_allowed_video: false,
     },
-     emailRegistrationErrors: false,
-      emailRegistrationErrorMsg: 'There were problems registering with this email.',
+    emailRegistrationErrors: false,
+    emailRegistrationErrorMsg:
+      "There were problems registering with this email.",
     nameRules: [
       (v) => (v && v.length <= 30) || "Name must be less than 30 characters",
     ],
     cityRules: [
       (v) => (v && v.length <= 30) || "City must be less than 30 characters",
     ],
-    zipRules:[
+    zipRules: [
       (v) => (v && v.length <= 10) || "Zip must be less than 10 characters",
     ],
     addressRules: [
       (v) => (v && v.length <= 30) || "Street must be less than 40 characters",
     ],
     email: "",
-    emailRules: [
-      (v) => /.+@.+\..+/.test(v) || "E-mail must be valid",
-    ],
+    emailRules: [(v) => /.+@.+\..+/.test(v) || "E-mail must be valid"],
     phoneRules: [
       (v) => (v && v.length <= 30) || "Name must be less than 30 characters",
     ],
@@ -214,10 +232,15 @@ export default {
     checkForm() {
       if (
         this.clientDetails.last_name == "" ||
-        this.clientDetails.first_name == "" || 
-        this.acceptTerms == false
+        this.clientDetails.first_name == ""
       ) {
-        alert("Please fill out your form");
+        alert("Please fill out the form with your name");
+      } else if (this.clientDetails.email == "") {
+        alert("Please fill out the form with your email");
+      } else if (this.clientDetails.phone_number == "") {
+        alert("Please fill out the form with your phone number");
+      } else if (this.acceptTerms == false) {
+        alert("To complete the form, please read and accept the terms");
       } else {
         this.formComplete = true;
       }
@@ -250,7 +273,8 @@ export default {
               const response = error.response;
               this.emailRegistrationErrors = true;
               if (response.status === 400) {
-                this.emailRegistrationErrorMsg = "There were problems registering this email.";
+                this.emailRegistrationErrorMsg =
+                  "There were problems registering this email.";
               }
             });
         } else {
@@ -261,12 +285,13 @@ export default {
     },
     clearErrors() {
       this.emailRegistrationErrors = false;
-      this.emailRegistrationErrorMsg = 'There were problems registering this email.';
+      this.emailRegistrationErrorMsg =
+        "There were problems registering this email.";
     },
   },
   created() {
-    if(this.$store.state.clientDetails.client_id > 0) {
-      this.$router.push({ name: 'home' });
+    if (this.$store.state.clientDetails.client_id > 0) {
+      this.$router.push({ name: "home" });
     }
   },
 };

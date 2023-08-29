@@ -1,14 +1,12 @@
 package com.sattvayoga.controller;
 
-import com.sattvayoga.dao.JdbcPackagePurchaseDao;
-import com.sattvayoga.dao.PackagePurchaseDao;
+import com.sattvayoga.dao.*;
+import com.sattvayoga.model.ClientDetails;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.LineItem;
 import com.stripe.model.LineItemCollection;
 import com.stripe.model.checkout.Session;
-import com.sattvayoga.dao.StripeDao;
-import com.sattvayoga.dao.UserDao;
 import com.sattvayoga.dto.order.CheckoutItemDTO;
 import com.sattvayoga.dto.order.StripeResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,10 +25,15 @@ import java.util.Map;
 @RestController
 @RequestMapping("/stripe")
 public class StripeController {
+
     @Autowired
     UserDao userDao;
     @Autowired
     PackagePurchaseDao packagePurchaseDao;
+    @Autowired
+    ClientDetailsDao clientDetailsDao;
+    @Autowired
+    private EmailSenderService senderService;
     @Autowired
     private StripeDao stripeDao;
 
@@ -39,7 +43,7 @@ public class StripeController {
     @PostMapping("/create-checkout-session")
     public ResponseEntity<StripeResponse> checkoutList(@RequestBody List<CheckoutItemDTO> checkoutItemDTOList) throws StripeException {
         Session session = stripeDao.createSession(checkoutItemDTOList);
-        StripeResponse stripeResponse = new StripeResponse(session.getId());
+        StripeResponse stripeResponse = new StripeResponse(session.getId(),session.getPaymentIntent());
         Session retrieved = Session.retrieve(session.getId());
         Map<String, Object> params = new HashMap<>();
         LineItemCollection lineItems = retrieved.listLineItems(params);
@@ -79,13 +83,26 @@ public class StripeController {
     // current usage
     @PostMapping("/purchaseLocalStorageItems")
     @ResponseStatus(HttpStatus.CREATED)
-    public void purchaseLocalStorageItems(@RequestBody List<CheckoutItemDTO> itemList){
+    public void purchaseLocalStorageItems(@RequestBody List<CheckoutItemDTO> itemList, Principal principal){
         for (CheckoutItemDTO each: itemList) {
             if(each.getProductName().contains("Gift")){
                 String code = packagePurchaseDao.generateGiftCardCode();
                 packagePurchaseDao.createGiftCard(code, each.getPrice());
+
+                ClientDetails clientDetails =
+                        clientDetailsDao.findClientByUserId(
+                                userDao.findIdByUsername(
+                                        principal.getName()));
+
+                // call the email service here and shoot off the gift code.
+                try {
+                    senderService.sendEmail(clientDetails.getEmail(),"Sattva Yoga Center Gift Card Code","Your Gift Card code is: " + code + " . Please note: The Gift Card Code can only be redeemed in person. Once redeemed, it cannot be used by anyone else.");
+                } catch (Throwable e) {
+                    System.out.println("Error sending gift card email to client id: " + clientDetails.getClient_id());
+                }
+
             }else{
-                packagePurchaseDao.createPackagePurchase2(each);
+                packagePurchaseDao.createStripePackagePurchase(each);
             }
         }
     }
@@ -93,13 +110,13 @@ public class StripeController {
     @PostMapping("/purchaseOneMonth")
     @ResponseStatus(HttpStatus.CREATED)
     public void purchaseOneMonth(@RequestBody CheckoutItemDTO oneMonth){
-        packagePurchaseDao.createOneMonthPurchase(oneMonth);
+        packagePurchaseDao.createOneMonthAutoRenewPurchase(oneMonth);
     }
 
     @PostMapping("/purchaseSixMonth")
     @ResponseStatus(HttpStatus.CREATED)
     public void purchaseSixMonth(@RequestBody CheckoutItemDTO sixMonth){
-        packagePurchaseDao.createOneMonthPurchase(sixMonth);
+        packagePurchaseDao.createSixMonthAutoRenewPurchase(sixMonth);
     }
 
 

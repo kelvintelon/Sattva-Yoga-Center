@@ -21,9 +21,9 @@
           :key="item.productName"
         >
           <td>{{ item.productName }}</td>
-          <td>{{ item.price }}</td>
+          <td>${{ item.price }}</td>
           <td> 
-            <button v-on:click="remove(item)">remove</button> 
+            <v-btn v-on:click="remove(item)">remove</v-btn> 
           </td>
         </tr>
       </tbody>
@@ -34,7 +34,7 @@
       :pk="publishableKey"
       :session-id="sessionId"
     />
-    <v-btn color="orange" @click="submit">Checkout!</v-btn>
+    <v-btn color="orange" @click="submit">Checkout To See Total!</v-btn>
   </div>
 </template>
 
@@ -46,7 +46,7 @@ export default {
     StripeCheckout,
   },
   data () {
-    this.publishableKey = "pk_test_51N6PQhHIFPdFs4yBA8bxtYohRmL0sEaDlFLODDgcsMwbwWhUikMipVQACyesgumrDmCZ9a8vNadiYt62bZsgp4wE00TzGiZvSt";
+    this.publishableKey = "pk_test_51NEabUBV0tnIJdW6JIy49Ky1uilERTHoouGeS6ySxpMsLiSwuehx2qo04plqxcFuVk7M5DYIJXXZ532bONj0iXbI00qVJtVHbn";
     return {
       loading: false,
       sessionId: '', // session id from backend
@@ -68,6 +68,7 @@ export default {
         .then((response) => {
           this.sessionId= response.data.sessionId;
           localStorage.setItem('sessionId', response.data.sessionId);
+          localStorage.setItem('paymentId', response.data.paymentId);
           // console.log('session', response.data);
           this.$refs.checkoutRef.redirectToCheckout({
             sessionId: response.data.sessionId,

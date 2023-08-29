@@ -18,7 +18,7 @@ import ClientPackageManagement from '../views/ClientPackageManagement.vue'
 import EventAttendanceDetails from '../views/EventAttendanceDetails.vue'
 import ClientDetailsAdminView from '../views/ClientDetailsAdminView.vue'
 import ResetLinkEmailToken from '../views/ResetLinkEmailToken.vue'
-import CheckoutQuantity from '../views/CheckoutQuantity.vue'
+
 import Checkout1Month from '../views/stripe/Checkout1Month.vue'
 import Checkout6Month from '../views/stripe/Checkout6Month.vue'
 import CheckoutSuccess from '../views/stripe/CheckoutSuccess.vue'
@@ -91,14 +91,14 @@ const router = new Router({
         requiresAuth: true
       }
     },
-    {
-      path: "/checkoutQuantity",
-      name: "checkoutQuantity",
-      component: CheckoutQuantity,
-      meta: {
-        requiresAuth: true
-      }
-    },
+    // {
+    //   path: "/checkoutQuantity",
+    //   name: "checkoutQuantity",
+    //   component: CheckoutQuantity,
+    //   meta: {
+    //     requiresAuth: true
+    //   }
+    // },
     {
       path: "/checkout1Month",
       name: "checkout1Month",

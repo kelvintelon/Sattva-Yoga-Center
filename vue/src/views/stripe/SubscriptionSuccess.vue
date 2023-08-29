@@ -57,9 +57,11 @@ export default {
       let checkout1Month = localStorage.getItem('checkout1Month');
       let checkout6Month = localStorage.getItem('checkout6Month');
       if (checkout1Month) {
+        this.oneMonthPackage.paymentId = localStorage.getItem('paymentId');
         this.updateOneMonthDb(this.oneMonthPackage);
       }
       if (checkout6Month) {
+        this.sixMonthPackage.paymentId = localStorage.getItem('paymentId');
         this.updateSixMonthDb(this.sixMonthPackage);
       }
     },
@@ -68,6 +70,7 @@ export default {
         if(response.status == 201){
           setTimeout(() => {
             localStorage.removeItem('checkout1Month');
+            localStorage.removeItem('paymentId');
             this.$router.push({ name: 'client-package-management' })
             }, 3000);
         }
@@ -78,6 +81,7 @@ export default {
         if(response.status == 201){
           setTimeout(() => {
             localStorage.removeItem('checkout6Month');
+            localStorage.removeItem('paymentId');
             this.$router.push({ name: 'client-package-management' })
             }, 3000);
         }
