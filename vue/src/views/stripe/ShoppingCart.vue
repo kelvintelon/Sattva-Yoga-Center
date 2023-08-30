@@ -125,7 +125,7 @@ export default {
             continueWithPayment = false;
             alert("Please only choose one subscription")
             break;
-          } else if (element.is_monthly_renew && this.$store.state.lineItems.length >= 1 && element.productName != "New Client First Month") {
+          } else if (element.is_monthly_renew && this.$store.state.lineItems.length > 1 && element.productName != "New Client First Month") {
             foundSubscription = true;
             continueWithPayment = false;
             alert("Please choose between one subscription or one-time purchase packages")
