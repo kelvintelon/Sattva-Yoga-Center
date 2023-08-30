@@ -8,11 +8,23 @@
     </v-row>
     <br />
 
-    <v-snackbar v-model="snackBarSecondPurchaseWarning" color="red darken-2" elevation="24" :vertical="vertical" shaped>
+    <v-snackbar
+      v-model="snackBarSecondPurchaseWarning"
+      color="red darken-2"
+      elevation="24"
+      :vertical="vertical"
+      shaped
+    >
       Warning: You Already Have An Active Package
 
       <template v-slot:action="{ attrs }">
-        <v-btn color="white" text v-bind="attrs" @click="snackBarSecondPurchaseWarning = false" left>
+        <v-btn
+          color="white"
+          text
+          v-bind="attrs"
+          @click="snackBarSecondPurchaseWarning = false"
+          left
+        >
           Close
         </v-btn>
         <v-btn color="white" text v-bind="attrs" @click="allowPurchaseProcess">
@@ -21,14 +33,22 @@
       </template>
     </v-snackbar>
 
-    <v-data-table :headers="headers" :items="packages" class="elevation-5" dense>
+    <v-data-table
+      :headers="headers"
+      :items="packages"
+      class="elevation-5"
+      dense
+    >
       <template v-slot:top>
         <v-toolbar flat>
           <v-toolbar-title>Available Packages</v-toolbar-title>
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-spacer></v-spacer>
           <router-link to="/shoppingCart">
-            <v-btn color="yellow" role="button"> <v-icon role="button">mdi-cart-check</v-icon> {{ returnQuantity }} Shopping Cart </v-btn>
+            <v-btn color="yellow" role="button">
+              <v-icon role="button">mdi-cart-check</v-icon>
+              {{ returnQuantity }} Shopping Cart
+            </v-btn>
           </router-link>
 
           <v-dialog v-model="dialog" max-width="500px">
@@ -40,10 +60,25 @@
               <v-container>
                 <v-row justify="center" style="min-height: 160px">
                   <v-col cols="6">
-                    <v-form ref="form" height="100" width="500" v-model="valid" lazy-validation
-                      class="class-form mx-auto white" @submit.prevent="submit" justify="center" align="center">
-                      <v-text-field v-model="giftCardCost" class="mt-0 pt-0" type="number" style="width: 300px"
-                        label="Gift Card Amount: $" min="10"></v-text-field>
+                    <v-form
+                      ref="form"
+                      height="100"
+                      width="500"
+                      v-model="valid"
+                      lazy-validation
+                      class="class-form mx-auto white"
+                      @submit.prevent="submit"
+                      justify="center"
+                      align="center"
+                    >
+                      <v-text-field
+                        v-model="giftCardCost"
+                        class="mt-0 pt-0"
+                        type="number"
+                        style="width: 300px"
+                        label="Gift Card Amount: $"
+                        min="10"
+                      ></v-text-field>
                       <v-row justify="center" align="center">
                         <v-col>
                           <v-btn class="mr-4" type="submit" :disabled="invalid">
@@ -67,14 +102,12 @@
         </v-toolbar>
       </template>
       <template v-slot:[`item.actions`]="{ item }">
-        <v-btn v-if="subscribeBtn(item)" color="green" small class="mr-2" @click="redirectSubscription(item)">
+        <!-- <v-btn v-if="subscribeBtn(item)" color="green" small class="mr-2" @click="redirectSubscription(item)">
           Subscribe!
+        </v-btn> -->
+        <v-btn @click="addToCart(item)">
+          <v-icon class="mr-2" justify="center"> mdi-cart-plus </v-icon>Purchase
         </v-btn>
-        <v-btn v-else @click="addToCart(item)">
-        <v-icon class="mr-2" justify="center">
-          mdi-cart-plus
-        </v-icon>Purchase
-      </v-btn>
         <!-- <v-icon v-else  class="mr-2" @click="purchasePackage(item)">
           mdi-cart-plus
         </v-icon> -->
@@ -142,13 +175,11 @@ export default {
         if (response.status == 200) {
           // adjust this commit in the future perhaps
           this.$store.commit("SET_PACKAGE_LIST", response.data);
-          if(this.newClient == false){
+          if (this.newClient == false) {
             this.packages = response.data.filter((item) => {
-            return (
-              !item.description.includes("New Client")
-            );
-          })
-          }else{
+              return !item.description.includes("New Client");
+            });
+          } else {
             this.packages = response.data;
           }
         } else {
@@ -283,11 +314,99 @@ export default {
     addToCart(item) {
       if (item.description.includes("Gift")) {
         if (this.$store.state.clientDetails.email == "") {
-          alert("Please add an email to your account")
+          alert("Please add an email to your account");
         } else {
+
+          if (this.$store.state.lineItems.length > 0) {
+        // check the store and see if there's something in there already
+
+        // check that only one subscription is allowed
+        let foundSubscription = false;
+        let continueWithShopping = true;
+        for (
+          let index = 0;
+          index < this.$store.state.lineItems.length;
+          index++
+        ) {
+          
+          let element = this.$store.state.lineItems[index];
+          if (foundSubscription && element.is_monthly_renew && element.productName != "New Client First Month") {
+            continueWithShopping = false;
+            alert("Please only choose one subscription");
+            break;
+          } else if (
+            element.is_monthly_renew &&
+            this.$store.state.lineItems.length >= 1 && element.productName != "New Client First Month"
+          ) {
+            foundSubscription = true;
+            continueWithShopping = false;
+            alert(
+              "Please choose between one subscription or one-time purchase packages"
+            );
+            break;
+          }
+        }
+
+        if (continueWithShopping) {
           this.dialog = true;
         }
-      } else {
+      } else if (this.$store.state.lineItems.length == 0) {
+        this.dialog = true;
+      }
+      
+        }
+        /// GIFT CARD LOGIC ENDS
+      } else if (this.$store.state.lineItems.length > 0) {
+        // check the store and see if there's something in there already
+        
+        // check that only one subscription is allowed
+        let foundSubscription = false;
+        let continueWithShopping = true;
+        for (
+          let index = 0;
+          index < this.$store.state.lineItems.length;
+          index++
+        ) {
+          if (item.is_subscription && item.description != "New Client First Month") {
+            continueWithShopping = false;
+            alert(
+              "Please choose between one subscription or one-time purchase packages"
+            );
+            break;
+          }
+          let element = this.$store.state.lineItems[index];
+          if (foundSubscription && element.is_monthly_renew && element.productName != "New Client First Month") {
+            continueWithShopping = false;
+            alert("Please only choose one subscription");
+            break;
+          } else if (
+            element.is_monthly_renew &&
+            this.$store.state.lineItems.length >= 1 && element.productName != "New Client First Month"
+          ) {
+            foundSubscription = true;
+            continueWithShopping = false;
+            alert(
+              "Please choose between one subscription or one-time purchase packages"
+            );
+            break;
+          }
+        }
+
+        if (continueWithShopping) {
+          let obj = new Object();
+          obj.price = item.package_cost;
+          obj.quantity = 1;
+          obj.productName = item.description;
+          obj.client_id = this.$store.state.clientDetails.client_id;
+          obj.package_id = item.package_id;
+          obj.classes_remaining = item.classes_amount;
+          obj.is_monthly_renew = item.is_subscription;
+          obj.total_amount_paid = item.package_cost;
+          this.lineItems.push(obj);
+          this.$store.commit("SET_STRIPE_LINE_ITEMS", this.lineItems);
+          alert("Added to cart.");
+        }
+      } else if (this.$store.state.lineItems.length == 0) {
         let obj = new Object();
         obj.price = item.package_cost;
         obj.quantity = 1;
@@ -299,9 +418,8 @@ export default {
         obj.total_amount_paid = item.package_cost;
         this.lineItems.push(obj);
         this.$store.commit("SET_STRIPE_LINE_ITEMS", this.lineItems);
-        alert("Added to cart.")
+        alert("Added to cart.");
       }
-
     },
     subscribeBtn(item) {
       if (item.description.includes("Month Package")) {
@@ -321,13 +439,62 @@ export default {
       }
     },
     submit() {
-      let obj = new Object();
+  
+      
+      if (this.$store.state.lineItems.length > 0) {
+        // check the store and see if there's something in there already
+
+        // check that only one subscription is allowed
+        let foundSubscription = false;
+        let continueWithShopping = true;
+        for (
+          let index = 0;
+          index < this.$store.state.lineItems.length;
+          index++
+        ) {
+          
+          let element = this.$store.state.lineItems[index];
+          if (foundSubscription && element.is_monthly_renew && element.productName != "New Client First Month") {
+            continueWithShopping = false;
+            alert("Please only choose one subscription");
+            break;
+          } else if (
+            element.is_monthly_renew &&
+            this.$store.state.lineItems.length >= 1 && element.productName != "New Client First Month"
+          ) {
+            foundSubscription = true;
+            continueWithShopping = false;
+            alert(
+              "Please choose between one subscription or one-time purchase packages"
+            );
+            break;
+          }
+        }
+
+        if (continueWithShopping) {
+          let obj = new Object();
       obj.price = this.giftCardCost;
       obj.quantity = 1;
-      obj.productName = "Gift Card"
+      obj.productName = "Gift Card";
       this.lineItems.push(obj);
       this.$store.commit("SET_STRIPE_LINE_ITEMS", this.lineItems);
       this.close();
+      alert("Added to cart.");
+        }
+      } else if (this.$store.state.lineItems.length == 0) {
+        let obj = new Object();
+      obj.price = this.giftCardCost;
+      obj.quantity = 1;
+      obj.productName = "Gift Card";
+      this.lineItems.push(obj);
+      this.$store.commit("SET_STRIPE_LINE_ITEMS", this.lineItems);
+      this.close();
+        alert("Added to cart.");
+      }
+      
+      
+      
+      
       // old code
       // // for gift card form
       // this.packagePurchase.total_amount_paid = this.giftCardCost;
@@ -362,13 +529,13 @@ export default {
     },
   },
   computed: {
-      returnQuantity() {
-        if (this.$store.state.lineItems.length > 0) {
-          return this.$store.state.lineItems.length
-        }
-        return ""
+    returnQuantity() {
+      if (this.$store.state.lineItems.length > 0) {
+        return this.$store.state.lineItems.length;
       }
-  }
+      return "";
+    },
+  },
 };
 </script>
 

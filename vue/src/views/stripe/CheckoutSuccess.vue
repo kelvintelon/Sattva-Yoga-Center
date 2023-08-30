@@ -1,26 +1,6 @@
 <template>
   <v-container>
-    <h2>Payment Success! Do not refresh this page! Redirecting . . .</h2>
-    <!-- <v-row><br /></v-row>
-    <v-row>
-      <router-link v-bind:to="{ name: 'client-package-management' }">
-        <v-btn color="orange">Buy Packages</v-btn>
-      </router-link>
-      <v-spacer></v-spacer>
-      <router-link v-bind:to="{ name: 'class-registration' }">
-        <v-btn color="green">Sign up for class</v-btn>
-      </router-link>
-      <v-spacer></v-spacer>
-      <v-spacer></v-spacer>
-      <v-spacer></v-spacer>
-      <v-spacer></v-spacer>
-      <v-spacer></v-spacer>
-      <v-spacer></v-spacer>
-      <v-spacer></v-spacer>
-      <v-spacer></v-spacer>
-      <v-spacer></v-spacer>
-      <v-spacer></v-spacer>
-    </v-row> -->
+    <h2 style="color: rgba(245, 104, 71, 0.95)">Payment Success! Do not refresh this page or switch tabs! Redirecting . . .</h2>
   </v-container>
 </template>
 
@@ -35,20 +15,10 @@ export default {
     }
   },
   created() {
-    // this.updateDb();
+    
     this.getFromLocalStorage();
   },
   methods: {
-    // updateDb() {
-    //   this.sessionId = localStorage.getItem('sessionId');
-    //   axios
-    //     .get(`/stripe/updateDbAfterPurchase/${this.sessionId}`)
-    //     .then((response)=>{
-    //       if(response.status== 201){
-    //         alert("Payment Success")
-    //       }
-    //     })
-    // },
     getFromLocalStorage() {
       const serializedData = localStorage.getItem('lineItems');
       if (serializedData) {

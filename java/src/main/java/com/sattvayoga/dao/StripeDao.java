@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface StripeDao {
     Session createSession(List<CheckoutItemDTO> checkoutItemDTOList) throws StripeException;
+//    Session createSubscriptionSession(List<CheckoutSubscriptionItemDTO> checkoutItemDTOList) throws StripeException;
 }

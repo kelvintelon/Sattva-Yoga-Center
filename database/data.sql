@@ -18,8 +18,8 @@ INSERT INTO package_details (description,package_cost,classes_amount,subscriptio
 INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online) VALUES ('1 Class',14,1,0,false,true);
 INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online) VALUES ('10 Class Package',120,10,0,false,true);
 INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online) VALUES ('20 Class Package',220,20,0,false,true);
-INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online) VALUES ('One Month Package',95,0,1,true,true);
-INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online) VALUES ('Six Month Package',540,0,6,true,true);
+INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online) VALUES ('One Month Subscription',95,0,1,true,true);
+INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online) VALUES ('Six Month Subscription',540,0,6,true,true);
 
 INSERT INTO website_descriptions(location_name, description) VALUES ('News and Events', 'New Website Coming Soon 2023!');
 INSERT INTO website_descriptions(location_name, description) VALUES ('Class Schedule', 'Schedule Updates: Effective Monday, April 10th, 2023

@@ -22,38 +22,48 @@ public class JdbcStripeDao implements StripeDao{
     public Session createSession(List<CheckoutItemDTO> checkoutItemDTOList) throws StripeException {
 
         String successURL = baseURL + "payment/success";
-        String failureURL = baseURL + "payment/failed";
+        String failureURL = baseURL + "shoppingCart";
 
         Stripe.apiKey = apiKey;
 
         List<SessionCreateParams.LineItem> sessionItemList = new ArrayList<>();
 
-        for(CheckoutItemDTO checkoutItemDTO: checkoutItemDTOList){
-            sessionItemList.add(createSessionLineItem(checkoutItemDTO));
-        }
+        Boolean foundSubscription = false;
 
+        for(CheckoutItemDTO checkoutItemDTO: checkoutItemDTOList){
+
+            if (checkoutItemDTO.isIs_monthly_renew()) {
+                foundSubscription = true;
+                // Handle subscription items
+                sessionItemList.add(createSubscriptionLineItem(checkoutItemDTO));
+            } else {
+                // Handle one-time purchase items
+                sessionItemList.add(createSessionLineItem(checkoutItemDTO));
+            }
+        }
+        // (foundSubscription) ? SessionCreateParams.Mode.SUBSCRIPTION :SessionCreateParams.Mode.PAYMENT
         SessionCreateParams params = SessionCreateParams.builder()
                 .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
-                .setMode(SessionCreateParams.Mode.PAYMENT)
+                .setMode((foundSubscription) ? SessionCreateParams.Mode.SUBSCRIPTION :SessionCreateParams.Mode.PAYMENT)
                 .setCancelUrl(failureURL)
                 .setSuccessUrl(successURL)
                 .addAllLineItem(sessionItemList)
-//                .addDiscount(createDiscount())
                 .build();
 
         return Session.create(params);
 
     }
 
-//    private SessionCreateParams.Discount createDiscount() {
-//        return SessionCreateParams.Discount.builder()
-//                .setCoupon("BQnEKjVU")
-//                .build();
-//    }
-
     private SessionCreateParams.LineItem createSessionLineItem(CheckoutItemDTO checkoutItemDTO) {
         return SessionCreateParams.LineItem.builder()
                 .setPriceData(createPriceData(checkoutItemDTO))
+                .setQuantity(Long.parseLong(String.valueOf(checkoutItemDTO.getQuantity())))
+                .build();
+    }
+
+    private SessionCreateParams.LineItem createSubscriptionLineItem(CheckoutItemDTO checkoutItemDTO) {
+        return SessionCreateParams.LineItem.builder()
+                .setPrice((checkoutItemDTO.getProductName().equals("One Month Subscription")) ? "price_1NieCWBV0tnIJdW6WqIm2dti" : "price_1NkWmnBV0tnIJdW6ZGHtezqw")
                 .setQuantity(Long.parseLong(String.valueOf(checkoutItemDTO.getQuantity())))
                 .build();
     }
@@ -68,6 +78,60 @@ public class JdbcStripeDao implements StripeDao{
                                 .build()
                 ).build();
     }
+//    private SessionCreateParams.Discount createDiscount() {
+//        return SessionCreateParams.Discount.builder()
+//                .setCoupon("BQnEKjVU")
+//                .build();
+//    }
+
+
+//    @Override
+//    public Session createSubscriptionSession(List<CheckoutSubscriptionItemDTO> checkoutItemDTOList) throws StripeException {
+//
+//        String successURL = baseURL + "payment/success";
+//        String failureURL = baseURL + "payment/failed";
+//
+//        Stripe.apiKey = apiKey;
+//
+//        List<SessionCreateParams.LineItem> sessionItemList = new ArrayList<>();
+//
+//        for(CheckoutSubscriptionItemDTO checkoutItemDTO: checkoutItemDTOList){
+//            sessionItemList.add(createSubscriptionSessionLineItem(checkoutItemDTO));
+//        }
+//
+//        SessionCreateParams params = SessionCreateParams.builder()
+//                .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
+//                .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
+//                .setCancelUrl(failureURL)
+//                .setSuccessUrl(successURL)
+//                .addAllLineItem(sessionItemList)
+////                .addDiscount(createDiscount())
+//                .build();
+//
+//        return Session.create(params);
+//
+//    }
+
+//    private SessionCreateParams.LineItem createSubscriptionSessionLineItem(CheckoutSubscriptionItemDTO checkoutItemDTO) {
+//        return SessionCreateParams.LineItem.builder()
+//                .setPriceData(createSubscriptionPriceData(checkoutItemDTO))
+//                .setQuantity(Long.parseLong(String.valueOf(checkoutItemDTO.getQuantity())))
+//                .build();
+//    }
+
+
+
+//    private SessionCreateParams.LineItem.PriceData createSubscriptionPriceData(CheckoutSubscriptionItemDTO checkoutItemDTO) {
+//        return SessionCreateParams.LineItem.PriceData.builder()
+//                .setCurrency("usd")
+//                .setUnitAmount(95L)
+//                .setProductData(
+//                        SessionCreateParams.LineItem.PriceData.ProductData.builder()
+//                                .setName("One Month Subscription")
+//
+//                                .build()
+//                ).build();
+//    }
 
 //    @Value("${BASE_URL}")
 //    private String baseURL;
