@@ -13,14 +13,16 @@ INSERT INTO class_details (teacher_id, is_repeating, start_time, date_range, cla
 INSERT INTO class_details (teacher_id, is_repeating, start_time, date_range, class_duration, is_paid, class_description) VALUES (1,true,'05:45 PM','{Mon,Tue,Wed,Thu,Fri}',60,false,'All Levels');
 INSERT INTO class_details (teacher_id, is_repeating, start_time, date_range, class_duration, is_paid, class_description) VALUES (1,true,'07:15 PM','{Mon,Tue,Wed,Thu}',60,false,'All Levels');
 
-INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online) VALUES ('New Client First Class',10,1,0,false,true);
-INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online) VALUES ('New Client First Month',40,0,1,true,true);
-INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online) VALUES ('1 Class',14,1,0,false,true);
-INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online) VALUES ('10 Class Package',120,10,0,false,true);
-INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online) VALUES ('20 Class Package',220,20,0,false,true);
-INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online) VALUES ('One Month Subscription',95,0,1,true,true);
-INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online) VALUES ('Six Month Subscription',540,0,6,true,true);
-INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online) VALUES ('Gift Card',10,0,0,false,true);
+INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online,is_recurring) VALUES ('New Client First Class',10,1,0,false,true,false);
+INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online,is_recurring) VALUES ('New Client First Month Package',40,0,1,true,true,false);
+INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online,is_recurring) VALUES ('1 Class',14,1,0,false,true,false);
+INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online,is_recurring) VALUES ('10 Class Package',120,10,0,false,true,false);
+INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online,is_recurring) VALUES ('20 Class Package',220,20,0,false,true,false);
+INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online,is_recurring) VALUES ('One Month Subscription',95,0,1,true,true,true);
+INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online,is_recurring) VALUES ('Six Month Subscription',540,0,6,true,true,true);
+INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online,is_recurring) VALUES ('One Month Package',95,0,1,true,true,false);
+INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online,is_recurring) VALUES ('Six Month Package',540,0,6,true,true,false);
+INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online,is_recurring) VALUES ('Gift Card',10,0,0,false,true,false);
 
 
 INSERT INTO website_descriptions(location_name, description) VALUES ('News and Events', 'New Website Coming Soon 2023!');

@@ -317,7 +317,7 @@
 
                       <v-text-field v-model="editedItem.email" :rules="emailRules" label="E-mail" required></v-text-field>
                       <v-checkbox v-model="editedItem.is_new_client" label="Is New Client?" required></v-checkbox>
-                      <v-checkbox v-model="editedItem.has_record_of_liability" label="Record of Liability"
+                      <v-checkbox v-model="editedItem.has_record_of_liability" label="Record of Liability?"
                         required></v-checkbox>
                       <v-checkbox v-model="editedItem.is_client_active" label="Is Client Active?" required></v-checkbox>
 

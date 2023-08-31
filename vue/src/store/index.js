@@ -46,7 +46,11 @@ export default new Vuex.Store({
     LOGOUT(state) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      localStorage.removeItem('clientDetails')
+      localStorage.removeItem('clientDetails');
+      localStorage.removeItem('lineItems');
+      localStorage.removeItem('paymentId');
+      localStorage.removeItem('sessionId');
+      localStorage.removeItem('animation');
       state.token = '';
       state.user = {};
       state.clientDetails = {};

@@ -76,7 +76,8 @@ CREATE TABLE package_details
 	classes_amount		int,
 	subscription_duration	int,
 	is_subscription		boolean 		NOT NULL, 
-	is_visible_online		boolean			NOT NULL,
+	is_visible_online	boolean			NOT NULL,
+	is_recurring 		boolean			NOT NULL,	
 	CONSTRAINT PK_package_details PRIMARY KEY (package_id)
 );
 

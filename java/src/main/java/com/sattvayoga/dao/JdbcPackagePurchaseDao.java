@@ -343,7 +343,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         }
         packageDetails.setIs_subscription(rs.getBoolean("is_subscription"));
         packageDetails.setIs_visible_online((rs.getBoolean("is_visible_online")));
-
+        packageDetails.setIs_recurring(rs.getBoolean("is_recurring"));
         return packageDetails;
     }
 
@@ -416,6 +416,15 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         jdbcTemplate.update(sql, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
                 checkoutItemDTO.getPackage_id(), 0, LocalDate.now(),
                 LocalDate.now().plusMonths(6), true,
+                checkoutItemDTO.getTotal_amount_paid(), 0, checkoutItemDTO.getPaymentId());
+    }
+
+    public void createGiftCardPurchase(CheckoutItemDTO checkoutItemDTO) {
+        String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, classes_remaining, activation_date, expiration_date, is_monthly_renew, total_amount_paid, discount, paymentId ) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        jdbcTemplate.update(sql, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
+                checkoutItemDTO.getPackage_id(), 0, LocalDate.now(),
+                LocalDate.now().plusMonths(60), false,
                 checkoutItemDTO.getTotal_amount_paid(), 0, checkoutItemDTO.getPaymentId());
     }
 

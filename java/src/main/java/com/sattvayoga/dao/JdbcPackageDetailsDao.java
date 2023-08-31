@@ -21,12 +21,12 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
     @Override
     public boolean createPackage(PackageDetails packageDetails) {
         String sql = "INSERT INTO package_details (description, package_cost, " +
-                "classes_amount, subscription_duration, is_subscription, is_visible_online) VALUES " +
-                "(?, ?, ?, ?, ?, ?)";
+                "classes_amount, subscription_duration, is_subscription, is_visible_online, is_recurring) VALUES " +
+                "(?, ?, ?, ?, ?, ?, ?)";
 
         return jdbcTemplate.update(sql, packageDetails.getDescription(), packageDetails.getPackage_cost(),
                 packageDetails.getClasses_amount(), packageDetails.getSubscription_duration(),
-                packageDetails.isIs_subscription(), packageDetails.isIs_visible_online()) == 1;
+                packageDetails.isIs_subscription(), packageDetails.isIs_visible_online(), packageDetails.isIs_recurring()) == 1;
     }
 
 
@@ -54,12 +54,13 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
                 "classes_amount = ? , " +
                 "subscription_duration = ? , " +
                 "is_subscription = ? , " +
-                "is_visible_online = ? " +
+                "is_visible_online = ? , " +
+                "is_recurring = ? " +
                 "WHERE package_id = ?";
         return jdbcTemplate.update(sql, packageDetails.getPackage_id(), packageDetails.getDescription(),
                 packageDetails.getPackage_cost(), packageDetails.getClasses_amount(),
                 packageDetails.getSubscription_duration(), packageDetails.isIs_subscription(),
-                packageDetails.isIs_visible_online(), packageDetails.getPackage_id())==1;
+                packageDetails.isIs_visible_online(), packageDetails.isIs_recurring(), packageDetails.getPackage_id())==1;
    }
 
     @Override
@@ -105,7 +106,7 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
         }
         packageDetails.setIs_subscription(rs.getBoolean("is_subscription"));
         packageDetails.setIs_visible_online(rs.getBoolean("is_visible_online"));
-
+        packageDetails.setIs_recurring(rs.getBoolean("is_recurring"));
         return packageDetails;
     }
 

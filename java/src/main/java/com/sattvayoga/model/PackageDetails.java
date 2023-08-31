@@ -12,8 +12,9 @@ public class PackageDetails {
     private boolean is_subscription;
 
     private boolean is_visible_online;
+    private boolean is_recurring;
 
-    public PackageDetails(int package_id, String description, BigDecimal package_cost, int classes_amount, int subscription_duration, boolean is_subscription, boolean is_visible_online) {
+    public PackageDetails(int package_id, String description, BigDecimal package_cost, int classes_amount, int subscription_duration, boolean is_subscription, boolean is_visible_online, boolean is_recurring) {
         this.package_id = package_id;
         this.description = description;
         this.package_cost = package_cost;
@@ -21,6 +22,7 @@ public class PackageDetails {
         this.subscription_duration = subscription_duration;
         this.is_subscription = is_subscription;
         this.is_visible_online = is_visible_online;
+        this.is_recurring = is_recurring;
     }
 
     public PackageDetails() {
@@ -80,5 +82,13 @@ public class PackageDetails {
 
     public void setIs_visible_online(boolean is_visible_online) {
         this.is_visible_online = is_visible_online;
+    }
+
+    public boolean isIs_recurring() {
+        return is_recurring;
+    }
+
+    public void setIs_recurring(boolean is_recurring) {
+        this.is_recurring = is_recurring;
     }
 }

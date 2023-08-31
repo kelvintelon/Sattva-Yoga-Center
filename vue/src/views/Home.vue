@@ -951,7 +951,14 @@ export default {
   }),
   created() {
     this.getEventTable();
-    setTimeout(() => (this.animationLoader = false), 3000);
+    let foundAnimationLoader = localStorage.getItem('animation');
+    if (!foundAnimationLoader) {
+      setTimeout(() => (this.animationLoader = false), 3000);
+      localStorage.setItem('animation',true)
+    } else {
+      this.animationLoader = false;
+    }
+    
   },
   unmounted() {
     this.expandCarousel = false;

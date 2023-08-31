@@ -14,6 +14,7 @@ import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRespon
 import software.amazon.awssdk.thirdparty.jackson.core.JsonProcessingException;
 
 import java.io.IOException;
+import java.sql.SQLOutput;
 
 
 @Service
@@ -54,13 +55,44 @@ public class SecretManagerService {
 
         return secret;
     }
+
+    @Cacheable("stripeSecretKey")
+    public String getStripeKey() throws Throwable {
+        String secretName = "SecretStripeKey";
+        Region region = Region.of("us-east-2");
+
+        // Create a Secrets Manager client
+        SecretsManagerClient client = SecretsManagerClient.builder()
+                .region(region)
+                .build();
+
+        GetSecretValueRequest getSecretValueRequest = GetSecretValueRequest.builder()
+                .secretId(secretName)
+                .build();
+
+        GetSecretValueResponse getSecretValueResponse;
+
+        try {
+            getSecretValueResponse = client.getSecretValue(getSecretValueRequest);
+        } catch (Exception e) {
+            // For a list of exceptions thrown, see
+            // https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+            System.out.println("Could not retrieve Secret Value Response");
+            throw e.getCause();
+        }
+
+        String secret = getSecretValueResponse.secretString();
+
+        return secret;
+    }
+
     public JavaMailCredentials getEmailPassword() {
         JavaMailCredentials javaMailCredentials = new JavaMailCredentials("username", "password");
         return javaMailCredentials;
 
     }
 
-    // if you want to deploy, uncomment below
+//    //TODO: if you want to deploy, uncomment below
 //    @Cacheable("emailPasswordCache")
 //    public JavaMailCredentials getEmailPassword() throws Throwable {
 //        String secretName = "Java-Mail";

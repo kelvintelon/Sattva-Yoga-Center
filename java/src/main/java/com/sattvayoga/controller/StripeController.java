@@ -69,7 +69,7 @@ public class StripeController {
             if (eachPackage.getProductName().contains("Gift")) {
                 String code = packagePurchaseDao.generateGiftCardCode();
                 packagePurchaseDao.createGiftCard(code, eachPackage.getPrice());
-
+                packagePurchaseDao.createGiftCardPurchase(eachPackage);
                 ClientDetails clientDetails =
                         clientDetailsDao.findClientByUserId(
                                 userDao.findIdByUsername(
@@ -81,9 +81,9 @@ public class StripeController {
                 } catch (Throwable e) {
                     System.out.println("Error sending gift card email to client id: " + clientDetails.getClient_id());
                 }
-            } else if (eachPackage.getProductName().equals("One Month Subscription")) {
+            } else if (eachPackage.getProductName().contains("One") && eachPackage.isIs_monthly_renew()) {
                 packagePurchaseDao.createOneMonthAutoRenewPurchase(eachPackage);
-            } else if (eachPackage.getProductName().equals("Six Month Subscription")) {
+            } else if (eachPackage.getProductName().contains("Six") && eachPackage.isIs_monthly_renew()) {
                 packagePurchaseDao.createSixMonthAutoRenewPurchase(eachPackage);
             } else {
                 packagePurchaseDao.createStripePackagePurchase(eachPackage);

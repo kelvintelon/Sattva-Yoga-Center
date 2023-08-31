@@ -74,11 +74,15 @@
             v-model="clientDetails.is_on_email_list"
             label="Join Email List?"
           ></v-checkbox>
+          <v-checkbox
+            v-model="clientDetails.has_record_of_liability"
+            label="Record of Liability?"
+          ></v-checkbox>
           <v-btn
             v-if="!readLiabilityRelease"
             @click="readLiabilityRelease = true"
           >
-            Read Studio Liability Release
+            Read and Accept Studio Liability Release
           </v-btn>
           <div v-else>
             Studio Liability Release: I understand that yoga can be physically

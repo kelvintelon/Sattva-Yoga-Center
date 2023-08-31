@@ -67,7 +67,7 @@
                       v-model="valid"
                       lazy-validation
                       class="class-form mx-auto white"
-                      @submit.prevent="submit"
+                      @submit.prevent="submitGiftCard"
                       justify="center"
                       align="center"
                     >
@@ -77,7 +77,7 @@
                         type="number"
                         style="width: 300px"
                         label="Gift Card Amount: $"
-                        min="10"
+                        min=10
                       ></v-text-field>
                       <v-row justify="center" align="center">
                         <v-col>
@@ -315,59 +315,65 @@ export default {
       if (item.description.includes("Gift")) {
         if (this.$store.state.clientDetails.email == "") {
           alert("Please add an email to your account");
-        } else {
-
+        } else {// check the store and see if there's something in there already
           if (this.$store.state.lineItems.length > 0) {
-        // check the store and see if there's something in there already
+            
 
-        // check that only one subscription is allowed
-        let foundSubscription = false;
-        let continueWithShopping = true;
-        for (
-          let index = 0;
-          index < this.$store.state.lineItems.length;
-          index++
-        ) {
-          
-          let element = this.$store.state.lineItems[index];
-          if (foundSubscription && element.is_monthly_renew && element.productName != "New Client First Month") {
-            continueWithShopping = false;
-            alert("Please only choose one subscription");
-            break;
-          } else if (
-            element.is_monthly_renew &&
-            this.$store.state.lineItems.length >= 1 && element.productName != "New Client First Month"
-          ) {
-            foundSubscription = true;
-            continueWithShopping = false;
-            alert(
-              "Please choose between one subscription or one-time purchase packages"
-            );
-            break;
+            // check that only one subscription is allowed
+           
+            let continueWithShopping = true;
+            for (
+              let index = 0;
+              index < this.$store.state.lineItems.length;
+              index++
+            ) {
+              let element = this.$store.state.lineItems[index];
+              if (
+                element.is_monthly_renew
+              ) {
+                continueWithShopping = false;
+                alert(
+                  "Please choose between one subscription or one-time purchase packages"
+                );
+                break;
+              }
+            }
+
+            if (continueWithShopping) {
+              this.packagePurchase.package_id = item.package_id;
+              this.packagePurchase.client_id = this.$store.state.clientDetails.client_id;
+              this.packagePurchase.classes_remaining = item.classes_remaining;
+              this.packagePurchase.total_amount_paid = item.package_cost;
+              this.packagePurchase.is_monthly_renew = false;
+
+              this.dialog = true;
+            }
+          } else if (this.$store.state.lineItems.length == 0) {
+            this.packagePurchase.package_purchase_id = item.package_id;
+              this.packagePurchase.client_id = this.$store.state.clientDetails.client_id;
+              this.packagePurchase.classes_remaining = item.classes_remaining;
+              this.packagePurchase.total_amount_paid = item.package_cost;
+              this.packagePurchase.is_monthly_renew = false;
+
+
+            this.dialog = true;
           }
-        }
-
-        if (continueWithShopping) {
-          this.dialog = true;
-        }
-      } else if (this.$store.state.lineItems.length == 0) {
-        this.dialog = true;
-      }
-      
         }
         /// GIFT CARD LOGIC ENDS
       } else if (this.$store.state.lineItems.length > 0) {
         // check the store and see if there's something in there already
-        
+
         // check that only one subscription is allowed
-        let foundSubscription = false;
         let continueWithShopping = true;
         for (
           let index = 0;
           index < this.$store.state.lineItems.length;
           index++
         ) {
-          if (item.is_subscription && item.description != "New Client First Month") {
+          if (
+            item.is_subscription &&
+            item.is_recurring
+          ) {
             continueWithShopping = false;
             alert(
               "Please choose between one subscription or one-time purchase packages"
@@ -375,15 +381,9 @@ export default {
             break;
           }
           let element = this.$store.state.lineItems[index];
-          if (foundSubscription && element.is_monthly_renew && element.productName != "New Client First Month") {
-            continueWithShopping = false;
-            alert("Please only choose one subscription");
-            break;
-          } else if (
-            element.is_monthly_renew &&
-            this.$store.state.lineItems.length >= 1 && element.productName != "New Client First Month"
+           if (
+            element.is_monthly_renew
           ) {
-            foundSubscription = true;
             continueWithShopping = false;
             alert(
               "Please choose between one subscription or one-time purchase packages"
@@ -400,7 +400,7 @@ export default {
           obj.client_id = this.$store.state.clientDetails.client_id;
           obj.package_id = item.package_id;
           obj.classes_remaining = item.classes_amount;
-          obj.is_monthly_renew = item.is_subscription;
+          obj.is_monthly_renew = (item.is_subscription && item.is_recurring);
           obj.total_amount_paid = item.package_cost;
           this.lineItems.push(obj);
           this.$store.commit("SET_STRIPE_LINE_ITEMS", this.lineItems);
@@ -414,7 +414,7 @@ export default {
         obj.client_id = this.$store.state.clientDetails.client_id;
         obj.package_id = item.package_id;
         obj.classes_remaining = item.classes_amount;
-        obj.is_monthly_renew = item.is_subscription;
+        obj.is_monthly_renew = (item.is_subscription && item.is_recurring);
         obj.total_amount_paid = item.package_cost;
         this.lineItems.push(obj);
         this.$store.commit("SET_STRIPE_LINE_ITEMS", this.lineItems);
@@ -438,31 +438,22 @@ export default {
         this.$router.push({ name: "checkout6Month" });
       }
     },
-    submit() {
-  
-      
+    submitGiftCard() {
+      // check the store and see if there's something in there already
       if (this.$store.state.lineItems.length > 0) {
-        // check the store and see if there's something in there already
-
+        
         // check that only one subscription is allowed
-        let foundSubscription = false;
+        
         let continueWithShopping = true;
         for (
           let index = 0;
           index < this.$store.state.lineItems.length;
           index++
         ) {
-          
           let element = this.$store.state.lineItems[index];
-          if (foundSubscription && element.is_monthly_renew && element.productName != "New Client First Month") {
-            continueWithShopping = false;
-            alert("Please only choose one subscription");
-            break;
-          } else if (
-            element.is_monthly_renew &&
-            this.$store.state.lineItems.length >= 1 && element.productName != "New Client First Month"
+          if (
+            element.is_monthly_renew 
           ) {
-            foundSubscription = true;
             continueWithShopping = false;
             alert(
               "Please choose between one subscription or one-time purchase packages"
@@ -473,28 +464,35 @@ export default {
 
         if (continueWithShopping) {
           let obj = new Object();
-      obj.price = this.giftCardCost;
-      obj.quantity = 1;
-      obj.productName = "Gift Card";
-      this.lineItems.push(obj);
-      this.$store.commit("SET_STRIPE_LINE_ITEMS", this.lineItems);
-      this.close();
-      alert("Added to cart.");
+          obj.price = this.giftCardCost;
+          obj.quantity = 1;
+          obj.productName = "Gift Card";
+          obj.client_id = this.$store.state.clientDetails.client_id;
+          obj.package_id = this.packagePurchase.package_id;
+          obj.classes_remaining = this.packagePurchase.classes_remaining;
+          obj.is_monthly_renew = false;
+          obj.total_amount_paid = this.giftCardCost;
+          this.lineItems.push(obj);
+          this.$store.commit("SET_STRIPE_LINE_ITEMS", this.lineItems);
+          this.close();
+          alert("Added to cart.");
         }
       } else if (this.$store.state.lineItems.length == 0) {
         let obj = new Object();
-      obj.price = this.giftCardCost;
-      obj.quantity = 1;
-      obj.productName = "Gift Card";
-      this.lineItems.push(obj);
-      this.$store.commit("SET_STRIPE_LINE_ITEMS", this.lineItems);
-      this.close();
-        alert("Added to cart.");
+          obj.price = this.giftCardCost;
+          obj.quantity = 1;
+          obj.productName = "Gift Card";
+          obj.client_id = this.$store.state.clientDetails.client_id;
+          obj.package_id = this.packagePurchase.package_id;
+          obj.classes_remaining = this.packagePurchase.classes_remaining;
+          obj.is_monthly_renew = false;
+          obj.total_amount_paid = this.giftCardCost;
+          this.lineItems.push(obj);
+          this.$store.commit("SET_STRIPE_LINE_ITEMS", this.lineItems);
+          this.close();
+          alert("Added to cart.");
       }
-      
-      
-      
-      
+
       // old code
       // // for gift card form
       // this.packagePurchase.total_amount_paid = this.giftCardCost;

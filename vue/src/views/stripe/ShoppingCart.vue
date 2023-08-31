@@ -117,16 +117,11 @@ export default {
       if (this.$store.state.lineItems.length > 0) {
         
         // check that only one subscription is allowed
-        let foundSubscription = false;
+       
         let continueWithPayment = true;
         for (let index = 0; index < this.$store.state.lineItems.length; index++) {
           let element = this.$store.state.lineItems[index];
-          if (foundSubscription && element.is_monthly_renew && element.productName != "New Client First Month") {
-            continueWithPayment = false;
-            alert("Please only choose one subscription")
-            break;
-          } else if (element.is_monthly_renew && this.$store.state.lineItems.length > 1 && element.productName != "New Client First Month") {
-            foundSubscription = true;
+          if (element.is_monthly_renew && this.$store.state.lineItems.length > 1) {
             continueWithPayment = false;
             alert("Please choose between one subscription or one-time purchase packages")
             break;
@@ -141,7 +136,7 @@ export default {
           .post(`/stripe/create-checkout-session`, this.$store.state.lineItems)
           .then((response) => {
             this.sessionId = response.data.sessionId;
-            localStorage.setItem("sessionId", response.data.sessionId);
+            //localStorage.setItem("sessionId", response.data.sessionId);
             localStorage.setItem("paymentId", response.data.paymentId);
             // console.log('session', response.data);
             this.$refs.checkoutRef.redirectToCheckout({
@@ -151,7 +146,7 @@ export default {
             //   sessionId: response.data.sessionId,
             // });
           })
-          .catch((err) => console.log(err));
+          .catch(alert("Attempting checkout"));
 
         }
       } else {

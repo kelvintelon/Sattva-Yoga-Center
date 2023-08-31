@@ -80,6 +80,22 @@
           >
             {{ emailRegistrationErrorMsg }}
           </div>
+    
+      <v-checkbox
+      v-if="$store.state.user.username == 'admin'"
+        v-model="clientDetails.is_new_client"
+        label="Is New Client?"
+      ></v-checkbox>
+      <v-checkbox
+      v-if="$store.state.user.username == 'admin'"
+        v-model="clientDetails.has_record_of_liability"
+        label="Record of Liability?"
+      ></v-checkbox>
+      <v-checkbox
+      v-if="$store.state.user.username == 'admin'"
+        v-model="clientDetails.is_client_active"
+        label="Is Client Active?"
+      ></v-checkbox>
       <v-checkbox
         v-model="clientDetails.is_on_email_list"
         label="Stay on Email List?"

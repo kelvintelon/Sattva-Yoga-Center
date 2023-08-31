@@ -80,6 +80,11 @@
                           required
                           @change="onSubscriptionBooleanChange"
                         ></v-checkbox>
+                        <v-checkbox v-if="toggleRecurring || packageDetails.is_subscription"
+                          v-model="packageDetails.is_recurring"
+                          label="Is this recurring?"
+                          required
+                        ></v-checkbox>
                         <v-checkbox
                           v-model="packageDetails.is_visible_online"
                           label="Should this be Visible Online?"
@@ -171,6 +176,11 @@
                           label="Subscription?"
                           required
                           @change="onSubscriptionBooleanChange"
+                        ></v-checkbox>
+                        <v-checkbox v-if="toggleRecurring || editedItem.is_subscription"
+                          v-model="editedItem.is_recurring"
+                          label="Is this recurring?"
+                          required
                         ></v-checkbox>
                         <v-checkbox
                           v-model="editedItem.is_visible_online"
@@ -272,6 +282,7 @@ export default {
       dialog: false,
       dialog2: false,
       dialogDelete: false,
+      toggleRecurring: false,
       headers: [
         {
           text: "Package ID",
@@ -320,6 +331,7 @@ export default {
         subscription_duration: 0,
         is_subscription: false,
         is_visible_online: false,
+        is_recurring: false,
       },
       dropDownOpen: false,
 
@@ -334,6 +346,7 @@ export default {
         subscription_duration: 0,
         is_subscription: false,
         is_visible_online: false,
+        is_recurring: false,
       },
       descriptionRules: [(v) => !!v || "Description is required"],
 
@@ -350,25 +363,36 @@ export default {
     onSubscriptionDurationChange(){
       if (this.packageDetails.subscription_duration > 0){
         this.packageDetails.is_subscription = true;
+        this.toggleRecurring = true;
       } else {
         this.packageDetails.is_subscription = false;
+        this.toggleRecurring = false;
       }
       if (this.editedItem.subscription_duration > 0){
         this.editedItem.is_subscription = true;
+        this.toggleRecurring = true;
       } else {
         this.editedItem.is_subscription = false;
+        this.toggleRecurring = false;
+
       }
     },
     onSubscriptionBooleanChange(){
       if (this.packageDetails.is_subscription == true){
         this.packageDetails.subscription_duration = 1;
+        this.toggleRecurring = true;
       } else {
         this.packageDetails.subscription_duration = 0;
+        this.toggleRecurring = false;
+
       }
       if (this.editedItem.is_subscription == true){
         this.editedItem.subscription_duration = 1;
+        this.toggleRecurring = true;
       } else {
         this.editedItem.subscription_duration = 0;
+        this.toggleRecurring = false;
+
       }
     },
     // ==================== this is table stuff vvvv

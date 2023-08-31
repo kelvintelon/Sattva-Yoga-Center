@@ -5,6 +5,7 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
 import com.sattvayoga.dto.order.CheckoutItemDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -18,13 +19,29 @@ public class JdbcStripeDao implements StripeDao{
     private String baseURL;
     @Value("${STRIPE_SECRET_KEY}")
     private String apiKey;
+
+//    @Autowired
+//    private SecretManagerService secretManagerService;
+
     @Override
     public Session createSession(List<CheckoutItemDTO> checkoutItemDTOList) throws StripeException {
 
         String successURL = baseURL + "payment/success";
         String failureURL = baseURL + "shoppingCart";
 
+
         Stripe.apiKey = apiKey;
+
+        // TODO: If you want to deploy uncomment below
+
+//        String retrievedValue = "";
+//        try {
+//           retrievedValue  = secretManagerService.getStripeKey();
+//        } catch (Throwable e) {
+//            System.out.println("Error retrieving stripe key");
+//        }
+//
+//        Stripe.apiKey = retrievedValue.substring(20,retrievedValue.length()-2);
 
         List<SessionCreateParams.LineItem> sessionItemList = new ArrayList<>();
 
