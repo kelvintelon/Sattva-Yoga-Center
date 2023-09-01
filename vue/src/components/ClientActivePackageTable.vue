@@ -195,9 +195,9 @@
     </v-row>
     <br />
     <br />
-    <v-overlay :value="overlay">
+    <!-- <v-overlay :value="overlay">
       <v-progress-circular indeterminate size="70"></v-progress-circular>
-    </v-overlay>
+    </v-overlay> -->
   </v-container>
 </template>
 
