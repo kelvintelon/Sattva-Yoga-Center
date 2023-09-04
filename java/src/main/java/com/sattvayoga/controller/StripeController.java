@@ -2,12 +2,20 @@ package com.sattvayoga.controller;
 
 import com.sattvayoga.dao.*;
 import com.sattvayoga.model.ClientDetails;
+import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.LineItem;
 import com.stripe.model.LineItemCollection;
+import com.stripe.model.PaymentIntent;
 import com.stripe.model.checkout.Session;
 import com.sattvayoga.dto.order.CheckoutItemDTO;
 import com.sattvayoga.dto.order.StripeResponse;
+import com.stripe.model.terminal.Reader;
+import com.stripe.param.PaymentIntentCreateParams;
+//import com.stripe.param.terminal.ReaderPresentPaymentMethodParams;
+//import com.stripe.param.terminal.ReaderProcessPaymentIntentParams;
+import com.stripe.param.terminal.ReaderPresentPaymentMethodParams;
+import com.stripe.param.terminal.ReaderProcessPaymentIntentParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -92,6 +100,36 @@ public class StripeController {
             }
         }
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/purchaseTerminal")
+    @ResponseStatus(HttpStatus.CREATED)
+    public String purchaseTotalThroughTerminal(@RequestBody int total) throws StripeException {
+        Stripe.apiKey = apiKey;
+
+        Reader readerResource = Reader.retrieve("tmr_FPKgUQOJ7fdmwi");
+
+        PaymentIntentCreateParams paymentIntentCreateParams =
+                PaymentIntentCreateParams.builder()
+                        .setCurrency("usd")
+                        .addPaymentMethodType("card_present")
+                        .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
+                        .setAmount((long)total*100)
+                        .build();
+
+        // creates payment intent
+        PaymentIntent paymentIntent = PaymentIntent.create(paymentIntentCreateParams);
+
+        ReaderProcessPaymentIntentParams params =
+                ReaderProcessPaymentIntentParams.builder().setPaymentIntent(paymentIntent.getId()).build();
+
+        readerResource.processPaymentIntent(params);
+
+        Reader reader = readerResource.getTestHelpers().presentPaymentMethod();
+
+        return reader.getStatus();
+    }
+
 //
 
 //    // just testing with sessionid. not using it yet.

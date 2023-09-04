@@ -287,7 +287,7 @@ export default {
             });
         }
       }
-
+      this.checkLinks();
     
     },
     checkLinks() {

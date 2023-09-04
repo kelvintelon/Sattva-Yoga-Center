@@ -3,6 +3,7 @@ package com.sattvayoga.dao;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
+import com.stripe.model.terminal.Reader;
 import com.stripe.param.checkout.SessionCreateParams;
 import com.sattvayoga.dto.order.CheckoutItemDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ public class JdbcStripeDao implements StripeDao{
 
 //    @Autowired
 //    private SecretManagerService secretManagerService;
+
 
     @Override
     public Session createSession(List<CheckoutItemDTO> checkoutItemDTOList) throws StripeException {
@@ -71,6 +73,7 @@ public class JdbcStripeDao implements StripeDao{
 
     }
 
+
     private SessionCreateParams.LineItem createSessionLineItem(CheckoutItemDTO checkoutItemDTO) {
         return SessionCreateParams.LineItem.builder()
                 .setPriceData(createPriceData(checkoutItemDTO))
@@ -95,6 +98,24 @@ public class JdbcStripeDao implements StripeDao{
                                 .build()
                 ).build();
     }
+
+//    @Override
+//    public Reader createSimulatedReader() throws StripeException {
+//
+//        Stripe.apiKey = apiKey;
+//
+//        ReaderCreateParams params =
+//                ReaderCreateParams.builder()
+//                        .setLocation("tml_FPKfeAB7hN4NDL")
+//                        .setRegistrationCode("simulated-wpe")
+//                        .build();
+//
+//        Reader reader = Reader.create(params);
+//
+//        return reader;
+//    }
+
+
 //    private SessionCreateParams.Discount createDiscount() {
 //        return SessionCreateParams.Discount.builder()
 //                .setCoupon("BQnEKjVU")
