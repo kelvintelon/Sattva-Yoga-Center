@@ -1,8 +1,10 @@
 package com.sattvayoga.controller;
 
+import com.google.gson.Gson;
 import com.sattvayoga.dao.*;
 import com.sattvayoga.model.ClientDetails;
 import com.stripe.Stripe;
+import com.stripe.exception.InvalidRequestException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.LineItem;
 import com.stripe.model.LineItemCollection;
@@ -24,10 +26,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @CrossOrigin
 @RestController
@@ -108,6 +107,10 @@ public class StripeController {
         Stripe.apiKey = apiKey;
 
         Reader readerResource = Reader.retrieve("tmr_FPKgUQOJ7fdmwi");
+        
+        //TODO:
+        // 1. Pull in all data
+        // 2. Set the email for the receipt
 
         PaymentIntentCreateParams paymentIntentCreateParams =
                 PaymentIntentCreateParams.builder()
@@ -115,6 +118,7 @@ public class StripeController {
                         .addPaymentMethodType("card_present")
                         .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
                         .setAmount((long)total*100)
+                        .setReceiptEmail("")
                         .build();
 
         // creates payment intent
@@ -123,11 +127,52 @@ public class StripeController {
         ReaderProcessPaymentIntentParams params =
                 ReaderProcessPaymentIntentParams.builder().setPaymentIntent(paymentIntent.getId()).build();
 
-        readerResource.processPaymentIntent(params);
+//        readerResource.processPaymentIntent(params);
+//
+//        Reader reader = readerResource.getTestHelpers().presentPaymentMethod();
 
-        Reader reader = readerResource.getTestHelpers().presentPaymentMethod();
+        int attempt = 0;
+        int tries = 3;
+        while (true) {
+            attempt++;
+            try {
+                readerResource.processPaymentIntent(params);
 
-        return reader.getStatus();
+                Reader reader = readerResource.getTestHelpers().presentPaymentMethod();
+
+                return reader.toJson();
+            } catch (InvalidRequestException e) {
+                switch (e.getCode()) {
+                    case "terminal_reader_timeout":
+                        // Temporary networking blip, automatically retry a few times.
+                        if (attempt == tries) {
+                            return e.getStripeError().toJson();
+                        }
+                        break;
+                    case "terminal_reader_offline":
+                        // Reader is offline and won't respond to API requests. Make sure the reader is
+                        // powered on and connected to the internet before retrying.
+                        return e.getStripeError().toJson();
+                    case "terminal_reader_busy":
+                        // Reader is currently busy processing another request, installing updates or
+                        // changing settings. Remember to disable the pay button in your point-of-sale
+                        // application while waiting for a reader to respond to an API request.
+                        return e.getStripeError().toJson();
+                    case "intent_invalid_state":
+                        // Check PaymentIntent status because it's not ready to be processed. It might
+                        // have been already successfully processed or canceled.
+                        PaymentIntent paymentIntentCase = PaymentIntent.retrieve(paymentIntent.getId());
+                        Map<String, String> errorResponse = Collections.singletonMap("error",
+                                "PaymentIntent is already in " + paymentIntentCase.getStatus() + " state.");
+                        return new Gson().toJson(errorResponse);
+
+                    default:
+                        return e.getStripeError().toJson();
+                }
+            }
+        }
+        // reader.getLastResponse().code() returns 200 successful
+
     }
 
 //

@@ -88,17 +88,18 @@
                   <v-row>
                     <v-col>
                       <v-select
-                        label="Choose one"
+                        label="Choose"
                         :items="availablePackages"
-                        v-model="selectedPackage"
+                        v-model="selectedPackages"
                         item-text="description"
+                        multiple
                         return-object
                       ></v-select>
                       <v-row>
                         <v-col>
                           <v-text-field
                             v-if="!showPercentDiscount"
-                            v-model="selectedPackage.discount"
+                            v-model="currentDiscount"
                             class="mt-0 pt-0"
                             type="number"
                             label="Discount: $"
@@ -126,9 +127,9 @@
                           >
                         </v-col></v-row
                       >
-                      <div class="text--primary">
+                      <!-- <div class="text--primary">
                         Package Cost: ${{ selectedPackage.package_cost }}
-                      </div>
+                      </div> -->
                       <div class="text--primary">
                         Package Discount: -${{ returnDiscount }}
                       </div>
@@ -266,6 +267,7 @@ export default {
       },
       availablePackages: [],
       dialog: false,
+      selectedPackages: [],
       selectedPackage: {},
       timeout: -1,
       snackBarReconcilePackages: false,
@@ -275,6 +277,14 @@ export default {
       overlay: false,
       loading: true,
       sharedPackages: [],
+      currentDiscount: 0,
+      clientCheckout: {
+        client_id: 0,
+        email: "",
+        discount: 0,
+        selectedCheckoutPackages: [],
+        total: 0,
+      }
     };
   },
   watch: {
@@ -375,7 +385,7 @@ export default {
     close() {
       this.dialog = false;
       this.percentDiscount = 0;
-      this.selectedPackage.discount = 0;
+      this.clientCheckout.discount = 0;
     },
     // closeReconcile(){
     //   this.snackBarReconcilePackages = false;
@@ -642,48 +652,65 @@ export default {
 
   computed: {
     returnDiscount() {
-      if (this.showPercentDiscount && this.selectedPackage.package_cost >= 0) {
+      let runningTotal = 0;
+      for (let index = 0; index < this.selectedPackages.length; index++) {
+        runningTotal += this.selectedPackages[index].package_cost;
+        
+      }
+
+      if (this.showPercentDiscount && runningTotal >= 0) {
         // this.selectedPackage.discount = this.selectedPackage.package_cost * (1-this.percentDiscount);
         let num =
-          this.selectedPackage.package_cost -
-          this.selectedPackage.package_cost * (1 - this.percentDiscount / 100);
+          runningTotal -
+          runningTotal * (1 - this.percentDiscount / 100);
         let math = Math.round(num * 100) / 100;
-        if (this.selectedPackage.package_cost > math) {
+        if (runningTotal > math) {
           return math;
         }
         return 0;
       } else if (
-        this.selectedPackage.discount >= 0 &&
-        this.selectedPackage.package_cost >= 0
+        this.currentDiscount >= 0 &&
+        runningTotal >= 0
       ) {
-        // TODO: Change the following line
-        if (this.selectedPackage.discount < this.selectedPackage.package_cost) {
-          return this.selectedPackage.discount;
+        
+        if (this.currentDiscount < runningTotal) {
+          return this.currentDiscount;
+        } else {
+          return runningTotal;
         }
       }
       return 0;
     },
     returnTotal() {
-      if (this.showPercentDiscount && this.selectedPackage.package_cost >= 0) {
+      let runningTotal = 0;
+      for (let index = 0; index < this.selectedPackages.length; index++) {
+        runningTotal = runningTotal + this.selectedPackages[index].package_cost;
+        
+      }
+
+      if (this.showPercentDiscount && runningTotal >= 0) {
         let num =
-          this.selectedPackage.package_cost * (1 - this.percentDiscount / 100);
+          runningTotal * (1 - this.percentDiscount / 100);
         if (num > 0) {
           return Math.round(num * 100) / 100;
         }
         return 0;
       } else if (
-        this.selectedPackage.discount >= 0 &&
-        this.selectedPackage.package_cost >= 0
+        this.currentDiscount >= 0 &&
+        runningTotal >= 0
       ) {
         let difference =
-          this.selectedPackage.package_cost - this.selectedPackage.discount;
-        if (difference < this.selectedPackage.package_cost && difference > 0) {
-          return difference;
+          runningTotal - this.currentDiscount
+        if (difference > runningTotal || difference < 0) {
+          return 0;
         }
-        return 0;
-      } else if (this.selectedPackage.package_cost >= 0) {
-        return this.selectedPackage.package_cost;
-      } else {
+        
+        return difference;
+      }
+       else if (runningTotal >= 0) {
+        return runningTotal;
+      }
+       else {
         return 0;
       }
     },
