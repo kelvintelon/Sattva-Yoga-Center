@@ -349,7 +349,7 @@ export default {
               this.dialog = true;
             }
           } else if (this.$store.state.lineItems.length == 0) {
-            this.packagePurchase.package_purchase_id = item.package_id;
+            this.packagePurchase.package_id = item.package_id;
               this.packagePurchase.client_id = this.$store.state.clientDetails.client_id;
               this.packagePurchase.classes_remaining = item.classes_remaining;
               this.packagePurchase.total_amount_paid = item.package_cost;
