@@ -3,7 +3,12 @@
     <v-row><br /></v-row>
     <v-row>
       <v-spacer></v-spacer>
-      <h1 v-if="$store.state.user.username != 'admin'" style="color: rgba(245, 104, 71, 0.95)">Active Packages</h1>
+      <h1
+        v-if="$store.state.user.username != 'admin'"
+        style="color: rgba(245, 104, 71, 0.95)"
+      >
+        Active Packages
+      </h1>
       <v-spacer></v-spacer
     ></v-row>
     <br />
@@ -95,6 +100,70 @@
                         multiple
                         return-object
                       ></v-select>
+                      <v-row v-if="showGiftCardForm">
+                        <v-col>
+                          <v-text-field
+                            v-model="clientCheckout.email"
+                            :counter="30"
+                            label="Email for Gift Card"
+                          ></v-text-field>
+                        </v-col>
+                        <v-checkbox
+                          v-if="saveEmailCheckbox"
+                          v-model="clientCheckout.saveEmail"
+                          label="Save?"
+                        ></v-checkbox>
+                      </v-row>
+                      <v-row v-if="showGiftCardForm">
+                        <v-col>
+                          <v-text-field
+                            v-model.number="
+                              selectedPackages[giftCardIndex].package_cost
+                            "
+                            class="mt-0 pt-0"
+                            type="number"
+                            label="Gift Card: $"
+                            min="10"
+                          ></v-text-field>
+                        </v-col>
+                      </v-row>
+                      <v-row v-if="showRenewalDatePicker">
+                        <v-col>
+                          <v-menu
+                            ref="menu"
+                            v-model="menu"
+                            :close-on-content-click="false"
+                            :return-value.sync="clientCheckout.renewalDate"
+                            transition="scale-transition"
+                            offset-y
+                            min-width="auto"
+                          >
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-text-field
+                                v-model="clientCheckout.renewalDate"
+                                label="Renewal Date"
+                                prepend-icon="mdi-calendar"
+                                readonly
+                                v-bind="attrs"
+                                v-on="on"
+                              ></v-text-field>
+                            </template>
+                            <v-date-picker v-model="clientCheckout.renewalDate" no-title scrollable>
+                              <v-spacer></v-spacer>
+                              <v-btn text color="primary" @click="menu = false">
+                                Cancel
+                              </v-btn>
+                              <v-btn
+                                text
+                                color="primary"
+                                @click="$refs.menu.save(clientCheckout.renewalDate)"
+                              >
+                                OK
+                              </v-btn>
+                            </v-date-picker>
+                          </v-menu>
+                        </v-col>
+                      </v-row>
                       <v-row>
                         <v-col>
                           <v-text-field
@@ -112,30 +181,46 @@
                             type="number"
                             label="Discount: %"
                             min="0"
-                          ></v-text-field
-                        ></v-col>
+                          ></v-text-field>
+                        </v-col>
                         <v-col>
                           <v-btn
+                            outlined
                             @click="showPercentDiscount = true"
                             v-if="!showPercentDiscount"
                             ><v-icon>mdi-percent</v-icon></v-btn
                           >
                           <v-btn
+                            outlined
                             @click="showPercentDiscount = false"
                             v-if="showPercentDiscount"
                             ><v-icon>mdi-currency-usd</v-icon></v-btn
                           >
                         </v-col></v-row
                       >
+
                       <!-- <div class="text--primary">
                         Package Cost: ${{ selectedPackage.package_cost }}
                       </div> -->
                       <div class="text--primary">
                         Package Discount: -${{ returnDiscount }}
                       </div>
-                      <div class="text--primary" style="border-top: 1px solid">
+                      <v-row>
+                        <v-col>
+                          <v-text-field
+                            v-model="totalCost"
+                            class="mt-6 pt-0"
+                            type="number"
+                            label="Total: $"
+                            min="0"
+                          ></v-text-field>
+                        </v-col>
+                        <v-spacer></v-spacer>
+                        <v-spacer></v-spacer>
+                      </v-row>
+                      <!-- <div class="text--primary" style="border-top: 1px solid">
                         Total Cost: ${{ returnTotal }}
-                      </div>
+                      </div> -->
                     </v-col>
                   </v-row>
                 </v-container>
@@ -247,7 +332,7 @@ export default {
       ],
       page: 1,
       pageSize: 10,
-      sortBy: 'date_purchased',
+      sortBy: "date_purchased",
       sortDesc: false,
       totalPackagesPurchased: 0,
       paginatedObject: {},
@@ -281,10 +366,23 @@ export default {
       clientCheckout: {
         client_id: 0,
         email: "",
+        saveEmail: false,
         discount: 0,
         selectedCheckoutPackages: [],
         total: 0,
-      }
+        renewalDate: new Date(
+          Date.now() - new Date().getTimezoneOffset() * 60000
+        )
+          .toISOString()
+          .substr(0, 10),
+      },
+      giftCardCost: 0,
+      giftCardIndex: 0,
+      saveEmailCheckbox: false,
+      totalCost: 0,
+      showGiftCardForm: false,
+      showRenewalDatePicker: false,
+      menu: false,
     };
   },
   watch: {
@@ -293,6 +391,77 @@ export default {
         this.getActivePurchaseServerRequest();
       },
       deep: true,
+    },
+    returnTotal: function (val) {
+      this.totalCost = val;
+    },
+    totalCost: function (val) {
+      this.returnTotal = val;
+    },
+    clientCheckout: {
+      handler: function () {
+        if (
+          this.clientCheckout.email.length == 0 ||
+          this.clientCheckout.email != this.$store.state.clientDetails.email
+        ) {
+          this.saveEmailCheckbox = true;
+        } else {
+          this.saveEmailCheckbox = false;
+        }
+      },
+      deep: true,
+    },
+    selectedPackages: function () {
+      // next loop prevents stacking subscriptions
+      for (let index = this.selectedPackages.length - 1; index > 0; index--) {
+        let element = this.selectedPackages[index];
+        let firstIndex = 0;
+        let firstElement = this.selectedPackages[firstIndex];
+        if (
+          element.is_subscription &&
+          element.is_recurring &&
+          index == this.selectedPackages.length - 1
+        ) {
+          this.selectedPackages = [element];
+          break;
+        } else if (
+          firstElement.is_subscription &&
+          firstElement.is_recurring &&
+          this.selectedPackages.length == 2
+        ) {
+          this.selectedPackages = [element];
+        }
+      }
+
+      // this loop checks for giftcard or subscriptions
+      let foundGiftCard = false;
+      let foundSubscription = false;
+      for (let index = 0; index < this.selectedPackages.length; index++) {
+        let element = this.selectedPackages[index];
+        if (element.description.includes("Gift")) {
+          this.showGiftCardForm = true;
+          this.clientCheckout.email = this.$store.state.clientDetails.email;
+          if (
+            this.clientCheckout.email.length == 0 ||
+            this.clientCheckout.email != this.$store.state.clientDetails.email
+          ) {
+            this.saveEmailCheckbox = true;
+          }
+          foundGiftCard = true;
+          this.giftCardIndex = index;
+        }
+        if (element.is_subscription && element.is_recurring) {
+          foundSubscription = true;
+          this.showRenewalDatePicker = true;
+        }
+      }
+      if (!foundGiftCard) {
+        this.showGiftCardForm = false;
+        this.saveEmailCheckbox = false;
+      }
+      if (!foundSubscription) {
+        this.showRenewalDatePicker = false;
+      }
     },
   },
   beforeCreate() {
@@ -306,13 +475,15 @@ export default {
     //       }
     //     }
     //   });
-    clientDetailService.getClientDetailsByClientId(this.$route.params.clientId).then((response) => {
+    clientDetailService
+      .getClientDetailsByClientId(this.$route.params.clientId)
+      .then((response) => {
         if (response.data.client_id != 0) {
           this.clientDetails = response.data;
           this.$store.commit("SET_CLIENT_DETAILS", response.data);
           // alert("active package table client details")
           if (this.clientDetails.redFlag == true) {
-            this.snackBarReconcileWarning = true
+            this.snackBarReconcileWarning = true;
           }
         }
       });
@@ -355,7 +526,7 @@ export default {
             this.getSharedActivePackages();
             this.getActivePurchaseServerRequest();
             this.$root.$refs.B.getPackageHistoryTable();
-            
+
             this.$root.$refs.D.getClientEventTable();
             this.$root.$refs.E.getEventDetailsCall();
             this.snackBarReconcilePackagesSuccessful = true;
@@ -385,20 +556,31 @@ export default {
     close() {
       this.dialog = false;
       this.percentDiscount = 0;
-      this.clientCheckout.discount = 0;
+      this.totalCost = 0;
+      this.giftCardCost = 0;
+      this.giftCardIndex = 0;
+      this.showGiftCardForm = false;
+      this.saveEmailCheckbox = false;
+      this.clientCheckout.discount = {
+        client_id: 0,
+        email: "",
+        saveEmail: false,
+        discount: 0,
+        selectedCheckoutPackages: [],
+        total: 0,
+      };
+      this.selectedPackages = [];
     },
     // closeReconcile(){
     //   this.snackBarReconcilePackages = false;
     // },
     temporaryPageMethod() {
-     
       this.getActivePurchaseServerRequest();
     },
     temporaryPageSizeMethod() {
       if (this.page == 1) {
         this.getActivePurchaseServerRequest();
       } else {
-       
         this.page = 1;
         this.getActivePurchaseServerRequest();
       }
@@ -406,7 +588,7 @@ export default {
     sortTable() {
       if (this.sortDesc == undefined) {
         this.sortDesc = false;
-      } 
+      }
       this.getActivePurchaseServerRequest();
     },
     getActivePurchaseServerRequest() {
@@ -414,7 +596,13 @@ export default {
       this.overlay = !this.overlay;
       if (this.$store.state.user.username == "admin") {
         packagePurchaseService
-          .getActivePaginatedUserPurchasedPackagesByClientId(this.$route.params.clientId,this.page, this.pageSize, this.sortBy, this.sortDesc)
+          .getActivePaginatedUserPurchasedPackagesByClientId(
+            this.$route.params.clientId,
+            this.page,
+            this.pageSize,
+            this.sortBy,
+            this.sortDesc
+          )
           .then((response) => {
             if (response.status == 200) {
               this.loading = false;
@@ -451,9 +639,9 @@ export default {
               // console.log(this.packages.length > 0)
               // console.log(this.$store.state.sharedPackages.length > 0)
               // console.log(this.$store.state.clientDetails.redFlag &&
-                // (this.packages.length > 0 ||
-                // this.sharedPackages.length > 0);
-                // alert(this.$store.state.clientDetails.redFlag)
+              // (this.packages.length > 0 ||
+              // this.sharedPackages.length > 0);
+              // alert(this.$store.state.clientDetails.redFlag)
               if (
                 this.$store.state.clientDetails.redFlag &&
                 (this.packages.length > 0 || this.sharedPackages.length > 0)
@@ -466,41 +654,50 @@ export default {
             }
           });
       } else {
-        packagePurchaseService.getActivePaginatedUserPurchasedPackagesByClientId(this.$store.state.clientDetails.client_id,this.page, this.pageSize, this.sortBy, this.sortDesc).then((response) => {
-          if (response.status == 200) {
-            this.loading = false;
-            this.overlay = false;
-            // focus on if it's expired or not
-            var today = new Date();
-            var dd = String(today.getDate()).padStart(2, "0");
-            var mm = String(today.getMonth() + 1).padStart(2, "0"); //January is 0!
-            var yyyy = today.getFullYear();
-            today = yyyy + "-" + mm + "-" + dd;
-            this.paginatedObject = response.data;
+        packagePurchaseService
+          .getActivePaginatedUserPurchasedPackagesByClientId(
+            this.$store.state.clientDetails.client_id,
+            this.page,
+            this.pageSize,
+            this.sortBy,
+            this.sortDesc
+          )
+          .then((response) => {
+            if (response.status == 200) {
+              this.loading = false;
+              this.overlay = false;
+              // focus on if it's expired or not
+              var today = new Date();
+              var dd = String(today.getDate()).padStart(2, "0");
+              var mm = String(today.getMonth() + 1).padStart(2, "0"); //January is 0!
+              var yyyy = today.getFullYear();
+              today = yyyy + "-" + mm + "-" + dd;
+              this.paginatedObject = response.data;
               this.totalPackagesPurchased = this.paginatedObject.totalRows;
-              this.packages = this.paginatedObject.listOfPurchasedPackages.filter((item) => {
-              // return (item.expiration_date >= today) || (item.expiration_date == null && item.classes_remaining > 0) || (item.expiration_date >= today && item.classes_remaining > 0);
-              return (
-                (item.is_subscription && item.expiration_date) ||
-                (!item.is_subscription &&
-                  item.expiration_date >= today &&
-                  item.classes_remaining > 0)
-              );
-            });
-            this.packages.forEach((item) => {
-              item.date_purchased = new Date(item.date_purchased);
-            });
-            if (
-              this.$store.state.clientDetails.redFlag &&
-              this.packages.length > 0
-            ) {
-              this.snackBarReconcilePackages = true;
+              this.packages =
+                this.paginatedObject.listOfPurchasedPackages.filter((item) => {
+                  // return (item.expiration_date >= today) || (item.expiration_date == null && item.classes_remaining > 0) || (item.expiration_date >= today && item.classes_remaining > 0);
+                  return (
+                    (item.is_subscription && item.expiration_date) ||
+                    (!item.is_subscription &&
+                      item.expiration_date >= today &&
+                      item.classes_remaining > 0)
+                  );
+                });
+              this.packages.forEach((item) => {
+                item.date_purchased = new Date(item.date_purchased);
+              });
+              if (
+                this.$store.state.clientDetails.redFlag &&
+                this.packages.length > 0
+              ) {
+                this.snackBarReconcilePackages = true;
+              }
+              this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
+            } else {
+              alert("Error retrieving package information");
             }
-            this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
-          } else {
-            alert("Error retrieving package information");
-          }
-        });
+          });
       }
     },
     getSharedActivePackages() {
@@ -655,24 +852,18 @@ export default {
       let runningTotal = 0;
       for (let index = 0; index < this.selectedPackages.length; index++) {
         runningTotal += this.selectedPackages[index].package_cost;
-        
       }
 
       if (this.showPercentDiscount && runningTotal >= 0) {
         // this.selectedPackage.discount = this.selectedPackage.package_cost * (1-this.percentDiscount);
         let num =
-          runningTotal -
-          runningTotal * (1 - this.percentDiscount / 100);
+          runningTotal - runningTotal * (1 - this.percentDiscount / 100);
         let math = Math.round(num * 100) / 100;
         if (runningTotal > math) {
           return math;
         }
         return 0;
-      } else if (
-        this.currentDiscount >= 0 &&
-        runningTotal >= 0
-      ) {
-        
+      } else if (this.currentDiscount >= 0 && runningTotal >= 0) {
         if (this.currentDiscount < runningTotal) {
           return this.currentDiscount;
         } else {
@@ -685,32 +876,24 @@ export default {
       let runningTotal = 0;
       for (let index = 0; index < this.selectedPackages.length; index++) {
         runningTotal = runningTotal + this.selectedPackages[index].package_cost;
-        
       }
 
       if (this.showPercentDiscount && runningTotal >= 0) {
-        let num =
-          runningTotal * (1 - this.percentDiscount / 100);
+        let num = runningTotal * (1 - this.percentDiscount / 100);
         if (num > 0) {
           return Math.round(num * 100) / 100;
         }
         return 0;
-      } else if (
-        this.currentDiscount >= 0 &&
-        runningTotal >= 0
-      ) {
-        let difference =
-          runningTotal - this.currentDiscount
+      } else if (this.currentDiscount >= 0 && runningTotal >= 0) {
+        let difference = runningTotal - this.currentDiscount;
         if (difference > runningTotal || difference < 0) {
           return 0;
         }
-        
+
         return difference;
-      }
-       else if (runningTotal >= 0) {
+      } else if (runningTotal >= 0) {
         return runningTotal;
-      }
-       else {
+      } else {
         return 0;
       }
     },
