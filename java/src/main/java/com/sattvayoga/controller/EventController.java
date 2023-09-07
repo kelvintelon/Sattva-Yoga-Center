@@ -6,13 +6,11 @@ import com.sattvayoga.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.security.Principal;
 import java.sql.SQLException;
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.*;
@@ -36,17 +34,17 @@ public class EventController {
 
 
     @RequestMapping(value = "/eventList", method = RequestMethod.GET)
-    public List<Event> getAllEvents() throws SQLException {
+    public List<ClassEvent> getAllEvents() throws SQLException {
         return eventDao.getAllEvents();
     }
 
     @RequestMapping(value = "/100eventList", method = RequestMethod.GET)
-    public List<Event> getHundredEvents() throws SQLException {
+    public List<ClassEvent> getHundredEvents() throws SQLException {
         return eventDao.getHundredEvents();
     }
 
     @RequestMapping(value = "/100eventList/{clientId}", method = RequestMethod.GET)
-    public List<Event> getHundredEventsForClient(@PathVariable int clientId) throws SQLException {
+    public List<ClassEvent> getHundredEventsForClient(@PathVariable int clientId) throws SQLException {
         return eventDao.getHundredEventsForUser(clientId);
     }
 
@@ -57,13 +55,13 @@ public class EventController {
 //    }
 
     @RequestMapping(value= "/clientEventList", method = RequestMethod.GET)
-    public List<Event> getAllHistoricalClientEvents(Principal principal) throws SQLException {
+    public List<ClassEvent> getAllHistoricalClientEvents(Principal principal) throws SQLException {
         int userId = userDao.findIdByUsername(principal.getName());
         return eventDao.getAllHistoricalClientEvents(userId);
     }
 
     @RequestMapping(value= "/clientEventListByClientId/{clientId}", method = RequestMethod.GET)
-    public List<Event> getAllUpcomingClientEventsByClientId(@PathVariable int clientId) throws SQLException {
+    public List<ClassEvent> getAllUpcomingClientEventsByClientId(@PathVariable int clientId) throws SQLException {
         return eventDao.getAllHistoricalClientEvents(clientDetailsDao.findClientByClientId(clientId).getUser_id());
     }
 
@@ -117,19 +115,19 @@ public class EventController {
         List<ClientEvent> clientEventsList = eventDao.getRedFlaggedClientEventsByClientId(clientId);
 
         // turn each one into an event object, maybe a list of events to loop through
-        List<Event> eventList = new ArrayList<>();
+        List<ClassEvent> classEventList = new ArrayList<>();
 
         for (int i = 0; i < clientEventsList.size(); i++) {
-            Event event = eventDao.getEventByEventId(clientEventsList.get(i).getEvent_id());
-            eventList.add(event);
+            ClassEvent classEvent = eventDao.getEventByEventId(clientEventsList.get(i).getEvent_id());
+            classEventList.add(classEvent);
         }
 
         // grab a list of packages
         List<PackagePurchase> allUserPackagePurchase = packagePurchaseDao.getAllActiveUserPackagePurchases(userId);
 
-        for (int i = 0; i < eventList.size(); i++) {
+        for (int i = 0; i < classEventList.size(); i++) {
             // filter the list of packages to just one
-            PackagePurchase packagePurchase = packagePurchaseDao.filterPackageList(allUserPackagePurchase, eventList.get(i));
+            PackagePurchase packagePurchase = packagePurchaseDao.filterPackageList(allUserPackagePurchase, classEventList.get(i));
 
             if (packagePurchase.getClasses_remaining() == 0 && !packagePurchase.isIs_subscription()) {
                 //  update the packagePurchase in the database here then leave/break right after
@@ -147,7 +145,7 @@ public class EventController {
             }
 
             // update each client-event object row individually using the packagePurchase ID
-            eventDao.reconcileClassWithPackageId(packagePurchase.getPackage_purchase_id(), eventList.get(i).getEvent_id(), clientId);
+            eventDao.reconcileClassWithPackageId(packagePurchase.getPackage_purchase_id(), classEventList.get(i).getEvent_id(), clientId);
 
             // decrement each time if it's a bundle.
             if (!packagePurchase.isIs_subscription() && packagePurchase.getClasses_remaining() > 0) {
@@ -163,7 +161,7 @@ public class EventController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/getEventDetailsByEventId/{eventId}", method = RequestMethod.GET)
-    public Event getEventDetailsByEventId (@PathVariable int eventId ) {
+    public ClassEvent getEventDetailsByEventId (@PathVariable int eventId ) {
 
         return eventDao.getEventByEventId(eventId);
     }
@@ -177,12 +175,12 @@ public class EventController {
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/createEvent", method = RequestMethod.POST)
-    public String createEvent(@RequestBody Event event) {
+    public String createEvent(@RequestBody ClassEvent classEvent) {
         // TODO: Make this into an exception thrown
-        if (eventDao.isThereExistingEventWithStartTime(event)) {
+        if (eventDao.isThereExistingEventWithStartTime(classEvent)) {
             return "Fail";
         } else {
-            eventDao.createEvent(event);
+            eventDao.createEvent(classEvent);
         }
         return "Success";
 
@@ -190,12 +188,12 @@ public class EventController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/updateEvent", method = RequestMethod.PUT)
-    public String updateEvent (@RequestBody Event event) {
+    public String updateEvent (@RequestBody ClassEvent classEvent) {
         // TODO: Make this into an exception thrown
-        if (eventDao.isThereExistingEventWithStartTime(event)) {
+        if (eventDao.isThereExistingEventWithStartTime(classEvent)) {
             return "Fail";
         } else {
-            eventDao.updateEventDetails(event);
+            eventDao.updateEventDetails(classEvent);
         }
 
         return "Success";
@@ -279,14 +277,14 @@ public class EventController {
 
         // could use registerMultipleClientsForEvent if you pass this single client into a list as a clientEventObject
         // retrieve the event object once
-        Event event = eventDao.getEventByEventId(clientEventObjects.get(0).getEvent_id());
+        ClassEvent classEvent = eventDao.getEventByEventId(clientEventObjects.get(0).getEvent_id());
 
         for (int i = 0; i < clientEventObjects.size(); i++) {
             // current clientEvent object
             ClientEvent clientEvent = clientEventObjects.get(i);
 
             // if the event is free or not
-            if (!event.isIs_paid()) {
+            if (!classEvent.isIs_paid()) {
 
                 // client details
                 ClientDetails clientDetailsObj = clientDetailsDao.findClientByClientId(clientEvent.getClient_id());
@@ -295,7 +293,7 @@ public class EventController {
                 // find active packages for each client/user
                 List<PackagePurchase> allUserPackagePurchase = packagePurchaseDao.getAllUserPackagePurchases(userIdNum);
                 // filter the list of packages to just one
-                PackagePurchase packagePurchase = packagePurchaseDao.filterPackageList(allUserPackagePurchase, event);
+                PackagePurchase packagePurchase = packagePurchaseDao.filterPackageList(allUserPackagePurchase, classEvent);
 
                 // finally once you've pinpointed the package, set the package purchase ID into the object
                 if (packagePurchase.getPackage_purchase_id() > 0) {
@@ -321,7 +319,7 @@ public class EventController {
     public void registerMultipleClientsForEvent(@RequestBody List<ClientEvent> clientEventObjects) {
 
         // retrieve the event object once
-        Event event = eventDao.getEventByEventId(clientEventObjects.get(0).getEvent_id());
+        ClassEvent classEvent = eventDao.getEventByEventId(clientEventObjects.get(0).getEvent_id());
 
 
         for (int i = 0; i < clientEventObjects.size(); i++) {
@@ -329,7 +327,7 @@ public class EventController {
             ClientEvent clientEvent = clientEventObjects.get(i);
 
             // if the event is free or not
-            if (!event.isIs_paid()) {
+            if (!classEvent.isIs_paid()) {
                 // client details
                 ClientDetails clientDetails = clientDetailsDao.findClientByClientId(clientEvent.getClient_id());
                 // user Id
@@ -337,7 +335,7 @@ public class EventController {
                 // find active packages for each client/user
                 List<PackagePurchase> allUserPackagePurchase = packagePurchaseDao.getAllActiveUserPackagePurchases(userId);
                 // filter the list of packages to just one
-                PackagePurchase packagePurchase = packagePurchaseDao.filterPackageList(allUserPackagePurchase, event);
+                PackagePurchase packagePurchase = packagePurchaseDao.filterPackageList(allUserPackagePurchase, classEvent);
 
 
                 // if user doesn't have any usable package, look for shared packages;

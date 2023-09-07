@@ -148,7 +148,11 @@
                                 v-on="on"
                               ></v-text-field>
                             </template>
-                            <v-date-picker v-model="clientCheckout.renewalDate" no-title scrollable>
+                            <v-date-picker
+                              v-model="clientCheckout.renewalDate"
+                              no-title
+                              scrollable
+                            >
                               <v-spacer></v-spacer>
                               <v-btn text color="primary" @click="menu = false">
                                 Cancel
@@ -156,7 +160,9 @@
                               <v-btn
                                 text
                                 color="primary"
-                                @click="$refs.menu.save(clientCheckout.renewalDate)"
+                                @click="
+                                  $refs.menu.save(clientCheckout.renewalDate)
+                                "
                               >
                                 OK
                               </v-btn>
@@ -234,7 +240,7 @@
                 <v-btn
                   color="blue darken-1"
                   text
-                  @click.prevent="addPackageForClient"
+                  @click.prevent="submitClientCheckout"
                 >
                   Save
                 </v-btn>
@@ -292,6 +298,7 @@ import packagePurchaseService from "../services/PackagePurchaseService";
 import packageDetailService from "../services/PackageDetailService";
 import eventService from "../services/EventService";
 import clientDetailService from "../services/ClientDetailService";
+import stripeService from "../services/StripeService";
 
 export default {
   name: "client-active-package-table",
@@ -844,6 +851,36 @@ export default {
       // fixing  fix: (3/3 → 4/2) NOT (3/3 → 4/3)
       date.setDate(date.getDate() - 1);
       return date;
+    },
+    submitClientCheckout() {
+      
+      if (this.selectedPackages.length != 0) {
+
+        
+
+        this.clientCheckout.client_id =
+          this.$store.state.clientDetails.client_id;
+        
+        if (this.clientCheckout.email.length == 0) {
+          this.clientCheckout.email = this.$store.state.clientDetails.email;
+        }
+        this.clientCheckout.total = this.totalCost;
+        this.clientCheckout.selectedCheckoutPackages = this.selectedPackages;
+        this.clientCheckout.discount = this.returnDiscount;
+        
+
+
+        stripeService
+          .purchaseClientCheckout(this.clientCheckout)
+          .then((response) => {
+            if (response.status == 201) {
+              alert("Submitted");
+              this.close();
+            }
+          });
+      } else {
+        alert("Select at least one item");
+      }
     },
   },
 

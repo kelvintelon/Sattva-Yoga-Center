@@ -3,7 +3,7 @@ package com.sattvayoga.model;
 import java.sql.Timestamp;
 import java.util.List;
 
-public class Event {
+public class ClassEvent {
     private int event_id;
     private int class_id;
     private String event_name;
@@ -19,11 +19,11 @@ public class Event {
     // helper instance variable
     private String quick_details;
 
-    public Event() {
+    public ClassEvent() {
 
     }
 
-    public Event(int event_id, int class_id, String event_name, Timestamp start_time, Timestamp end_time, String color, boolean timed, boolean is_visible_online, boolean is_paid) {
+    public ClassEvent(int event_id, int class_id, String event_name, Timestamp start_time, Timestamp end_time, String color, boolean timed, boolean is_visible_online, boolean is_paid) {
         this.event_id = event_id;
         this.class_id = class_id;
         this.event_name = event_name;

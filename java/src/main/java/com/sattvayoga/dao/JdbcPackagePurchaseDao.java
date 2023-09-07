@@ -1,17 +1,15 @@
 package com.sattvayoga.dao;
 
 import com.sattvayoga.dto.order.CheckoutItemDTO;
-import com.sattvayoga.model.Event;
+import com.sattvayoga.model.ClassEvent;
 import com.sattvayoga.model.PackageDetails;
 import com.sattvayoga.model.PackagePurchase;
 import com.sattvayoga.model.PaginatedListOfPurchasedPackages;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -237,7 +235,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
     //helper
     @Override
-    public PackagePurchase filterPackageList(List<PackagePurchase> packagePurchaseList, Event event) {
+    public PackagePurchase filterPackageList(List<PackagePurchase> packagePurchaseList, ClassEvent classEvent) {
         // set up the one packagePurchase Object to return
         PackagePurchase packagePurchaseQuantity = new PackagePurchase();
         PackagePurchase packagePurchaseSubscription = new PackagePurchase();
@@ -251,7 +249,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
                 // could check for the expiration date right here as well/
                 // compare the expiration date to the starting time of the event
-                Timestamp eventTime = event.getStart_time();
+                Timestamp eventTime = classEvent.getStart_time();
                 Date expirationDate = currentPackage.getExpiration_date();
                 Timestamp packageExpiration = new Timestamp(currentPackage.getExpiration_date().getTime());
 
@@ -271,7 +269,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             }
             else if (!currentPackage.isIs_subscription() && currentPackage.getClasses_remaining() > 0) {
                 // compare the expiration date to the starting time of the event
-                Timestamp eventTime = event.getStart_time();
+                Timestamp eventTime = classEvent.getStart_time();
                 Date expirationDate = currentPackage.getExpiration_date();
                 Timestamp packageExpiration = new Timestamp(currentPackage.getExpiration_date().getTime());
 

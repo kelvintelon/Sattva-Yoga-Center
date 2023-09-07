@@ -2,7 +2,9 @@ package com.sattvayoga.controller;
 
 import com.google.gson.Gson;
 import com.sattvayoga.dao.*;
+import com.sattvayoga.dto.order.ClientCheckoutDTO;
 import com.sattvayoga.model.ClientDetails;
+import com.sattvayoga.model.PackageDetails;
 import com.stripe.Stripe;
 import com.stripe.exception.InvalidRequestException;
 import com.stripe.exception.StripeException;
@@ -100,10 +102,25 @@ public class StripeController {
         }
     }
 
+    @GetMapping("/getInformation")
+    public String getSessionInformation() throws StripeException {
+        Stripe.apiKey = apiKey;
+
+        List<String> expandList = new ArrayList<>();
+        expandList.add("customer");
+        expandList.add("subscription");
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("expand", expandList);
+        Session session = Session.retrieve("cs_test_a1K8qTFBdtg2pp2MSNAUXk79O1E3TK1B4kRodonA1AYmJAYtBTXn7JBUiW");
+
+        return session.getId();
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/purchaseTerminal")
     @ResponseStatus(HttpStatus.CREATED)
-    public String purchaseTotalThroughTerminal(@RequestBody int total) throws StripeException {
+    public String purchaseTotalThroughTerminal(@RequestBody ClientCheckoutDTO clientCheckoutDTO) throws StripeException {
         Stripe.apiKey = apiKey;
 
         Reader readerResource = Reader.retrieve("tmr_FPKgUQOJ7fdmwi");
@@ -117,8 +134,8 @@ public class StripeController {
                         .setCurrency("usd")
                         .addPaymentMethodType("card_present")
                         .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
-                        .setAmount((long)total*100)
-                        .setReceiptEmail("")
+                        .setAmount((long)clientCheckoutDTO.getTotal()*100)
+       //                 .setReceiptEmail(clientCheckoutDTO.getEmail())
                         .build();
 
         // creates payment intent
@@ -127,9 +144,6 @@ public class StripeController {
         ReaderProcessPaymentIntentParams params =
                 ReaderProcessPaymentIntentParams.builder().setPaymentIntent(paymentIntent.getId()).build();
 
-//        readerResource.processPaymentIntent(params);
-//
-//        Reader reader = readerResource.getTestHelpers().presentPaymentMethod();
 
         int attempt = 0;
         int tries = 3;
@@ -138,8 +152,10 @@ public class StripeController {
             try {
                 readerResource.processPaymentIntent(params);
 
+                //TODO: Comment out the following line for a physical reader
                 Reader reader = readerResource.getTestHelpers().presentPaymentMethod();
 
+                // TODO: You can return any string
                 return reader.toJson();
             } catch (InvalidRequestException e) {
                 switch (e.getCode()) {
@@ -174,6 +190,8 @@ public class StripeController {
         // reader.getLastResponse().code() returns 200 successful
 
     }
+
+
 
 //
 

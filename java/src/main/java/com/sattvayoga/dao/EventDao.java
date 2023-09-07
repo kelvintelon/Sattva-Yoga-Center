@@ -7,9 +7,9 @@ import java.util.List;
 
 public interface EventDao {
 
-    List<Event> createAndGetEvents(List<ClassDetails> classDetails);
+    List<ClassEvent> createAndGetEvents(List<ClassDetails> classDetails);
 
-    void createEvent(Event newEvent);
+    void createEvent(ClassEvent newClassEvent);
 
     void updateEventServerTask() throws Exception;
 
@@ -19,25 +19,25 @@ public interface EventDao {
 
     List<ClientDetailsDTO> getClientDetailsByClassId(int ClassId);
 
-    List<Event> getAllEvents();
+    List<ClassEvent> getAllEvents();
 
     boolean deleteEvent(int eventId);
 
-    boolean updateEventDetails(Event event);
+    boolean updateEventDetails(ClassEvent classEvent);
 
-    List<Event> getHundredEvents();
+    List<ClassEvent> getHundredEvents();
 
-    List<Event> getHundredEventsForUser(int client_id);
+    List<ClassEvent> getHundredEventsForUser(int client_id);
 
     void registerForEvent(int client_id, int event_id, int package_purchase_id);
 
 //    List<Event> getAllUpcomingClientEvents(int user_id);
 
-    List<Event> getAllHistoricalClientEvents(int user_id);
+    List<ClassEvent> getAllHistoricalClientEvents(int user_id);
 
     void deleteEventForClient(int event_id, int client_id);
 
-    Event getEventByEventId(int eventId);
+    ClassEvent getEventByEventId(int eventId);
 
     int getPackagePurchaseIdByEventIdClientId(int eventId, int clientId);
 
@@ -49,7 +49,7 @@ public interface EventDao {
 
     String deleteEventsByClass(ClassDetails originalClass);
 
-    boolean isThereExistingEventWithStartTime(Event newEvent);
+    boolean isThereExistingEventWithStartTime(ClassEvent newClassEvent);
 
     void createNewEventsFromClass(ClassDetails classDetails) throws Exception;
 

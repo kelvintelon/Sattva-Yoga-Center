@@ -4,7 +4,6 @@ import com.sattvayoga.model.*;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.security.core.parameters.P;
 
 import javax.sql.DataSource;
 import java.sql.Array;
@@ -28,12 +27,12 @@ public class JdbcEventDao implements EventDao {
     }
 
     @Override
-    public void createEvent(Event newEvent) {
+    public void createEvent(ClassEvent newClassEvent) {
         String sql = "INSERT INTO events (class_id, event_name, start_time, " +
                 "end_time, color, timed, is_visible_online, is_paid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        jdbcTemplate.update(sql, newEvent.getClass_id(),
-                newEvent.getEvent_name(), newEvent.getStart_time(),
-                newEvent.getEnd_time(), newEvent.getColor(), newEvent.isTimed(), newEvent.isIs_visible_online(), newEvent.isIs_paid());
+        jdbcTemplate.update(sql, newClassEvent.getClass_id(),
+                newClassEvent.getEvent_name(), newClassEvent.getStart_time(),
+                newClassEvent.getEnd_time(), newClassEvent.getColor(), newClassEvent.isTimed(), newClassEvent.isIs_visible_online(), newClassEvent.isIs_paid());
     }
 
     @Override
@@ -74,21 +73,21 @@ public class JdbcEventDao implements EventDao {
                 String newDay = newDayOfWeek.toString();
                 if (dateRange[j].equals("Sun") && newDay.equals("SUNDAY")) {
                     // empty event Object
-                    Event newEvent = new Event();
+                    ClassEvent newClassEvent = new ClassEvent();
                     // set class ID
-                    newEvent.setClass_id(classDetails.getClass_id());
+                    newClassEvent.setClass_id(classDetails.getClass_id());
                     // set name
-                    newEvent.setEvent_name(classDetails.getClass_description());
+                    newClassEvent.setEvent_name(classDetails.getClass_description());
                     // set color (default to blue)
-                    newEvent.setColor("blue");
+                    newClassEvent.setColor("blue");
                     // set timed (default to true)
-                    newEvent.setTimed(true);
+                    newClassEvent.setTimed(true);
                     // set visible to true
-                    newEvent.setIs_visible_online(true);
+                    newClassEvent.setIs_visible_online(true);
                     if (classDetails.isIs_paid()) {
-                        newEvent.setIs_paid(true);
+                        newClassEvent.setIs_paid(true);
                     } else {
-                        newEvent.setIs_paid(false);
+                        newClassEvent.setIs_paid(false);
                     }
                     LocalDate nextOrSameSun = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
 
@@ -102,34 +101,34 @@ public class JdbcEventDao implements EventDao {
 
                     Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
                     Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
-                    newEvent.setStart_time(start);
-                    newEvent.setEnd_time(end);
+                    newClassEvent.setStart_time(start);
+                    newClassEvent.setEnd_time(end);
 
                     // call another method that takes in a Event Object
 
-                    boolean alreadyExists = isThereExistingEventWithStartTime(newEvent);
+                    boolean alreadyExists = isThereExistingEventWithStartTime(newClassEvent);
                     if (!alreadyExists) {
-                        createEvent(newEvent);
+                        createEvent(newClassEvent);
                     }
                 }
 
                 if (dateRange[j].equals("Mon") && newDay.equals("MONDAY")) {
                     // empty event Object
-                    Event newEvent = new Event();
+                    ClassEvent newClassEvent = new ClassEvent();
                     // set class ID
-                    newEvent.setClass_id(classDetails.getClass_id());
+                    newClassEvent.setClass_id(classDetails.getClass_id());
                     // set name
-                    newEvent.setEvent_name(classDetails.getClass_description());
+                    newClassEvent.setEvent_name(classDetails.getClass_description());
                     // set color (default to blue)
-                    newEvent.setColor("blue");
+                    newClassEvent.setColor("blue");
                     // set timed (default to true)
-                    newEvent.setTimed(true);
+                    newClassEvent.setTimed(true);
                     // set visible to true
-                    newEvent.setIs_visible_online(true);
+                    newClassEvent.setIs_visible_online(true);
                     if (classDetails.isIs_paid()) {
-                        newEvent.setIs_paid(true);
+                        newClassEvent.setIs_paid(true);
                     } else {
-                        newEvent.setIs_paid(false);
+                        newClassEvent.setIs_paid(false);
                     }
                     LocalDate nextOrSameMon = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY));
 
@@ -143,32 +142,32 @@ public class JdbcEventDao implements EventDao {
 
                     Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
                     Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
-                    newEvent.setStart_time(start);
-                    newEvent.setEnd_time(end);
+                    newClassEvent.setStart_time(start);
+                    newClassEvent.setEnd_time(end);
 
-                    boolean alreadyExists = isThereExistingEventWithStartTime(newEvent);
+                    boolean alreadyExists = isThereExistingEventWithStartTime(newClassEvent);
                     if (!alreadyExists) {
-                        createEvent(newEvent);
+                        createEvent(newClassEvent);
                     }
                 }
 
                 if (dateRange[j].equals("Tue") && newDay.equals("TUESDAY")) {
                     // empty event Object
-                    Event newEvent = new Event();
+                    ClassEvent newClassEvent = new ClassEvent();
                     // set class ID
-                    newEvent.setClass_id(classDetails.getClass_id());
+                    newClassEvent.setClass_id(classDetails.getClass_id());
                     // set name
-                    newEvent.setEvent_name(classDetails.getClass_description());
+                    newClassEvent.setEvent_name(classDetails.getClass_description());
                     // set color (default to blue)
-                    newEvent.setColor("blue");
+                    newClassEvent.setColor("blue");
                     // set timed (default to true)
-                    newEvent.setTimed(true);
+                    newClassEvent.setTimed(true);
                     // set visible to true
-                    newEvent.setIs_visible_online(true);
+                    newClassEvent.setIs_visible_online(true);
                     if (classDetails.isIs_paid()) {
-                        newEvent.setIs_paid(true);
+                        newClassEvent.setIs_paid(true);
                     } else {
-                        newEvent.setIs_paid(false);
+                        newClassEvent.setIs_paid(false);
                     }
                     LocalDate nextOrSameTue = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.TUESDAY));
 
@@ -182,32 +181,32 @@ public class JdbcEventDao implements EventDao {
 
                     Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
                     Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
-                    newEvent.setStart_time(start);
-                    newEvent.setEnd_time(end);
+                    newClassEvent.setStart_time(start);
+                    newClassEvent.setEnd_time(end);
 
-                    boolean alreadyExists = isThereExistingEventWithStartTime(newEvent);
+                    boolean alreadyExists = isThereExistingEventWithStartTime(newClassEvent);
                     if (!alreadyExists) {
-                        createEvent(newEvent);
+                        createEvent(newClassEvent);
                     }
                 }
 
                 if (dateRange[j].equals("Wed") && newDay.equals("WEDNESDAY")) {
                     // empty event Object
-                    Event newEvent = new Event();
+                    ClassEvent newClassEvent = new ClassEvent();
                     // set class ID
-                    newEvent.setClass_id(classDetails.getClass_id());
+                    newClassEvent.setClass_id(classDetails.getClass_id());
                     // set name
-                    newEvent.setEvent_name(classDetails.getClass_description());
+                    newClassEvent.setEvent_name(classDetails.getClass_description());
                     // set color (default to blue)
-                    newEvent.setColor("blue");
+                    newClassEvent.setColor("blue");
                     // set timed (default to true)
-                    newEvent.setTimed(true);
+                    newClassEvent.setTimed(true);
                     // set visible to true
-                    newEvent.setIs_visible_online(true);
+                    newClassEvent.setIs_visible_online(true);
                     if (classDetails.isIs_paid()) {
-                        newEvent.setIs_paid(true);
+                        newClassEvent.setIs_paid(true);
                     } else {
-                        newEvent.setIs_paid(false);
+                        newClassEvent.setIs_paid(false);
                     }
                     LocalDate nextOrSameWed = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.WEDNESDAY));
 
@@ -221,32 +220,32 @@ public class JdbcEventDao implements EventDao {
 
                     Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
                     Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
-                    newEvent.setStart_time(start);
-                    newEvent.setEnd_time(end);
+                    newClassEvent.setStart_time(start);
+                    newClassEvent.setEnd_time(end);
 
-                    boolean alreadyExists = isThereExistingEventWithStartTime(newEvent);
+                    boolean alreadyExists = isThereExistingEventWithStartTime(newClassEvent);
                     if (!alreadyExists) {
-                        createEvent(newEvent);
+                        createEvent(newClassEvent);
                     }
                 }
 
                 if (dateRange[j].equals("Thu") && newDay.equals("THURSDAY")) {
                     // empty event Object
-                    Event newEvent = new Event();
+                    ClassEvent newClassEvent = new ClassEvent();
                     // set class ID
-                    newEvent.setClass_id(classDetails.getClass_id());
+                    newClassEvent.setClass_id(classDetails.getClass_id());
                     // set name
-                    newEvent.setEvent_name(classDetails.getClass_description());
+                    newClassEvent.setEvent_name(classDetails.getClass_description());
                     // set color (default to blue)
-                    newEvent.setColor("blue");
+                    newClassEvent.setColor("blue");
                     // set timed (default to true)
-                    newEvent.setTimed(true);
+                    newClassEvent.setTimed(true);
                     // set visible to true
-                    newEvent.setIs_visible_online(true);
+                    newClassEvent.setIs_visible_online(true);
                     if (classDetails.isIs_paid()) {
-                        newEvent.setIs_paid(true);
+                        newClassEvent.setIs_paid(true);
                     } else {
-                        newEvent.setIs_paid(false);
+                        newClassEvent.setIs_paid(false);
                     }
                     LocalDate nextOrSameThu = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.THURSDAY));
 
@@ -260,32 +259,32 @@ public class JdbcEventDao implements EventDao {
 
                     Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
                     Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
-                    newEvent.setStart_time(start);
-                    newEvent.setEnd_time(end);
+                    newClassEvent.setStart_time(start);
+                    newClassEvent.setEnd_time(end);
 
-                    boolean alreadyExists = isThereExistingEventWithStartTime(newEvent);
+                    boolean alreadyExists = isThereExistingEventWithStartTime(newClassEvent);
                     if (!alreadyExists) {
-                        createEvent(newEvent);
+                        createEvent(newClassEvent);
                     }
                 }
 
                 if (dateRange[j].equals("Fri") && newDay.equals("FRIDAY")) {
                     // empty event Object
-                    Event newEvent = new Event();
+                    ClassEvent newClassEvent = new ClassEvent();
                     // set class ID
-                    newEvent.setClass_id(classDetails.getClass_id());
+                    newClassEvent.setClass_id(classDetails.getClass_id());
                     // set name
-                    newEvent.setEvent_name(classDetails.getClass_description());
+                    newClassEvent.setEvent_name(classDetails.getClass_description());
                     // set color (default to blue)
-                    newEvent.setColor("blue");
+                    newClassEvent.setColor("blue");
                     // set timed (default to true)
-                    newEvent.setTimed(true);
+                    newClassEvent.setTimed(true);
                     // set visible to true
-                    newEvent.setIs_visible_online(true);
+                    newClassEvent.setIs_visible_online(true);
                     if (classDetails.isIs_paid()) {
-                        newEvent.setIs_paid(true);
+                        newClassEvent.setIs_paid(true);
                     } else {
-                        newEvent.setIs_paid(false);
+                        newClassEvent.setIs_paid(false);
                     }
                     LocalDate nextOrSameFri = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.FRIDAY));
 
@@ -299,32 +298,32 @@ public class JdbcEventDao implements EventDao {
 
                     Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
                     Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
-                    newEvent.setStart_time(start);
-                    newEvent.setEnd_time(end);
+                    newClassEvent.setStart_time(start);
+                    newClassEvent.setEnd_time(end);
 
-                    boolean alreadyExists = isThereExistingEventWithStartTime(newEvent);
+                    boolean alreadyExists = isThereExistingEventWithStartTime(newClassEvent);
                     if (!alreadyExists) {
-                        createEvent(newEvent);
+                        createEvent(newClassEvent);
                     }
                 }
 
                 if (dateRange[j].equals("Sat") && newDay.equals("SATURDAY")) {
                     // empty event Object
-                    Event newEvent = new Event();
+                    ClassEvent newClassEvent = new ClassEvent();
                     // set class ID
-                    newEvent.setClass_id(classDetails.getClass_id());
+                    newClassEvent.setClass_id(classDetails.getClass_id());
                     // set name
-                    newEvent.setEvent_name(classDetails.getClass_description());
+                    newClassEvent.setEvent_name(classDetails.getClass_description());
                     // set color (default to blue)
-                    newEvent.setColor("blue");
+                    newClassEvent.setColor("blue");
                     // set timed (default to true)
-                    newEvent.setTimed(true);
+                    newClassEvent.setTimed(true);
                     // set visible to true
-                    newEvent.setIs_visible_online(true);
+                    newClassEvent.setIs_visible_online(true);
                     if (classDetails.isIs_paid()) {
-                        newEvent.setIs_paid(true);
+                        newClassEvent.setIs_paid(true);
                     } else {
-                        newEvent.setIs_paid(false);
+                        newClassEvent.setIs_paid(false);
                     }
                     LocalDate nextOrSameSat = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY));
 
@@ -338,12 +337,12 @@ public class JdbcEventDao implements EventDao {
 
                     Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
                     Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
-                    newEvent.setStart_time(start);
-                    newEvent.setEnd_time(end);
+                    newClassEvent.setStart_time(start);
+                    newClassEvent.setEnd_time(end);
 
-                    boolean alreadyExists = isThereExistingEventWithStartTime(newEvent);
+                    boolean alreadyExists = isThereExistingEventWithStartTime(newClassEvent);
                     if (!alreadyExists) {
-                        createEvent(newEvent);
+                        createEvent(newClassEvent);
                     }
                 }
             }
@@ -362,7 +361,7 @@ public class JdbcEventDao implements EventDao {
         List<ClassDetails> classDetails = getAllClasses();
         String end_time = "SELECT * FROM events ORDER BY end_time DESC LIMIT 1";
         SqlRowSet results = jdbcTemplate.queryForRowSet(end_time);
-        Event event;
+        ClassEvent classEvent;
         Date date = new Date();
         Timestamp theLatestTimestamp = new Timestamp(date.getTime());
         Calendar cal1 = new GregorianCalendar();
@@ -371,8 +370,8 @@ public class JdbcEventDao implements EventDao {
 
 
         if (results.next()) {
-            event = mapRowToEvent(results);
-            theLatestTimestamp = event.getEnd_time();
+            classEvent = mapRowToEvent(results);
+            theLatestTimestamp = classEvent.getEnd_time();
         }
         try {
             theLatestTimestamp = addDays(1, theLatestTimestamp);
@@ -426,21 +425,21 @@ public class JdbcEventDao implements EventDao {
                         String newDay = newDayOfWeek.toString();
                         if (dateRange[j].equals("Sun") && newDay.equals("SUNDAY")) {
                             // empty event Object
-                            Event newEvent = new Event();
+                            ClassEvent newClassEvent = new ClassEvent();
                             // set class ID
-                            newEvent.setClass_id(currentClass.getClass_id());
+                            newClassEvent.setClass_id(currentClass.getClass_id());
                             // set name
-                            newEvent.setEvent_name(currentClass.getClass_description());
+                            newClassEvent.setEvent_name(currentClass.getClass_description());
                             // set color (default to blue)
-                            newEvent.setColor("blue");
+                            newClassEvent.setColor("blue");
                             // set timed (default to true)
-                            newEvent.setTimed(true);
+                            newClassEvent.setTimed(true);
                             // set visible to true
-                            newEvent.setIs_visible_online(true);
+                            newClassEvent.setIs_visible_online(true);
                             if (currentClass.isIs_paid()) {
-                                newEvent.setIs_paid(true);
+                                newClassEvent.setIs_paid(true);
                             } else {
-                                newEvent.setIs_paid(false);
+                                newClassEvent.setIs_paid(false);
                             }
                             LocalDate nextOrSameSun = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
 
@@ -454,32 +453,32 @@ public class JdbcEventDao implements EventDao {
 
                             Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
                             Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
-                            newEvent.setStart_time(start);
-                            newEvent.setEnd_time(end);
+                            newClassEvent.setStart_time(start);
+                            newClassEvent.setEnd_time(end);
 
                             // call another method that takes in a Event Object
 
-                            createEvent(newEvent);
+                            createEvent(newClassEvent);
 
                         }
 
                         if (dateRange[j].equals("Mon") && newDay.equals("MONDAY")) {
                             // empty event Object
-                            Event newEvent = new Event();
+                            ClassEvent newClassEvent = new ClassEvent();
                             // set class ID
-                            newEvent.setClass_id(currentClass.getClass_id());
+                            newClassEvent.setClass_id(currentClass.getClass_id());
                             // set name
-                            newEvent.setEvent_name(currentClass.getClass_description());
+                            newClassEvent.setEvent_name(currentClass.getClass_description());
                             // set color (default to blue)
-                            newEvent.setColor("blue");
+                            newClassEvent.setColor("blue");
                             // set timed (default to true)
-                            newEvent.setTimed(true);
+                            newClassEvent.setTimed(true);
                             // set visible to true
-                            newEvent.setIs_visible_online(true);
+                            newClassEvent.setIs_visible_online(true);
                             if (currentClass.isIs_paid()) {
-                                newEvent.setIs_paid(true);
+                                newClassEvent.setIs_paid(true);
                             } else {
-                                newEvent.setIs_paid(false);
+                                newClassEvent.setIs_paid(false);
                             }
                             LocalDate nextOrSameMon = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY));
 
@@ -493,30 +492,30 @@ public class JdbcEventDao implements EventDao {
 
                             Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
                             Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
-                            newEvent.setStart_time(start);
-                            newEvent.setEnd_time(end);
+                            newClassEvent.setStart_time(start);
+                            newClassEvent.setEnd_time(end);
 
-                            createEvent(newEvent);
+                            createEvent(newClassEvent);
 
                         }
 
                         if (dateRange[j].equals("Tue") && newDay.equals("TUESDAY")) {
                             // empty event Object
-                            Event newEvent = new Event();
+                            ClassEvent newClassEvent = new ClassEvent();
                             // set class ID
-                            newEvent.setClass_id(currentClass.getClass_id());
+                            newClassEvent.setClass_id(currentClass.getClass_id());
                             // set name
-                            newEvent.setEvent_name(currentClass.getClass_description());
+                            newClassEvent.setEvent_name(currentClass.getClass_description());
                             // set color (default to blue)
-                            newEvent.setColor("blue");
+                            newClassEvent.setColor("blue");
                             // set timed (default to true)
-                            newEvent.setTimed(true);
+                            newClassEvent.setTimed(true);
                             // set visible to true
-                            newEvent.setIs_visible_online(true);
+                            newClassEvent.setIs_visible_online(true);
                             if (currentClass.isIs_paid()) {
-                                newEvent.setIs_paid(true);
+                                newClassEvent.setIs_paid(true);
                             } else {
-                                newEvent.setIs_paid(false);
+                                newClassEvent.setIs_paid(false);
                             }
                             LocalDate nextOrSameTue = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.TUESDAY));
 
@@ -530,30 +529,30 @@ public class JdbcEventDao implements EventDao {
 
                             Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
                             Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
-                            newEvent.setStart_time(start);
-                            newEvent.setEnd_time(end);
+                            newClassEvent.setStart_time(start);
+                            newClassEvent.setEnd_time(end);
 
-                            createEvent(newEvent);
+                            createEvent(newClassEvent);
 
                         }
 
                         if (dateRange[j].equals("Wed") && newDay.equals("WEDNESDAY")) {
                             // empty event Object
-                            Event newEvent = new Event();
+                            ClassEvent newClassEvent = new ClassEvent();
                             // set class ID
-                            newEvent.setClass_id(currentClass.getClass_id());
+                            newClassEvent.setClass_id(currentClass.getClass_id());
                             // set name
-                            newEvent.setEvent_name(currentClass.getClass_description());
+                            newClassEvent.setEvent_name(currentClass.getClass_description());
                             // set color (default to blue)
-                            newEvent.setColor("blue");
+                            newClassEvent.setColor("blue");
                             // set timed (default to true)
-                            newEvent.setTimed(true);
+                            newClassEvent.setTimed(true);
                             // set visible to true
-                            newEvent.setIs_visible_online(true);
+                            newClassEvent.setIs_visible_online(true);
                             if (currentClass.isIs_paid()) {
-                                newEvent.setIs_paid(true);
+                                newClassEvent.setIs_paid(true);
                             } else {
-                                newEvent.setIs_paid(false);
+                                newClassEvent.setIs_paid(false);
                             }
                             LocalDate nextOrSameWed = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.WEDNESDAY));
 
@@ -567,29 +566,29 @@ public class JdbcEventDao implements EventDao {
 
                             Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
                             Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
-                            newEvent.setStart_time(start);
-                            newEvent.setEnd_time(end);
+                            newClassEvent.setStart_time(start);
+                            newClassEvent.setEnd_time(end);
 
-                            createEvent(newEvent);
+                            createEvent(newClassEvent);
                         }
 
                         if (dateRange[j].equals("Thu") && newDay.equals("THURSDAY")) {
                             // empty event Object
-                            Event newEvent = new Event();
+                            ClassEvent newClassEvent = new ClassEvent();
                             // set class ID
-                            newEvent.setClass_id(currentClass.getClass_id());
+                            newClassEvent.setClass_id(currentClass.getClass_id());
                             // set name
-                            newEvent.setEvent_name(currentClass.getClass_description());
+                            newClassEvent.setEvent_name(currentClass.getClass_description());
                             // set color (default to blue)
-                            newEvent.setColor("blue");
+                            newClassEvent.setColor("blue");
                             // set timed (default to true)
-                            newEvent.setTimed(true);
+                            newClassEvent.setTimed(true);
                             // set visible to true
-                            newEvent.setIs_visible_online(true);
+                            newClassEvent.setIs_visible_online(true);
                             if (currentClass.isIs_paid()) {
-                                newEvent.setIs_paid(true);
+                                newClassEvent.setIs_paid(true);
                             } else {
-                                newEvent.setIs_paid(false);
+                                newClassEvent.setIs_paid(false);
                             }
                             LocalDate nextOrSameThu = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.THURSDAY));
 
@@ -603,29 +602,29 @@ public class JdbcEventDao implements EventDao {
 
                             Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
                             Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
-                            newEvent.setStart_time(start);
-                            newEvent.setEnd_time(end);
+                            newClassEvent.setStart_time(start);
+                            newClassEvent.setEnd_time(end);
 
-                            createEvent(newEvent);
+                            createEvent(newClassEvent);
                         }
 
                         if (dateRange[j].equals("Fri") && newDay.equals("FRIDAY")) {
                             // empty event Object
-                            Event newEvent = new Event();
+                            ClassEvent newClassEvent = new ClassEvent();
                             // set class ID
-                            newEvent.setClass_id(currentClass.getClass_id());
+                            newClassEvent.setClass_id(currentClass.getClass_id());
                             // set name
-                            newEvent.setEvent_name(currentClass.getClass_description());
+                            newClassEvent.setEvent_name(currentClass.getClass_description());
                             // set color (default to blue)
-                            newEvent.setColor("blue");
+                            newClassEvent.setColor("blue");
                             // set timed (default to true)
-                            newEvent.setTimed(true);
+                            newClassEvent.setTimed(true);
                             // set visible to true
-                            newEvent.setIs_visible_online(true);
+                            newClassEvent.setIs_visible_online(true);
                             if (currentClass.isIs_paid()) {
-                                newEvent.setIs_paid(true);
+                                newClassEvent.setIs_paid(true);
                             } else {
-                                newEvent.setIs_paid(false);
+                                newClassEvent.setIs_paid(false);
                             }
                             LocalDate nextOrSameFri = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.FRIDAY));
 
@@ -639,29 +638,29 @@ public class JdbcEventDao implements EventDao {
 
                             Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
                             Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
-                            newEvent.setStart_time(start);
-                            newEvent.setEnd_time(end);
+                            newClassEvent.setStart_time(start);
+                            newClassEvent.setEnd_time(end);
 
-                            createEvent(newEvent);
+                            createEvent(newClassEvent);
                         }
 
                         if (dateRange[j].equals("Sat") && newDay.equals("SATURDAY")) {
                             // empty event Object
-                            Event newEvent = new Event();
+                            ClassEvent newClassEvent = new ClassEvent();
                             // set class ID
-                            newEvent.setClass_id(currentClass.getClass_id());
+                            newClassEvent.setClass_id(currentClass.getClass_id());
                             // set name
-                            newEvent.setEvent_name(currentClass.getClass_description());
+                            newClassEvent.setEvent_name(currentClass.getClass_description());
                             // set color (default to blue)
-                            newEvent.setColor("blue");
+                            newClassEvent.setColor("blue");
                             // set timed (default to true)
-                            newEvent.setTimed(true);
+                            newClassEvent.setTimed(true);
                             // set visible to true
-                            newEvent.setIs_visible_online(true);
+                            newClassEvent.setIs_visible_online(true);
                             if (currentClass.isIs_paid()) {
-                                newEvent.setIs_paid(true);
+                                newClassEvent.setIs_paid(true);
                             } else {
-                                newEvent.setIs_paid(false);
+                                newClassEvent.setIs_paid(false);
                             }
                             LocalDate nextOrSameSat = startTimeDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY));
 
@@ -675,10 +674,10 @@ public class JdbcEventDao implements EventDao {
 
                             Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
                             Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
-                            newEvent.setStart_time(start);
-                            newEvent.setEnd_time(end);
+                            newClassEvent.setStart_time(start);
+                            newClassEvent.setEnd_time(end);
 
-                            createEvent(newEvent);
+                            createEvent(newClassEvent);
                         }
 
 
@@ -711,7 +710,7 @@ public class JdbcEventDao implements EventDao {
     }
 
     @Override
-    public boolean updateEventDetails(Event event) {
+    public boolean updateEventDetails(ClassEvent classEvent) {
 
         String sql = "UPDATE events SET class_id = ? , " +
                 "event_name = ? , " +
@@ -722,9 +721,9 @@ public class JdbcEventDao implements EventDao {
                 "is_visible_online = ? , " +
                 "is_paid = ? " +
                 "WHERE event_id = ?";
-        return jdbcTemplate.update(sql, event.getClass_id(), event.getEvent_name(), event.getStart_time(),
-                event.getEnd_time(), event.getColor(), event.isTimed(),
-                event.isIs_visible_online(), event.isIs_paid(), event.getEvent_id()) == 1;
+        return jdbcTemplate.update(sql, classEvent.getClass_id(), classEvent.getEvent_name(), classEvent.getStart_time(),
+                classEvent.getEnd_time(), classEvent.getColor(), classEvent.isTimed(),
+                classEvent.isIs_visible_online(), classEvent.isIs_paid(), classEvent.getEvent_id()) == 1;
     }
 
     @Override
@@ -736,8 +735,8 @@ public class JdbcEventDao implements EventDao {
 
         while (result.next()) {
             ClientDetails clientDetails = mapRowToClient(result);
-            List<Event> clientEvents = new ArrayList<>();
-            Event event = new Event();
+            List<ClassEvent> clientClassEvents = new ArrayList<>();
+            ClassEvent classEvent = new ClassEvent();
             String sql2 = "SELECT events.event_id, events.class_id, events.event_name, events.start_time, events.end_time, events.color, events.timed, events.is_visible_online, events.is_paid FROM events " +
                     "JOIN client_event ON events.event_id = client_event.event_id " +
                     "JOIN client_details ON client_details.client_id = client_event.client_id " +
@@ -750,12 +749,12 @@ public class JdbcEventDao implements EventDao {
 
             boolean noClasses = false;
             while (result2.next()) {
-                event = mapRowToEvent(result2);
-                clientEvents.add(event);
-                theLatestTimestamp = event.getEnd_time();
+                classEvent = mapRowToEvent(result2);
+                clientClassEvents.add(classEvent);
+                theLatestTimestamp = classEvent.getEnd_time();
 
             }
-            if (clientEvents.size()==0) {
+            if (clientClassEvents.size()==0) {
                 noClasses = true;
             }
 
@@ -817,15 +816,15 @@ public class JdbcEventDao implements EventDao {
 
         while(resultForAttendanceCheck.next()) {
             // PULL THE EVENT
-            Event event = mapRowToEvent(resultForAttendanceCheck);
-            event.setAttendanceList(getAttendanceByEventId(event.getEvent_id()));
+            ClassEvent classEvent = mapRowToEvent(resultForAttendanceCheck);
+            classEvent.setAttendanceList(getAttendanceByEventId(classEvent.getEvent_id()));
 
 
             // check this current event and compare if it has the same start-time and end-time as the original
             // filtering it down so that we don't accidentally change any events that weren't exact matches
             // CONVERSION ROUTINE TO EXTRACT THE HOUR AND MINUTES am/pm (e.g. "06:00 am")
-            Timestamp startTimeStamp = event.getStart_time();
-            Timestamp endTimeStamp = event.getEnd_time();
+            Timestamp startTimeStamp = classEvent.getStart_time();
+            Timestamp endTimeStamp = classEvent.getEnd_time();
 
 
             LocalDateTime startTimeLocalDate = startTimeStamp.toLocalDateTime();
@@ -857,14 +856,14 @@ public class JdbcEventDao implements EventDao {
 
             // Check if This event had already been updated thus it isn't an exact match and something to change across the board
 
-            if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && event.isIs_visible_online()) {
-                if (event.getAttendanceList().size() > 0) {
+            if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && classEvent.isIs_visible_online()) {
+                if (classEvent.getAttendanceList().size() > 0) {
                     returnFailed = true;
                     if (stringToReturn.length() == 0) {
-                        stringToReturn = "Failed at: " + event.getStart_time().toString();
+                        stringToReturn = "Failed at: " + classEvent.getStart_time().toString();
                     }
                     else {
-                        stringToReturn += " and " +  event.getStart_time().toString();
+                        stringToReturn += " and " +  classEvent.getStart_time().toString();
                     }
                 }
             }
@@ -877,7 +876,7 @@ public class JdbcEventDao implements EventDao {
         // second while loop deletes it
         while (result.next()) {
             // PULL THE EVENT
-            Event event = mapRowToEvent(result);
+            ClassEvent classEvent = mapRowToEvent(result);
 
             // Don't set the attendance since these classes you're deleting shouldnt have any clients signed up
             //  event.setAttendanceList(getAttendanceByEventId(event.getEvent_id()));
@@ -886,8 +885,8 @@ public class JdbcEventDao implements EventDao {
             // check this current event and compare if it has the same start-time and end-time as the original
             // filtering it down so that we don't accidentally change any events that weren't exact matches
             // CONVERSION ROUTINE TO EXTRACT THE HOUR AND MINUTES am/pm (e.g. "06:00 am")
-            Timestamp startTimeStamp = event.getStart_time();
-            Timestamp endTimeStamp = event.getEnd_time();
+            Timestamp startTimeStamp = classEvent.getStart_time();
+            Timestamp endTimeStamp = classEvent.getEnd_time();
 
 
             LocalDateTime startTimeLocalDate = startTimeStamp.toLocalDateTime();
@@ -919,9 +918,9 @@ public class JdbcEventDao implements EventDao {
 
             // Check if This event had already been updated thus it isn't an exact match and something to change across the board
 
-            if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && event.isIs_visible_online()) {
+            if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && classEvent.isIs_visible_online()) {
                 //just delete it while you're here.
-                deleteEvent(event.getEvent_id());
+                deleteEvent(classEvent.getEvent_id());
 
             }
 
@@ -961,15 +960,15 @@ public class JdbcEventDao implements EventDao {
         // first while loop just checks the attendance list of all the events
         while(resultForAttendanceCheck.next()) {
             // PULL THE EVENT
-            Event event = mapRowToEvent(resultForAttendanceCheck);
-            event.setAttendanceList(getAttendanceByEventId(event.getEvent_id()));
+            ClassEvent classEvent = mapRowToEvent(resultForAttendanceCheck);
+            classEvent.setAttendanceList(getAttendanceByEventId(classEvent.getEvent_id()));
 
 
             // check this current event and compare if it has the same start-time and end-time as the original
             // filtering it down so that we don't accidentally change any events that weren't exact matches
             // CONVERSION ROUTINE TO EXTRACT THE HOUR AND MINUTES am/pm (e.g. "06:00 am")
-            Timestamp startTimeStamp = event.getStart_time();
-            Timestamp endTimeStamp = event.getEnd_time();
+            Timestamp startTimeStamp = classEvent.getStart_time();
+            Timestamp endTimeStamp = classEvent.getEnd_time();
 
 
             LocalDateTime startTimeLocalDate = startTimeStamp.toLocalDateTime();
@@ -1001,14 +1000,14 @@ public class JdbcEventDao implements EventDao {
 
             // Check if This event had already been updated thus it isn't an exact match and something to change across the board
 
-            if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && event.isIs_visible_online()) {
-                if (event.getAttendanceList().size() > 0) {
+            if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && classEvent.isIs_visible_online()) {
+                if (classEvent.getAttendanceList().size() > 0) {
                     returnFailed = true;
                     if (stringToReturn.length() == 0) {
-                        stringToReturn = "Failed at: " + event.getStart_time().toString();
+                        stringToReturn = "Failed at: " + classEvent.getStart_time().toString();
                     }
                     else {
-                        stringToReturn += " and " +  event.getStart_time().toString();
+                        stringToReturn += " and " +  classEvent.getStart_time().toString();
                     }
                 }
             }
@@ -1021,7 +1020,7 @@ public class JdbcEventDao implements EventDao {
         // second while loop updates it
         while (result.next()) {
             // PULL THE EVENT
-            Event event = mapRowToEvent(result);
+            ClassEvent classEvent = mapRowToEvent(result);
 
             // Don't set the attendance since these classes you're updating shouldnt have any clients signed up
             //  event.setAttendanceList(getAttendanceByEventId(event.getEvent_id()));
@@ -1030,8 +1029,8 @@ public class JdbcEventDao implements EventDao {
             // check this current event and compare if it has the same start-time and end-time as the original
             // filtering it down so that we don't accidentally change any events that weren't exact matches
             // CONVERSION ROUTINE TO EXTRACT THE HOUR AND MINUTES am/pm (e.g. "06:00 am")
-            Timestamp startTimeStamp = event.getStart_time();
-            Timestamp endTimeStamp = event.getEnd_time();
+            Timestamp startTimeStamp = classEvent.getStart_time();
+            Timestamp endTimeStamp = classEvent.getEnd_time();
 
 
             LocalDateTime startTimeLocalDate = startTimeStamp.toLocalDateTime();
@@ -1063,7 +1062,7 @@ public class JdbcEventDao implements EventDao {
 
             // Check if This event had already been updated thus it isn't an exact match and something to change across the board
 
-            if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && event.isIs_visible_online()) {
+            if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && classEvent.isIs_visible_online()) {
                 //just update it while you're here.
 
                 // Happy Path: The date range never changed
@@ -1174,19 +1173,19 @@ public class JdbcEventDao implements EventDao {
                     // BECAUSE THEY KEPT THE EXACT SAME DATE RANGE
 
                     // empty event Object
-                    Event newEvent = new Event();
+                    ClassEvent newClassEvent = new ClassEvent();
                     // set event ID
-                    newEvent.setEvent_id(event.getEvent_id());
+                    newClassEvent.setEvent_id(classEvent.getEvent_id());
                     // set class ID
-                    newEvent.setClass_id(updatedClass.getClass_id());
+                    newClassEvent.setClass_id(updatedClass.getClass_id());
                     // set name
-                    newEvent.setEvent_name(updatedClass.getClass_description());
+                    newClassEvent.setEvent_name(updatedClass.getClass_description());
                     // set color (default to blue)
-                    newEvent.setColor("blue");
+                    newClassEvent.setColor("blue");
                     // set timed (default to true)
-                    newEvent.setTimed(true);
+                    newClassEvent.setTimed(true);
                     // set visible to true
-                    newEvent.setIs_visible_online(true);
+                    newClassEvent.setIs_visible_online(true);
 
                     // Process to Prepare the new startTime/endTime timestamps for the updated event
                     LocalDate startTimeDate = startTimeStamp.toInstant().atZone(ZoneId.of("America/New_York")).toLocalDate();
@@ -1215,14 +1214,14 @@ public class JdbcEventDao implements EventDao {
                     }
 
                     // startTime and endTime are prepared here
-                    newEvent.setStart_time(start);
-                    newEvent.setEnd_time(end);
+                    newClassEvent.setStart_time(start);
+                    newClassEvent.setEnd_time(end);
 
                     // Maybe make sure no event has the same timestamps already so that you don't double book
-                    boolean checkForExistingEventWithStartTime = isThereExistingEventWithStartTime(newEvent);
+                    boolean checkForExistingEventWithStartTime = isThereExistingEventWithStartTime(newClassEvent);
 
                     if (!checkForExistingEventWithStartTime) {
-                        updateEventDetails(newEvent);
+                        updateEventDetails(newClassEvent);
                     }
 
 
@@ -1235,19 +1234,19 @@ public class JdbcEventDao implements EventDao {
                         // Use that value in the map to create the new event
 
                         // empty event Object
-                        Event newEvent = new Event();
+                        ClassEvent newClassEvent = new ClassEvent();
                         // set event ID
-                        newEvent.setEvent_id(event.getEvent_id());
+                        newClassEvent.setEvent_id(classEvent.getEvent_id());
                         // set class ID
-                        newEvent.setClass_id(updatedClass.getClass_id());
+                        newClassEvent.setClass_id(updatedClass.getClass_id());
                         // set name
-                        newEvent.setEvent_name(updatedClass.getClass_description());
+                        newClassEvent.setEvent_name(updatedClass.getClass_description());
                         // set color (default to blue)
-                        newEvent.setColor("blue");
+                        newClassEvent.setColor("blue");
                         // set timed (default to true)
-                        newEvent.setTimed(true);
+                        newClassEvent.setTimed(true);
                         // set visible to true
-                        newEvent.setIs_visible_online(true);
+                        newClassEvent.setIs_visible_online(true);
 
                         // Process to Prepare the new startTime/endTime timestamps for the updated event
                         LocalDate startTimeDate = startTimeStamp.toInstant().atZone(ZoneId.of("America/New_York")).toLocalDate();
@@ -1276,14 +1275,14 @@ public class JdbcEventDao implements EventDao {
                         }
 
                         // startTime and endTime are prepared here
-                        newEvent.setStart_time(start);
-                        newEvent.setEnd_time(end);
+                        newClassEvent.setStart_time(start);
+                        newClassEvent.setEnd_time(end);
 
                         // Maybe make sure no event has the same timestamps already so that you don't double book
-                        boolean checkForExistingEventWithStartTime = isThereExistingEventWithStartTime(newEvent);
+                        boolean checkForExistingEventWithStartTime = isThereExistingEventWithStartTime(newClassEvent);
 
                         if (!checkForExistingEventWithStartTime) {
-                            updateEventDetails(newEvent);
+                            updateEventDetails(newClassEvent);
                         }
 
 
@@ -1302,25 +1301,25 @@ public class JdbcEventDao implements EventDao {
 
                         // Delete it only if we cant switch it to another day and there's no attendance
                         // Find out if this event has an attendance
-                        if (!foundEmptySlot && event.getAttendanceList().size() == 0) {
-                            deleteEvent(event.getEvent_id());
+                        if (!foundEmptySlot && classEvent.getAttendanceList().size() == 0) {
+                            deleteEvent(classEvent.getEvent_id());
                         } else if (foundEmptySlot && !(assignedDay.equals("") && updatedClassDateRangeMap.get(assignedDay).equals(currentDay))) {
 
 
                             // empty event Object
-                            Event newEvent = new Event();
+                            ClassEvent newClassEvent = new ClassEvent();
                             // set event ID
-                            newEvent.setEvent_id(event.getEvent_id());
+                            newClassEvent.setEvent_id(classEvent.getEvent_id());
                             // set class ID
-                            newEvent.setClass_id(updatedClass.getClass_id());
+                            newClassEvent.setClass_id(updatedClass.getClass_id());
                             // set name
-                            newEvent.setEvent_name(updatedClass.getClass_description());
+                            newClassEvent.setEvent_name(updatedClass.getClass_description());
                             // set color (default to blue)
-                            newEvent.setColor("blue");
+                            newClassEvent.setColor("blue");
                             // set timed (default to true)
-                            newEvent.setTimed(true);
+                            newClassEvent.setTimed(true);
                             // set visible to true
-                            newEvent.setIs_visible_online(true);
+                            newClassEvent.setIs_visible_online(true);
 
 
                             // Process to Prepare the new startTime/endTime timestamps for the updated event
@@ -1350,14 +1349,14 @@ public class JdbcEventDao implements EventDao {
                             }
 
                             // startTime and endTime are prepared here
-                            newEvent.setStart_time(start);
-                            newEvent.setEnd_time(end);
+                            newClassEvent.setStart_time(start);
+                            newClassEvent.setEnd_time(end);
 
                             // Maybe make sure no event has the same timestamps already so that you don't double book
-                            boolean checkForExistingEventWithStartTime = isThereExistingEventWithStartTime(newEvent);
+                            boolean checkForExistingEventWithStartTime = isThereExistingEventWithStartTime(newClassEvent);
 
                             if (!checkForExistingEventWithStartTime) {
-                                updateEventDetails(newEvent);
+                                updateEventDetails(newClassEvent);
                             }
 
                         }
@@ -1368,29 +1367,29 @@ public class JdbcEventDao implements EventDao {
                     // Remember to Update the rest of the event since the Timestamps match
 
                     // empty event Object
-                    Event newEvent = new Event();
+                    ClassEvent newClassEvent = new ClassEvent();
                     // set event ID
-                    newEvent.setEvent_id(event.getEvent_id());
+                    newClassEvent.setEvent_id(classEvent.getEvent_id());
                     // set class ID
-                    newEvent.setClass_id(updatedClass.getClass_id());
+                    newClassEvent.setClass_id(updatedClass.getClass_id());
                     // set name
-                    newEvent.setEvent_name(updatedClass.getClass_description());
+                    newClassEvent.setEvent_name(updatedClass.getClass_description());
                     // set color (default to blue)
-                    newEvent.setColor("blue");
+                    newClassEvent.setColor("blue");
                     // set timed (default to true)
-                    newEvent.setTimed(true);
+                    newClassEvent.setTimed(true);
                     // set visible to true
-                    newEvent.setIs_visible_online(true);
+                    newClassEvent.setIs_visible_online(true);
 
                     // startTime and endTime are prepared here
-                    newEvent.setStart_time(event.getStart_time());
-                    newEvent.setEnd_time(event.getEnd_time());
+                    newClassEvent.setStart_time(classEvent.getStart_time());
+                    newClassEvent.setEnd_time(classEvent.getEnd_time());
 
                     // Maybe make sure no event has the same timestamps already so that you don't double book
-                    boolean checkForExistingEventWithStartTime = isThereExistingEventWithStartTime(newEvent);
+                    boolean checkForExistingEventWithStartTime = isThereExistingEventWithStartTime(newClassEvent);
 
                     if (!checkForExistingEventWithStartTime) {
-                        updateEventDetails(newEvent);
+                        updateEventDetails(newClassEvent);
                     }
                 }
 
@@ -1448,17 +1447,17 @@ public class JdbcEventDao implements EventDao {
                         if (newDay.equals(day)) {
 
                             // empty event Object
-                            Event newEvent = new Event();
+                            ClassEvent newClassEvent = new ClassEvent();
                             // set class ID
-                            newEvent.setClass_id(updatedClass.getClass_id());
+                            newClassEvent.setClass_id(updatedClass.getClass_id());
                             // set name
-                            newEvent.setEvent_name(updatedClass.getClass_description());
+                            newClassEvent.setEvent_name(updatedClass.getClass_description());
                             // set color (default to blue)
-                            newEvent.setColor("blue");
+                            newClassEvent.setColor("blue");
                             // set timed (default to true)
-                            newEvent.setTimed(true);
+                            newClassEvent.setTimed(true);
                             // set visible to true
-                            newEvent.setIs_visible_online(true);
+                            newClassEvent.setIs_visible_online(true);
 
                             LocalDate nextOrSameDay = startTimeDate.with(TemporalAdjusters.nextOrSame(getDayOfWeekByString(day)));
 
@@ -1480,12 +1479,12 @@ public class JdbcEventDao implements EventDao {
                                 end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
                             }
 
-                            newEvent.setStart_time(start);
-                            newEvent.setEnd_time(end);
+                            newClassEvent.setStart_time(start);
+                            newClassEvent.setEnd_time(end);
 
-                            boolean alreadyExists = isThereExistingEventWithStartTime(newEvent);
+                            boolean alreadyExists = isThereExistingEventWithStartTime(newClassEvent);
                             if (!alreadyExists) {
-                                createEvent(newEvent);
+                                createEvent(newClassEvent);
                             }
 
                         }
@@ -1508,16 +1507,16 @@ public class JdbcEventDao implements EventDao {
 
     // helper method
     @Override
-    public boolean isThereExistingEventWithStartTime(Event newEvent) {
+    public boolean isThereExistingEventWithStartTime(ClassEvent newClassEvent) {
         String sql = "SELECT * FROM events WHERE start_time = ? AND end_time = ? AND event_name = ? AND color = ? AND is_paid = ?;";
-        List<Event> checkForExistingEventList = new ArrayList<>();
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, newEvent.getStart_time(), newEvent.getEnd_time(), newEvent.getEvent_name(), newEvent.getColor(), newEvent.isIs_paid());
+        List<ClassEvent> checkForExistingClassEventList = new ArrayList<>();
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, newClassEvent.getStart_time(), newClassEvent.getEnd_time(), newClassEvent.getEvent_name(), newClassEvent.getColor(), newClassEvent.isIs_paid());
         while (result.next()) {
-            Event event = mapRowToEvent(result);
+            ClassEvent classEvent = mapRowToEvent(result);
 
-            checkForExistingEventList.add(event);
+            checkForExistingClassEventList.add(classEvent);
         }
-        return checkForExistingEventList.size() > 0;
+        return checkForExistingClassEventList.size() > 0;
     }
 
     // helper method
@@ -1551,65 +1550,65 @@ public class JdbcEventDao implements EventDao {
     }
 
     @Override
-    public List<Event> getAllEvents() {
-        List<Event> allEvents = new ArrayList<>();
+    public List<ClassEvent> getAllEvents() {
+        List<ClassEvent> allClassEvents = new ArrayList<>();
         String sql = "SELECT * " +
                 "FROM events; ";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
         while (result.next()) {
-            Event event = mapRowToEvent(result);
+            ClassEvent classEvent = mapRowToEvent(result);
 
-            allEvents.add(event);
+            allClassEvents.add(classEvent);
         }
-        return allEvents;
+        return allClassEvents;
     }
 
     @Override
-    public List<Event> getHundredEvents() {
-        List<Event> allEvents = new ArrayList<>();
+    public List<ClassEvent> getHundredEvents() {
+        List<ClassEvent> allClassEvents = new ArrayList<>();
         String sql = "SELECT * FROM events WHERE is_visible_online = true AND start_time >= now() ORDER BY start_time LIMIT 200  ; ";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
         while (result.next()) {
-            Event event = mapRowToEvent(result);
+            ClassEvent classEvent = mapRowToEvent(result);
 
-            Date currentDate = new Date(event.getStart_time().getTime());
+            Date currentDate = new Date(classEvent.getStart_time().getTime());
 
 
             SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy hh:mm a", java.util.Locale.ENGLISH);
             sdf.applyPattern("EEE, d MMM yyyy hh:mm a");
-            String timeFormatted = sdf.format(event.getStart_time());
+            String timeFormatted = sdf.format(classEvent.getStart_time());
 
-            event.setQuick_details(event.getEvent_name() + " " + timeFormatted);
-            allEvents.add(event);
+            classEvent.setQuick_details(classEvent.getEvent_name() + " " + timeFormatted);
+            allClassEvents.add(classEvent);
         }
-        return allEvents;
+        return allClassEvents;
     }
 
     @Override
-    public List<Event> getHundredEventsForUser(int client_id) {
-        List<Event> allEvents = new ArrayList<>();
+    public List<ClassEvent> getHundredEventsForUser(int client_id) {
+        List<ClassEvent> allClassEvents = new ArrayList<>();
         String sql = "SELECT * FROM events WHERE NOT EXISTS (SELECT event_id FROM client_event WHERE client_event.event_id = events.event_id AND client_event.client_id = ?) AND is_visible_online = true AND start_time >= now() ORDER BY start_time LIMIT 200 ; ";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, client_id);
         while (result.next()) {
-            Event event = mapRowToEvent(result);
-            allEvents.add(event);
+            ClassEvent classEvent = mapRowToEvent(result);
+            allClassEvents.add(classEvent);
         }
-        return allEvents;
+        return allClassEvents;
     }
 
     @Override
-    public Event getEventByEventId(int eventId) {
-        Event event = null;
+    public ClassEvent getEventByEventId(int eventId) {
+        ClassEvent classEvent = null;
 
         // Pull a list of clients from the client_event table for anyone who signed up.
         String sql = "SELECT * FROM events WHERE event_id = ?;";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, eventId);
         if (result.next()) {
-            event = mapRowToEvent(result);
-            event.setAttendanceList(getAttendanceByEventId(eventId));
+            classEvent = mapRowToEvent(result);
+            classEvent.setAttendanceList(getAttendanceByEventId(eventId));
         }
 
-        return event;
+        return classEvent;
     }
 
     @Override
@@ -1686,9 +1685,9 @@ public class JdbcEventDao implements EventDao {
 //    }
 
     @Override
-    public List<Event> getAllHistoricalClientEvents(int user_id) {
-        List<Event> allClientEvents = new ArrayList<>();
-        Event event = new Event();
+    public List<ClassEvent> getAllHistoricalClientEvents(int user_id) {
+        List<ClassEvent> allClientClassEvents = new ArrayList<>();
+        ClassEvent classEvent = new ClassEvent();
         String sql = "SELECT events.event_id, class_id, event_name, start_time, end_time, color, timed, is_visible_online, is_paid, package_purchase_id FROM events \n" +
                 "JOIN client_event ON events.event_id = client_event.event_id \n" +
                 "JOIN client_details ON client_details.client_id = client_event.client_id \n" +
@@ -1696,11 +1695,11 @@ public class JdbcEventDao implements EventDao {
                 "ORDER BY events.start_time";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, user_id);
         while (result.next()) {
-            event = mapRowToEvent(result);
-            event.setPackage_purchase_id(result.getInt("package_purchase_id"));
-            allClientEvents.add(event);
+            classEvent = mapRowToEvent(result);
+            classEvent.setPackage_purchase_id(result.getInt("package_purchase_id"));
+            allClientClassEvents.add(classEvent);
         }
-        return allClientEvents;
+        return allClientClassEvents;
     }
 
     @Override
@@ -1711,8 +1710,8 @@ public class JdbcEventDao implements EventDao {
 
 
     @Override
-    public List<Event> createAndGetEvents(List<ClassDetails> classDetails) {
-        List<Event> eventList = new ArrayList<>();
+    public List<ClassEvent> createAndGetEvents(List<ClassDetails> classDetails) {
+        List<ClassEvent> classEventList = new ArrayList<>();
 
         // loop through each class
         for (int i = 0; i < classDetails.size(); i++) {
@@ -1726,19 +1725,19 @@ public class JdbcEventDao implements EventDao {
                     // loop for a year here, create events a year in advance.
                     for (int k = 0; k < 52; k++) {
                         // empty event Object
-                        Event event = new Event();
+                        ClassEvent classEvent = new ClassEvent();
                         // set class ID
-                        event.setClass_id(currentClass.getClass_id());
+                        classEvent.setClass_id(currentClass.getClass_id());
                         // set name
-                        event.setEvent_name(currentClass.getClass_description());
+                        classEvent.setEvent_name(currentClass.getClass_description());
                         // set color (default to blue)
-                        event.setColor("blue");
+                        classEvent.setColor("blue");
                         // set timed (default to true)
-                        event.setTimed(true);
+                        classEvent.setTimed(true);
                         if (currentClass.isIs_paid()) {
-                            event.setIs_paid(true);
+                            classEvent.setIs_paid(true);
                         } else {
-                            event.setIs_paid(false);
+                            classEvent.setIs_paid(false);
                         }
                         LocalDate currentDate = LocalDate.now();
                         LocalDate nextOrSameSun = currentDate.plusWeeks(k).with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
@@ -1753,28 +1752,28 @@ public class JdbcEventDao implements EventDao {
 
                         Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
                         Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
-                        event.setStart_time(start);
-                        event.setEnd_time(end);
-                        eventList.add(event);
+                        classEvent.setStart_time(start);
+                        classEvent.setEnd_time(end);
+                        classEventList.add(classEvent);
                     }
                 }
 
                 if (dateRange[j].equals("Mon")) {
                     for (int k = 0; k < 52; k++) {
                         // empty event Object
-                        Event event = new Event();
+                        ClassEvent classEvent = new ClassEvent();
                         // set class ID
-                        event.setClass_id(currentClass.getClass_id());
+                        classEvent.setClass_id(currentClass.getClass_id());
                         // set name
-                        event.setEvent_name(currentClass.getClass_description());
+                        classEvent.setEvent_name(currentClass.getClass_description());
                         // set color (default to blue)
-                        event.setColor("blue");
+                        classEvent.setColor("blue");
                         // set timed (default to true)
-                        event.setTimed(true);
+                        classEvent.setTimed(true);
                         if (currentClass.isIs_paid()) {
-                            event.setIs_paid(true);
+                            classEvent.setIs_paid(true);
                         } else {
-                            event.setIs_paid(false);
+                            classEvent.setIs_paid(false);
                         }
                         LocalDate currentDate = LocalDate.now();
                         LocalDate nextOrSameMon = currentDate.plusWeeks(k).with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY));
@@ -1789,28 +1788,28 @@ public class JdbcEventDao implements EventDao {
 
                         Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
                         Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
-                        event.setStart_time(start);
-                        event.setEnd_time(end);
-                        eventList.add(event);
+                        classEvent.setStart_time(start);
+                        classEvent.setEnd_time(end);
+                        classEventList.add(classEvent);
                     }
                 }
 
                 if (dateRange[j].equals("Tue")) {
                     for (int k = 0; k < 52; k++) {
                         // empty event Object
-                        Event event = new Event();
+                        ClassEvent classEvent = new ClassEvent();
                         // set class ID
-                        event.setClass_id(currentClass.getClass_id());
+                        classEvent.setClass_id(currentClass.getClass_id());
                         // set name
-                        event.setEvent_name(currentClass.getClass_description());
+                        classEvent.setEvent_name(currentClass.getClass_description());
                         // set color (default to blue)
-                        event.setColor("blue");
+                        classEvent.setColor("blue");
                         // set timed (default to true)
-                        event.setTimed(true);
+                        classEvent.setTimed(true);
                         if (currentClass.isIs_paid()) {
-                            event.setIs_paid(true);
+                            classEvent.setIs_paid(true);
                         } else {
-                            event.setIs_paid(false);
+                            classEvent.setIs_paid(false);
                         }
                         LocalDate currentDate = LocalDate.now();
                         LocalDate nextOrSameTue = currentDate.plusWeeks(k).with(TemporalAdjusters.nextOrSame(DayOfWeek.TUESDAY));
@@ -1825,28 +1824,28 @@ public class JdbcEventDao implements EventDao {
 
                         Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
                         Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
-                        event.setStart_time(start);
-                        event.setEnd_time(end);
-                        eventList.add(event);
+                        classEvent.setStart_time(start);
+                        classEvent.setEnd_time(end);
+                        classEventList.add(classEvent);
                     }
                 }
 
                 if (dateRange[j].equals("Wed")) {
                     for (int k = 0; k < 52; k++) {
                         // empty event Object
-                        Event event = new Event();
+                        ClassEvent classEvent = new ClassEvent();
                         // set class ID
-                        event.setClass_id(currentClass.getClass_id());
+                        classEvent.setClass_id(currentClass.getClass_id());
                         // set name
-                        event.setEvent_name(currentClass.getClass_description());
+                        classEvent.setEvent_name(currentClass.getClass_description());
                         // set color (default to blue)
-                        event.setColor("blue");
+                        classEvent.setColor("blue");
                         // set timed (default to true)
-                        event.setTimed(true);
+                        classEvent.setTimed(true);
                         if (currentClass.isIs_paid()) {
-                            event.setIs_paid(true);
+                            classEvent.setIs_paid(true);
                         } else {
-                            event.setIs_paid(false);
+                            classEvent.setIs_paid(false);
                         }
                         LocalDate currentDate = LocalDate.now();
                         LocalDate nextOrSameWed = currentDate.plusWeeks(k).with(TemporalAdjusters.nextOrSame(DayOfWeek.WEDNESDAY));
@@ -1861,28 +1860,28 @@ public class JdbcEventDao implements EventDao {
 
                         Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
                         Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
-                        event.setStart_time(start);
-                        event.setEnd_time(end);
-                        eventList.add(event);
+                        classEvent.setStart_time(start);
+                        classEvent.setEnd_time(end);
+                        classEventList.add(classEvent);
                     }
                 }
 
                 if (dateRange[j].equals("Thu")) {
                     for (int k = 0; k < 52; k++) {
                         // empty event Object
-                        Event event = new Event();
+                        ClassEvent classEvent = new ClassEvent();
                         // set class ID
-                        event.setClass_id(currentClass.getClass_id());
+                        classEvent.setClass_id(currentClass.getClass_id());
                         // set name
-                        event.setEvent_name(currentClass.getClass_description());
+                        classEvent.setEvent_name(currentClass.getClass_description());
                         // set color (default to blue)
-                        event.setColor("blue");
+                        classEvent.setColor("blue");
                         // set timed (default to true)
-                        event.setTimed(true);
+                        classEvent.setTimed(true);
                         if (currentClass.isIs_paid()) {
-                            event.setIs_paid(true);
+                            classEvent.setIs_paid(true);
                         } else {
-                            event.setIs_paid(false);
+                            classEvent.setIs_paid(false);
                         }
                         LocalDate currentDate = LocalDate.now();
                         LocalDate nextOrSameThu = currentDate.plusWeeks(k).with(TemporalAdjusters.nextOrSame(DayOfWeek.THURSDAY));
@@ -1897,28 +1896,28 @@ public class JdbcEventDao implements EventDao {
 
                         Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
                         Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
-                        event.setStart_time(start);
-                        event.setEnd_time(end);
-                        eventList.add(event);
+                        classEvent.setStart_time(start);
+                        classEvent.setEnd_time(end);
+                        classEventList.add(classEvent);
                     }
                 }
 
                 if (dateRange[j].equals("Fri")) {
                     for (int k = 0; k < 52; k++) {
                         // empty event Object
-                        Event event = new Event();
+                        ClassEvent classEvent = new ClassEvent();
                         // set class ID
-                        event.setClass_id(currentClass.getClass_id());
+                        classEvent.setClass_id(currentClass.getClass_id());
                         // set name
-                        event.setEvent_name(currentClass.getClass_description());
+                        classEvent.setEvent_name(currentClass.getClass_description());
                         // set color (default to blue)
-                        event.setColor("blue");
+                        classEvent.setColor("blue");
                         // set timed (default to true)
-                        event.setTimed(true);
+                        classEvent.setTimed(true);
                         if (currentClass.isIs_paid()) {
-                            event.setIs_paid(true);
+                            classEvent.setIs_paid(true);
                         } else {
-                            event.setIs_paid(false);
+                            classEvent.setIs_paid(false);
                         }
                         LocalDate currentDate = LocalDate.now();
                         LocalDate nextOrSameFri = currentDate.plusWeeks(k).with(TemporalAdjusters.nextOrSame(DayOfWeek.FRIDAY));
@@ -1933,25 +1932,25 @@ public class JdbcEventDao implements EventDao {
 
                         Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
                         Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
-                        event.setStart_time(start);
-                        event.setEnd_time(end);
-                        eventList.add(event);
+                        classEvent.setStart_time(start);
+                        classEvent.setEnd_time(end);
+                        classEventList.add(classEvent);
                     }
                 }
 
                 if (dateRange[j].equals("Sat")) {
                     for (int k = 0; k < 52; k++) {
                         // empty event Object
-                        Event event = new Event();
+                        ClassEvent classEvent = new ClassEvent();
                         // set class ID
-                        event.setClass_id(currentClass.getClass_id());
+                        classEvent.setClass_id(currentClass.getClass_id());
                         // set name
-                        event.setEvent_name(currentClass.getClass_description());
+                        classEvent.setEvent_name(currentClass.getClass_description());
                         // set color (default to blue)
-                        event.setColor("blue");
+                        classEvent.setColor("blue");
                         // set timed (default to true)
-                        event.setTimed(true);
-                        event.setIs_paid(false);
+                        classEvent.setTimed(true);
+                        classEvent.setIs_paid(false);
                         LocalDate currentDate = LocalDate.now();
                         LocalDate nextOrSameSat = currentDate.plusWeeks(k).with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY));
 
@@ -1965,37 +1964,37 @@ public class JdbcEventDao implements EventDao {
 
                         Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
                         Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
-                        event.setStart_time(start);
-                        event.setEnd_time(end);
-                        eventList.add(event);
+                        classEvent.setStart_time(start);
+                        classEvent.setEnd_time(end);
+                        classEventList.add(classEvent);
                     }
                 }
             }
 
 
         }
-        return eventList;
+        return classEventList;
     }
 
 
-    private Event mapRowToEvent(SqlRowSet rs) {
-        Event event = new Event();
-        event.setEvent_id(rs.getInt("event_id"));
+    private ClassEvent mapRowToEvent(SqlRowSet rs) {
+        ClassEvent classEvent = new ClassEvent();
+        classEvent.setEvent_id(rs.getInt("event_id"));
         if (rs.getInt("class_id") > 0) {
-            event.setClass_id(rs.getInt("class_id"));
+            classEvent.setClass_id(rs.getInt("class_id"));
         }
-        event.setEvent_name(rs.getString("event_name"));
-        event.setStart_time(rs.getTimestamp("start_time"));
-        event.setEnd_time(rs.getTimestamp("end_time"));
-        event.setColor(rs.getString("color"));
-        event.setTimed(rs.getBoolean("timed"));
+        classEvent.setEvent_name(rs.getString("event_name"));
+        classEvent.setStart_time(rs.getTimestamp("start_time"));
+        classEvent.setEnd_time(rs.getTimestamp("end_time"));
+        classEvent.setColor(rs.getString("color"));
+        classEvent.setTimed(rs.getBoolean("timed"));
         // if it's not null?
 
-            event.setIs_paid(rs.getBoolean("is_paid"));
+            classEvent.setIs_paid(rs.getBoolean("is_paid"));
 
-        event.setIs_visible_online(rs.getBoolean("is_visible_online"));
+        classEvent.setIs_visible_online(rs.getBoolean("is_visible_online"));
 
-        return event;
+        return classEvent;
     }
 
     private ClientDetails mapRowToClient(SqlRowSet rs) {
