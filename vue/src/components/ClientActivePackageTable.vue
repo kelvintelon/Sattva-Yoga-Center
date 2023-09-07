@@ -482,6 +482,7 @@ export default {
     //       }
     //     }
     //   });
+    if (this.$store.state.user.username == "admin") {
     clientDetailService
       .getClientDetailsByClientId(this.$route.params.clientId)
       .then((response) => {
@@ -494,13 +495,16 @@ export default {
           }
         }
       });
+    }
     // TODO: CAREFUL DELETING THIS BECAUSE WE FORGOT WHAT IT DOES
     this.$root.$on("getActivePurchasePackageTable", () => {
       this.getActivePurchaseServerRequest();
     });
   },
   created() {
+    if (this.$store.state.user.username == "admin") {
     this.getSharedActivePackages();
+    }
     setTimeout(() => {
       this.getActivePurchaseServerRequest();
     }, 1500);

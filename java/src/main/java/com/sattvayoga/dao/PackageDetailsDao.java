@@ -16,4 +16,7 @@ public interface PackageDetailsDao {
 
     List<PackageDetails> getAllPublicPackages();
 
+    PackageDetails findPackageByPackageName(String packageName);
+
+    PackageDetails findPackageBySubscriptionDuration(int subscriptionDuration);
 }

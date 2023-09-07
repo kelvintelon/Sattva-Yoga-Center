@@ -31,4 +31,8 @@ public interface ClientDetailsDao {
     PaginatedListOfClients getAllPaginatedDuplicateClients(int page, int pageSize, String search);
 
     void removeDuplicateClients(int clientIdToKeep, int clientIdToRemove);
+
+    boolean updateClientCustomerId(int clientId, String customerId);
+
+    ClientDetails findClientByCustomerId(String customerID);
 }

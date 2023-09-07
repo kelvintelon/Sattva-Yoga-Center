@@ -1,7 +1,9 @@
 package com.sattvayoga.dao;
 
+import com.sattvayoga.model.ClientDetails;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
+import com.stripe.model.Customer;
 import com.stripe.model.checkout.Session;
 import com.stripe.model.terminal.Reader;
 import com.stripe.param.checkout.SessionCreateParams;
@@ -11,7 +13,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class JdbcStripeDao implements StripeDao{
@@ -24,17 +28,18 @@ public class JdbcStripeDao implements StripeDao{
 //    @Autowired
 //    private SecretManagerService secretManagerService;
 
+    @Autowired
+    private ClientDetailsDao clientDetailsDao;
 
     @Override
     public Session createSession(List<CheckoutItemDTO> checkoutItemDTOList) throws StripeException {
 
-        String successURL = baseURL + "payment/success";
+        String successURL = baseURL + "clientPackageManagement";
         String failureURL = baseURL + "shoppingCart";
-
 
         Stripe.apiKey = apiKey;
 
-        // TODO: If you want to deploy uncomment below
+        // TODO: If you want to deploy uncomment below and comment out the Stripe key above
 
 //        String retrievedValue = "";
 //        try {
@@ -44,6 +49,27 @@ public class JdbcStripeDao implements StripeDao{
 //        }
 //
 //        Stripe.apiKey = retrievedValue.substring(20,retrievedValue.length()-2);
+
+
+        //  Find customer ID for Client, create one if needed.
+        int retrievedClientId = checkoutItemDTOList.get(0).getClient_id();
+
+        ClientDetails clientDetails = clientDetailsDao.findClientByClientId(retrievedClientId);
+
+        String customer_id = "";
+
+        if (clientDetails.getCustomer_id() != null) {
+            customer_id = clientDetails.getCustomer_id();
+        } else {
+            Map<String, Object> params = new HashMap<>();
+            params.put("name", clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
+            Customer customer = Customer.create(params);
+
+            customer_id = customer.getId();
+
+            // Save customer_id into DB
+            clientDetailsDao.updateClientCustomerId(retrievedClientId, customer_id);
+        }
 
         List<SessionCreateParams.LineItem> sessionItemList = new ArrayList<>();
 
@@ -67,6 +93,7 @@ public class JdbcStripeDao implements StripeDao{
                 .setCancelUrl(failureURL)
                 .setSuccessUrl(successURL)
                 .addAllLineItem(sessionItemList)
+                .setCustomer(customer_id)
                 .build();
 
         return Session.create(params);

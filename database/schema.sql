@@ -50,11 +50,12 @@ CREATE TABLE client_details
     zip_code                varchar(12) ,
     phone_number            varchar(15) ,
     is_on_email_list        boolean     ,
-    email                   varchar(30) ,
+    email                   varchar(30) UNIQUE,
     has_record_of_liability boolean     ,
     date_of_entry           timestamp   ,
 	is_allowed_video		boolean		NOT NULL,
 	user_id 				int 		,
+	customer_id				varchar(50)	,
     CONSTRAINT PK_client_id PRIMARY KEY (client_id),
 	CONSTRAINT FK_client_id_user_id FOREIGN KEY (user_id) REFERENCES users (user_id)
 );

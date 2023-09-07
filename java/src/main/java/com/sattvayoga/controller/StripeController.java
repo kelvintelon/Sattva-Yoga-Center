@@ -70,53 +70,6 @@ public class StripeController {
         return new ResponseEntity<>(stripeResponse, HttpStatus.OK);
     }
 
-
-
-    // current usage
-    @PostMapping("/purchaseLocalStorageItems")
-    @ResponseStatus(HttpStatus.CREATED)
-    public void purchaseLocalStorageItems(@RequestBody List<CheckoutItemDTO> itemList, Principal principal) {
-        for (CheckoutItemDTO eachPackage : itemList) {
-            if (eachPackage.getProductName().contains("Gift")) {
-                String code = packagePurchaseDao.generateGiftCardCode();
-                packagePurchaseDao.createGiftCard(code, eachPackage.getPrice());
-                packagePurchaseDao.createGiftCardPurchase(eachPackage);
-                ClientDetails clientDetails =
-                        clientDetailsDao.findClientByUserId(
-                                userDao.findIdByUsername(
-                                        principal.getName()));
-
-                // call the email service here and shoot off the gift code.
-                try {
-                    senderService.sendEmail(clientDetails.getEmail(), "Sattva Yoga Center Gift Card Code", "Your Gift Card code is: " + code + " . Please note: The Gift Card Code can only be redeemed in person. Once redeemed, it cannot be used by anyone else.");
-                } catch (Throwable e) {
-                    System.out.println("Error sending gift card email to client id: " + clientDetails.getClient_id());
-                }
-            } else if (eachPackage.getProductName().contains("One") && eachPackage.isIs_monthly_renew()) {
-                packagePurchaseDao.createOneMonthAutoRenewPurchase(eachPackage);
-            } else if (eachPackage.getProductName().contains("Six") && eachPackage.isIs_monthly_renew()) {
-                packagePurchaseDao.createSixMonthAutoRenewPurchase(eachPackage);
-            } else {
-                packagePurchaseDao.createStripePackagePurchase(eachPackage);
-            }
-        }
-    }
-
-    @GetMapping("/getInformation")
-    public String getSessionInformation() throws StripeException {
-        Stripe.apiKey = apiKey;
-
-        List<String> expandList = new ArrayList<>();
-        expandList.add("customer");
-        expandList.add("subscription");
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("expand", expandList);
-        Session session = Session.retrieve("cs_test_a1K8qTFBdtg2pp2MSNAUXk79O1E3TK1B4kRodonA1AYmJAYtBTXn7JBUiW");
-
-        return session.getId();
-    }
-
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/purchaseTerminal")
     @ResponseStatus(HttpStatus.CREATED)
@@ -124,10 +77,10 @@ public class StripeController {
         Stripe.apiKey = apiKey;
 
         Reader readerResource = Reader.retrieve("tmr_FPKgUQOJ7fdmwi");
-        
+
         //TODO:
         // 1. Pull in all data
-        // 2. Set the email for the receipt
+        // 2. Set the email for the receipt?
 
         PaymentIntentCreateParams paymentIntentCreateParams =
                 PaymentIntentCreateParams.builder()
@@ -135,7 +88,7 @@ public class StripeController {
                         .addPaymentMethodType("card_present")
                         .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
                         .setAmount((long)clientCheckoutDTO.getTotal()*100)
-       //                 .setReceiptEmail(clientCheckoutDTO.getEmail())
+                        //                 .setReceiptEmail(clientCheckoutDTO.getEmail())
                         .build();
 
         // creates payment intent
@@ -190,6 +143,53 @@ public class StripeController {
         // reader.getLastResponse().code() returns 200 successful
 
     }
+
+    // current usage
+//    @PostMapping("/purchaseLocalStorageItems")
+//    @ResponseStatus(HttpStatus.CREATED)
+//    public void purchaseLocalStorageItems(@RequestBody List<CheckoutItemDTO> itemList, Principal principal) {
+//        for (CheckoutItemDTO eachPackage : itemList) {
+//            if (eachPackage.getProductName().contains("Gift")) {
+//                String code = packagePurchaseDao.generateGiftCardCode();
+//                packagePurchaseDao.createGiftCard(code, eachPackage.getPrice());
+//                packagePurchaseDao.createGiftCardPurchase(eachPackage);
+//                ClientDetails clientDetails =
+//                        clientDetailsDao.findClientByUserId(
+//                                userDao.findIdByUsername(
+//                                        principal.getName()));
+//
+//                // call the email service here and shoot off the gift code.
+//                try {
+//                    senderService.sendEmail(clientDetails.getEmail(), "Sattva Yoga Center Gift Card Code", "Your Gift Card code is: " + code + " . Please note: The Gift Card Code can only be redeemed in person. Once redeemed, it cannot be used by anyone else.");
+//                } catch (Throwable e) {
+//                    System.out.println("Error sending gift card email to client id: " + clientDetails.getClient_id());
+//                }
+//            } else if (eachPackage.getProductName().contains("One") && eachPackage.isIs_monthly_renew()) {
+//                packagePurchaseDao.createOneMonthAutoRenewPurchase(eachPackage);
+//            } else if (eachPackage.getProductName().contains("Six") && eachPackage.isIs_monthly_renew()) {
+//                packagePurchaseDao.createSixMonthAutoRenewPurchase(eachPackage);
+//            } else {
+//                packagePurchaseDao.createStripePackagePurchase(eachPackage);
+//            }
+//        }
+//    }
+
+//    @GetMapping("/getInformation")
+//    public String getSessionInformation() throws StripeException {
+//        Stripe.apiKey = apiKey;
+//
+//        List<String> expandList = new ArrayList<>();
+//        expandList.add("customer");
+//        expandList.add("subscription");
+//
+//        Map<String, Object> params = new HashMap<>();
+//        params.put("expand", expandList);
+//        Session session = Session.retrieve("cs_test_a1K8qTFBdtg2pp2MSNAUXk79O1E3TK1B4kRodonA1AYmJAYtBTXn7JBUiW");
+//
+//        return session.getId();
+//    }
+
+
 
 
 

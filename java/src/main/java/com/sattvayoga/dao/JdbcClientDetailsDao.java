@@ -303,6 +303,18 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
     }
 
     @Override
+    public ClientDetails findClientByCustomerId(String customerID) {
+        String sql = "SELECT * FROM client_details WHERE customer_id = ?";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, customerID);
+        ClientDetails clientDetails = new ClientDetails();
+        if (results.next()) {
+            clientDetails = mapRowToClient(results);
+        }
+
+        return clientDetails;
+    }
+
+    @Override
     public void removeDuplicateClients(int clientIdToKeep, int clientIdToRemove) {
         String sql = "UPDATE client_event SET client_id = ? WHERE client_id = ? " +
                 "AND event_id NOT IN (SELECT event_id FROM client_event WHERE client_id = ? OR client_id = ? GROUP BY event_id having count(event_id) > 1);";
@@ -344,6 +356,12 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                 clientDetails.isIs_on_email_list(), clientDetails.isHas_record_of_liability(),
                 clientDetails.isIs_client_active(), clientDetails.isIs_allowed_video(), clientDetails.isIs_new_client(),
                 clientDetails.getUser_id()) == 1;
+    }
+
+    @Override
+    public boolean updateClientCustomerId(int clientId, String customerId) {
+        String sql = "UPDATE client_details SET customer_id = ? WHERE client_id = ?";
+        return jdbcTemplate.update(sql, customerId, clientId) == 1;
     }
 
     @Override
@@ -412,6 +430,9 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         clientDetails.setDate_of_entry(rs.getTimestamp("date_of_entry"));
         clientDetails.setIs_allowed_video(rs.getBoolean("is_allowed_video"));
         clientDetails.setUser_id(rs.getInt("user_id"));
+        if (rs.getString("customer_id") != null) {
+        clientDetails.setCustomer_id(rs.getString("customer_id"));
+        }
         return clientDetails;
     }
 

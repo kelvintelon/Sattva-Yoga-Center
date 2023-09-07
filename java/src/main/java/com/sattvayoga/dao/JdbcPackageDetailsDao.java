@@ -1,8 +1,10 @@
 package com.sattvayoga.dao;
 
+import com.sattvayoga.model.ClientDetails;
 import com.sattvayoga.model.PackageDetails;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -44,6 +46,28 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
         }
 
         return allPackages;
+    }
+
+    @Override
+    public PackageDetails findPackageByPackageName(String packageName) {
+        String sql = "SELECT * FROM package_details WHERE description = ?;";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, packageName);
+        PackageDetails packageDetails = new PackageDetails();
+        if (result.next()) {
+            packageDetails = mapRowToPackage(result);
+        }
+        return packageDetails;
+    }
+
+    @Override
+    public PackageDetails findPackageBySubscriptionDuration(int subscriptionDuration) {
+        String sql = "SELECT * FROM package_details WHERE is_recurring = true AND is_subscription = true AND subscription_duration = ?;";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, subscriptionDuration);
+        PackageDetails packageDetails = new PackageDetails();
+        if (result.next()) {
+            packageDetails = mapRowToPackage(result);
+        }
+        return packageDetails;
     }
 
    @Override

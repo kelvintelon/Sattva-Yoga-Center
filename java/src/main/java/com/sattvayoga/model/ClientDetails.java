@@ -31,10 +31,13 @@ public class ClientDetails {
     //HELPER
     private String username;
 
+
     private boolean is_allowed_video;
 
+    private String customer_id;
 
-    public ClientDetails(int client_id, String last_name, String first_name, boolean is_client_active, boolean is_new_client,String street_address, String city, String state_abbreviation, String zip_code, String phone_number, boolean is_on_email_list, String email, boolean has_record_of_liability, Timestamp date_of_entry, int user_id) {
+
+    public ClientDetails(int client_id, String last_name, String first_name, boolean is_client_active, boolean is_new_client, String street_address, String city, String state_abbreviation, String zip_code, String phone_number, boolean is_on_email_list, String email, boolean has_record_of_liability, Timestamp date_of_entry, int user_id) {
         this.client_id = client_id;
         this.last_name = last_name;
         this.first_name = first_name;
@@ -250,4 +253,14 @@ public class ClientDetails {
     public void setUsername(String username) {
         this.username = username;
     }
+
+    public String getCustomer_id() {
+        return customer_id;
+    }
+
+    public void setCustomer_id(String customer_id) {
+        this.customer_id = customer_id;
+    }
 }
+
+

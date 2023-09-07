@@ -44,4 +44,6 @@ public interface PackagePurchaseDao {
     void createSixMonthAutoRenewPurchase(CheckoutItemDTO checkoutItemDTO);
 
     void createGiftCardPurchase(CheckoutItemDTO checkoutItemDTO);
+
+    void purchaseLineItems(List<CheckoutItemDTO> itemList);
 }

@@ -1,10 +1,8 @@
 package com.sattvayoga.dao;
 
 import com.sattvayoga.dto.order.CheckoutItemDTO;
-import com.sattvayoga.model.ClassEvent;
-import com.sattvayoga.model.PackageDetails;
-import com.sattvayoga.model.PackagePurchase;
-import com.sattvayoga.model.PaginatedListOfPurchasedPackages;
+import com.sattvayoga.model.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
@@ -26,6 +24,14 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @Autowired
+    UserDao userDao;
+
+    @Autowired
+    ClientDetailsDao clientDetailsDao;
+
+    @Autowired
+    private EmailSenderService senderService;
 
     @Override
     public List<PackagePurchase> getAllUserPackagePurchases(int userId) {
@@ -424,6 +430,32 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 checkoutItemDTO.getPackage_id(), 0, LocalDate.now(),
                 LocalDate.now().plusMonths(60), false,
                 checkoutItemDTO.getTotal_amount_paid(), 0, checkoutItemDTO.getPaymentId());
+    }
+
+    @Override
+    public void purchaseLineItems(List<CheckoutItemDTO> itemList) {
+        for (CheckoutItemDTO eachPackage : itemList) {
+            if (eachPackage.getProductName().contains("Gift")) {
+                String code = generateGiftCardCode();
+                createGiftCard(code, eachPackage.getPrice());
+                createGiftCardPurchase(eachPackage);
+                ClientDetails clientDetails =
+                        clientDetailsDao.findClientByClientId(eachPackage.getClient_id());
+
+                // call the email service here and shoot off the gift code.
+                try {
+                    senderService.sendEmail(clientDetails.getEmail(), "Sattva Yoga Center Gift Card Code", "Your Gift Card code is: " + code + " . Please note: The Gift Card Code can only be redeemed in person. Once redeemed, it cannot be used by anyone else.");
+                } catch (Throwable e) {
+                    System.out.println("Error sending gift card email to client id: " + clientDetails.getClient_id());
+                }
+            } else if (eachPackage.getProductName().contains("One") && eachPackage.isIs_monthly_renew()) {
+                createOneMonthAutoRenewPurchase(eachPackage);
+            } else if (eachPackage.getProductName().contains("Six") && eachPackage.isIs_monthly_renew()) {
+                createSixMonthAutoRenewPurchase(eachPackage);
+            } else {
+                createStripePackagePurchase(eachPackage);
+            }
+        }
     }
 
 
