@@ -377,11 +377,33 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         return packagePurchase;
     }
 
+    public GiftCard mapRowToGiftCard(SqlRowSet rs) {
+        GiftCard giftCard = new GiftCard();
+        giftCard.setCode(rs.getString("code"));
+        giftCard.setAmount(rs.getDouble("amount"));
+        if (rs.getInt("client_id") > 0) {
+            giftCard.setClient_id(rs.getInt("client_id"));
+        }
+        return giftCard;
+    }
+
     public void createGiftCard(String code, double amount){
         String sql = "INSERT INTO gift_card (code, amount) VALUES (?,?)";
         jdbcTemplate.update(sql, code, amount);
 
     }
+
+    @Override
+    public GiftCard retrieveGiftCard(String code) {
+        GiftCard giftCard = null;
+        String sql = "SELECT * FROM gift_card WHERE code = ?";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, code);
+        if (result.next()) {
+            giftCard = mapRowToGiftCard(result);
+        }
+        return giftCard;
+    }
+
     public String generateGiftCardCode() {
         int length = 7;
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -457,6 +479,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             }
         }
     }
+
 
 
 }

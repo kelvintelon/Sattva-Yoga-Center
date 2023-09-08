@@ -85,7 +85,9 @@
             <v-card>
               <!-- Add a Package Form starts here -->
               <v-card-title>
-                <span class="text-h5">Add a package</span>
+                <span class="text-h5" style="color: rgba(245, 104, 71, 0.95)"
+                  >Add a Package</span
+                >
               </v-card-title>
 
               <v-card-title>
@@ -171,6 +173,61 @@
                         </v-col>
                       </v-row>
                       <v-row>
+                        <!-- Gift Card Code -->
+                        
+                        <v-col v-if="!showGiftCodeInput && !showGiftCardResponse">
+                          <v-btn
+                            class=""
+                            outlined
+                            color="indigo"
+                            @click="showGiftCodeInput = true"
+                          >
+                            GiftCard Code
+                          </v-btn>
+                        </v-col>
+                        <v-col  v-if="showGiftCodeInput" sm="8" lg="6" md="6">
+                          <div>
+                            <v-text-field
+                              v-model="giftCardCodeObject.code"
+                              label="Gift Code"
+                              outlined
+                            >
+                            </v-text-field>
+                          </div>
+                        </v-col>
+                        <v-col v-if="showGiftCardResponse" sm="6" md="6" lg="6">
+                            <div>
+                              {{ giftCardResponse.message }}
+                            </div>
+                        </v-col>
+                        <v-col v-if="showGiftCodeInput">
+                          <v-btn depress color="primary" @click="checkGiftCard">
+                            Check
+                          </v-btn>
+                        </v-col>
+                        <v-col v-if="showGiftCardResponse">
+                          <v-text-field
+                            v-model.number="giftCardRedeemObject.amount"
+                            class="pt-0"
+                            type="number"
+                            label="Amount"
+                            min="0"
+                            prefix="$"
+                          ></v-text-field>
+                        </v-col>
+                        <v-col v-if="showGiftCodeInput || showGiftCardResponse">
+                          <v-btn
+                            class=""
+                            fab
+                            outlined
+                            small
+                            @click="function() { showGiftCodeInput = false; showGiftCardResponse = false; giftCardResponse = {} }"
+                          >
+                            <v-icon dark> mdi-close </v-icon>
+                          </v-btn>
+                        </v-col>
+                      </v-row>
+                      <v-row>
                         <v-col>
                           <v-text-field
                             v-if="!showPercentDiscount"
@@ -224,9 +281,9 @@
                         <v-spacer></v-spacer>
                         <v-spacer></v-spacer>
                       </v-row>
-                      <!-- <div class="text--primary" style="border-top: 1px solid">
-                        Total Cost: ${{ returnTotal }}
-                      </div> -->
+                      <div class="text--primary" style="border-top: 1px solid">
+                        Total Cost: ${{ totalCost }}
+                      </div>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -299,6 +356,7 @@ import packageDetailService from "../services/PackageDetailService";
 import eventService from "../services/EventService";
 import clientDetailService from "../services/ClientDetailService";
 import stripeService from "../services/StripeService";
+import giftCardService from '../services/GiftCardService.js'
 
 export default {
   name: "client-active-package-table",
@@ -388,8 +446,20 @@ export default {
       saveEmailCheckbox: false,
       totalCost: 0,
       showGiftCardForm: false,
+      showGiftCodeInput: false,
+      showGiftCardResponse: false,
+      giftCardCodeObject: {
+        client_id: parseInt(this.$route.params.clientId) ,
+        code: "",
+      },
+      giftCardResponse: {},
       showRenewalDatePicker: false,
       menu: false,
+      giftCardRedeemObject: {
+        amount: 0,
+        code: "",
+        client_id: parseInt(this.$route.params.clientId),
+      }
     };
   },
   watch: {
@@ -404,6 +474,7 @@ export default {
     },
     totalCost: function (val) {
       this.returnTotal = val;
+      
     },
     clientCheckout: {
       handler: function () {
@@ -414,6 +485,24 @@ export default {
           this.saveEmailCheckbox = true;
         } else {
           this.saveEmailCheckbox = false;
+        }
+      },
+      deep: true,
+    },
+    giftCardResponse: {
+      handler: function() {
+        if (this.giftCardResponse.message.length > 0) {
+          this.showGiftCodeInput = false;
+          this.showGiftCardResponse = true;
+          this.giftCardRedeemObject.code = this.giftCardCodeObject.code
+        }
+      },
+      deep: true,
+    },
+    giftCardRedeemObject: {
+      handler: function() {
+        if (this.giftCardRedeemObject.amount > this.giftCardResponse.amountAvailable) {
+          this.giftCardRedeemObject.amount = this.giftCardResponse.amountAvailable
         }
       },
       deep: true,
@@ -483,18 +572,18 @@ export default {
     //     }
     //   });
     if (this.$store.state.user.username == "admin") {
-    clientDetailService
-      .getClientDetailsByClientId(this.$route.params.clientId)
-      .then((response) => {
-        if (response.data.client_id != 0) {
-          this.clientDetails = response.data;
-          this.$store.commit("SET_CLIENT_DETAILS", response.data);
-          // alert("active package table client details")
-          if (this.clientDetails.redFlag == true) {
-            this.snackBarReconcileWarning = true;
+      clientDetailService
+        .getClientDetailsByClientId(parseInt(this.$route.params.clientId))
+        .then((response) => {
+          if (response.data.client_id != 0) {
+            this.clientDetails = response.data;
+            this.$store.commit("SET_CLIENT_DETAILS", response.data);
+            // alert("active package table client details")
+            if (this.clientDetails.redFlag == true) {
+              this.snackBarReconcileWarning = true;
+            }
           }
-        }
-      });
+        });
     }
     // TODO: CAREFUL DELETING THIS BECAUSE WE FORGOT WHAT IT DOES
     this.$root.$on("getActivePurchasePackageTable", () => {
@@ -503,7 +592,7 @@ export default {
   },
   created() {
     if (this.$store.state.user.username == "admin") {
-    this.getSharedActivePackages();
+      this.getSharedActivePackages();
     }
     setTimeout(() => {
       this.getActivePurchaseServerRequest();
@@ -527,7 +616,7 @@ export default {
       this.loading = true;
       this.overlay = !this.overlay;
       eventService
-        .reconcileClassesForClient(this.$route.params.clientId)
+        .reconcileClassesForClient(parseInt(this.$route.params.clientId))
         .then((response) => {
           if (response.status == 200) {
             this.$root.$refs.C.getClientDetails();
@@ -564,6 +653,19 @@ export default {
         }
       });
     },
+    checkGiftCard() {
+      if (this.giftCardCodeObject.code.length == 7) {
+        giftCardService.retrieveGiftCard(this.giftCardCodeObject).then((response => {
+          if (response.status == 200) {
+            this.giftCardResponse = response.data;
+          }
+        })).catch(e => {
+          alert(e.response.data.message)
+        })
+      } else {
+        alert("Please enter a valid Gift Card Code");
+      }
+    },
     close() {
       this.dialog = false;
       this.percentDiscount = 0;
@@ -572,6 +674,9 @@ export default {
       this.giftCardIndex = 0;
       this.showGiftCardForm = false;
       this.saveEmailCheckbox = false;
+      this.showGiftCodeInput = false;
+      this.giftCardCodeObject.code = "";
+      this.giftCardResponse = {}
       this.clientCheckout.discount = {
         client_id: 0,
         email: "",
@@ -579,6 +684,7 @@ export default {
         discount: 0,
         selectedCheckoutPackages: [],
         total: 0,
+        giftCard: {},
       };
       this.selectedPackages = [];
     },
@@ -608,7 +714,7 @@ export default {
       if (this.$store.state.user.username == "admin") {
         packagePurchaseService
           .getActivePaginatedUserPurchasedPackagesByClientId(
-            this.$route.params.clientId,
+            parseInt(this.$route.params.clientId),
             this.page,
             this.pageSize,
             this.sortBy,
@@ -714,7 +820,7 @@ export default {
     getSharedActivePackages() {
       packagePurchaseService
         .getAllSharedActiveQuantityPackagesByClientId(
-          this.$route.params.clientId
+          parseInt(this.$route.params.clientId)
         )
         .then((response) => {
           if (response.status == 200) {
@@ -740,7 +846,7 @@ export default {
     addPackageForClient() {
       this.loading = true;
       this.overlay = !this.overlay;
-      this.packagePurchase.client_id = this.$route.params.clientId;
+      this.packagePurchase.client_id = parseInt(this.$route.params.clientId);
       const jsonDate = new Date().toJSON();
       this.packagePurchase.date_purchased = jsonDate;
       this.packagePurchase.package_id = this.selectedPackage.package_id;
@@ -857,23 +963,20 @@ export default {
       return date;
     },
     submitClientCheckout() {
-      
       if (this.selectedPackages.length != 0) {
-
-        
-
         this.clientCheckout.client_id =
           this.$store.state.clientDetails.client_id;
-        
+
         if (this.clientCheckout.email.length == 0) {
           this.clientCheckout.email = this.$store.state.clientDetails.email;
         }
         this.clientCheckout.total = this.totalCost;
         this.clientCheckout.selectedCheckoutPackages = this.selectedPackages;
         this.clientCheckout.discount = this.returnDiscount;
+        if (this.showGiftCardResponse) {
+          this.clientCheckout.giftCard = this.giftCardRedeemObject
+        }
         
-
-
         stripeService
           .purchaseClientCheckout(this.clientCheckout)
           .then((response) => {
@@ -918,7 +1021,9 @@ export default {
       for (let index = 0; index < this.selectedPackages.length; index++) {
         runningTotal = runningTotal + this.selectedPackages[index].package_cost;
       }
-
+      if (this.showGiftCardResponse) {
+        runningTotal -= this.giftCardRedeemObject.amount;
+      }
       if (this.showPercentDiscount && runningTotal >= 0) {
         let num = runningTotal * (1 - this.percentDiscount / 100);
         if (num > 0) {

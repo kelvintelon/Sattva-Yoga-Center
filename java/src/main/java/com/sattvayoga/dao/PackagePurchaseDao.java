@@ -2,6 +2,7 @@ package com.sattvayoga.dao;
 
 import com.sattvayoga.dto.order.CheckoutItemDTO;
 import com.sattvayoga.model.ClassEvent;
+import com.sattvayoga.model.GiftCard;
 import com.sattvayoga.model.PackagePurchase;
 import com.sattvayoga.model.PaginatedListOfPurchasedPackages;
 
@@ -46,4 +47,6 @@ public interface PackagePurchaseDao {
     void createGiftCardPurchase(CheckoutItemDTO checkoutItemDTO);
 
     void purchaseLineItems(List<CheckoutItemDTO> itemList);
+
+    GiftCard retrieveGiftCard(String code);
 }

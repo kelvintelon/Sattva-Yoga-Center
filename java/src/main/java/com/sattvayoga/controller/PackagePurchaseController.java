@@ -3,10 +3,7 @@ package com.sattvayoga.controller;
 import com.sattvayoga.dao.ClientDetailsDao;
 import com.sattvayoga.dao.PackagePurchaseDao;
 import com.sattvayoga.dao.UserDao;
-import com.sattvayoga.model.ClassDetails;
-import com.sattvayoga.model.ClientDetails;
-import com.sattvayoga.model.PackagePurchase;
-import com.sattvayoga.model.PaginatedListOfPurchasedPackages;
+import com.sattvayoga.model.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -98,6 +95,32 @@ public class PackagePurchaseController {
         return packagePurchaseDao.getAllSharedActiveQuantityPackages(clientId);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping(path="/retrieveGiftCard/{clientId}/{code}")
+    public GiftCardResponse retrieveGiftCard(@PathVariable int clientId, @PathVariable String code) {
+
+        GiftCard giftCard = null;
+
+        GiftCardResponse giftCardResponse = new GiftCardResponse();
+        try {
+            giftCard = packagePurchaseDao.retrieveGiftCard(code);
+
+            if (giftCard.getClient_id() > 0 && giftCard.getClient_id() != clientId) {
+                giftCardResponse.setMessage("Code already in use by client ID: " + giftCard.getClient_id());
+                giftCardResponse.setAmountAvailable(0);
+            } else {
+                giftCardResponse.setMessage("Available: " + giftCard.getAmount());
+                giftCardResponse.setAmountAvailable(giftCard.getAmount());
+            }
+
+        } catch (Exception e) {
+            throw new GiftCardNotFoundException();
+        }
+
+
+        return giftCardResponse;
+    }
+
     @GetMapping(path="/getAllSharedActiveQuantityPackagesByClientId/{clientId}")
     public List<PackagePurchase> getAllSharedActiveQuantityPackagesByClientId(@PathVariable int clientId){
         return packagePurchaseDao.getAllSharedActiveQuantityPackages(clientId);
@@ -122,4 +145,30 @@ public class PackagePurchaseController {
     public boolean incrementByOne(@PathVariable int packagePurchaseId){
         return packagePurchaseDao.incrementByOne(packagePurchaseId);
     }
+
+    static class GiftCardResponse {
+        private double amountAvailable;
+        private String message;
+
+        public GiftCardResponse() {
+        }
+
+        public double getAmountAvailable() {
+            return amountAvailable;
+        }
+
+        public void setAmountAvailable(double amountAvailable) {
+            this.amountAvailable = amountAvailable;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+    }
+
+
 }

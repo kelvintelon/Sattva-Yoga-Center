@@ -1,5 +1,6 @@
 package com.sattvayoga.dto.order;
 
+import com.sattvayoga.model.GiftCard;
 import com.sattvayoga.model.PackageDetails;
 
 import java.util.List;
@@ -14,6 +15,7 @@ public class ClientCheckoutDTO {
     private boolean saveEmail;
     private String renewalDate;
 
+    private GiftCard giftCard;
 
     public ClientCheckoutDTO(int client_id, List<PackageDetails> selectedCheckoutPackages, int total, String email, int discount, boolean saveEmail, String renewalDate) {
         this.client_id = client_id;
@@ -79,5 +81,21 @@ public class ClientCheckoutDTO {
 
     public void setRenewalDate(String renewalDate) {
         this.renewalDate = renewalDate;
+    }
+
+    public List<PackageDetails> getSelectedCheckoutPackages() {
+        return selectedCheckoutPackages;
+    }
+
+    public void setSelectedCheckoutPackages(List<PackageDetails> selectedCheckoutPackages) {
+        this.selectedCheckoutPackages = selectedCheckoutPackages;
+    }
+
+    public GiftCard getGiftCard() {
+        return giftCard;
+    }
+
+    public void setGiftCard(GiftCard giftCard) {
+        this.giftCard = giftCard;
     }
 }
