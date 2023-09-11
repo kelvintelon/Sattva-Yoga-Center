@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.*;
 
 @CrossOrigin
@@ -44,7 +45,7 @@ public class StripeController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/purchaseTerminal")
     @ResponseStatus(HttpStatus.CREATED)
-    public String purchaseTotalThroughTerminal(@RequestBody ClientCheckoutDTO clientCheckoutDTO) throws StripeException {
+    public String purchaseTotalThroughTerminal(@RequestBody ClientCheckoutDTO clientCheckoutDTO) throws StripeException, IOException {
 
 
        return stripeDao.processClientPurchaseThroughAdmin(clientCheckoutDTO);

@@ -108,12 +108,14 @@
             <artifactId>stripe-java</artifactId>
             <version>23.3.0</version>
         </dependency>
+<!-- Stripe version previously 20.41.0  -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.3</version> <!-- Replace with the latest version -->
+            <version>2.10</version>
+            <!--Version 2.3 when deployed -->
+           <!--No version because: https://stackoverflow.com/a/66097530 -->
         </dependency>
-<!-- Stripe version previously 20.41.0  -->
     </dependencies>
 
     <build>
