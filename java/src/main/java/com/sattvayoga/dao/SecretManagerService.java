@@ -26,10 +26,9 @@ public class SecretManagerService {
         this.secretsManagerClient = secretsManagerClient;
     }
 
-    @Cacheable("apiKeyCache")
-    public String getApiKey() throws Throwable {
-
-        String secretName = "mapsKey";
+    @Cacheable("stripeSecretKey")
+    public String getStripeKey() throws Throwable {
+        String secretName = "SecretStripeKey";
         Region region = Region.of("us-east-2");
 
         // Create a Secrets Manager client
@@ -48,6 +47,7 @@ public class SecretManagerService {
         } catch (Exception e) {
             // For a list of exceptions thrown, see
             // https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+            System.out.println("Could not retrieve Secret Value Response");
             throw e.getCause();
         }
 
@@ -56,9 +56,9 @@ public class SecretManagerService {
         return secret;
     }
 
-    @Cacheable("stripeSecretKey")
-    public String getStripeKey() throws Throwable {
-        String secretName = "SecretStripeKey";
+    @Cacheable("webHookSecret")
+    public String getWebHookSecret() throws Throwable {
+        String secretName = "WebHookSecret";
         Region region = Region.of("us-east-2");
 
         // Create a Secrets Manager client
@@ -92,7 +92,7 @@ public class SecretManagerService {
 
     }
 
-//    //TODO: if you want to deploy, uncomment below
+    //TODO: if you want to deploy, uncomment below and comment out the method above with same name
 //    @Cacheable("emailPasswordCache")
 //    public JavaMailCredentials getEmailPassword() throws Throwable {
 //        String secretName = "Java-Mail";
@@ -133,4 +133,34 @@ public class SecretManagerService {
         }
         return emailCredentials;
     }
+
+ //   @Cacheable("apiKeyCache")
+//    public String getApiKey() throws Throwable {
+//
+//        String secretName = "mapsKey";
+//        Region region = Region.of("us-east-2");
+//
+//        // Create a Secrets Manager client
+//        SecretsManagerClient client = SecretsManagerClient.builder()
+//                .region(region)
+//                .build();
+//
+//        GetSecretValueRequest getSecretValueRequest = GetSecretValueRequest.builder()
+//                .secretId(secretName)
+//                .build();
+//
+//        GetSecretValueResponse getSecretValueResponse;
+//
+//        try {
+//            getSecretValueResponse = client.getSecretValue(getSecretValueRequest);
+//        } catch (Exception e) {
+//            // For a list of exceptions thrown, see
+//            // https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+//            throw e.getCause();
+//        }
+//
+//        String secret = getSecretValueResponse.secretString();
+//
+//        return secret;
+//    }
 }

@@ -74,8 +74,8 @@ public class AuthenticationController {
         // create token with user
         String jwt = tokenProvider.createEmailToken(yogaUser.getUsername());
         // prepare the link to send in mail
-        // TODO: Change the following line when you have to
-        // String website = "http://sattva-yoga.netlify.app/resetLink?token=";
+        // TODO: Change the following website string when you have to deploy
+//         String website = "http://sattva-yoga.netlify.app/resetLink?token=";
         String website = "http://localhost:8080/resetLink?token=";
         String resetLink = website + jwt;
         senderService.sendEmail(email,"Sattva Yoga Center Email Reset Link For Account - Expires Soon","Your Reset Link is: " +resetLink +  "\n" + "Note: Reset Link expires in 2 days" + "\n" + "PLEASE DO NOT REPLY BACK TO THIS EMAIL" + "\n" + "- Sattva Yoga Center");

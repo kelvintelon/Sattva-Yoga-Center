@@ -432,7 +432,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
                 checkoutItemDTO.getPackage_id(), 0, LocalDate.now(),
-                LocalDate.now().plusMonths(1), true,
+                LocalDate.now().plusMonths(1).plusDays(1), true,
                 checkoutItemDTO.getTotal_amount_paid(), 0, checkoutItemDTO.getPaymentId());
     }
 
@@ -441,7 +441,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
                 checkoutItemDTO.getPackage_id(), 0, LocalDate.now(),
-                LocalDate.now().plusMonths(6), true,
+                LocalDate.now().plusMonths(6).plusDays(1), true,
                 checkoutItemDTO.getTotal_amount_paid(), 0, checkoutItemDTO.getPaymentId());
     }
 

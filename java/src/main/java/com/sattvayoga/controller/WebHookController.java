@@ -1,9 +1,6 @@
 package com.sattvayoga.controller;
 
-import com.sattvayoga.dao.ClientDetailsDao;
-import com.sattvayoga.dao.PackageDetailsDao;
-import com.sattvayoga.dao.PackagePurchaseDao;
-import com.sattvayoga.dao.UserDao;
+import com.sattvayoga.dao.*;
 import com.sattvayoga.dto.order.CheckoutItemDTO;
 import com.sattvayoga.model.ClientDetails;
 import com.sattvayoga.model.PackageDetails;
@@ -36,11 +33,22 @@ public class WebHookController {
     @Autowired
     PackagePurchaseDao packagePurchaseDao;
 
+    // TODO: If you want to deploy uncomment below
+//    @Autowired
+//    private SecretManagerService secretManagerService;
+
     @RequestMapping(value = "/webhook", method = RequestMethod.POST)
-    public ResponseEntity<String> webhook(@RequestBody String payload, @RequestHeader("Stripe-Signature") String sigHeader) throws StripeException {
+    public ResponseEntity<String> webhook(@RequestBody String payload, @RequestHeader("Stripe-Signature") String sigHeader) throws Throwable {
         Event event = null;
+
+        // TODO: Use The Secrets Manager to retrieve the secret instead of using this hardcoded value
         try {
             event = Webhook.constructEvent(payload, sigHeader, "whsec_cff6694ca11a70540e6c09f04d2495ae35f8a8cb3e63a8cb280ff270f522dac2");
+//            String webHookSecret = secretManagerService.getWebHookSecret();
+//            String substringWebHook = webHookSecret.substring(18, webHookSecret.length()-2);
+//            System.out.println(substringWebHook);
+//            event = Webhook.constructEvent(payload,sigHeader,substringWebHook);
+
         } catch (SignatureVerificationException e) {
             System.out.println("Failed signature verification");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
@@ -52,6 +60,9 @@ public class WebHookController {
         if (dataObjectDeserializer.getObject().isPresent()) {
             stripeObject = dataObjectDeserializer.getObject().get();
         } else {
+            System.out.println("Deserialization failed");
+            System.out.println(event.getApiVersion());
+
             // Deserialization failed, probably due to an API version mismatch.
             // Refer to the Javadoc documentation on `EventDataObjectDeserializer` for
             // instructions on how to handle this case, or return an error here.
