@@ -3,6 +3,7 @@ package com.sattvayoga.controller;
 import com.sattvayoga.dao.*;
 import com.sattvayoga.dto.order.CheckoutItemDTO;
 import com.sattvayoga.model.ClientDetails;
+import com.sattvayoga.model.GiftCard;
 import com.sattvayoga.model.PackageDetails;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
@@ -18,7 +19,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class WebHookController {
@@ -69,10 +72,73 @@ public class WebHookController {
         }
 
         switch (event.getType()) {
+            case "payment_intent.succeeded":
+                if (stripeObject != null && ((PaymentIntent) stripeObject).getMetadata().get("process") != null && ((PaymentIntent) stripeObject).getMetadata().get("process").equals("admin")) {
+                    int clientId = 0;
+
+                    // Get Payment ID and Customer ID
+                    String paymentIntentId = ((PaymentIntent) stripeObject).getId();
+                    String customerId = ((PaymentIntent) stripeObject).getCustomer();
+
+                    Map<String, String> metaDataMap = ((PaymentIntent) stripeObject).getMetadata();
+
+
+                    metaDataMap.remove("process");
+
+                    // Gift Card Code being used logic
+                    if (metaDataMap.get("giftCodeUsed") != null) {
+                        String giftCodeUsed = metaDataMap.get("giftCodeUsed");
+                        double doubleGiftAmountUsed = Double.valueOf(metaDataMap.get("giftAmountUsed"));
+                        int giftAmountUsed = (int) doubleGiftAmountUsed;
+
+                        metaDataMap.remove("giftCodeUsed");
+                        metaDataMap.remove("giftAmountUsed");
+
+                        clientId = getClientId(clientId, customerId);
+
+                        GiftCard originalGiftCard = packagePurchaseDao.retrieveGiftCard(giftCodeUsed);
+
+                        packagePurchaseDao.updateGiftCard(originalGiftCard,clientId,giftAmountUsed);
+                    }
+
+                    List<CheckoutItemDTO> listOfItemsToCheckout = new ArrayList<>();
+
+                    for (Map.Entry<String,String> mapElement : metaDataMap.entrySet()) {
+                        String keyDescription = mapElement.getKey();
+                        String value = mapElement.getValue();
+
+                        String[] valueArray = value.split(",");
+                        int totalPaid = Integer.valueOf(valueArray[0]);
+                        int discount = Integer.valueOf(valueArray[1]);
+
+                        clientId = getClientId(clientId, customerId);
+
+                        // Find original package details
+                        PackageDetails currentPackageDetails = packageDetailsDao.findPackageByPackageName(keyDescription);
+
+                        CheckoutItemDTO checkoutItemDTO = new CheckoutItemDTO();
+
+                        checkoutItemDTO.setProductName(keyDescription);
+                        checkoutItemDTO.setPrice(totalPaid);
+                        checkoutItemDTO.setTotal_amount_paid(BigDecimal.valueOf(totalPaid));
+                        checkoutItemDTO.setClient_id(clientId);
+                        checkoutItemDTO.setPackage_id(currentPackageDetails.getPackage_id());
+                        checkoutItemDTO.setClasses_remaining(currentPackageDetails.getClasses_amount());
+                        checkoutItemDTO.setIs_monthly_renew(false);
+                        checkoutItemDTO.setDiscount(discount);
+                        checkoutItemDTO.setPaymentId(paymentIntentId);
+
+                        listOfItemsToCheckout.add(checkoutItemDTO);
+
+                    }
+
+                    packagePurchaseDao.purchaseLineItems(listOfItemsToCheckout);
+
+                }
             case "checkout.session.completed":
 
                 // If the mode isn't subscription
-                if (((Session) stripeObject).getMode().equals("payment")) {
+                if (stripeObject instanceof Session && ((Session) stripeObject).getMode().equals("payment")) {
 
 
                     SessionRetrieveParams params =
@@ -136,14 +202,47 @@ public class WebHookController {
             packageId = packageDetails.getPackage_id();
 
             checkoutItemDTO.setProductName(packageDetails.getDescription());
-            checkoutItemDTO.setPrice(currentInvoiceLineItem.getPrice().getUnitAmount()/100.00);
+            checkoutItemDTO.setPrice(stripeObject.getAmountPaid()/100.00);
 
             clientId = getClientId(clientId, customerId);
 
             checkoutItemDTO.setClient_id(clientId);
             checkoutItemDTO.setPackage_id(packageId);
+
+
+            Map<String, String> metaDataMap = new HashMap<>();
+            if (currentInvoiceLineItem.getMetadata() != null) {
+                metaDataMap = currentInvoiceLineItem.getMetadata();
+            }
+
+
+            int discountAmount = 0;
+            if (metaDataMap.get("discountAmount") != null) {
+                discountAmount = Integer.valueOf(metaDataMap.get("discountAmount"));
+            }
+
+            if (metaDataMap.get("giftCodeUsed") != null) {
+                String giftCodeUsed = metaDataMap.get("giftCodeUsed");
+                double doubleGiftAmountUsed = Double.valueOf(metaDataMap.get("giftAmountUsed"));
+                int giftAmountUsed = (int) doubleGiftAmountUsed;
+
+                metaDataMap.remove("giftCodeUsed");
+                metaDataMap.remove("giftAmountUsed");
+
+                clientId = getClientId(clientId, customerId);
+
+                GiftCard originalGiftCard = packagePurchaseDao.retrieveGiftCard(giftCodeUsed);
+
+                packagePurchaseDao.updateGiftCard(originalGiftCard,clientId,giftAmountUsed);
+            }
+
             checkoutItemDTO.setClasses_remaining(packageDetails.getClasses_amount());
+            if (discountAmount > 0 ) {
+                checkoutItemDTO.setDiscount(discountAmount);
+            }
             checkoutItemDTO.setTotal_amount_paid(BigDecimal.valueOf(checkoutItemDTO.getPrice()));
+
+
             checkoutItemDTO.setIs_monthly_renew(true);
             checkoutItemDTO.setPaymentId(paymentIntentId);
 

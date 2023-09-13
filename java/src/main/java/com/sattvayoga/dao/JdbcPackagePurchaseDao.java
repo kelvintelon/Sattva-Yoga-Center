@@ -239,6 +239,13 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         return jdbcTemplate.update(sql, packagePurchaseId)==1;
     }
 
+    @Override
+    public boolean updateGiftCard(GiftCard originalGiftCard, int clientId, int amountUsed) {
+        int newAmount = (int) (originalGiftCard.getAmount() - amountUsed);
+        String sql = "UPDATE gift_card SET amount = ? , client_id = ? WHERE code ILIKE ?";
+        return jdbcTemplate.update(sql, newAmount, clientId, originalGiftCard.getCode())==1;
+    }
+
     //helper
     @Override
     public PackagePurchase filterPackageList(List<PackagePurchase> packagePurchaseList, ClassEvent classEvent) {
@@ -396,7 +403,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     @Override
     public GiftCard retrieveGiftCard(String code) {
         GiftCard giftCard = null;
-        String sql = "SELECT * FROM gift_card WHERE code = ?";
+        String sql = "SELECT * FROM gift_card WHERE code ILIKE ?";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, code);
         if (result.next()) {
             giftCard = mapRowToGiftCard(result);
@@ -423,8 +430,18 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
                 checkoutItemDTO.getPackage_id(), checkoutItemDTO.getClasses_remaining(),
-                LocalDate.now(), LocalDate.now().plusYears(1), checkoutItemDTO.isIs_monthly_renew(),
-                checkoutItemDTO.getTotal_amount_paid(), 0, checkoutItemDTO.getPaymentId());
+                LocalDate.now(), returnCorrectPackageExpirationDate(checkoutItemDTO), checkoutItemDTO.isIs_monthly_renew(),
+                checkoutItemDTO.getTotal_amount_paid(), checkoutItemDTO.getDiscount(), checkoutItemDTO.getPaymentId());
+    }
+
+    private LocalDate returnCorrectPackageExpirationDate(CheckoutItemDTO checkoutItemDTO) {
+        if (checkoutItemDTO.getProductName().equals("One Month Package")) {
+            return LocalDate.now().plusMonths(1).plusDays(1);
+        }
+        if (checkoutItemDTO.getProductName().equals("Six Month Package")) {
+            return LocalDate.now().plusMonths(6).plusDays(1);
+        }
+        return LocalDate.now().plusYears(1).plusDays(1);
     }
 
     public void createOneMonthAutoRenewPurchase(CheckoutItemDTO checkoutItemDTO){
@@ -433,7 +450,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         jdbcTemplate.update(sql, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
                 checkoutItemDTO.getPackage_id(), 0, LocalDate.now(),
                 LocalDate.now().plusMonths(1).plusDays(1), true,
-                checkoutItemDTO.getTotal_amount_paid(), 0, checkoutItemDTO.getPaymentId());
+                checkoutItemDTO.getTotal_amount_paid(), checkoutItemDTO.getDiscount(), checkoutItemDTO.getPaymentId());
     }
 
     public void createSixMonthAutoRenewPurchase(CheckoutItemDTO checkoutItemDTO){
@@ -442,7 +459,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         jdbcTemplate.update(sql, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
                 checkoutItemDTO.getPackage_id(), 0, LocalDate.now(),
                 LocalDate.now().plusMonths(6).plusDays(1), true,
-                checkoutItemDTO.getTotal_amount_paid(), 0, checkoutItemDTO.getPaymentId());
+                checkoutItemDTO.getTotal_amount_paid(), checkoutItemDTO.getDiscount(), checkoutItemDTO.getPaymentId());
     }
 
     public void createGiftCardPurchase(CheckoutItemDTO checkoutItemDTO) {
@@ -451,7 +468,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         jdbcTemplate.update(sql, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
                 checkoutItemDTO.getPackage_id(), 0, LocalDate.now(),
                 LocalDate.now().plusMonths(60), false,
-                checkoutItemDTO.getTotal_amount_paid(), 0, checkoutItemDTO.getPaymentId());
+                checkoutItemDTO.getTotal_amount_paid(), checkoutItemDTO.getDiscount(), checkoutItemDTO.getPaymentId());
     }
 
     @Override

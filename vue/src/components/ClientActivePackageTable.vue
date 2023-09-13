@@ -75,6 +75,7 @@
           <v-dialog
             v-model="dialog"
             max-width="500px"
+            persistent
             v-if="$store.state.user.username == 'admin'"
           >
             <template v-slot:activator="{ on, attrs }">
@@ -231,7 +232,7 @@
                         <v-col>
                           <v-text-field
                             v-if="!showPercentDiscount"
-                            v-model="currentDiscount"
+                            v-model.number="currentDiscount"
                             class="mt-0 pt-0"
                             type="number"
                             label="Discount: $"
@@ -271,7 +272,7 @@
                       <v-row>
                         <v-col>
                           <v-text-field
-                            v-model="totalCost"
+                            v-model.number="totalCost"
                             class="mt-6 pt-0"
                             type="number"
                             label="Total: $"
@@ -281,9 +282,111 @@
                         <v-spacer></v-spacer>
                         <v-spacer></v-spacer>
                       </v-row>
+                       <v-btn
+                          v-if="!showPaymentMethodOptions"
+                          class="mb-3"
+                          outlined
+                          color="red"
+                          @click="preparePaymentMethods"
+                          >
+                            Pay Methods
+                        </v-btn>
+                        <v-row v-else>
+                          <v-col sm="7" md="7" lg="7">
+                            <v-select 
+                            label="Choose Pay Method"
+                            :items="availablePaymentMethods"
+                            v-model="selectedPaymentMethod"
+                            item-text="cardDescription"
+                            return-object
+                          ></v-select>
+                        </v-col>
+                        <v-col>
+                          <!-- <v-btn depress color="primary" @click="addPaymentMethodOption">
+                            Add
+                          </v-btn> -->
+                          <!-- ADD PAYMENT METHOD SEPARATE DIALOG -->
+                           <v-dialog 
+                              v-model="addPaymentMethodDialog"
+                              persistent
+                              max-width="600px"
+                            >
+                              <template v-slot:activator="{ on, attrs }">
+                                <v-btn
+                                  color="primary"
+                                  dark
+                                  v-bind="attrs"
+                                  v-on="on"
+                                >
+                                  Add
+                                </v-btn>
+                              </template>
+                              <v-card>
+                                <v-card-title>
+                                  <span class="text-h5" style="color: rgba(245, 104, 71, 0.95)">Choose a Method</span>
+                                </v-card-title>
+                                <v-row justify="center" align="center">
+                                  <v-spacer></v-spacer>
+                                  <v-col v-if="!showCardForm" @click="processSetupIntentThroughReader">
+                                    <v-btn  color="primary">
+                                  Reader
+                                </v-btn>
+                                  </v-col>
+                                
+                                <v-col v-if="!showCardForm" >
+                                <v-btn @click="showCardForm = true"  color="primary">
+                                  Manual
+                                </v-btn>
+                                </v-col>
+                                <v-spacer></v-spacer>
+                              </v-row>
+                              <!-- STRIPE ELEMENT0 -->
+                              <!-- <stripe-element-card v-if="showCardForm"
+                              ref="elementRef"
+                              :pk="publishableKey"
+
+                              /> -->
+                             
+                                <v-card-actions>
+                                  <v-btn v-if="showCardForm"
+                                    color="blue darken-1"
+                                    text
+                                    @click="showCardForm = false"
+                                  >
+                                    Close Form
+                                  </v-btn>
+                                  <v-spacer></v-spacer>
+                                  <v-btn v-if="!showCardForm"
+                                    color="blue darken-1"
+                                    text
+                                    @click="addPaymentMethodDialog = false"
+                                  >
+                                    Close
+                                  </v-btn>               
+                                </v-card-actions>
+                              </v-card>
+                            </v-dialog>
+                        </v-col>
+                        <v-col>
+                          <v-btn
+    
+                            class=""
+                            fab
+                            outlined
+                            small
+                            @click="function() { showPaymentMethodOptions = false; selectedPaymentMethod = {};}"
+                          >
+                            <v-icon dark> mdi-close </v-icon>
+                          </v-btn>
+                        </v-col>
+                        </v-row>
+                        
                       <div class="text--primary" style="border-top: 1px solid">
                         Total Cost: ${{ totalCost }}
                       </div>
+                      <v-checkbox v-if="showSaveCardCheckbox"
+                      v-model="clientCheckout.saveCard" label="Save Payment Method?"
+                              required></v-checkbox>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -357,12 +460,14 @@ import eventService from "../services/EventService";
 import clientDetailService from "../services/ClientDetailService";
 import stripeService from "../services/StripeService";
 import giftCardService from '../services/GiftCardService.js'
+// import { StripeElementCard } from '@vue-stripe/vue-stripe';
 
 export default {
   name: "client-active-package-table",
-  components: {},
+  // components: {StripeElementCard},
   data() {
     return {
+      publishableKey: "pk_test_51NEabUBV0tnIJdW6JIy49Ky1uilERTHoouGeS6ySxpMsLiSwuehx2qo04plqxcFuVk7M5DYIJXXZ532bONj0iXbI00qVJtVHbn",
       headers: [
         {
           text: "Package Description",
@@ -435,6 +540,8 @@ export default {
         discount: 0,
         selectedCheckoutPackages: [],
         total: 0,
+        paymentMethodId: "",
+        saveCard: false,
         renewalDate: new Date(
           Date.now() - new Date().getTimezoneOffset() * 60000
         )
@@ -459,7 +566,13 @@ export default {
         amount: 0,
         code: "",
         client_id: parseInt(this.$route.params.clientId),
-      }
+      },
+      showPaymentMethodOptions: false,
+      availablePaymentMethods: [],
+      selectedPaymentMethod: {},
+      addPaymentMethodDialog: false,
+      showCardForm: false,
+      showSaveCardCheckbox: false,
     };
   },
   watch: {
@@ -489,6 +602,16 @@ export default {
       },
       deep: true,
     },
+    selectedPaymentMethod: {
+      handler: function () {
+        if (Object.keys(this.selectedPaymentMethod).length === 0) {
+          this.showSaveCardCheckbox = true;
+        } else {
+          this.showSaveCardCheckbox = false;
+        }
+      },
+      deep: true,
+    },
     giftCardResponse: {
       handler: function() {
         if (this.giftCardResponse.message.length > 0) {
@@ -506,6 +629,14 @@ export default {
         }
       },
       deep: true,
+    },
+    showSaveCardCheckbox: {
+      handler() {
+        if (this.selectedPackages[0].is_recurring) {
+          this.showSaveCardCheckbox = false;
+        }
+      },
+      immediate: true
     },
     selectedPackages: function () {
       // next loop prevents stacking subscriptions
@@ -549,6 +680,7 @@ export default {
         if (element.is_subscription && element.is_recurring) {
           foundSubscription = true;
           this.showRenewalDatePicker = true;
+          this.showSaveCardCheckbox = false;
         }
       }
       if (!foundGiftCard) {
@@ -557,6 +689,7 @@ export default {
       }
       if (!foundSubscription) {
         this.showRenewalDatePicker = false;
+        this.showSaveCardCheckbox = true;
       }
     },
   },
@@ -608,9 +741,40 @@ export default {
       });
       this.headers.push({ text: "Cancel", value: "actions", sortable: false });
       this.getPublicPackagesTable();
+
+      if (Object.keys(this.selectedPaymentMethod).length === 0) {
+          this.showSaveCardCheckbox = true;
+        }
     }
+
+    
+  },
+  mounted() {
+    // const publishableKey = this.publishableKey;
+    // const stripe = Stripe(publishableKey);
+
+    // const element = stripe.elements(0;
+    // const paymentElement = element.create("payment"),{});
+
+// const stripe = Stripe(this.publishableKey);
+
+//     stripe
+//   .createPaymentMethod({
+//     type: 'card',
+//     card: cardElement,
+//     billing_details: {
+//       name: 'Jenny Rosen',
+//     },
+//   })
+//   .then(function(result) {
+//     // Handle result.error or result.paymentMethod
+//     this.selectedPaymentMethod = result.paymentMethod
+//   });
+
+
   },
   methods: {
+
     // snackbars not showing and not unshowing
     allowClientReconcile() {
       this.loading = true;
@@ -666,9 +830,54 @@ export default {
         alert("Please enter a valid Gift Card Code");
       }
     },
+    preparePaymentMethods() {
+      this.showPaymentMethodOptions = true;
+      // Call a method that retrieves 
+      // a list of payment methods by this client's ID
+      this.retrievePaymentMethodsFromStripe(this.$route.params.clientId);
+      
+      // 
+    },
+    retrievePaymentMethodsFromStripe(clientId) {
+      
+      stripeService.returnPaymentMethodOptions(clientId).then((response) => {
+        // set it to availablePaymentMethods
+        if (response.status == 200) {
+          // make sure there is a cardDescription string that
+          // makes the card identifiable 
+          this.availablePaymentMethods = response.data;
+        }
+
+     
+      })
+
+    },
+    processSetupIntentThroughReader() {
+      stripeService.addPaymentMethodThroughReader(this.$route.params.clientId).then((response) => {
+        if (response.status == 201) {
+          this.retrievePaymentMethodsFromStripe();
+        } else {
+          alert("Error with SetupIntent through Reader")
+        }
+      })
+    },
+    // saveNewCard() {
+    //   if (this.newCardObject.cardNumber.length == 0 || this.newCardObject.expirationMonth == 0 || this.newCardObject.expYear == 0 || this.newCardObject.cvc == 0) {
+    //     alert ("Please fill in the card form")
+    //   } else {
+    //     stripeService.addPaymentMethodManually(this.$route.params.clientId, this.newCardObject).then((response) => {
+    //       if (response.status == 201) {
+    //         this.showCardForm = false;
+    //         this.addPaymentMethodDialog = false;
+    //         this.retrievePaymentMethodsFromStripe(this.$route.params.clientId)
+    //       }
+    //     })
+    //   }
+    // },
     close() {
       this.dialog = false;
       this.percentDiscount = 0;
+      this.currentDiscount = 0;
       this.totalCost = 0;
       this.giftCardCost = 0;
       this.giftCardIndex = 0;
@@ -676,8 +885,14 @@ export default {
       this.saveEmailCheckbox = false;
       this.showGiftCodeInput = false;
       this.giftCardCodeObject.code = "";
-      this.giftCardResponse = {}
-      this.clientCheckout.discount = {
+      this.showGiftCardResponse = false;
+      this.giftCardResponse = {};
+      this.giftCardRedeemObject = {
+        amount: 0,
+        code: "",
+        client_id: parseInt(this.$route.params.clientId),
+      }
+      this.clientCheckout = {
         client_id: 0,
         email: "",
         saveEmail: false,
@@ -685,8 +900,18 @@ export default {
         selectedCheckoutPackages: [],
         total: 0,
         giftCard: {},
+        renewalDate: new Date(
+          Date.now() - new Date().getTimezoneOffset() * 60000
+        )
+          .toISOString()
+          .substr(0, 10),
+        paymentMethodId: "",
+        saveCard: false,
       };
       this.selectedPackages = [];
+      this.selectedPaymentMethod = {};
+      this.showPaymentMethodOptions = false;
+
     },
     // closeReconcile(){
     //   this.snackBarReconcilePackages = false;
@@ -976,15 +1201,27 @@ export default {
         if (this.showGiftCardResponse) {
           this.clientCheckout.giftCard = this.giftCardRedeemObject
         }
-        
-        stripeService
+        this.clientCheckout.paymentMethodId = this.selectedPaymentMethod.paymentMethodId;
+        if (this.clientCheckout.selectedCheckoutPackages[0].is_recurring && (this.clientCheckout.paymentMethodId == undefined || this.clientCheckout.paymentMethodId == "" )) {
+          alert("Please Choose a Payment Method For Subscription")
+        } else {
+          if (this.clientCheckout.total == 0) {
+            alert("Price cannot be zero")
+          } else {
+
+          
+          stripeService
           .purchaseClientCheckout(this.clientCheckout)
           .then((response) => {
             if (response.status == 201) {
               alert("Submitted");
               this.close();
+              this.getActivePurchaseServerRequest();
+              this.loading = false;
             }
           });
+        }
+      }
       } else {
         alert("Select at least one item");
       }

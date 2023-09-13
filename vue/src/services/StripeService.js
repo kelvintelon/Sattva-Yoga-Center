@@ -8,7 +8,20 @@ export default {
 
   purchaseClientCheckout(clientCheckout) {
     return axios.post(`/stripe/purchaseTerminal`, clientCheckout)
-  }
+  },
+
+  returnPaymentMethodOptions(clientId) {
+    return axios.get(`/stripe/returnPaymentMethodOptions/${clientId}`)
+  },
+
+  addPaymentMethodThroughReader(clientId) {
+    return axios.post(`/stripe/addPaymentMethodThroughReader/${clientId}`)
+  },
+  
+  // addPaymentMethodManually(clientId, cardObject) {
+  //   return axios.post(`/stripe/addPaymentMethodManually/${clientId}`, cardObject)
+  // }
+
 
   // updateOneMonthDb(oneMonth){
   //   return axios.post(`/stripe/purchaseOneMonth`, oneMonth)

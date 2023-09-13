@@ -49,4 +49,6 @@ public interface PackagePurchaseDao {
     void purchaseLineItems(List<CheckoutItemDTO> itemList);
 
     GiftCard retrieveGiftCard(String code);
+
+    boolean updateGiftCard(GiftCard originalGiftCard, int clientId, int amountUsed);
 }

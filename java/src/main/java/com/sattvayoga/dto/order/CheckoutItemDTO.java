@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 public class CheckoutItemDTO {
     private String productName;
     private int quantity;
-    private double price;
+    private double price; // not necessary
     private int client_id;
     private int package_id;
     private LocalDateTime date_purchased;
@@ -15,8 +15,17 @@ public class CheckoutItemDTO {
     private BigDecimal total_amount_paid;
     private boolean is_monthly_renew;
     private String paymentId;
+    private int discount = 0;
 
     public CheckoutItemDTO(){
+    }
+
+    public int getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(int discount) {
+        this.discount = discount;
     }
 
     public int getClasses_remaining() {

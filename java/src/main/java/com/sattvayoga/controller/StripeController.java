@@ -2,6 +2,7 @@ package com.sattvayoga.controller;
 
 import com.sattvayoga.dao.*;
 import com.sattvayoga.dto.order.ClientCheckoutDTO;
+import com.sattvayoga.model.PaymentMethodOptions;
 import com.stripe.exception.StripeException;
 import com.stripe.model.*;
 import com.stripe.model.checkout.Session;
@@ -52,5 +53,27 @@ public class StripeController {
 
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/returnPaymentMethodOptions/{clientId}")
+    public List<PaymentMethodOptions> retrievePaymentMethodOptions(@PathVariable int clientId) throws StripeException {
+
+        return stripeDao.retrievePaymentMethodOptions(clientId);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/addPaymentMethodThroughReader/{clientId}")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void addPaymentMethodThroughReader(@PathVariable int clientId) throws StripeException {
+
+        stripeDao.addPaymentMethodThroughReader(clientId);
+    }
+
+//    @PreAuthorize("hasRole('ADMIN')")
+//    @PostMapping("/addPaymentMethodManually/{clientId}")
+//    @ResponseStatus(HttpStatus.CREATED)
+//    public void addPaymentMethodManually(@PathVariable int clientId, @RequestBody PaymentMethodOptions paymentMethodOption) throws StripeException {
+//
+//        stripeDao.addPaymentMethodManually(clientId,paymentMethodOption);
+//    }
 
 }

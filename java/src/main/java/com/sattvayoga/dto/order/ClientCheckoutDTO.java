@@ -14,6 +14,8 @@ public class ClientCheckoutDTO {
     private int discount;
     private boolean saveEmail;
     private String renewalDate;
+    private String paymentMethodId;
+    private boolean saveCard;
 
     private GiftCard giftCard;
 
@@ -25,6 +27,22 @@ public class ClientCheckoutDTO {
         this.discount = discount;
         this.saveEmail = saveEmail;
         this.renewalDate = renewalDate;
+    }
+
+    public boolean isSaveCard() {
+        return saveCard;
+    }
+
+    public void setSaveCard(boolean saveCard) {
+        this.saveCard = saveCard;
+    }
+
+    public String getPaymentMethodId() {
+        return paymentMethodId;
+    }
+
+    public void setPaymentMethodId(String paymentMethodId) {
+        this.paymentMethodId = paymentMethodId;
     }
 
     public int getClient_id() {
