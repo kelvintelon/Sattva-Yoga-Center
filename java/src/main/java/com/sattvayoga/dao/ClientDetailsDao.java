@@ -35,4 +35,6 @@ public interface ClientDetailsDao {
     boolean updateClientCustomerId(int clientId, String customerId);
 
     ClientDetails findClientByCustomerId(String customerID);
+
+    boolean saveNewClientEmail(int clientId, String newEmail);
 }

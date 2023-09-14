@@ -103,6 +103,18 @@ public class WebHookController {
 
                     List<CheckoutItemDTO> listOfItemsToCheckout = new ArrayList<>();
 
+                    // Get Gift Card Purchase logic out the way
+
+                    String giftCardEmail = "";
+                    boolean saveGiftCard = false;
+
+                    if (metaDataMap.get("Gift Card") != null) {
+                        giftCardEmail = metaDataMap.get("giftCardEmail");
+                        saveGiftCard = Boolean.parseBoolean(metaDataMap.get("saveGiftCardEmail"));
+                        metaDataMap.remove("giftCardEmail");
+                        metaDataMap.remove("saveGiftCardEmail");
+                    }
+
                     for (Map.Entry<String,String> mapElement : metaDataMap.entrySet()) {
                         String keyDescription = mapElement.getKey();
                         String value = mapElement.getValue();
@@ -117,6 +129,12 @@ public class WebHookController {
                         PackageDetails currentPackageDetails = packageDetailsDao.findPackageByPackageName(keyDescription);
 
                         CheckoutItemDTO checkoutItemDTO = new CheckoutItemDTO();
+
+                        // Gift Card Purchase Logic
+                        if (currentPackageDetails.getDescription().contains("Gift")) {
+                            checkoutItemDTO.setGiftCardEmail(giftCardEmail);
+                            checkoutItemDTO.setSaveGiftCardEmail(saveGiftCard);
+                        }
 
                         checkoutItemDTO.setProductName(keyDescription);
                         checkoutItemDTO.setPrice(totalPaid);
@@ -271,6 +289,10 @@ public class WebHookController {
             checkoutItemDTO.setPrice(currentItem.getPrice().getUnitAmount()/100.00);
 
             clientId = getClientId(clientId, customerId);
+            ClientDetails clientDetails = clientDetailsDao.findClientByClientId(clientId);
+
+            checkoutItemDTO.setGiftCardEmail(clientDetails.getEmail());
+            checkoutItemDTO.setSaveGiftCardEmail(false);
 
             checkoutItemDTO.setClient_id(clientId);
 
@@ -297,5 +319,7 @@ public class WebHookController {
         }
         return clientId;
     }
+
+
 
 }

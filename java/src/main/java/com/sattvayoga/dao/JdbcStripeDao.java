@@ -384,6 +384,12 @@ public class JdbcStripeDao implements StripeDao {
 
         for (int i = 0; i < listOfPackagesBeingPurchased.size(); i++) {
             String currentPackageName = listOfPackagesBeingPurchased.get(i).getDescription();
+
+            if (currentPackageName.contains("Gift")) {
+                metaDataMap.put("giftCardEmail", clientCheckoutDTO.getEmail());
+                metaDataMap.put("saveGiftCardEmail", String.valueOf(clientCheckoutDTO.isSaveEmail()));
+            }
+
             int packagePrice = listOfPackagesBeingPurchased.get(i).getPackage_cost().intValue();
 
             int discountApplied = 0;
@@ -412,7 +418,7 @@ public class JdbcStripeDao implements StripeDao {
         String giftCode = "";
         String giftAmountUsed = "";
 
-        if (clientCheckoutDTO.getGiftCard() != null) {
+        if (clientCheckoutDTO.getGiftCard() != null && clientCheckoutDTO.getGiftCard().getCode() != null && clientCheckoutDTO.getGiftCard().getAmount() > 0) {
             GiftCard giftCardUsed = clientCheckoutDTO.getGiftCard();
             giftCode = giftCardUsed.getCode();
             giftAmountUsed = String.valueOf(giftCardUsed.getAmount());

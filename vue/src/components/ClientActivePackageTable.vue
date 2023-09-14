@@ -705,18 +705,7 @@ export default {
     //     }
     //   });
     if (this.$store.state.user.username == "admin") {
-      clientDetailService
-        .getClientDetailsByClientId(parseInt(this.$route.params.clientId))
-        .then((response) => {
-          if (response.data.client_id != 0) {
-            this.clientDetails = response.data;
-            this.$store.commit("SET_CLIENT_DETAILS", response.data);
-            // alert("active package table client details")
-            if (this.clientDetails.redFlag == true) {
-              this.snackBarReconcileWarning = true;
-            }
-          }
-        });
+      this.retrieveClientDetailsForAdmin();
     }
     // TODO: CAREFUL DELETING THIS BECAUSE WE FORGOT WHAT IT DOES
     this.$root.$on("getActivePurchasePackageTable", () => {
@@ -774,7 +763,21 @@ export default {
 
   },
   methods: {
-
+    retrieveClientDetailsForAdmin() {
+      clientDetailService
+        .getClientDetailsByClientId(parseInt(this.$route.params.clientId))
+        .then((response) => {
+          if (response.data.client_id != 0) {
+            this.clientDetails = response.data;
+            this.$store.commit("SET_CLIENT_DETAILS", response.data);
+            this.clientCheckout.email = this.$store.state.clientDetails.email;
+            // alert("active package table client details")
+            if (this.clientDetails.redFlag == true) {
+              this.snackBarReconcileWarning = true;
+            }
+          }
+        });
+    },
     // snackbars not showing and not unshowing
     allowClientReconcile() {
       this.loading = true;
@@ -894,7 +897,7 @@ export default {
       }
       this.clientCheckout = {
         client_id: 0,
-        email: "",
+        email: this.$store.state.clientDetails.email,
         saveEmail: false,
         discount: 0,
         selectedCheckoutPackages: [],
@@ -1214,9 +1217,16 @@ export default {
           .purchaseClientCheckout(this.clientCheckout)
           .then((response) => {
             if (response.status == 201) {
+              // this.retrieveClientDetailsForAdmin();
+              if (this.clientCheckout.saveEmail) {
+                this.$store.state.clientDetails.email = this.clientCheckout.email;
+              }
               alert("Submitted");
               this.close();
               this.getActivePurchaseServerRequest();
+
+              this.$root.$refs.B.getPackageHistoryTable();
+              this.$root.$refs.D.getClientEventTable();
               this.loading = false;
             }
           });

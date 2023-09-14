@@ -481,12 +481,28 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 ClientDetails clientDetails =
                         clientDetailsDao.findClientByClientId(eachPackage.getClient_id());
 
-                // call the email service here and shoot off the gift code.
-                try {
-                    senderService.sendEmail(clientDetails.getEmail(), "Sattva Yoga Center Gift Card Code", "Your Gift Card code is: " + code + " . Please note: The Gift Card Code can only be redeemed in person. Once redeemed, it cannot be used by anyone else.");
-                } catch (Throwable e) {
-                    System.out.println("Error sending gift card email to client id: " + clientDetails.getClient_id());
+                if (clientDetails.getEmail().equals(eachPackage.getGiftCardEmail())) {
+                    // call the email service here and shoot off the gift code.
+                    try {
+
+                        senderService.sendEmail(clientDetails.getEmail(), "Sattva Yoga Center Gift Card Code", "Your Gift Card code is: " + code + " . Please note: The Gift Card Code can only be redeemed in person. Once redeemed, it cannot be used by anyone else.");
+                    } catch (Throwable e) {
+                        System.out.println("Error sending gift card email to client id: " + clientDetails.getClient_id());
+                    }
+                } else {
+                    try {
+
+                        senderService.sendEmail(eachPackage.getGiftCardEmail(), "Sattva Yoga Center Gift Card Code", "Your Gift Card code is: " + code + " . Please note: The Gift Card Code can only be redeemed in person. Once redeemed, it cannot be used by anyone else.");
+                    } catch (Throwable e) {
+                        System.out.println("Error sending gift card email to client id: " + clientDetails.getClient_id());
+                    }
+
+                    if (eachPackage.isSaveGiftCardEmail()) {
+                        // SAVE EMAIL TO CLIENT OBJECT
+                        clientDetailsDao.saveNewClientEmail(clientDetails.getClient_id(), eachPackage.getGiftCardEmail());
+                    }
                 }
+
             } else if (eachPackage.getProductName().contains("One") && eachPackage.isIs_monthly_renew()) {
                 createOneMonthAutoRenewPurchase(eachPackage);
             } else if (eachPackage.getProductName().contains("Six") && eachPackage.isIs_monthly_renew()) {

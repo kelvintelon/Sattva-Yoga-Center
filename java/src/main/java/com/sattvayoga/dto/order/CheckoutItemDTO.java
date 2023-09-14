@@ -16,8 +16,26 @@ public class CheckoutItemDTO {
     private boolean is_monthly_renew;
     private String paymentId;
     private int discount = 0;
+    private String giftCardEmail = "";
+    private boolean saveGiftCardEmail = false;
 
     public CheckoutItemDTO(){
+    }
+
+    public String getGiftCardEmail() {
+        return giftCardEmail;
+    }
+
+    public void setGiftCardEmail(String giftCardEmail) {
+        this.giftCardEmail = giftCardEmail;
+    }
+
+    public boolean isSaveGiftCardEmail() {
+        return saveGiftCardEmail;
+    }
+
+    public void setSaveGiftCardEmail(boolean saveGiftCardEmail) {
+        this.saveGiftCardEmail = saveGiftCardEmail;
     }
 
     public int getDiscount() {

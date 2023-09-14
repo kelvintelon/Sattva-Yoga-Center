@@ -5,6 +5,7 @@ import com.sattvayoga.model.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SqlRowSetResultSetExtractor;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -362,6 +363,12 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
     public boolean updateClientCustomerId(int clientId, String customerId) {
         String sql = "UPDATE client_details SET customer_id = ? WHERE client_id = ?";
         return jdbcTemplate.update(sql, customerId, clientId) == 1;
+    }
+
+    @Override
+    public boolean saveNewClientEmail(int clientId, String newEmail) {
+        String sql = "UPDATE client_details SET email = ? WHERE client_id = ?";
+        return jdbcTemplate.update(sql, newEmail, clientId)==1;
     }
 
     @Override
