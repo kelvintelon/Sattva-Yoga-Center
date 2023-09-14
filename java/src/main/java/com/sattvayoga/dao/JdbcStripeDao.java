@@ -9,13 +9,11 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.*;
 import com.stripe.model.checkout.Session;
 import com.stripe.model.terminal.Reader;
-import com.stripe.param.CustomerListPaymentMethodsParams;
-import com.stripe.param.CustomerUpdateParams;
-import com.stripe.param.PaymentIntentCreateParams;
-import com.stripe.param.SubscriptionScheduleCreateParams;
+import com.stripe.param.*;
 import com.stripe.param.checkout.SessionCreateParams;
 import com.sattvayoga.dto.order.CheckoutItemDTO;
 import com.stripe.param.terminal.ReaderProcessPaymentIntentParams;
+import com.stripe.param.terminal.ReaderProcessSetupIntentParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -500,23 +498,22 @@ public class JdbcStripeDao implements StripeDao {
 
         Reader readerResource = getReader();
 
-        Map<String, Object> automaticPaymentMethods = new HashMap<>();
-        automaticPaymentMethods.put("enabled", true);
-        Map<String, Object> setupIntentParams = new HashMap<>();
-        setupIntentParams.put("automatic_payment_methods",automaticPaymentMethods);
-        setupIntentParams.put("customer", customer_id);
+        SetupIntentCreateParams setupIntentParams =
+                SetupIntentCreateParams.builder()
+                        .addPaymentMethodType("card_present")
+                        .setCustomer(customer_id)
+                        .build();;
 
         SetupIntent setupIntent =
                 SetupIntent.create(setupIntentParams);
 
         String setupIntentId = setupIntent.getId();
 
-        Map<String, Object> readerParams = new HashMap<>();
-        readerParams.put(
-                "setup_intent",
-               setupIntentId
-        );
-        readerParams.put("customer_consent_collected", "true");
+        ReaderProcessSetupIntentParams readerParams =
+                ReaderProcessSetupIntentParams.builder()
+                        .setSetupIntent(setupIntentId)
+                        .setCustomerConsentCollected(true)
+                        .build();
 
         Reader updatedReader =
                 readerResource.processSetupIntent(readerParams);
