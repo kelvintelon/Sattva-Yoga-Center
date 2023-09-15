@@ -165,12 +165,21 @@
                                 color="primary"
                                 @click="
                                   $refs.menu.save(clientCheckout.renewalDate)
-                                "
-                              >
+                                ">
                                 OK
                               </v-btn>
                             </v-date-picker>
                           </v-menu>
+                        </v-col>
+                        <v-col>
+                          <v-text-field
+                                v-model.number="clientCheckout.iterations"
+                                label="Iterations"
+                                type="number"
+                                min="1"
+                                max="24"
+                                
+                              ></v-text-field>
                         </v-col>
                       </v-row>
                       <v-row>
@@ -385,8 +394,12 @@
                         Total Cost: ${{ totalCost }}
                       </div>
                       <v-checkbox v-if="showSaveCardCheckbox"
-                      v-model="clientCheckout.saveCard" label="Save Payment Method?"
-                              required></v-checkbox>
+                        v-model="clientCheckout.saveCard" label="Save Payment Method?">
+                      </v-checkbox>
+                      <v-checkbox v-if="showSaveRecurringPaymentCheckbox"
+                        v-model="clientCheckout.saveAsRecurringPayment"
+                        label="Save As Recurring Payment?"
+                      ></v-checkbox>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -541,7 +554,9 @@ export default {
         selectedCheckoutPackages: [],
         total: 0,
         paymentMethodId: "",
+        iterations: 1,
         saveCard: false,
+        saveAsRecurringPayment: false,
         renewalDate: new Date(
           Date.now() - new Date().getTimezoneOffset() * 60000
         )
@@ -573,6 +588,7 @@ export default {
       addPaymentMethodDialog: false,
       showCardForm: false,
       showSaveCardCheckbox: false,
+      showSaveRecurringPaymentCheckbox: false
     };
   },
   watch: {
@@ -588,6 +604,25 @@ export default {
     totalCost: function (val) {
       this.returnTotal = val;
       
+      let runningTotal = 0;
+    
+      for (let index = 0; index < this.selectedPackages.length; index++) {
+        let element = this.selectedPackages[index];
+        runningTotal += element.package_cost;
+  
+      }
+      if (runningTotal > val) {
+        this.showSaveRecurringPaymentCheckbox = true;
+      } else {
+        this.showSaveRecurringPaymentCheckbox = false;
+      }
+    },
+    returnDiscount: function (val) {
+      if (val > 0) {
+        this.showSaveRecurringPaymentCheckbox = true
+      } else {
+        this.showSaveRecurringPaymentCheckbox = false
+      }
     },
     clientCheckout: {
       handler: function () {
@@ -661,10 +696,12 @@ export default {
       }
 
       // this loop checks for giftcard or subscriptions
+      let runningTotal = 0;
       let foundGiftCard = false;
       let foundSubscription = false;
       for (let index = 0; index < this.selectedPackages.length; index++) {
         let element = this.selectedPackages[index];
+        runningTotal += element.package_cost;
         if (element.description.includes("Gift")) {
           this.showGiftCardForm = true;
           this.clientCheckout.email = this.$store.state.clientDetails.email;
@@ -682,6 +719,11 @@ export default {
           this.showRenewalDatePicker = true;
           this.showSaveCardCheckbox = false;
         }
+      }
+      if (runningTotal > this.returnTotal()) {
+        this.showSaveRecurringPaymentCheckbox = true;
+      } else {
+        this.showSaveRecurringPaymentCheckbox = false;
       }
       if (!foundGiftCard) {
         this.showGiftCardForm = false;
@@ -858,7 +900,12 @@ export default {
     processSetupIntentThroughReader() {
       stripeService.addPaymentMethodThroughReader(this.$route.params.clientId).then((response) => {
         if (response.status == 201) {
+          alert("Tap card and refresh payment methods.")
+          this.addPaymentMethodDialog = false;
           this.retrievePaymentMethodsFromStripe();
+          setTimeout(() => {
+            this.retrievePaymentMethodsFromStripe();
+          }, 5000);
         } else {
           alert("Error with SetupIntent through Reader")
         }
@@ -901,6 +948,8 @@ export default {
         saveEmail: false,
         discount: 0,
         selectedCheckoutPackages: [],
+        iterations: 1,
+        saveAsRecurringPayment: false,
         total: 0,
         giftCard: {},
         renewalDate: new Date(
@@ -914,7 +963,7 @@ export default {
       this.selectedPackages = [];
       this.selectedPaymentMethod = {};
       this.showPaymentMethodOptions = false;
-
+      this.showSaveRecurringPaymentCheckbox = false;
     },
     // closeReconcile(){
     //   this.snackBarReconcilePackages = false;
@@ -1223,10 +1272,35 @@ export default {
               }
               alert("Submitted");
               this.close();
+
+              setTimeout(() => {
               this.getActivePurchaseServerRequest();
 
               this.$root.$refs.B.getPackageHistoryTable();
               this.$root.$refs.D.getClientEventTable();
+              }, 5000);
+
+              setTimeout(() => {
+              this.getActivePurchaseServerRequest();
+
+              this.$root.$refs.B.getPackageHistoryTable();
+              this.$root.$refs.D.getClientEventTable();
+              }, 10000);
+
+              setTimeout(() => {
+              this.getActivePurchaseServerRequest();
+
+              this.$root.$refs.B.getPackageHistoryTable();
+              this.$root.$refs.D.getClientEventTable();
+              }, 15000);
+
+              setTimeout(() => {
+              this.getActivePurchaseServerRequest();
+
+              this.$root.$refs.B.getPackageHistoryTable();
+              this.$root.$refs.D.getClientEventTable();
+              }, 20000);
+
               this.loading = false;
             }
           });

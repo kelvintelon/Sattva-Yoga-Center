@@ -35,8 +35,8 @@ public class JdbcStripeDao implements StripeDao {
     PackageDetailsDao packageDetailsDao;
 
     // TODO: If you want to deploy uncomment below
-//    @Autowired
-//    private SecretManagerService secretManagerService;
+    @Autowired
+    private SecretManagerService secretManagerService;
 
     @Autowired
     private ClientDetailsDao clientDetailsDao;
@@ -92,9 +92,6 @@ public class JdbcStripeDao implements StripeDao {
 
         boolean discountNeeded = determineDiscountNeeded(clientCheckoutDTO);
 
-        //TODO:
-        // 1. Pull in all data
-        // 2. Set the email for the receipt?
         PackageDetails firstPackageDetails = clientCheckoutDTO.getListOfPackages().get(0);
         if (firstPackageDetails.isIs_recurring() && firstPackageDetails.isIs_subscription()) {
 
@@ -122,7 +119,7 @@ public class JdbcStripeDao implements StripeDao {
                             SubscriptionScheduleCreateParams.builder()
                                     .setCustomer(customer.getId())
                                     .setStartDate(renewalDate.toEpochSecond(LocalTime.from(renewalDateLDT), zoneOffSet))
-                                    .setEndBehavior(SubscriptionScheduleCreateParams.EndBehavior.RELEASE)
+                                    .setEndBehavior(SubscriptionScheduleCreateParams.EndBehavior.CANCEL)
                                     .setDefaultSettings(SubscriptionScheduleCreateParams.DefaultSettings.builder().setDefaultPaymentMethod(clientCheckoutDTO.getPaymentMethodId()).build())
                                     .addPhase(
                                             SubscriptionScheduleCreateParams.Phase.builder()
@@ -132,6 +129,7 @@ public class JdbcStripeDao implements StripeDao {
                                                                     .setQuantity(1L)
                                                                     .build()
                                                     )
+                                                    .setIterations((long) clientCheckoutDTO.getIterations())
                                                     .build()
                                     )
                                     .setMetadata(metaDataMap)
@@ -144,7 +142,12 @@ public class JdbcStripeDao implements StripeDao {
                     Map<String, Object> couponParams = new HashMap<>();
                     couponParams.put("amount_off", clientCheckoutDTO.getDiscount()*100);
                     couponParams.put("currency", "usd");
-                    couponParams.put("duration", "once");
+                    if (clientCheckoutDTO.isSaveAsRecurringPayment()) {
+                        couponParams.put("duration", "forever");
+                    } else {
+                        couponParams.put("duration", "once");
+                    }
+
                     couponParams.put("name", "$" + clientCheckoutDTO.getDiscount() + " off");
                     couponParams.put("max_redemptions", 1);
 
@@ -161,7 +164,7 @@ public class JdbcStripeDao implements StripeDao {
                             SubscriptionScheduleCreateParams.builder()
                                     .setCustomer(customer.getId())
                                     .setStartDate(renewalDate.toEpochSecond(LocalTime.from(renewalDateLDT), zoneOffSet))
-                                    .setEndBehavior(SubscriptionScheduleCreateParams.EndBehavior.RELEASE)
+                                    .setEndBehavior(SubscriptionScheduleCreateParams.EndBehavior.CANCEL)
                                     .setDefaultSettings(SubscriptionScheduleCreateParams.DefaultSettings.builder().setDefaultPaymentMethod(clientCheckoutDTO.getPaymentMethodId()).build())
                                     .addPhase(
                                             SubscriptionScheduleCreateParams.Phase.builder()
@@ -171,6 +174,7 @@ public class JdbcStripeDao implements StripeDao {
                                                                     .setQuantity(1L)
                                                                     .build()
                                                     )
+                                                    .setIterations((long) clientCheckoutDTO.getIterations())
                                                     .setCoupon(coupon.getId())
                                                     .build()
                                     )
@@ -205,6 +209,10 @@ public class JdbcStripeDao implements StripeDao {
                     subscriptionParams.put("items", items);
                     subscriptionParams.put("default_payment_method", clientCheckoutDTO.getPaymentMethodId());
                     subscriptionParams.put("metadata", metaDataMap);
+
+                    //Cancel_at in unix timestamp
+                    createCancelAtTimestampFromIterations(clientCheckoutDTO, firstPackageDetails, subscriptionParams);
+
                     Subscription subscription =
                             Subscription.create(subscriptionParams);
 
@@ -216,7 +224,11 @@ public class JdbcStripeDao implements StripeDao {
                     Map<String, Object> couponParams = new HashMap<>();
                     couponParams.put("amount_off", clientCheckoutDTO.getDiscount()*100);
                     couponParams.put("currency", "usd");
-                    couponParams.put("duration", "once");
+                    if (clientCheckoutDTO.isSaveAsRecurringPayment()) {
+                        couponParams.put("duration", "forever");
+                    } else {
+                        couponParams.put("duration", "once");
+                    }
                     couponParams.put("name", "$" + clientCheckoutDTO.getDiscount() + " off");
                     couponParams.put("max_redemptions", 1);
 
@@ -242,6 +254,9 @@ public class JdbcStripeDao implements StripeDao {
                     // add metaData into params
                     subscriptionParams.put("metadata", metaDataMap);
 
+                    // Cancel at unix time stamp
+                    createCancelAtTimestampFromIterations(clientCheckoutDTO, firstPackageDetails, subscriptionParams);
+
                     Subscription subscription =
                             Subscription.create(subscriptionParams);
 
@@ -259,8 +274,6 @@ public class JdbcStripeDao implements StripeDao {
 
             if (clientCheckoutDTO.getPaymentMethodId() != null && clientCheckoutDTO.getPaymentMethodId().length() > 0) {
 
-
-                //TODO Gift card logic
 
                 String customer_id = getCustomerIdString(clientCheckoutDTO.getClient_id());
 
@@ -356,6 +369,34 @@ public class JdbcStripeDao implements StripeDao {
         }
     }
 
+    private void createCancelAtTimestampFromIterations(ClientCheckoutDTO clientCheckoutDTO, PackageDetails firstPackageDetails, Map<String, Object> subscriptionParams) {
+        long cancelAtUnixTimestamp = 0;
+
+        if (firstPackageDetails.getDescription().equals("One Month Subscription")) {
+            LocalDate todayDate = LocalDate.now();
+            LocalDate futureDate = todayDate.plusMonths(1* clientCheckoutDTO.getIterations());
+
+            ZoneId zone = ZoneId.of("America/New_York");
+            LocalDateTime futureDateLDT = futureDate.atStartOfDay();
+            ZoneOffset zoneOffSet = zone.getRules().getOffset(futureDateLDT);
+
+            cancelAtUnixTimestamp = futureDate.toEpochSecond(LocalTime.from(futureDateLDT), zoneOffSet);
+
+            subscriptionParams.put("cancel_at", cancelAtUnixTimestamp);
+        } else {
+            LocalDate todayDate = LocalDate.now();
+            LocalDate futureDate = todayDate.plusMonths(6* clientCheckoutDTO.getIterations());
+
+            ZoneId zone = ZoneId.of("America/New_York");
+            LocalDateTime futureDateLDT = futureDate.atStartOfDay();
+            ZoneOffset zoneOffSet = zone.getRules().getOffset(futureDateLDT);
+
+            cancelAtUnixTimestamp = futureDate.toEpochSecond(LocalTime.from(futureDateLDT), zoneOffSet);
+
+            subscriptionParams.put("cancel_at", cancelAtUnixTimestamp);
+        }
+    }
+
     private boolean determineDiscountNeeded(ClientCheckoutDTO clientCheckoutDTO) {
         int originalRunningTotal = 0;
 
@@ -408,7 +449,6 @@ public class JdbcStripeDao implements StripeDao {
             metaDataMap.put(currentPackageName, mapValueForPackage);
         }
 
-        //TODO: Logic for gift card code
         usedGiftCardInMetaData(clientCheckoutDTO, metaDataMap);
     }
 
@@ -526,6 +566,7 @@ public class JdbcStripeDao implements StripeDao {
         //TODO:
         // 1. Replace this simulated reader ID ("tmr_FPKgUQOJ7fdmwi") with physical reader ID
         return Reader.retrieve("tmr_FPKgUQOJ7fdmwi");
+//        return Reader.retrieve("tmr_FP6wARXsBdbits");
     }
 
 //    @Override

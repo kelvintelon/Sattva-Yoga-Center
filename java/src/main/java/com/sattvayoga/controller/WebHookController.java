@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,7 +50,6 @@ public class WebHookController {
             event = Webhook.constructEvent(payload, sigHeader, "whsec_cff6694ca11a70540e6c09f04d2495ae35f8a8cb3e63a8cb280ff270f522dac2");
 //            String webHookSecret = secretManagerService.getWebHookSecret();
 //            String substringWebHook = webHookSecret.substring(18, webHookSecret.length()-2);
-//            System.out.println(substringWebHook);
 //            event = Webhook.constructEvent(payload,sigHeader,substringWebHook);
 
         } catch (SignatureVerificationException e) {
@@ -64,7 +64,7 @@ public class WebHookController {
             stripeObject = dataObjectDeserializer.getObject().get();
         } else {
             System.out.println("Deserialization failed");
-            System.out.println(event.getApiVersion());
+//            System.out.println(event.getApiVersion());
 
             // Deserialization failed, probably due to an API version mismatch.
             // Refer to the Javadoc documentation on `EventDataObjectDeserializer` for
@@ -213,6 +213,7 @@ public class WebHookController {
 
         for (int i = 0; i < invoiceLineItemList.size(); i++) {
             InvoiceLineItem currentInvoiceLineItem = invoiceLineItemList.get(i);
+
             CheckoutItemDTO checkoutItemDTO = new CheckoutItemDTO();
             int packageId = 0;
             PackageDetails packageDetails
@@ -220,6 +221,9 @@ public class WebHookController {
             packageId = packageDetails.getPackage_id();
 
             checkoutItemDTO.setProductName(packageDetails.getDescription());
+
+            setContractLengthForSubscriptionInCheckoutSession(currentInvoiceLineItem, checkoutItemDTO);
+
             checkoutItemDTO.setPrice(stripeObject.getAmountPaid()/100.00);
 
             clientId = getClientId(clientId, customerId);
@@ -268,6 +272,50 @@ public class WebHookController {
 
         }
         return checkoutItemDTOList;
+    }
+
+    private void setContractLengthForSubscriptionInCheckoutSession(InvoiceLineItem currentInvoiceLineItem, CheckoutItemDTO checkoutItemDTO) {
+        // Get subscription;
+        try {
+            Subscription subscription = Subscription.retrieve(currentInvoiceLineItem.getSubscription());
+
+            Map<String, Object> params = new HashMap<>();
+            long cancelAtUnixTimestamp = 0;
+
+
+
+            if (checkoutItemDTO.getProductName().equals("One Month Subscription")) {
+                LocalDate todayDate = LocalDate.now();
+                LocalDate futureDate = todayDate.plusMonths(1* 12);
+
+                ZoneId zone = ZoneId.of("America/New_York");
+                LocalDateTime futureDateLDT = futureDate.atStartOfDay();
+                ZoneOffset zoneOffSet = zone.getRules().getOffset(futureDateLDT);
+
+                cancelAtUnixTimestamp = futureDate.toEpochSecond(LocalTime.from(futureDateLDT), zoneOffSet);
+
+
+            } else {
+                LocalDate todayDate = LocalDate.now();
+                LocalDate futureDate = todayDate.plusMonths(6* 2);
+
+                ZoneId zone = ZoneId.of("America/New_York");
+                LocalDateTime futureDateLDT = futureDate.atStartOfDay();
+                ZoneOffset zoneOffSet = zone.getRules().getOffset(futureDateLDT);
+
+                cancelAtUnixTimestamp = futureDate.toEpochSecond(LocalTime.from(futureDateLDT), zoneOffSet);
+
+
+            }
+
+            params.put("cancel_at", cancelAtUnixTimestamp);
+            Subscription updatedSubscription =
+                    subscription.update(params);
+
+
+        } catch (StripeException e) {
+            System.out.println("Error updating subscription's contract length in checkout session.");
+        }
     }
 
     private List<CheckoutItemDTO> getCheckoutItemDTOList(Session stripeObject, LineItemCollection lineItems) {

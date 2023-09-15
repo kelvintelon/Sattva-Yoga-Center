@@ -16,6 +16,8 @@ public class ClientCheckoutDTO {
     private String renewalDate;
     private String paymentMethodId;
     private boolean saveCard;
+    private boolean saveAsRecurringPayment;
+    private int iterations;
 
     private GiftCard giftCard;
 
@@ -27,6 +29,22 @@ public class ClientCheckoutDTO {
         this.discount = discount;
         this.saveEmail = saveEmail;
         this.renewalDate = renewalDate;
+    }
+
+    public int getIterations() {
+        return iterations;
+    }
+
+    public void setIterations(int iterations) {
+        this.iterations = iterations;
+    }
+
+    public boolean isSaveAsRecurringPayment() {
+        return saveAsRecurringPayment;
+    }
+
+    public void setSaveAsRecurringPayment(boolean saveAsRecurringPayment) {
+        this.saveAsRecurringPayment = saveAsRecurringPayment;
     }
 
     public boolean isSaveCard() {

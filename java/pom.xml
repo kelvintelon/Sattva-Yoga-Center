@@ -109,12 +109,20 @@
             <version>23.3.0</version>
         </dependency>
 <!-- Stripe version previously 20.41.0  -->
+
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.10</version>
-            <!--Version 2.3 when deployed -->
+            <!--Version 2.10 locally -->
         </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>com.heroku.api</groupId>-->
+<!--            <artifactId>heroku-json-gson</artifactId>-->
+<!--            <version>0.46</version>-->
+<!--        </dependency>-->
+<!--  Having this dependency is a 70% success rate      -->
     </dependencies>
 
     <build>
