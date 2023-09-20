@@ -62,7 +62,6 @@
       @update:sort-desc="sortTable"
       :loading="loading"
       loading-text="Loading... Please wait"
-      dense
       :options.sync="options"
       :server-items-length="totalPackagesPurchased"
       hide-default-footer

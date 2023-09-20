@@ -37,7 +37,6 @@
       :headers="headers"
       :items="packages"
       class="elevation-5"
-      dense
     >
       <template v-slot:top>
         <v-toolbar flat>

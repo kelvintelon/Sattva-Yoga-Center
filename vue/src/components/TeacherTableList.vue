@@ -4,7 +4,6 @@
     :items="teachers"
     sort-by="teacher_id"
     class="elevation-1"
-    dense
   >
     <template v-slot:top>
       <v-toolbar flat>
