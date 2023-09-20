@@ -13,7 +13,7 @@ public interface StripeDao {
     String processClientPurchaseThroughAdmin(ClientCheckoutDTO clientCheckoutDTO) throws StripeException;
     List<PaymentMethodOptions> retrievePaymentMethodOptions(int clientId) throws StripeException;
     void addPaymentMethodThroughReader(int clientId) throws StripeException;
-//    void addPaymentMethodManually(int clientId, PaymentMethodOptions paymentMethodOption) throws StripeException;
+    void addPaymentMethodManually(int clientId, PaymentMethodOptions paymentMethodOption) throws StripeException;
     //   Reader createSimulatedReader() throws StripeException;
 //    Session createSubscriptionSession(List<CheckoutSubscriptionItemDTO> checkoutItemDTOList) throws StripeException;
 }

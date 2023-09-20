@@ -569,43 +569,43 @@ public class JdbcStripeDao implements StripeDao {
 //        return Reader.retrieve("tmr_FP6wARXsBdbits");
     }
 
-//    @Override
-//    public void addPaymentMethodManually(int clientId, PaymentMethodOptions paymentMethodOption) throws StripeException {
-//
-//        SetStripeKey();
-//
-//        //  Find customer ID for Client, create a customer ID if needed.
-//        int retrievedClientId = clientId;
-//
-//        String customer_id = getCustomerIdString(retrievedClientId);
-//
-//        Map<String, Object> card = new HashMap<>();
-//        card.put("number", paymentMethodOption.getCardNumber());
-//        card.put("exp_month", paymentMethodOption.getExpirationMonth());
-//        card.put("exp_year", paymentMethodOption.getExpirationYear());
-//        card.put("cvc", paymentMethodOption.getCvc());
-//
-//        Map<String, Object> paymentMethodParams = new HashMap<>();
-//        paymentMethodParams.put("type", "card");
-//        paymentMethodParams.put("card", card);
-//
-//        PaymentMethod paymentMethod =
-//                PaymentMethod.create(paymentMethodParams);
-//
-//        Map<String, Object> automaticPaymentMethods =
-//                new HashMap<>();
-//        automaticPaymentMethods.put("enabled", true);
-//        Map<String, Object> setupIntentParams = new HashMap<>();
-//        setupIntentParams.put(
-//                "automatic_payment_methods",
-//                automaticPaymentMethods
-//        );
-//        setupIntentParams.put("customer", customer_id);
-//        setupIntentParams.put("payment_method", paymentMethod);
-//
-//        SetupIntent.create(setupIntentParams);
-//
-//    }
+    @Override
+    public void addPaymentMethodManually(int clientId, PaymentMethodOptions paymentMethodOption) throws StripeException {
+
+        SetStripeKey();
+
+        //  Find customer ID for Client, create a customer ID if needed.
+        int retrievedClientId = clientId;
+
+        String customer_id = getCustomerIdString(retrievedClientId);
+
+        Map<String, Object> card = new HashMap<>();
+        card.put("number", paymentMethodOption.getCardNumber());
+        card.put("exp_month", paymentMethodOption.getExpirationMonth());
+        card.put("exp_year", paymentMethodOption.getExpirationYear());
+        card.put("cvc", paymentMethodOption.getCvc());
+
+        Map<String, Object> paymentMethodParams = new HashMap<>();
+        paymentMethodParams.put("type", "card");
+        paymentMethodParams.put("card", card);
+
+        PaymentMethod paymentMethod =
+                PaymentMethod.create(paymentMethodParams);
+
+        Map<String, Object> automaticPaymentMethods =
+                new HashMap<>();
+        automaticPaymentMethods.put("enabled", true);
+        Map<String, Object> setupIntentParams = new HashMap<>();
+        setupIntentParams.put(
+                "automatic_payment_methods",
+                automaticPaymentMethods
+        );
+        setupIntentParams.put("customer", customer_id);
+        setupIntentParams.put("payment_method", paymentMethod);
+
+        SetupIntent.create(setupIntentParams);
+
+    }
 
     private void SetStripeKey() {
         Stripe.apiKey = apiKey;

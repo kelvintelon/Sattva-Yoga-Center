@@ -355,12 +355,51 @@
                               :pk="publishableKey"
 
                               /> -->
-                             
+                                <v-card-text v-if="showCardForm">
+                                  <v-container>
+                                    <v-row>
+                                      <v-col
+                                        cols="12" class="mt-2"
+                                        sm="8"
+                                        md="8">
+                                        <v-text-field
+                                        v-model="newCardObject.cardNumber"
+                                          label="Number*"
+                                          required
+                                        ></v-text-field>
+                                      </v-col>
+                                      <v-col cols="12">
+                                        <v-text-field
+                                        v-model.number="newCardObject.expirationMonth"
+                                          label="Expiration Month*"
+                                          type="number"
+                                          required
+                                        ></v-text-field>
+                                      </v-col>
+                                      <v-col cols="12">
+                                        <v-text-field
+                                        v-model.number="newCardObject.expirationYear"
+                                          label="Expiration Year*"
+                                          type="number"
+                                          required
+                                        ></v-text-field>
+                                      </v-col>
+                                      <v-col cols="12">
+                                        <v-text-field
+                                        v-model="newCardObject.cvc"
+                                          label="CVC*"
+                                          required
+                                        ></v-text-field>
+                                      </v-col>
+                                    </v-row>
+                                  </v-container>
+                                  <small>*indicates required field</small>
+                                </v-card-text>
                                 <v-card-actions>
                                   <v-btn v-if="showCardForm"
                                     color="blue darken-1"
                                     text
-                                    @click="showCardForm = false"
+                                    @click="closeCardForm"
                                   >
                                     Close Form
                                   </v-btn>
@@ -532,6 +571,12 @@ export default {
         is_monthly_renew: "",
         discount: 0,
         package_description: "",
+      },
+      newCardObject: {
+        cardNumber: "",
+        expirationMonth: 1,
+        expirationYear: 1,
+        cvc: ""
       },
       availablePackages: [],
       dialog: false,
@@ -805,6 +850,15 @@ export default {
 
   },
   methods: {
+    closeCardForm() {
+      this.showCardForm = false;
+      this.newCardObject = {
+        cardNumber: "",
+        expirationMonth: 1,
+        expirationYear: 1,
+        cvc: ""
+      }
+    },
     retrieveClientDetailsForAdmin() {
       clientDetailService
         .getClientDetailsByClientId(parseInt(this.$route.params.clientId))
@@ -911,19 +965,19 @@ export default {
         }
       })
     },
-    // saveNewCard() {
-    //   if (this.newCardObject.cardNumber.length == 0 || this.newCardObject.expirationMonth == 0 || this.newCardObject.expYear == 0 || this.newCardObject.cvc == 0) {
-    //     alert ("Please fill in the card form")
-    //   } else {
-    //     stripeService.addPaymentMethodManually(this.$route.params.clientId, this.newCardObject).then((response) => {
-    //       if (response.status == 201) {
-    //         this.showCardForm = false;
-    //         this.addPaymentMethodDialog = false;
-    //         this.retrievePaymentMethodsFromStripe(this.$route.params.clientId)
-    //       }
-    //     })
-    //   }
-    // },
+    saveNewCard() {
+      if (this.newCardObject.cardNumber.length == 0 || this.newCardObject.expirationMonth == 0 || this.newCardObject.expYear == 0 || this.newCardObject.cvc == 0) {
+        alert ("Please fill in the card form")
+      } else {
+        stripeService.addPaymentMethodManually(this.$route.params.clientId, this.newCardObject).then((response) => {
+          if (response.status == 201) {
+            this.showCardForm = false;
+            this.addPaymentMethodDialog = false;
+            this.retrievePaymentMethodsFromStripe(this.$route.params.clientId)
+          }
+        })
+      }
+    },
     close() {
       this.dialog = false;
       this.percentDiscount = 0;

@@ -68,12 +68,12 @@ public class StripeController {
         stripeDao.addPaymentMethodThroughReader(clientId);
     }
 
-//    @PreAuthorize("hasRole('ADMIN')")
-//    @PostMapping("/addPaymentMethodManually/{clientId}")
-//    @ResponseStatus(HttpStatus.CREATED)
-//    public void addPaymentMethodManually(@PathVariable int clientId, @RequestBody PaymentMethodOptions paymentMethodOption) throws StripeException {
-//
-//        stripeDao.addPaymentMethodManually(clientId,paymentMethodOption);
-//    }
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/addPaymentMethodManually/{clientId}")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void addPaymentMethodManually(@PathVariable int clientId, @RequestBody PaymentMethodOptions paymentMethodOption) throws StripeException {
+
+        stripeDao.addPaymentMethodManually(clientId,paymentMethodOption);
+    }
 
 }
