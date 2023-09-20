@@ -1019,7 +1019,8 @@ export default {
               //   );
               // });
               this.packages.forEach((item) => {
-                item.date_purchased = new Date(item.date_purchased);
+                item.date_purchased = new Date(
+                  item.date_purchased).toLocaleString();
               });
               // console.log(this.$store.state.clientDetails.redFlag);
               // console.log(this.packages.length > 0);
@@ -1079,7 +1080,7 @@ export default {
                   );
                 });
               this.packages.forEach((item) => {
-                item.date_purchased = new Date(item.date_purchased);
+                item.date_purchased = new Date(item.date_purchased).toLocaleString();
               });
               if (
                 this.$store.state.clientDetails.redFlag &&

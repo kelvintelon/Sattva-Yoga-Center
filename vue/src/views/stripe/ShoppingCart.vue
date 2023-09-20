@@ -8,23 +8,28 @@
     >
       <template v-slot:top>
         <v-toolbar flat>
+          <v-container><v-row>
           <router-link to="/clientPackageManagement">
-            <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
+            <v-btn v-if="$vuetify.breakpoint.mdAndUp" color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
               <v-icon> mdi-keyboard-return</v-icon> Return
+            </v-btn>
+            <v-btn v-if="$vuetify.breakpoint.mdAndDown" color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
+              <v-icon> mdi-keyboard-return</v-icon>
             </v-btn>
           </router-link>
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-toolbar-title style="color: rgba(245, 104, 71, 0.95)"
             >Shopping Cart</v-toolbar-title
           >
-          <v-spacer></v-spacer>
+          
+          <v-spacer v-if="$vuetify.breakpoint.mdAndUp"></v-spacer>
             <stripe-checkout
       ref="checkoutRef"
       :pk="publishableKey"
       :session-id="sessionId"
     />
     <v-btn color="orange" @click="submit">Checkout To See Total!</v-btn>
-          
+          </v-row></v-container>
         </v-toolbar>
       </template>
       <template v-slot:[`item.actions`]="{ item }">

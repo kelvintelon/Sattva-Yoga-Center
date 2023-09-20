@@ -41,16 +41,19 @@
     >
       <template v-slot:top>
         <v-toolbar flat>
+          <v-container>
+          <v-row>
           <v-toolbar-title>Available Packages</v-toolbar-title>
           <v-divider class="mx-4" inset vertical></v-divider>
-          <v-spacer></v-spacer>
+          <v-spacer v-if="$vuetify.breakpoint.mdAndUp"></v-spacer>
           <router-link to="/shoppingCart">
             <v-btn color="yellow" role="button">
               <v-icon role="button">mdi-cart-check</v-icon>
               {{ returnQuantity }} Shopping Cart
             </v-btn>
           </router-link>
-
+          </v-row>
+        </v-container>
           <v-dialog v-model="dialog" max-width="500px">
             <v-card justify="center">
               <v-card-title>
