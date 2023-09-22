@@ -135,7 +135,7 @@
                             ref="menu"
                             v-model="menu"
                             :close-on-content-click="false"
-                            :return-value.sync="clientCheckout.renewalDate"
+                            :nudge-right="40"
                             transition="scale-transition"
                             offset-y
                             min-width="auto"
@@ -152,22 +152,8 @@
                             </template>
                             <v-date-picker
                               v-model="clientCheckout.renewalDate"
-                              no-title
-                              scrollable
-                            >
-                              <v-spacer></v-spacer>
-                              <v-btn text color="primary" @click="menu = false">
-                                Cancel
-                              </v-btn>
-                              <v-btn
-                                text
-                                color="primary"
-                                @click="
-                                  $refs.menu.save(clientCheckout.renewalDate)
-                                ">
-                                OK
-                              </v-btn>
-                            </v-date-picker>
+                              @input="menu = false"
+                            ></v-date-picker>
                           </v-menu>
                         </v-col>
                         <v-col>
@@ -403,6 +389,13 @@
                                     Close Form
                                   </v-btn>
                                   <v-spacer></v-spacer>
+                                  <v-btn v-if="showCardForm"
+                                    color="blue darken-1"
+                                    text
+                                    @click="saveNewCard"
+                                  >
+                                    Save Card
+                                  </v-btn> 
                                   <v-btn v-if="!showCardForm"
                                     color="blue darken-1"
                                     text

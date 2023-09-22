@@ -282,36 +282,36 @@ public class WebHookController {
             Map<String, Object> params = new HashMap<>();
             long cancelAtUnixTimestamp = 0;
 
+            // If it doesn't have a cancel at timestamp yet
+            if (subscription.getCancelAt() == null || !(subscription.getCancelAt() > 0)) {
+                if (checkoutItemDTO.getProductName().equals("One Month Subscription")) {
+                    LocalDate todayDate = LocalDate.now();
+                    LocalDate futureDate = todayDate.plusMonths(1 * 12);
+
+                    ZoneId zone = ZoneId.of("America/New_York");
+                    LocalDateTime futureDateLDT = futureDate.atStartOfDay();
+                    ZoneOffset zoneOffSet = zone.getRules().getOffset(futureDateLDT);
+
+                    cancelAtUnixTimestamp = futureDate.toEpochSecond(LocalTime.from(futureDateLDT), zoneOffSet);
 
 
-            if (checkoutItemDTO.getProductName().equals("One Month Subscription")) {
-                LocalDate todayDate = LocalDate.now();
-                LocalDate futureDate = todayDate.plusMonths(1* 12);
+                } else {
+                    LocalDate todayDate = LocalDate.now();
+                    LocalDate futureDate = todayDate.plusMonths(6 * 2);
 
-                ZoneId zone = ZoneId.of("America/New_York");
-                LocalDateTime futureDateLDT = futureDate.atStartOfDay();
-                ZoneOffset zoneOffSet = zone.getRules().getOffset(futureDateLDT);
+                    ZoneId zone = ZoneId.of("America/New_York");
+                    LocalDateTime futureDateLDT = futureDate.atStartOfDay();
+                    ZoneOffset zoneOffSet = zone.getRules().getOffset(futureDateLDT);
 
-                cancelAtUnixTimestamp = futureDate.toEpochSecond(LocalTime.from(futureDateLDT), zoneOffSet);
-
-
-            } else {
-                LocalDate todayDate = LocalDate.now();
-                LocalDate futureDate = todayDate.plusMonths(6* 2);
-
-                ZoneId zone = ZoneId.of("America/New_York");
-                LocalDateTime futureDateLDT = futureDate.atStartOfDay();
-                ZoneOffset zoneOffSet = zone.getRules().getOffset(futureDateLDT);
-
-                cancelAtUnixTimestamp = futureDate.toEpochSecond(LocalTime.from(futureDateLDT), zoneOffSet);
+                    cancelAtUnixTimestamp = futureDate.toEpochSecond(LocalTime.from(futureDateLDT), zoneOffSet);
 
 
+                }
+
+                params.put("cancel_at", cancelAtUnixTimestamp);
+                Subscription updatedSubscription =
+                        subscription.update(params);
             }
-
-            params.put("cancel_at", cancelAtUnixTimestamp);
-            Subscription updatedSubscription =
-                    subscription.update(params);
-
 
         } catch (StripeException e) {
             System.out.println("Error updating subscription's contract length in checkout session.");
