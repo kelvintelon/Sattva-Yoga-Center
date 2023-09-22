@@ -10,18 +10,17 @@
         <v-toolbar flat>
           <v-container><v-row>
           <router-link to="/clientPackageManagement">
-            <v-btn v-if="$vuetify.breakpoint.mdAndUp" color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
+            <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
               <v-icon> mdi-keyboard-return</v-icon> Return
-            </v-btn>
-            <v-btn v-if="$vuetify.breakpoint.mdAndDown" color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
-              <v-icon> mdi-keyboard-return</v-icon>
             </v-btn>
           </router-link>
           <v-divider class="mx-4" inset vertical></v-divider>
-          <v-toolbar-title style="color: rgba(245, 104, 71, 0.95)"
+          <v-toolbar-title v-if="$vuetify.breakpoint.mdAndUp" style="color: rgba(245, 104, 71, 0.95)"
             >Shopping Cart</v-toolbar-title
           >
-          
+          <v-toolbar-title v-if="$vuetify.breakpoint.mdAndDown" style="color: rgba(245, 104, 71, 0.95)"
+            >Cart</v-toolbar-title
+          >
           <v-spacer v-if="$vuetify.breakpoint.mdAndUp"></v-spacer>
             <stripe-checkout
       ref="checkoutRef"
