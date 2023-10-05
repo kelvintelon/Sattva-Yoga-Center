@@ -35,8 +35,8 @@ public class JdbcStripeDao implements StripeDao {
     PackageDetailsDao packageDetailsDao;
 
     // TODO: If you want to deploy uncomment below
-    @Autowired
-    private SecretManagerService secretManagerService;
+//    @Autowired
+//    private SecretManagerService secretManagerService;
 
     @Autowired
     private ClientDetailsDao clientDetailsDao;

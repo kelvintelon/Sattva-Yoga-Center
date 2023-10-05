@@ -17,7 +17,7 @@ CREATE TABLE teacher_details
 (
     teacher_id        serial      NOT NULL,
     last_name         varchar(30) NOT NULL,
-    first_name        varchar(30) NOT NULL,
+    first_name        varchar(30) NOT NULL, 
     is_teacher_active boolean     NOT NULL,
 	CONSTRAINT PK_teacher_id PRIMARY KEY (teacher_id)
 );
