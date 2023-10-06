@@ -6,6 +6,9 @@ export default {
     getAllEvents() {
         return axios.get(`/eventList`)
     },
+    getSignUpAggregate() {
+        return axios.get(`/getSignUpAggregate`)
+    },
     createEvent(event) {
         return axios.post(`/createEvent`, event)
     },

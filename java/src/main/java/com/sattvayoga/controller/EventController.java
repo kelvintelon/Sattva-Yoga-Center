@@ -167,6 +167,12 @@ public class EventController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value = "/getSignUpAggregate", method = RequestMethod.GET)
+    public SignUpAggregate getSignUpAggregate() {
+        return eventDao.getSignUpAggregate();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value= "/retrievePackagePurchaseId/{eventId}/{clientId}", method = RequestMethod.GET)
     public int getPackagePurchaseIdByEventIdClientId(@PathVariable int eventId, @PathVariable int clientId) {
         return eventDao.getPackagePurchaseIdByEventIdClientId(eventId, clientId);

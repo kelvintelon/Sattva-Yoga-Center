@@ -358,6 +358,7 @@
                                         v-model.number="newCardObject.expirationMonth"
                                           label="Expiration Month*"
                                           type="number"
+                                          max="12"
                                           required
                                         ></v-text-field>
                                       </v-col>

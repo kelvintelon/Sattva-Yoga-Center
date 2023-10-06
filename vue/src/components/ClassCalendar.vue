@@ -49,6 +49,17 @@
         </v-btn>
       </template>
     </v-snackbar> -->
+    <v-row align="center" justify="space around">
+      <v-col>
+        Daily Sign Up: {{ signUpAggregate.dailySignUp }}
+      </v-col>
+      <v-col>
+        Weekly Sign Up: {{ signUpAggregate.weeklySignUp }}
+      </v-col>
+      <v-col>
+        Monthly Sign Up: {{ signUpAggregate.monthlySignUp }}
+      </v-col>
+    </v-row>
     <v-row class="fill-height">
       <v-col>
         <v-sheet tile height="64" class="d-flex">
@@ -479,6 +490,7 @@ export default {
     // DELETE PROPERTIES BELOW
     locatedEvent: {},
     listOfSignedUpClients: [],
+    signUpAggregate: {},
   }),
   methods: {
     checkCreateForm() {
@@ -1055,6 +1067,13 @@ export default {
 
       return this.cal ? timeToY(this.cal.times.now) + 'px' : '-10px'
     },
+    getSignUpAggregate() {
+      eventService.getSignUpAggregate().then((response) => {
+        if (response.status == 200) {
+          this.signUpAggregate = response.data;
+        }
+      })
+    }
   },
   created() {
     if (this.$store.state.user.username != "admin") {
@@ -1062,6 +1081,7 @@ export default {
     }
     this.getAllClasses();
     this.getAllEvents();
+    this.getSignUpAggregate();
 
     this.$root.$refs.Z = this;
   },

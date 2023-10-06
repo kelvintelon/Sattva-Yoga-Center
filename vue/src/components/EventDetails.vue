@@ -87,7 +87,7 @@
           <v-btn
             color="primary"
             dark
-            class="mb-2"
+            class="mb-2 mr-3"
             v-bind="attrs"
             v-on="on"
             @click.prevent="emailRecipients"
@@ -96,7 +96,7 @@
             <v-icon>mdi-order-bool-ascending-variant</v-icon>
             <v-icon>mdi-email</v-icon>
           </v-btn>
-          <v-divider class="mx-4" inset vertical></v-divider>
+          
           <v-btn
             color="#9948B6ED"
             dark
@@ -108,11 +108,13 @@
           >
             <v-icon>mdi-email-plus</v-icon>
           </v-btn>
+          <v-divider class="mx-4" inset vertical></v-divider>
+          Count: {{ listOfSignedUpClients.length }}
           <v-spacer></v-spacer>
           <v-dialog v-model="dialog" max-width="500px">
             <template v-slot:activator="{ on, attrs }">
               <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
-                Sign up a client
+                Client Sign Up
               </v-btn>
             </template>
             <v-card>

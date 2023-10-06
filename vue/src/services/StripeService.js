@@ -18,9 +18,9 @@ export default {
     return axios.post(`/stripe/addPaymentMethodThroughReader/${clientId}`)
   },
   
-  // addPaymentMethodManually(clientId, cardObject) {
-  //   return axios.post(`/stripe/addPaymentMethodManually/${clientId}`, cardObject)
-  // }
+  addPaymentMethodManually(clientId, cardObject) {
+    return axios.post(`/stripe/addPaymentMethodManually/${clientId}`, cardObject)
+  }
 
 
   // updateOneMonthDb(oneMonth){

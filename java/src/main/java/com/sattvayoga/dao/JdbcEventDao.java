@@ -2,6 +2,7 @@ package com.sattvayoga.dao;
 
 import com.sattvayoga.model.*;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.annotation.Id;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
@@ -1505,6 +1506,91 @@ public class JdbcEventDao implements EventDao {
         return "Success";
     }
 
+    @Override
+    public SignUpAggregate getSignUpAggregate() {
+        SignUpAggregate signUpAggregate = new SignUpAggregate();
+
+        // Daily
+
+        String sql1 = "SELECT COUNT(client_event.client_id) FROM client_event JOIN events ON events.event_id = client_event.event_id WHERE DATE(events.start_time) = CURRENT_DATE;";
+
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql1);
+
+        if (result.next()) {
+            signUpAggregate.setDailySignUp(result.getInt("count"));
+        }
+
+        // Weekly
+
+        LocalDate monday = LocalDate.now().with(TemporalAdjusters.previous(DayOfWeek.MONDAY));
+
+        String startOfWeekTimeStampBuilder = "";
+        String month = String.valueOf(monday.getMonthValue());
+        String day = String.valueOf(monday.getDayOfMonth());
+        String year = String.valueOf(monday.getYear());
+
+
+        startOfWeekTimeStampBuilder += year + "-" + month + "-" + day + " " + "00:00" + ":01.0";
+
+        Timestamp startOfWeek = Timestamp.valueOf(startOfWeekTimeStampBuilder);
+
+        LocalDate sunday = LocalDate.now().with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+
+        String endOfWeekTimeStampBuilder = "";
+        String endMonth = String.valueOf(sunday.getMonthValue());
+        String endDay = String.valueOf(sunday.getDayOfMonth());
+        String endYear = String.valueOf(sunday.getYear());
+
+
+        endOfWeekTimeStampBuilder += endYear + "-" + endMonth + "-" + endDay + " " + "23:59" + ":01.0";
+
+        Timestamp endOfWeek = Timestamp.valueOf(endOfWeekTimeStampBuilder);
+
+        String sql2 = "SELECT COUNT(client_event.client_id) FROM client_event JOIN events ON events.event_id = client_event.event_id WHERE (events.start_time BETWEEN ? AND ?)";
+
+        SqlRowSet result2 = jdbcTemplate.queryForRowSet(sql2, startOfWeek, endOfWeek);
+
+        if (result2.next()) {
+            signUpAggregate.setWeeklySignUp(result2.getInt("count"));
+        }
+
+        // Monthly
+
+        LocalDate todayLocalDate = LocalDate.now();
+        LocalDate startOfMonthLocalDate = todayLocalDate.withDayOfMonth(1);
+        LocalDate endOfMonthLocalDate = todayLocalDate.withDayOfMonth(todayLocalDate.getMonth().length(todayLocalDate.isLeapYear()));
+
+
+        String startOfMonthTimeStampBuilder = "";
+        String monthStart = String.valueOf(startOfMonthLocalDate.getMonthValue());
+        String dayStart = String.valueOf(startOfMonthLocalDate.getDayOfMonth());
+        String yearStart = String.valueOf(startOfMonthLocalDate.getYear());
+
+        startOfMonthTimeStampBuilder += yearStart + "-" + monthStart + "-" + dayStart + " " + "00:00" + ":01.0";
+
+        Timestamp startOfMonth = Timestamp.valueOf(startOfMonthTimeStampBuilder);
+
+
+        String endOfMonthTimeStampBuilder = "";
+        String monthEnd = String.valueOf(endOfMonthLocalDate.getMonthValue());
+        String dayEnd = String.valueOf(endOfMonthLocalDate.getDayOfMonth());
+        String yearEnd = String.valueOf(endOfMonthLocalDate.getYear());
+
+        endOfMonthTimeStampBuilder += yearEnd + "-" + monthEnd + "-" + dayEnd + " " + "23:59" + ":01.0";
+
+        Timestamp endOfMonth = Timestamp.valueOf(endOfMonthTimeStampBuilder);
+
+        String sql3 = "SELECT COUNT(client_event.client_id) FROM client_event JOIN events ON events.event_id = client_event.event_id WHERE (events.start_time BETWEEN ? AND ?)";
+
+        SqlRowSet result3 = jdbcTemplate.queryForRowSet(sql3, startOfMonth, endOfMonth);
+
+        if (result3.next()) {
+            signUpAggregate.setMonthlySignUp(result3.getInt("count"));
+        }
+
+        return signUpAggregate;
+    }
+
     // helper method
     @Override
     public boolean isThereExistingEventWithStartTime(ClassEvent newClassEvent) {
@@ -1518,6 +1604,8 @@ public class JdbcEventDao implements EventDao {
         }
         return checkForExistingClassEventList.size() > 0;
     }
+
+
 
     // helper method
     private DayOfWeek getDayOfWeekByString(String assignedDay) {
@@ -1607,6 +1695,8 @@ public class JdbcEventDao implements EventDao {
             classEvent = mapRowToEvent(result);
             classEvent.setAttendanceList(getAttendanceByEventId(eventId));
         }
+
+
 
         return classEvent;
     }

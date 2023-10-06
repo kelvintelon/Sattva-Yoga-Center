@@ -54,4 +54,6 @@ public interface EventDao {
     void createNewEventsFromClass(ClassDetails classDetails) throws Exception;
 
     void updateAllClientsByLookingAtEvents();
+
+    SignUpAggregate getSignUpAggregate();
 }
