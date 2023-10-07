@@ -21,7 +21,7 @@
           <v-toolbar-title v-if="$vuetify.breakpoint.mdAndDown" style="color: rgba(245, 104, 71, 0.95)"
             >Cart</v-toolbar-title
           >
-          <v-spacer v-if="$vuetify.breakpoint.mdAndUp"></v-spacer>
+          <v-spacer></v-spacer>
             <stripe-checkout
       ref="checkoutRef"
       :pk="publishableKey"
