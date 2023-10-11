@@ -381,9 +381,6 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                 "DELETE FROM client_family \n" +
                 "WHERE client_family.client_id = ?;\n" +
                 "\n" +
-                "DELETE FROM package_purchase \n" +
-                "WHERE package_purchase.client_id = ?;\n" +
-                "\n" +
                 "DELETE FROM client_class \n" +
                 "WHERE client_class.client_id = ?;\n" +
                 "\n" +
@@ -391,7 +388,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                 "WHERE client_id = ?;\n" +
                 "\n" +
                 "COMMIT TRANSACTION;";
-        return jdbcTemplate.update(sql, clientId, clientId, clientId, clientId, clientId) == 1;
+        return jdbcTemplate.update(sql, clientId, clientId, clientId, clientId) == 1;
     }
 
     public String getFamilyNameByClientId(int clientId) {
