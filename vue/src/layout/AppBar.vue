@@ -307,6 +307,7 @@ export default {
           { text: "Package Management", route: "/packageManagement" },
           { text: "Reset Password", route: "/resetPassword" },
           { text: "Videos", route: "/videos" },
+          { text: "Database Upload", route: "/databaseUpload" },
           { text: "Logout", route: "/logout" }
         );
       } else if (this.$store.state.token != "") {

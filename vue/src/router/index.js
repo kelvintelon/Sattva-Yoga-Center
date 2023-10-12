@@ -28,6 +28,8 @@ import ShoppingCart from '../views/stripe/ShoppingCart.vue'
 import VideoPage from '../views/VideoPage.vue'
 import ResetPasswordLoggedIn from '../views/ResetPasswordLoggedIn.vue'
 
+import DatabaseUpload from '../views/DatabaseUpload.vue'
+
 Vue.use(Router)
 
 /**
@@ -233,7 +235,7 @@ const router = new Router({
       name: "shoppingCart",
       component: ShoppingCart,
       meta: {
-        requiresAuth: false
+        requiresAuth: true
       }
     },
     {
@@ -248,6 +250,14 @@ const router = new Router({
       path:"/resetPassword",
       name:"reset-password-logged-in",
       component: ResetPasswordLoggedIn,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: "/databaseUpload",
+      name: "database-upload",
+      component: DatabaseUpload,
       meta: {
         requiresAuth: true
       }

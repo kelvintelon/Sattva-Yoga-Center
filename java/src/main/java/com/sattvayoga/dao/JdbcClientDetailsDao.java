@@ -2,14 +2,20 @@ package com.sattvayoga.dao;
 
 import ch.qos.logback.core.net.server.Client;
 import com.sattvayoga.model.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SqlRowSetResultSetExtractor;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
+import java.util.*;
 import java.util.function.ToDoubleBiFunction;
 
 @Component
@@ -20,6 +26,9 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
     public JdbcClientDetailsDao(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
+
+    @Autowired
+    UserDao userDao;
 
     @Override
     public PaginatedListOfClients getAllPaginatedClients(int page, int pageSize, String search, String sortBy, boolean sortDesc) {
@@ -188,6 +197,162 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
             paginatedListOfClients.setTotalRows(count);
 
             return paginatedListOfClients;
+        }
+
+    }
+
+    @Override
+    public void uploadClientCsv(MultipartFile multipartFile) {
+
+        BufferedReader fileReader = null;
+        int count = 0;
+
+        long startTime = System.nanoTime();
+
+        try {
+            fileReader = new BufferedReader(new
+                    InputStreamReader(multipartFile.getInputStream(), "UTF-8"));
+            String line;
+            while ((line = fileReader.readLine()) != null) {
+
+                if (count > 0) {
+                    // create user
+
+                    int newUserId = getNewUserId();
+
+                    ClientDetails clientDetails = new ClientDetails();
+                    clientDetails.setIs_client_active(true);
+                    clientDetails.setIs_new_client(false);
+                    clientDetails.setIs_allowed_video(false);
+                    clientDetails.setUser_id(newUserId);
+
+                    // splitLine
+
+                    String[] splitLine = line.split(",");
+                    int clientId = 0;
+                    if (!splitLine[0].isEmpty()) {
+                        clientId = Integer.valueOf(splitLine[0]);
+
+                        if (doesClientExistByClientId(clientId)) {
+                            continue;
+                        }
+                    }
+                    String lastName = splitLine[1];
+
+                    clientDetails.setClient_id(clientId);
+
+                    if (lastName.startsWith("(")) {
+                        lastName = lastName.substring(1,lastName.length()-1);
+                    }
+
+                    if (lastName.length() > 1) {
+                        lastName = lastName.substring(0,1).toUpperCase() + lastName.substring(1).toLowerCase();
+                    }
+
+                    clientDetails.setLast_name(lastName);
+
+                    String firstName = splitLine[2];
+
+                    if (firstName.startsWith("(")) {
+                        firstName = firstName.substring(1,firstName.length()-1);
+                    }
+
+                    if (firstName.length() > 1) {
+                        firstName = firstName.substring(0,1).toUpperCase() + firstName.substring(1).toLowerCase();
+                    }
+
+
+                    clientDetails.setFirst_name(firstName);
+
+                    String address = splitLine[3];
+
+                    if (address.startsWith("\"") && address.length() > 1) {
+                        address = address.substring(1,address.length()-1);
+                    }
+
+                    clientDetails.setStreet_address(address);
+
+                    String city = splitLine[4];
+
+                    clientDetails.setCity(city);
+
+                    String state = splitLine[5];
+
+                    setStateAbbreviationWithMap(clientDetails, state);
+
+                    String zipCode = splitLine[6];
+
+                    clientDetails.setZip_code(zipCode);
+
+                    if (splitLine.length >= 9) {
+                        String phoneNumber = splitLine[8];
+
+                        clientDetails.setPhone_number(phoneNumber);
+                    }
+
+
+                    if (splitLine.length == 10) {
+                        String email = splitLine[9];
+
+                        clientDetails.setEmail(email);
+
+                    }
+
+                    clientDetails.setIs_on_email_list(false);
+
+                    Date date = new Date();
+                    Timestamp theLatestTimestamp = new Timestamp(date.getTime());
+                    clientDetails.setDate_of_entry(theLatestTimestamp);
+
+                    clientDetails.setHas_record_of_liability(false);
+
+                    if (clientId != 0) {
+                        uploadClient(clientDetails);
+                    } else {
+                        uploadClientNoClientId(clientDetails, clientId);
+                    }
+
+                }
+                count++;
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        long endTime = System.nanoTime();
+        long totalTime = endTime - startTime;
+        System.out.println("Total time in ns: " + totalTime);
+    }
+
+    @Override
+    public boolean doesClientExistByClientId(int clientId) {
+        String sql = "SELECT COUNT(client_id) FROM client_details WHERE client_id = ?";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, clientId);
+        int count = 0;
+        if (result.next()) {
+            count = result.getInt("count");
+        }
+        return count > 0;
+    }
+
+    public void uploadClient(ClientDetails client) {
+        String sql = "INSERT INTO client_details (client_id, last_name, first_name, is_client_active, email, is_on_email_list, " +
+                "is_new_client, user_id, date_of_entry, is_allowed_video) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        jdbcTemplate.update(sql, client.getClient_id(), client.getLast_name(), client.getFirst_name(),
+                client.isIs_client_active(), client.getEmail(), client.isIs_on_email_list(), client.isIs_new_client(), client.getUser_id(), client.getDate_of_entry(), client.isIs_allowed_video());
+
+        // look up the email here
+        boolean foundEmail = false;
+        if (client.getEmail() != null && !(client.getEmail().equalsIgnoreCase(""))) {
+            foundEmail = isEmailDuplicate(client.getClient_id(),client.getEmail());
+        }
+
+        if (foundEmail || (client.getEmail() != null && ( client.getEmail().equalsIgnoreCase("info@sattva-yoga-center.com") || client.getEmail().equalsIgnoreCase("sattva.yoga.center.michigan@gmail.com")))) {
+            client.setEmail("");
+            client.setIs_on_email_list(false);
+
+            updateClientDetails(client);
         }
 
     }
@@ -438,6 +603,137 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         clientDetails.setCustomer_id(rs.getString("customer_id"));
         }
         return clientDetails;
+    }
+
+    private int getNewUserId() {
+        int leftLimit = 48; // numeral '0'
+        int rightLimit = 122; // letter 'z'
+        int targetStringLength = 10;
+        Random random = new Random();
+
+        // create password
+        String generatedPassword = random.ints(leftLimit, rightLimit + 1)
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                .limit(targetStringLength)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+
+
+        // create username
+        String generatedUsername = random.ints(leftLimit, rightLimit + 1)
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                .limit(targetStringLength)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+
+        generatedUsername = "user" + generatedUsername;
+
+        // create user with username and password
+        userDao.create(generatedUsername,generatedPassword, "user");
+
+        // retrieve the user ID,
+        YogaUser newUser = userDao.findByUsername(generatedUsername);
+        int userId = newUser.getId();
+        return userId;
+    }
+
+    private void setStateAbbreviationWithMap(ClientDetails clientDetails, String state) {
+        Map<String, String> states = new HashMap<String, String>();
+        states.put("Alabama","AL");
+        states.put("Alaska","AK");
+        states.put("Alberta","AB");
+        states.put("American Samoa","AS");
+        states.put("Arizona","AZ");
+        states.put("Arkansas","AR");
+        states.put("Armed Forces (AE)","AE");
+        states.put("Armed Forces Americas","AA");
+        states.put("Armed Forces Pacific","AP");
+        states.put("British Columbia","BC");
+        states.put("California","CA");
+        states.put("Colorado","CO");
+        states.put("Connecticut","CT");
+        states.put("Delaware","DE");
+        states.put("District Of Columbia","DC");
+        states.put("Florida","FL");
+        states.put("Georgia","GA");
+        states.put("Guam","GU");
+        states.put("Hawaii","HI");
+        states.put("Idaho","ID");
+        states.put("Illinois","IL");
+        states.put("Indiana","IN");
+        states.put("Iowa","IA");
+        states.put("Kansas","KS");
+        states.put("Kentucky","KY");
+        states.put("Louisiana","LA");
+        states.put("Maine","ME");
+        states.put("Manitoba","MB");
+        states.put("Maryland","MD");
+        states.put("Massachusetts","MA");
+        states.put("Michigan","MI");
+        states.put("Minnesota","MN");
+        states.put("Mississippi","MS");
+        states.put("Missouri","MO");
+        states.put("Montana","MT");
+        states.put("Nebraska","NE");
+        states.put("Nevada","NV");
+        states.put("New Brunswick","NB");
+        states.put("New Hampshire","NH");
+        states.put("New Jersey","NJ");
+        states.put("New Mexico","NM");
+        states.put("New York","NY");
+        states.put("Newfoundland","NF");
+        states.put("North Carolina","NC");
+        states.put("North Dakota","ND");
+        states.put("Northwest Territories","NT");
+        states.put("Nova Scotia","NS");
+        states.put("Nunavut","NU");
+        states.put("Ohio","OH");
+        states.put("Oklahoma","OK");
+        states.put("Ontario","ON");
+        states.put("Oregon","OR");
+        states.put("Pennsylvania","PA");
+        states.put("Prince Edward Island","PE");
+        states.put("Puerto Rico","PR");
+        states.put("Quebec","QC");
+        states.put("Rhode Island","RI");
+        states.put("Saskatchewan","SK");
+        states.put("South Carolina","SC");
+        states.put("South Dakota","SD");
+        states.put("Tennessee","TN");
+        states.put("Texas","TX");
+        states.put("Utah","UT");
+        states.put("Vermont","VT");
+        states.put("Virgin Islands","VI");
+        states.put("Virginia","VA");
+        states.put("Washington","WA");
+        states.put("West Virginia","WV");
+        states.put("Wisconsin","WI");
+        states.put("Wyoming","WY");
+        states.put("Yukon Territory","YT");
+
+        clientDetails.setState_abbreviation(states.get(state));
+    }
+
+    private void uploadClientNoClientId(ClientDetails clientDetails, int clientId) {
+        String sql = "INSERT INTO client_details (last_name, first_name, is_client_active, email, is_on_email_list, " +
+                "is_new_client, user_id, date_of_entry, is_allowed_video) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING client_id";
+        int intNewClientId = jdbcTemplate.queryForObject(sql, Integer.class, clientDetails.getLast_name(), clientDetails.getFirst_name(),
+                clientDetails.isIs_client_active(), clientDetails.getEmail(), clientDetails.isIs_on_email_list(), clientDetails.isIs_new_client(), clientDetails.getUser_id(), clientDetails.getDate_of_entry(), clientDetails.isIs_allowed_video());
+        clientDetails.setClient_id(clientId);
+        // look up the email here
+        boolean foundEmail = false;
+        if (clientDetails.getEmail() != null && !(clientDetails.getEmail().equalsIgnoreCase(""))) {
+            foundEmail = isEmailDuplicate(clientDetails.getClient_id(), clientDetails.getEmail());
+        }
+
+        if (foundEmail || (clientDetails.getEmail() != null && ( clientDetails.getEmail().equalsIgnoreCase("info@sattva-yoga-center.com") || clientDetails.getEmail().equalsIgnoreCase("sattva.yoga.center.michigan@gmail.com")))) {
+            clientDetails.setEmail("");
+            clientDetails.setIs_on_email_list(false);
+
+            updateClientDetails(clientDetails);
+
+
+        }
     }
 
 

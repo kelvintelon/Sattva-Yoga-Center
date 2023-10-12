@@ -3,6 +3,7 @@ package com.sattvayoga.dao;
 import com.sattvayoga.model.ClientDetails;
 import com.sattvayoga.model.PackageDetails;
 import com.sattvayoga.model.PaginatedListOfClients;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -19,6 +20,8 @@ public interface ClientDetailsDao {
     boolean deleteClient(int clientId);
 
     ClientDetails findClientByClientId(int clientId);
+
+    boolean doesClientExistByClientId(int clientId);
 
     ClientDetails createNewClient(ClientDetails client);
 
@@ -37,4 +40,6 @@ public interface ClientDetailsDao {
     ClientDetails findClientByCustomerId(String customerID);
 
     boolean saveNewClientEmail(int clientId, String newEmail);
+
+    void uploadClientCsv(MultipartFile multipartFile);
 }
