@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    
+    <!-- Upload Clients -->
     <form ref="uploadForm" @submit.prevent="submit">
         <v-row>
             <v-col>
@@ -19,7 +19,7 @@
             </v-col>
             <v-spacer>  
             </v-spacer>
-    </v-row>
+        </v-row>
     </form>
     <v-overlay :value="overlay">
       <v-progress-circular indeterminate size="70"></v-progress-circular>
@@ -35,7 +35,7 @@ export default {
   components: {},
   data() {
     return {
-        formData: null,
+        clientFormData: null,
         attemptedUpload: false,
         successfulClientUpload: false,
         overlay: false
@@ -49,22 +49,20 @@ export default {
   methods: {
     onCSVUpload() {
         let file = this.$refs.uploadCSV.files[0];
-        this.formData = new FormData();
-        this.formData.append("file", file)
+        this.clientFormData = new FormData();
+        this.clientFormData.append("file", file)
     },
     uploadClientCSV() {
         
 
-        if (this.formData != null) {
+        if (this.clientFormData != null) {
             this.attemptedUpload = true;
             this.overlay = true;
-            databaseUploadService.uploadClients(this.formData).then((response) => {
+            databaseUploadService.uploadClients(this.clientFormData).then((response) => {
                 if (response.status == 200) {
                     this.overlay = false;
                     alert("Successfully uploaded clients to database")
                     this.successfulClientUpload = true;
-                    this.formData = null;
-                    this.$refs.uploadCSV.files[0] = null;
                 } 
             }).catch((error) => {
           const response = error.response;

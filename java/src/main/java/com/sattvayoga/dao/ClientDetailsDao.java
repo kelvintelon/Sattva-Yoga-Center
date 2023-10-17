@@ -42,4 +42,6 @@ public interface ClientDetailsDao {
     boolean saveNewClientEmail(int clientId, String newEmail);
 
     void uploadClientCsv(MultipartFile multipartFile);
+
+    boolean isClientTableEmpty();
 }

@@ -1,22 +1,19 @@
 package com.sattvayoga.dao;
 
-import ch.qos.logback.core.net.server.Client;
 import com.sattvayoga.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.SqlRowSetResultSetExtractor;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.util.*;
-import java.util.function.ToDoubleBiFunction;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Component
 public class JdbcClientDetailsDao implements ClientDetailsDao {
@@ -207,7 +204,14 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         BufferedReader fileReader = null;
         int count = 0;
 
-        long startTime = System.nanoTime();
+        long startTimeForEntireUpload = System.nanoTime();
+
+        List<String> listOfStringsFromBufferedReader = new ArrayList<>();
+
+        HashSet<Integer> setOfClientIds = new HashSet<>();
+        HashSet<ClientDetails> setOfClientObjects = new HashSet<>();
+
+        long startTimeForReading = System.nanoTime();
 
         try {
             fileReader = new BufferedReader(new
@@ -215,114 +219,193 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
             String line;
             while ((line = fileReader.readLine()) != null) {
 
+
+
                 if (count > 0) {
-                    // create user
 
-                    int newUserId = getNewUserId();
-
-                    ClientDetails clientDetails = new ClientDetails();
-                    clientDetails.setIs_client_active(true);
-                    clientDetails.setIs_new_client(false);
-                    clientDetails.setIs_allowed_video(false);
-                    clientDetails.setUser_id(newUserId);
-
-                    // splitLine
-
-                    String[] splitLine = line.split(",");
-                    int clientId = 0;
-                    if (!splitLine[0].isEmpty()) {
-                        clientId = Integer.valueOf(splitLine[0]);
-
-                        if (doesClientExistByClientId(clientId)) {
-                            continue;
-                        }
-                    }
-                    String lastName = splitLine[1];
-
-                    clientDetails.setClient_id(clientId);
-
-                    if (lastName.startsWith("(")) {
-                        lastName = lastName.substring(1,lastName.length()-1);
-                    }
-
-                    if (lastName.length() > 1) {
-                        lastName = lastName.substring(0,1).toUpperCase() + lastName.substring(1).toLowerCase();
-                    }
-
-                    clientDetails.setLast_name(lastName);
-
-                    String firstName = splitLine[2];
-
-                    if (firstName.startsWith("(")) {
-                        firstName = firstName.substring(1,firstName.length()-1);
-                    }
-
-                    if (firstName.length() > 1) {
-                        firstName = firstName.substring(0,1).toUpperCase() + firstName.substring(1).toLowerCase();
-                    }
-
-
-                    clientDetails.setFirst_name(firstName);
-
-                    String address = splitLine[3];
-
-                    if (address.startsWith("\"") && address.length() > 1) {
-                        address = address.substring(1,address.length()-1);
-                    }
-
-                    clientDetails.setStreet_address(address);
-
-                    String city = splitLine[4];
-
-                    clientDetails.setCity(city);
-
-                    String state = splitLine[5];
-
-                    setStateAbbreviationWithMap(clientDetails, state);
-
-                    String zipCode = splitLine[6];
-
-                    clientDetails.setZip_code(zipCode);
-
-                    if (splitLine.length >= 9) {
-                        String phoneNumber = splitLine[8];
-
-                        clientDetails.setPhone_number(phoneNumber);
-                    }
-
-
-                    if (splitLine.length == 10) {
-                        String email = splitLine[9];
-
-                        clientDetails.setEmail(email);
-
-                    }
-
-                    clientDetails.setIs_on_email_list(false);
-
-                    Date date = new Date();
-                    Timestamp theLatestTimestamp = new Timestamp(date.getTime());
-                    clientDetails.setDate_of_entry(theLatestTimestamp);
-
-                    clientDetails.setHas_record_of_liability(false);
-
-                    if (clientId != 0) {
-                        uploadClient(clientDetails);
-                    } else {
-                        uploadClientNoClientId(clientDetails, clientId);
-                    }
+                    listOfStringsFromBufferedReader.add(line);
 
                 }
                 count++;
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        long endTime = System.nanoTime();
-        long totalTime = endTime - startTime;
-        System.out.println("Total time in ns: " + totalTime);
+
+        for(int i = 0; i < listOfStringsFromBufferedReader.size(); i++) {
+            ClientDetails clientDetails = new ClientDetails();
+            clientDetails.setIs_client_active(true);
+            clientDetails.setIs_new_client(false);
+            clientDetails.setIs_allowed_video(false);
+
+            String thisLine = listOfStringsFromBufferedReader.get(i);
+            String[] splitLine = thisLine.split(",");
+            int clientId = 0;
+            if (!splitLine[0].isEmpty()) {
+                clientId = Integer.valueOf(splitLine[0]);
+
+                //TODO: Set client ID into set if we found one
+                setOfClientIds.add(clientId);
+            }
+
+            clientDetails.setClient_id(clientId);
+
+            String lastName = splitLine[1];
+            if (lastName.startsWith("(")) {
+                lastName = lastName.substring(1, lastName.length() - 1);
+            }
+
+            if (lastName.length() > 1) {
+                lastName = lastName.substring(0, 1).toUpperCase() + lastName.substring(1).toLowerCase();
+            }
+
+            clientDetails.setLast_name(lastName);
+
+            String firstName = splitLine[2];
+
+            if (firstName.startsWith("(")) {
+                firstName = firstName.substring(1, firstName.length() - 1);
+            }
+
+            if (firstName.length() > 1) {
+                firstName = firstName.substring(0, 1).toUpperCase() + firstName.substring(1).toLowerCase();
+            }
+
+            clientDetails.setFirst_name(firstName);
+
+            String address = splitLine[3];
+
+            if (address.startsWith("\"") && address.length() > 1) {
+                address = address.substring(1, address.length() - 1);
+            }
+
+            clientDetails.setStreet_address(address);
+
+            String city = splitLine[4];
+
+            clientDetails.setCity(city);
+
+            String state = splitLine[5];
+
+            setStateAbbreviationWithMap(clientDetails, state);
+
+            String zipCode = splitLine[6];
+
+            clientDetails.setZip_code(zipCode);
+
+            if (splitLine.length >= 9) {
+                String phoneNumber = splitLine[8];
+
+                clientDetails.setPhone_number(phoneNumber);
+            }
+
+
+            if (splitLine.length == 10) {
+                String email = splitLine[9];
+
+                clientDetails.setEmail(email);
+
+            }
+
+            clientDetails.setIs_on_email_list(false);
+
+            Date date = new Date();
+            Timestamp theLatestTimestamp = new Timestamp(date.getTime());
+            clientDetails.setDate_of_entry(theLatestTimestamp);
+
+            clientDetails.setHas_record_of_liability(false);
+
+            // TODO: Set the clientDetails object into the set
+
+            setOfClientObjects.add(clientDetails);
+        }
+
+
+
+        long endTimeForReading = System.nanoTime();
+        long totalTimeForReading = endTimeForReading - startTimeForReading;
+        System.out.println("Total Time for reading in ns: " + totalTimeForReading);
+
+        long startTimeForDoesClientExists = System.nanoTime();
+        // TODO: Check if client exists with a populated tbale
+        if (isClientTableEmpty()) {
+            Iterator<Integer> itrOfClientIds = setOfClientIds.iterator();
+            while (itrOfClientIds.hasNext()) {
+                // If the client ID exists, deletes it from the set
+                if (doesClientExistByClientId(itrOfClientIds.next())) {
+                    itrOfClientIds.remove();
+                }
+            }
+        }
+        long endTimeForDoesClientExists = System.nanoTime();
+        long totalTimeForDoesClientExists = endTimeForDoesClientExists - startTimeForDoesClientExists;
+        System.out.println("Total time for does client exist in ns: " + totalTimeForDoesClientExists);
+
+        // TODO In no order:
+        //  1.Create user + Set a User ID.
+        //  2.Check Email.
+        //  3.Check Client ID against our setOfClientIds.
+        //  4.Upload.
+
+        long startTimeForCreateCheckClients = System.nanoTime();
+        Iterator<ClientDetails> itrClientObject = setOfClientObjects.iterator();
+        HashSet<ClientDetails> setOfClientObjectsWithNoId = new HashSet<>();
+        while (itrClientObject.hasNext()) {
+            ClientDetails clientDetails = itrClientObject.next();
+
+            // Check that the client Object's client ID is not zero first.
+            if (clientDetails.getClient_id() != 0) {
+                // Check if the client ID is in our setOfClientIds, that means its unique
+                if (!setOfClientIds.contains(clientDetails.getClient_id())) {
+                    itrClientObject.remove();
+                }
+            } else {
+                setOfClientObjectsWithNoId.add(clientDetails);
+            }
+
+            // Create user and set user ID
+            int newUserId = getNewUserId();
+            clientDetails.setUser_id(newUserId);
+
+            // look up the email here
+            boolean foundEmail = false;
+            if (clientDetails.getEmail() != null && !(clientDetails.getEmail().equalsIgnoreCase(""))) {
+                foundEmail = isEmailDuplicate(clientDetails.getClient_id(),clientDetails.getEmail());
+            }
+
+            if (foundEmail || (clientDetails.getEmail() != null
+                    && ( clientDetails.getEmail().equalsIgnoreCase("info@sattva-yoga-center.com")
+                    || clientDetails.getEmail().equalsIgnoreCase("sattva.yoga.center.michigan@gmail.com")))) {
+                clientDetails.setEmail("");
+                clientDetails.setIs_on_email_list(false);
+            }
+
+        }
+        
+        long endTimeForCreateCheckClients = System.nanoTime();
+        long totalTimeForCreateCheckClients = endTimeForCreateCheckClients - startTimeForCreateCheckClients;
+        System.out.println("Total time for create/check/upload clients in ns: " + totalTimeForCreateCheckClients);
+
+        long startTimeForBatchUpload = System.nanoTime();
+
+        batchUpdate(setOfClientObjects);
+
+        long endTimeForBatchUpload = System.nanoTime();
+        long totalTimeForBatchUpload = endTimeForBatchUpload - startTimeForBatchUpload;
+        System.out.println("Total time for batch upload in ns: " + totalTimeForBatchUpload);
+
+        long startTimeForBatchUploadNoClientId = System.nanoTime();
+
+        batchUpdateWithNoID(setOfClientObjectsWithNoId);
+
+        long endTimeForBatchUploadNoClientId = System.nanoTime();
+        long totalTimeForBatchUploadNoClientId = endTimeForBatchUploadNoClientId - startTimeForBatchUploadNoClientId;
+        System.out.println("Total time for batch upload with no Client Id in ns: " + totalTimeForBatchUploadNoClientId);
+
+        long endTimeForEntireUpload = System.nanoTime();
+        long totalTimeForEntireUpload = endTimeForEntireUpload - startTimeForEntireUpload;
+        System.out.println("Total time for entire upload in ns: " + totalTimeForEntireUpload);
     }
 
     @Override
@@ -336,25 +419,115 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         return count > 0;
     }
 
+    public void batchUpdate(final Collection<ClientDetails> clients) {
+        jdbcTemplate.batchUpdate(
+                "INSERT INTO client_details (client_id, last_name, " +
+                        "first_name, is_client_active, email, is_on_email_list, " +
+                        "is_new_client, user_id, date_of_entry, is_allowed_video, " +
+                        "street_address, city, state_abbreviation, zip_code, " +
+                        "phone_number, has_record_of_liability) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                clients,
+                100,
+                (PreparedStatement ps, ClientDetails clientDetails) -> {
+                    ps.setInt(1, clientDetails.getClient_id());
+                    ps.setString(2, clientDetails.getLast_name());
+                    ps.setString(3, clientDetails.getFirst_name());
+                    ps.setBoolean(4, clientDetails.isIs_client_active());
+                    ps.setString(5, clientDetails.getEmail());
+                    ps.setBoolean(6, clientDetails.isIs_on_email_list());
+                    ps.setBoolean(7, clientDetails.isIs_new_client());
+                    ps.setInt(8, clientDetails.getUser_id());
+                    ps.setTimestamp(9, clientDetails.getDate_of_entry());
+                    ps.setBoolean(10, clientDetails.isIs_allowed_video());
+                    ps.setString(11, clientDetails.getStreet_address());
+                    ps.setString(12, clientDetails.getCity());
+                    ps.setString(13, clientDetails.getState_abbreviation());
+                    ps.setString(14, clientDetails.getZip_code());
+                    ps.setString(15, clientDetails.getPhone_number());
+                    ps.setBoolean(16, clientDetails.isHas_record_of_liability());
+
+                });
+
+    }
+
+    public void batchUpdateWithNoID(final Collection<ClientDetails> clients) {
+        jdbcTemplate.batchUpdate(
+                "INSERT INTO client_details (last_name, " +
+                        "first_name, is_client_active, email, is_on_email_list, " +
+                        "is_new_client, user_id, date_of_entry, is_allowed_video, " +
+                        "street_address, city, state_abbreviation, zip_code, " +
+                        "phone_number, has_record_of_liability) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                clients,
+                100,
+                (PreparedStatement ps, ClientDetails clientDetails) -> {
+                    ps.setString(1, clientDetails.getLast_name());
+                    ps.setString(2, clientDetails.getFirst_name());
+                    ps.setBoolean(3, clientDetails.isIs_client_active());
+                    ps.setString(4, clientDetails.getEmail());
+                    ps.setBoolean(5, clientDetails.isIs_on_email_list());
+                    ps.setBoolean(6, clientDetails.isIs_new_client());
+                    ps.setInt(7, clientDetails.getUser_id());
+                    ps.setTimestamp(8, clientDetails.getDate_of_entry());
+                    ps.setBoolean(9, clientDetails.isIs_allowed_video());
+                    ps.setString(10, clientDetails.getStreet_address());
+                    ps.setString(11, clientDetails.getCity());
+                    ps.setString(12, clientDetails.getState_abbreviation());
+                    ps.setString(13, clientDetails.getZip_code());
+                    ps.setString(14, clientDetails.getPhone_number());
+                    ps.setBoolean(15, clientDetails.isHas_record_of_liability());
+
+                });
+
+    }
+
     public void uploadClient(ClientDetails client) {
         String sql = "INSERT INTO client_details (client_id, last_name, first_name, is_client_active, email, is_on_email_list, " +
-                "is_new_client, user_id, date_of_entry, is_allowed_video) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "is_new_client, user_id, date_of_entry, is_allowed_video, street_address, city, state_abbreviation, zip_code, phone_number, has_record_of_liability) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql, client.getClient_id(), client.getLast_name(), client.getFirst_name(),
-                client.isIs_client_active(), client.getEmail(), client.isIs_on_email_list(), client.isIs_new_client(), client.getUser_id(), client.getDate_of_entry(), client.isIs_allowed_video());
+                client.isIs_client_active(), client.getEmail(), client.isIs_on_email_list(), client.isIs_new_client(),
+                client.getUser_id(), client.getDate_of_entry(), client.isIs_allowed_video(), client.getStreet_address(),
+                client.getCity(), client.getState_abbreviation(), client.getZip_code(), client.getPhone_number(), client.isHas_record_of_liability());
 
         // look up the email here
-        boolean foundEmail = false;
-        if (client.getEmail() != null && !(client.getEmail().equalsIgnoreCase(""))) {
-            foundEmail = isEmailDuplicate(client.getClient_id(),client.getEmail());
-        }
+//        boolean foundEmail = false;
+//        if (client.getEmail() != null && !(client.getEmail().equalsIgnoreCase(""))) {
+//            foundEmail = isEmailDuplicate(client.getClient_id(),client.getEmail());
+//        }
+//
+//        if (foundEmail || (client.getEmail() != null && ( client.getEmail().equalsIgnoreCase("info@sattva-yoga-center.com") || client.getEmail().equalsIgnoreCase("sattva.yoga.center.michigan@gmail.com")))) {
+//            client.setEmail("");
+//            client.setIs_on_email_list(false);
+//
+//            updateClientDetails(client);
+//        }
 
-        if (foundEmail || (client.getEmail() != null && ( client.getEmail().equalsIgnoreCase("info@sattva-yoga-center.com") || client.getEmail().equalsIgnoreCase("sattva.yoga.center.michigan@gmail.com")))) {
-            client.setEmail("");
-            client.setIs_on_email_list(false);
+    }
 
-            updateClientDetails(client);
-        }
+    private void uploadClientNoClientId(ClientDetails client) {
+        String sql = "INSERT INTO client_details (last_name, first_name, is_client_active, email, is_on_email_list, " +
+                "is_new_client, user_id, date_of_entry, is_allowed_video, street_address, city, state_abbreviation, zip_code, phone_number, has_record_of_liability) VALUES  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING client_id";
+        int intNewClientId = jdbcTemplate.queryForObject(sql, Integer.class, client.getLast_name(), client.getFirst_name(),
+                client.isIs_client_active(), client.getEmail(), client.isIs_on_email_list(), client.isIs_new_client(),
+                client.getUser_id(), client.getDate_of_entry(), client.isIs_allowed_video(), client.getStreet_address(),
+                client.getCity(), client.getState_abbreviation(), client.getZip_code(), client.getPhone_number(), client.isHas_record_of_liability());
 
+//        client.setClient_id(intNewClientId);
+//        // look up the email here
+//        boolean foundEmail = false;
+//        if (client.getEmail() != null && !(client.getEmail().equalsIgnoreCase(""))) {
+//            foundEmail = isEmailDuplicate(client.getClient_id(), client.getEmail());
+//        }
+//
+//        if (foundEmail || (client.getEmail() != null && ( client.getEmail().equalsIgnoreCase("info@sattva-yoga-center.com") || client.getEmail().equalsIgnoreCase("sattva.yoga.center.michigan@gmail.com")))) {
+//            client.setEmail("");
+//            client.setIs_on_email_list(false);
+//
+//            updateClientDetails(client);
+//
+//
+//        }
     }
 
     @Override
@@ -569,16 +742,24 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
     @Override
     public boolean isEmailDuplicate(int clientId, String email) {
-        List<ClientDetails> allClientsWithSameEmail = new ArrayList<>();
-        String sql = "SELECT * FROM client_details WHERE email = ?;";
+        int count = 0;
+        String sql = "SELECT COUNT(email) FROM client_details WHERE email = ?;";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, email);
-        while (result.next()) {
-            ClientDetails clientDetails = mapRowToClient(result);
-            if (clientDetails.getClient_id() != clientId) {
-                allClientsWithSameEmail.add(clientDetails);
-            }
+        if (result.next()) {
+            count = result.getInt("count");
         }
-        return allClientsWithSameEmail.size() > 0;
+        return count > 0;
+    }
+
+    @Override
+    public boolean isClientTableEmpty() {
+        int count = 0;
+        String sql = "SELECT COUNT(client_id) FROM client_details;";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+        if (result.next()) {
+            count = result.getInt("count");
+        }
+        return count > 0;
     }
 
     private ClientDetails mapRowToClient(SqlRowSet rs) {
@@ -714,27 +895,429 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         clientDetails.setState_abbreviation(states.get(state));
     }
 
-    private void uploadClientNoClientId(ClientDetails clientDetails, int clientId) {
-        String sql = "INSERT INTO client_details (last_name, first_name, is_client_active, email, is_on_email_list, " +
-                "is_new_client, user_id, date_of_entry, is_allowed_video) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING client_id";
-        int intNewClientId = jdbcTemplate.queryForObject(sql, Integer.class, clientDetails.getLast_name(), clientDetails.getFirst_name(),
-                clientDetails.isIs_client_active(), clientDetails.getEmail(), clientDetails.isIs_on_email_list(), clientDetails.isIs_new_client(), clientDetails.getUser_id(), clientDetails.getDate_of_entry(), clientDetails.isIs_allowed_video());
-        clientDetails.setClient_id(clientId);
-        // look up the email here
-        boolean foundEmail = false;
-        if (clientDetails.getEmail() != null && !(clientDetails.getEmail().equalsIgnoreCase(""))) {
-            foundEmail = isEmailDuplicate(clientDetails.getClient_id(), clientDetails.getEmail());
-        }
-
-        if (foundEmail || (clientDetails.getEmail() != null && ( clientDetails.getEmail().equalsIgnoreCase("info@sattva-yoga-center.com") || clientDetails.getEmail().equalsIgnoreCase("sattva.yoga.center.michigan@gmail.com")))) {
-            clientDetails.setEmail("");
-            clientDetails.setIs_on_email_list(false);
-
-            updateClientDetails(clientDetails);
 
 
-        }
-    }
+//    public class ThreadToReadThroughLines implements Runnable {
+//
+//        private Boolean finishedReading;
+//        private Queue<String> queueOfLines;
+//        private HashSet<Integer> setOfClientIds;
+//        private HashSet<ClientDetails> setOfClientObjects;
+//
+//        public ThreadToReadThroughLines(Boolean finishedReading, Queue<String> queueOfLines, HashSet<Integer> setOfClientIds, HashSet<ClientDetails> setOfClientObjects) {
+//            this.finishedReading = finishedReading;
+//            this.queueOfLines = queueOfLines;
+//            this.setOfClientIds = setOfClientIds;
+//            this.setOfClientObjects = setOfClientObjects;
+//        }
+//
+//        public void run() {
+//            Iterator<String> itr = queueOfLines.iterator();
+//            while(!finishedReading) {
+//                while (itr.hasNext()) {
+//
+//                        ClientDetails clientDetails = new ClientDetails();
+//                        clientDetails.setIs_client_active(true);
+//                        clientDetails.setIs_new_client(false);
+//                        clientDetails.setIs_allowed_video(false);
+//
+//                        String thisLine = itr.next();
+//                        String[] splitLine = thisLine.split(",");
+//                        int clientId = 0;
+//                        if (!splitLine[0].isEmpty()) {
+//                            clientId = Integer.valueOf(splitLine[0]);
+//
+//                            //TODO: Set client ID into set if we found one
+//                            setOfClientIds.add(clientId);
+//                        }
+//
+//                        clientDetails.setClient_id(clientId);
+//
+//                        String lastName = splitLine[1];
+//                        if (lastName.startsWith("(")) {
+//                            lastName = lastName.substring(1, lastName.length() - 1);
+//                        }
+//
+//                        if (lastName.length() > 1) {
+//                            lastName = lastName.substring(0, 1).toUpperCase() + lastName.substring(1).toLowerCase();
+//                        }
+//
+//                        clientDetails.setLast_name(lastName);
+//
+//                        String firstName = splitLine[2];
+//
+//                        if (firstName.startsWith("(")) {
+//                            firstName = firstName.substring(1, firstName.length() - 1);
+//                        }
+//
+//                        if (firstName.length() > 1) {
+//                            firstName = firstName.substring(0, 1).toUpperCase() + firstName.substring(1).toLowerCase();
+//                        }
+//
+//                        clientDetails.setFirst_name(firstName);
+//
+//                        String address = splitLine[3];
+//
+//                        if (address.startsWith("\"") && address.length() > 1) {
+//                            address = address.substring(1, address.length() - 1);
+//                        }
+//
+//                        clientDetails.setStreet_address(address);
+//
+//                        String city = splitLine[4];
+//
+//                        clientDetails.setCity(city);
+//
+//                        String state = splitLine[5];
+//
+//                        setStateAbbreviationWithMap(clientDetails, state);
+//
+//                        String zipCode = splitLine[6];
+//
+//                        clientDetails.setZip_code(zipCode);
+//
+//                        if (splitLine.length >= 9) {
+//                            String phoneNumber = splitLine[8];
+//
+//                            clientDetails.setPhone_number(phoneNumber);
+//                        }
+//
+//
+//                        if (splitLine.length == 10) {
+//                            String email = splitLine[9];
+//
+//                            clientDetails.setEmail(email);
+//
+//                        }
+//
+//                        clientDetails.setIs_on_email_list(false);
+//
+//                        Date date = new Date();
+//                        Timestamp theLatestTimestamp = new Timestamp(date.getTime());
+//                        clientDetails.setDate_of_entry(theLatestTimestamp);
+//
+//                        clientDetails.setHas_record_of_liability(false);
+//
+//                        // TODO: Set the clientDetails object into the set
+//
+//                        setOfClientObjects.add(clientDetails);
+//
+//                }
+//            }
+//        }
 
+//        // Invoke it like so:
+//        Runnable r1 = new ThreadToReadThroughLines(finishedReading, queue, setOfClientIds, setOfClientObjects);
+//        new Thread(r1).start();
+//
+//        Runnable r2 = new ThreadToReadThroughLines(finishedReading, queue, setOfClientIds, setOfClientObjects);
+//        new Thread(r2).start();
+//    }
+
+    //                    // TODO: create user
+//
+//                    int newUserId = getNewUserId();
+//
+//                    ClientDetails clientDetails = new ClientDetails();
+//                    clientDetails.setIs_client_active(true);
+//                    clientDetails.setIs_new_client(false);
+//                    clientDetails.setIs_allowed_video(false);
+
+    //TODO: Set user ID
+//                    clientDetails.setUser_id(newUserId);
+//
+//                    // splitLine
+//
+//                    String[] splitLine = line.split(",");
+//                    int clientId = 0;
+//                    if (!splitLine[0].isEmpty()) {
+//                        clientId = Integer.valueOf(splitLine[0]);
+//
+    // TODO: Check if client exists
+//                        if (doesClientExistByClientId(clientId)) {
+//                            continue;
+//                        }
+//                    }
+//
+//                    clientDetails.setClient_id(clientId);
+//
+//
+//                    String lastName = splitLine[1];
+//                    if (lastName.startsWith("(")) {
+//                        lastName = lastName.substring(1,lastName.length()-1);
+//                    }
+//
+//                    if (lastName.length() > 1) {
+//                        lastName = lastName.substring(0,1).toUpperCase() + lastName.substring(1).toLowerCase();
+//                    }
+//
+//                    clientDetails.setLast_name(lastName);
+//
+//                    String firstName = splitLine[2];
+//
+//                    if (firstName.startsWith("(")) {
+//                        firstName = firstName.substring(1,firstName.length()-1);
+//                    }
+//
+//                    if (firstName.length() > 1) {
+//                        firstName = firstName.substring(0,1).toUpperCase() + firstName.substring(1).toLowerCase();
+//                    }
+//
+//
+//                    clientDetails.setFirst_name(firstName);
+//
+//                    String address = splitLine[3];
+//
+//                    if (address.startsWith("\"") && address.length() > 1) {
+//                        address = address.substring(1,address.length()-1);
+//                    }
+//
+//                    clientDetails.setStreet_address(address);
+//
+//                    String city = splitLine[4];
+//
+//                    clientDetails.setCity(city);
+//
+//                    String state = splitLine[5];
+//
+//                    setStateAbbreviationWithMap(clientDetails, state);
+//
+//                    String zipCode = splitLine[6];
+//
+//                    clientDetails.setZip_code(zipCode);
+//
+//                    if (splitLine.length >= 9) {
+//                        String phoneNumber = splitLine[8];
+//
+//                        clientDetails.setPhone_number(phoneNumber);
+//                    }
+//
+//
+//                    if (splitLine.length == 10) {
+//                        String email = splitLine[9];
+//
+//                        clientDetails.setEmail(email);
+//
+//                    }
+//
+//                    clientDetails.setIs_on_email_list(false);
+//
+//                    Date date = new Date();
+//                    Timestamp theLatestTimestamp = new Timestamp(date.getTime());
+//                    clientDetails.setDate_of_entry(theLatestTimestamp);
+//
+//                    clientDetails.setHas_record_of_liability(false);
+//
+    //TODO: Upload Client into DB depending on whether they had a client ID or not
+//                    if (clientId != 0) {
+    //TODO: These upload methods also check for email if it exists
+//                        uploadClient(clientDetails);
+//                    } else {
+    //TODO: These upload methods also check for email if it exists
+//                        uploadClientNoClientId(clientDetails);
+//                    }
+
+    //        // print 1 number every 100ms
+//        Thread t1 = new Thread() {
+//            public void run() {
+//                Iterator<String> itr = queue.iterator();
+//                while(itr.hasNext()) {
+//                    ClientDetails clientDetails = new ClientDetails();
+//                    clientDetails.setIs_client_active(true);
+//                    clientDetails.setIs_new_client(false);
+//                    clientDetails.setIs_allowed_video(false);
+//
+//                    String thisLine = itr.next();
+//                    String[] splitLine = thisLine.split(",");
+//                    int clientId = 0;
+//                    if (!splitLine[0].isEmpty()) {
+//                        clientId = Integer.valueOf(splitLine[0]);
+//
+//                        //TODO: Set client ID into set if we found one
+//                        setOfClientIds.add(clientId);
+//                    }
+//
+//                    clientDetails.setClient_id(clientId);
+//
+//                    String lastName = splitLine[1];
+//                    if (lastName.startsWith("(")) {
+//                        lastName = lastName.substring(1, lastName.length() - 1);
+//                    }
+//
+//                    if (lastName.length() > 1) {
+//                        lastName = lastName.substring(0, 1).toUpperCase() + lastName.substring(1).toLowerCase();
+//                    }
+//
+//                    clientDetails.setLast_name(lastName);
+//
+//                    String firstName = splitLine[2];
+//
+//                    if (firstName.startsWith("(")) {
+//                        firstName = firstName.substring(1, firstName.length() - 1);
+//                    }
+//
+//                    if (firstName.length() > 1) {
+//                        firstName = firstName.substring(0, 1).toUpperCase() + firstName.substring(1).toLowerCase();
+//                    }
+//
+//                    clientDetails.setFirst_name(firstName);
+//
+//                    String address = splitLine[3];
+//
+//                    if (address.startsWith("\"") && address.length() > 1) {
+//                        address = address.substring(1, address.length() - 1);
+//                    }
+//
+//                    clientDetails.setStreet_address(address);
+//
+//                    String city = splitLine[4];
+//
+//                    clientDetails.setCity(city);
+//
+//                    String state = splitLine[5];
+//
+//                    setStateAbbreviationWithMap(clientDetails, state);
+//
+//                    String zipCode = splitLine[6];
+//
+//                    clientDetails.setZip_code(zipCode);
+//
+//                    if (splitLine.length >= 9) {
+//                        String phoneNumber = splitLine[8];
+//
+//                        clientDetails.setPhone_number(phoneNumber);
+//                    }
+//
+//
+//                    if (splitLine.length == 10) {
+//                        String email = splitLine[9];
+//
+//                        clientDetails.setEmail(email);
+//
+//                    }
+//
+//                    clientDetails.setIs_on_email_list(false);
+//
+//                    Date date = new Date();
+//                    Timestamp theLatestTimestamp = new Timestamp(date.getTime());
+//                    clientDetails.setDate_of_entry(theLatestTimestamp);
+//
+//                    clientDetails.setHas_record_of_liability(false);
+//
+//                    // TODO: Set the clientDetails object into the set
+//
+//                    setOfClientObjects.add(clientDetails);
+//                }
+//            }
+//        };
+//
+//
+//        Thread t2 = new Thread() {
+//            public void run() {
+//                Iterator<String> itr = queue.iterator();
+//                while(itr.hasNext()) {
+//                    ClientDetails clientDetails = new ClientDetails();
+//                    clientDetails.setIs_client_active(true);
+//                    clientDetails.setIs_new_client(false);
+//                    clientDetails.setIs_allowed_video(false);
+//
+//                    String thisLine = itr.next();
+//                    String[] splitLine = thisLine.split(",");
+//                    int clientId = 0;
+//                    if (!splitLine[0].isEmpty()) {
+//                        clientId = Integer.valueOf(splitLine[0]);
+//
+//                        //TODO: Set client ID into set if we found one
+//                        setOfClientIds.add(clientId);
+//                    }
+//
+//                    clientDetails.setClient_id(clientId);
+//
+//                    String lastName = splitLine[1];
+//                    if (lastName.startsWith("(")) {
+//                        lastName = lastName.substring(1, lastName.length() - 1);
+//                    }
+//
+//                    if (lastName.length() > 1) {
+//                        lastName = lastName.substring(0, 1).toUpperCase() + lastName.substring(1).toLowerCase();
+//                    }
+//
+//                    clientDetails.setLast_name(lastName);
+//
+//                    String firstName = splitLine[2];
+//
+//                    if (firstName.startsWith("(")) {
+//                        firstName = firstName.substring(1, firstName.length() - 1);
+//                    }
+//
+//                    if (firstName.length() > 1) {
+//                        firstName = firstName.substring(0, 1).toUpperCase() + firstName.substring(1).toLowerCase();
+//                    }
+//
+//                    clientDetails.setFirst_name(firstName);
+//
+//                    String address = splitLine[3];
+//
+//                    if (address.startsWith("\"") && address.length() > 1) {
+//                        address = address.substring(1, address.length() - 1);
+//                    }
+//
+//                    clientDetails.setStreet_address(address);
+//
+//                    String city = splitLine[4];
+//
+//                    clientDetails.setCity(city);
+//
+//                    String state = splitLine[5];
+//
+//                    setStateAbbreviationWithMap(clientDetails, state);
+//
+//                    String zipCode = splitLine[6];
+//
+//                    clientDetails.setZip_code(zipCode);
+//
+//                    if (splitLine.length >= 9) {
+//                        String phoneNumber = splitLine[8];
+//
+//                        clientDetails.setPhone_number(phoneNumber);
+//                    }
+//
+//
+//                    if (splitLine.length == 10) {
+//                        String email = splitLine[9];
+//
+//                        clientDetails.setEmail(email);
+//
+//                    }
+//
+//                    clientDetails.setIs_on_email_list(false);
+//
+//                    Date date = new Date();
+//                    Timestamp theLatestTimestamp = new Timestamp(date.getTime());
+//                    clientDetails.setDate_of_entry(theLatestTimestamp);
+//
+//                    clientDetails.setHas_record_of_liability(false);
+//
+//                    // TODO: Set the clientDetails object into the set
+//
+//                    setOfClientObjects.add(clientDetails);
+//
+//                    break;
+//                }
+//            }
+//        };
+//
+//        t1.start();
+//        t2.start();
+//
+//        try {
+//            t1.join();
+//            t2.join();
+//        }
+//
+//        catch(InterruptedException e)
+//        {
+//            e.printStackTrace();
+//        }
 
 }
