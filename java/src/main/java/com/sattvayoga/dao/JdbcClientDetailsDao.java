@@ -240,12 +240,12 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
             clientDetails.setIs_allowed_video(false);
 
             String thisLine = listOfStringsFromBufferedReader.get(i);
-            String[] splitLine = thisLine.split(",");
+            String[] splitLine = thisLine.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
             int clientId = 0;
             if (!splitLine[0].isEmpty()) {
                 clientId = Integer.valueOf(splitLine[0]);
 
-                //TODO: Set client ID into set if we found one
+                //Set client ID into set if we found one
                 setOfClientIds.add(clientId);
             }
 
@@ -316,7 +316,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
             clientDetails.setHas_record_of_liability(false);
 
-            // TODO: Set the clientDetails object into the set
+            // Set the clientDetails object into the set
 
             setOfClientObjects.add(clientDetails);
         }
@@ -328,7 +328,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         System.out.println("Total Time for reading in ns: " + totalTimeForReading);
 
         long startTimeForDoesClientExists = System.nanoTime();
-        // TODO: Check if client exists with a populated tbale
+        // TODO: Check if client exists with a populated table
         if (isClientTableEmpty()) {
             Iterator<Integer> itrOfClientIds = setOfClientIds.iterator();
             while (itrOfClientIds.hasNext()) {
@@ -757,7 +757,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
     @Override
     public boolean isEmailDuplicate(int clientId, String email) {
 
-        String sql = "SELECT client_id, COUNT(email) FROM client_details WHERE email = ?;";
+        String sql = "SELECT client_id, COUNT(email) FROM client_details WHERE email = ? GROUP BY client_id;";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, email);
         int count = 0;
         while (result.next()) {
