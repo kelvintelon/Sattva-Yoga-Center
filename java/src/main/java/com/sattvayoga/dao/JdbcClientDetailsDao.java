@@ -347,10 +347,13 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         //  2.Check Email.
         //  3.Check Client ID against our setOfClientIds.
         //  4.Upload.
-
-        long startTimeForCreateCheckClients = System.nanoTime();
-        Iterator<ClientDetails> itrClientObject = setOfClientObjects.iterator();
         HashSet<ClientDetails> setOfClientObjectsWithNoId = new HashSet<>();
+        long startTimeForCreateCheckClients = System.nanoTime();
+
+        // We turn it into a list in order to modify as we iterator
+        List<ClientDetails> clientDetailsList = new ArrayList<>(setOfClientObjects);
+        ListIterator<ClientDetails> itrClientObject = clientDetailsList.listIterator();
+
         while (itrClientObject.hasNext()) {
             ClientDetails clientDetails = itrClientObject.next();
 
@@ -360,8 +363,6 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                 if (!setOfClientIds.contains(clientDetails.getClient_id())) {
                     itrClientObject.remove();
                 }
-            } else {
-                setOfClientObjectsWithNoId.add(clientDetails);
             }
 
             // Create user and set user ID
@@ -381,8 +382,21 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                 clientDetails.setIs_on_email_list(false);
             }
 
+            if (clientDetails.getClient_id() == 0) {
+                // Removes object from the list that will only contain objects with valid IDs
+                itrClientObject.remove();
+                setOfClientObjectsWithNoId.add(clientDetails);
+            } else {
+                // Removes old object and adds this one that was modified;
+                itrClientObject.remove();
+                itrClientObject.add(clientDetails);
+            }
         }
-        
+
+        // Empties original set and repopulates with List
+        setOfClientObjects.clear();
+        setOfClientObjects.addAll(clientDetailsList);
+
         long endTimeForCreateCheckClients = System.nanoTime();
         long totalTimeForCreateCheckClients = endTimeForCreateCheckClients - startTimeForCreateCheckClients;
         System.out.println("Total time for create/check/upload clients in ns: " + totalTimeForCreateCheckClients);
@@ -742,11 +756,14 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
     @Override
     public boolean isEmailDuplicate(int clientId, String email) {
-        int count = 0;
-        String sql = "SELECT COUNT(email) FROM client_details WHERE email = ?;";
+
+        String sql = "SELECT client_id, COUNT(email) FROM client_details WHERE email = ?;";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, email);
-        if (result.next()) {
-            count = result.getInt("count");
+        int count = 0;
+        while (result.next()) {
+            if (result.getInt("client_id") != clientId) {
+                count++;
+            }
         }
         return count > 0;
     }
