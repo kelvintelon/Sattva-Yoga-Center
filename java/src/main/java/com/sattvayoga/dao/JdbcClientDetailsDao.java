@@ -669,7 +669,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
             generatedUsername = "user" + generatedUsername;
 
             yogaUser.setUsername(generatedUsername);
-            yogaUser.setPassword(generatedPassword);
+            yogaUser.setPassword(new BCryptPasswordEncoder().encode(generatedPassword));
 
             setOfGeneratedYogaUsers.add(yogaUser);
             setOfUsernames.add(generatedUsername);
@@ -743,17 +743,16 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
     public void batchCreateUsers(final Collection<YogaUser> users) {
         jdbcTemplate.batchUpdate(
-                "INSERT INTO users (username,password_hash,role,activated) " +
+                "INSERT INTO users (username, password_hash, role, activated) " +
                         "VALUES (?,?,?,?)",
                 users,
                 100,
                 (PreparedStatement ps, YogaUser yogaUser) -> {
-//                    ps.getConnection().setAutoCommit(false);
                     ps.setString(1, yogaUser.getUsername());
-                    ps.setString(2, new BCryptPasswordEncoder().encode(yogaUser.getPassword()));
+                    ps.setString(2, yogaUser.getPassword());
                     ps.setString(3, "ROLE_USER");
                     ps.setBoolean(4, false);
-//                    ps.getConnection().setAutoCommit(true);
+
                 });
     }
 
@@ -776,7 +775,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         }
 
         String sql = "SELECT username, user_id FROM users WHERE username IN " + allUsernamesConcated;
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql,allUsernamesConcated);
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
         while (results.next()) {
             int user_id = results.getInt("user_id");
             String username = results.getString("username");
