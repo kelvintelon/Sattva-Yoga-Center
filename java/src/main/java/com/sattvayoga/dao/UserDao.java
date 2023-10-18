@@ -2,7 +2,10 @@ package com.sattvayoga.dao;
 
 import com.sattvayoga.model.YogaUser;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public interface UserDao {
 
@@ -14,7 +17,7 @@ public interface UserDao {
 
     int findIdByUsername(String username);
 
-    boolean create(String username, String password, String role);
+    int create(String username, String password, String role);
 
     void updateUserToActivated(int userId);
 

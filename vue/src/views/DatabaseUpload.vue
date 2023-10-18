@@ -66,7 +66,7 @@ export default {
                 } 
             }).catch((error) => {
           const response = error.response;
-          if (response.status === 500) {
+          if (response.status === 500 || response.status === 400) {
             alert("Error uploading file")
             this.overlay = false;
           }

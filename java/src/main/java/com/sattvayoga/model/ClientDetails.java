@@ -1,6 +1,7 @@
 package com.sattvayoga.model;
 
 import java.sql.Timestamp;
+import java.util.Objects;
 
 public class ClientDetails {
     private int client_id;
@@ -260,6 +261,19 @@ public class ClientDetails {
 
     public void setCustomer_id(String customer_id) {
         this.customer_id = customer_id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ClientDetails that = (ClientDetails) o;
+        return client_id == that.client_id && is_client_active == that.is_client_active && is_new_client == that.is_new_client && is_on_email_list == that.is_on_email_list && has_record_of_liability == that.has_record_of_liability && user_id == that.user_id && redFlag == that.redFlag && is_allowed_video == that.is_allowed_video && Objects.equals(last_name, that.last_name) && Objects.equals(first_name, that.first_name) && Objects.equals(street_address, that.street_address) && Objects.equals(city, that.city) && Objects.equals(state_abbreviation, that.state_abbreviation) && Objects.equals(zip_code, that.zip_code) && Objects.equals(phone_number, that.phone_number) && Objects.equals(email, that.email) && Objects.equals(date_of_entry, that.date_of_entry) && Objects.equals(full_address, that.full_address) && Objects.equals(quick_details, that.quick_details) && Objects.equals(family_name, that.family_name) && Objects.equals(username, that.username) && Objects.equals(customer_id, that.customer_id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(client_id, last_name, first_name, is_client_active, is_new_client, street_address, city, state_abbreviation, zip_code, phone_number, is_on_email_list, email, has_record_of_liability, date_of_entry, user_id, redFlag, full_address, quick_details, family_name, username, is_allowed_video, customer_id);
     }
 }
 

@@ -21,7 +21,6 @@ public interface ClientDetailsDao {
 
     ClientDetails findClientByClientId(int clientId);
 
-    boolean doesClientExistByClientId(int clientId);
 
     ClientDetails createNewClient(ClientDetails client);
 

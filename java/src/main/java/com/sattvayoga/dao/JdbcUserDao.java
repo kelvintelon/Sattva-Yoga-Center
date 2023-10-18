@@ -1,12 +1,12 @@
 package com.sattvayoga.dao;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.sql.PreparedStatement;
+import java.util.*;
 
 import com.sattvayoga.model.EmailNotFoundException;
 import com.sattvayoga.model.UserNotFoundException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.relational.core.sql.In;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -69,17 +69,19 @@ public class JdbcUserDao implements UserDao {
         jdbcTemplate.update(sql,password_hash,usernameToUpdate);
     }
 
+
+
     @Override
-    public boolean create(String username, String password, String role) {
-        String insertUserSql = "insert into users (username,password_hash,role,activated) values (?,?,?,?)";
+    public int create(String username, String password, String role) {
+        String insertUserSql = "insert into users (username,password_hash,role,activated) " +
+                "values (?,?,?,?) RETURNING user_id";
         String password_hash = new BCryptPasswordEncoder().encode(password);
         String ssRole = role.toUpperCase().startsWith("ROLE_") ? role.toUpperCase() : "ROLE_" + role.toUpperCase();
 
-        return jdbcTemplate.update(insertUserSql, username, password_hash, ssRole, false) == 1;
-
-        // make this a getForObject method returning USER_ID
+        return jdbcTemplate.queryForObject(insertUserSql, Integer.class, username, password_hash, ssRole, false);
 
     }
+
 
     @Override
     public List<YogaUser> findAll() {

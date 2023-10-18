@@ -44,7 +44,7 @@ CREATE TABLE client_details
     first_name              varchar(60) NOT NULL,
     is_client_active        boolean     NOT NULL,
 	is_new_client			boolean		NOT NULL,
-    street_address          varchar(50) ,
+    street_address          varchar(100) ,
     city                    varchar(30) ,
     state_abbreviation      varchar(2)  ,
     zip_code                varchar(30) ,
