@@ -8,6 +8,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 import javax.sql.DataSource;
 import java.sql.Array;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -33,7 +34,9 @@ public class JdbcEventDao implements EventDao {
                 "end_time, color, timed, is_visible_online, is_paid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql, newClassEvent.getClass_id(),
                 newClassEvent.getEvent_name(), newClassEvent.getStart_time(),
-                newClassEvent.getEnd_time(), newClassEvent.getColor(), newClassEvent.isTimed(), newClassEvent.isIs_visible_online(), newClassEvent.isIs_paid());
+                newClassEvent.getEnd_time(), newClassEvent.getColor(),
+                newClassEvent.isTimed(), newClassEvent.isIs_visible_online(),
+                newClassEvent.isIs_paid());
     }
 
     @Override
@@ -368,7 +371,7 @@ public class JdbcEventDao implements EventDao {
         Calendar cal1 = new GregorianCalendar();
         Calendar cal2 = new GregorianCalendar();
         LocalDate currentDate = LocalDate.now();
-
+        Set<ClassEvent> eventsToInsert = new HashSet<>();
 
         if (results.next()) {
             classEvent = mapRowToEvent(results);
@@ -458,8 +461,8 @@ public class JdbcEventDao implements EventDao {
                             newClassEvent.setEnd_time(end);
 
                             // call another method that takes in a Event Object
-
-                            createEvent(newClassEvent);
+                            eventsToInsert.add(newClassEvent);
+                            //createEvent(newClassEvent);
 
                         }
 
@@ -496,7 +499,8 @@ public class JdbcEventDao implements EventDao {
                             newClassEvent.setStart_time(start);
                             newClassEvent.setEnd_time(end);
 
-                            createEvent(newClassEvent);
+                            eventsToInsert.add(newClassEvent);
+                            //createEvent(newClassEvent);
 
                         }
 
@@ -533,7 +537,8 @@ public class JdbcEventDao implements EventDao {
                             newClassEvent.setStart_time(start);
                             newClassEvent.setEnd_time(end);
 
-                            createEvent(newClassEvent);
+                            eventsToInsert.add(newClassEvent);
+//                            createEvent(newClassEvent);
 
                         }
 
@@ -570,7 +575,8 @@ public class JdbcEventDao implements EventDao {
                             newClassEvent.setStart_time(start);
                             newClassEvent.setEnd_time(end);
 
-                            createEvent(newClassEvent);
+                            eventsToInsert.add(newClassEvent);
+//                            createEvent(newClassEvent);
                         }
 
                         if (dateRange[j].equals("Thu") && newDay.equals("THURSDAY")) {
@@ -606,7 +612,8 @@ public class JdbcEventDao implements EventDao {
                             newClassEvent.setStart_time(start);
                             newClassEvent.setEnd_time(end);
 
-                            createEvent(newClassEvent);
+                            eventsToInsert.add(newClassEvent);
+//                            createEvent(newClassEvent);
                         }
 
                         if (dateRange[j].equals("Fri") && newDay.equals("FRIDAY")) {
@@ -642,7 +649,8 @@ public class JdbcEventDao implements EventDao {
                             newClassEvent.setStart_time(start);
                             newClassEvent.setEnd_time(end);
 
-                            createEvent(newClassEvent);
+                            eventsToInsert.add(newClassEvent);
+//                            createEvent(newClassEvent);
                         }
 
                         if (dateRange[j].equals("Sat") && newDay.equals("SATURDAY")) {
@@ -678,7 +686,8 @@ public class JdbcEventDao implements EventDao {
                             newClassEvent.setStart_time(start);
                             newClassEvent.setEnd_time(end);
 
-                            createEvent(newClassEvent);
+                            eventsToInsert.add(newClassEvent);
+//                            createEvent(newClassEvent);
                         }
 
 
@@ -693,6 +702,26 @@ public class JdbcEventDao implements EventDao {
                 }
             }
         }
+        // batch insert for events here
+        batchCreateEvents(eventsToInsert);
+    }
+
+    public void batchCreateEvents(final Collection<ClassEvent> events) {
+        jdbcTemplate.batchUpdate(
+                "INSERT INTO events (class_id, event_name, start_time, " +
+                        "end_time, color, timed, is_visible_online, is_paid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                events,
+                100,
+                (PreparedStatement ps, ClassEvent event) -> {
+                    ps.setInt(1, event.getClass_id());
+                    ps.setString(2, event.getEvent_name());
+                    ps.setTimestamp(3, event.getStart_time());
+                    ps.setTimestamp(4, event.getEnd_time());
+                    ps.setString(5, event.getColor());
+                    ps.setBoolean(6, event.isTimed());
+                    ps.setBoolean(7, event.isIs_visible_online());
+                    ps.setBoolean(8, event.isIs_paid());
+                });
     }
 
     @Override

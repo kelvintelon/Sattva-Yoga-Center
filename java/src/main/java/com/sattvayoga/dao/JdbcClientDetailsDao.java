@@ -612,24 +612,10 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         Set<YogaUser> setOfYogaUsers = new HashSet<>();
         Set<String> setOfUsernames = new HashSet<>();
 
-        Map<String, String> mapGenUsernameToGenPassword = new HashMap<>();
+//        Map<String, String> mapGenUsernameToGenPassword = new HashMap<>();
 
         // Set of usernames to populate, map to populate
-        generateUsernamesAndPasswordThenPopulateSets(setOfClients, setOfUsernames, usernameToClientDetailsMap, mapGenUsernameToGenPassword);
-
-        // Separate mapGenUsernameToGenPassword into three maps
-        Map<String, String> firstMapToHashPassword = new HashMap<>();
-        Map<String, String> secondMapToHashPassword = new HashMap<>();
-        Map<String, String> thirdMapToHashPassword = new HashMap<>();
-        Map<String, String> fourthMapToHashPassword = new HashMap<>();
-
-        divideGeneratedUsernameAndPasswordMap(mapGenUsernameToGenPassword, firstMapToHashPassword, secondMapToHashPassword, thirdMapToHashPassword, fourthMapToHashPassword);
-
-        //  A multi-threaded method that each hashes a set amount of passwords.
-        runThreadsToHashPassword(firstMapToHashPassword, secondMapToHashPassword, thirdMapToHashPassword, fourthMapToHashPassword);
-
-        // Combine the maps into one and populate the set of yoga users
-        populateSetOfYogaUsersWithMaps(setOfYogaUsers, firstMapToHashPassword, secondMapToHashPassword, thirdMapToHashPassword, fourthMapToHashPassword);
+        generateUsernamesAndPasswordThenPopulateSets(setOfClients, setOfUsernames, usernameToClientDetailsMap, setOfYogaUsers);
 
         // send batch of user objects
         batchCreateUsers(setOfYogaUsers);
@@ -647,12 +633,20 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                                                 Map<String, String> firstMapToHashPassword,
                                                 Map<String, String> secondMapToHashPassword,
                                                 Map<String, String> thirdMapToHashPassword,
-                                                Map<String, String> fourthMapToHashPassword) {
+                                                Map<String, String> fourthMapToHashPassword,
+                                                Map<String, String> fifthMapToHashPassword,
+                                                Map<String, String> sixthMapToHashPassword,
+                                                Map<String, String> seventhMapToHashPassword,
+                                                Map<String, String> eighthMapToHashPassword) {
         Map<String, String> combinedMap = new HashMap<>();
         combinedMap.putAll(firstMapToHashPassword);
         combinedMap.putAll(secondMapToHashPassword);
         combinedMap.putAll(thirdMapToHashPassword);
         combinedMap.putAll(fourthMapToHashPassword);
+        combinedMap.putAll(fifthMapToHashPassword);
+        combinedMap.putAll(sixthMapToHashPassword);
+        combinedMap.putAll(seventhMapToHashPassword);
+        combinedMap.putAll(eighthMapToHashPassword);
 
         for (Map.Entry<String, String> entry : combinedMap.entrySet()) {
 
@@ -670,7 +664,11 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
     private void runThreadsToHashPassword(Map<String, String> firstMapToHashPassword,
                                           Map<String, String> secondMapToHashPassword,
                                           Map<String, String> thirdMapToHashPassword,
-                                          Map<String, String> fourthMapToHashPassword) {
+                                          Map<String, String> fourthMapToHashPassword,
+                                          Map<String, String> fifthMapToHashPassword,
+                                          Map<String, String> sixthMapToHashPassword,
+                                          Map<String, String> seventhMapToHashPassword,
+                                          Map<String, String> eighthMapToHashPassword) {
         ExecutorService executor = Executors.newFixedThreadPool(3);
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -687,6 +685,14 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                 mapToProcess = thirdMapToHashPassword;
             } else if (currentThread.getName().equals("Thread-4")) {
                 mapToProcess = fourthMapToHashPassword;
+            } else if (currentThread.getName().equals("Thread-5")) {
+                mapToProcess = fifthMapToHashPassword;
+            } else if (currentThread.getName().equals("Thread-6")) {
+                mapToProcess = sixthMapToHashPassword;
+            } else if (currentThread.getName().equals("Thread-7")) {
+                mapToProcess = seventhMapToHashPassword;
+            } else if (currentThread.getName().equals("Thread-8")) {
+                mapToProcess = eighthMapToHashPassword;
             }
 
             if (mapToProcess != null) {
@@ -706,16 +712,28 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         Thread thread2 = new Thread(encryptMap);
         Thread thread3 = new Thread(encryptMap);
         Thread thread4 = new Thread(encryptMap);
+        Thread thread5 = new Thread(encryptMap);
+        Thread thread6 = new Thread(encryptMap);
+        Thread thread7 = new Thread(encryptMap);
+        Thread thread8 = new Thread(encryptMap);
 
         thread1.setName("Thread-1");
         thread2.setName("Thread-2");
         thread3.setName("Thread-3");
         thread4.setName("Thread-4");
+        thread5.setName("Thread-5");
+        thread6.setName("Thread-6");
+        thread7.setName("Thread-7");
+        thread8.setName("Thread-8");
 
         thread1.start();
         thread2.start();
         thread3.start();
         thread4.start();
+        thread5.start();
+        thread6.start();
+        thread7.start();
+        thread8.start();
 
         // Wait for all threads to finish
         try {
@@ -723,6 +741,10 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
             thread2.join();
             thread3.join();
             thread4.join();
+            thread5.join();
+            thread6.join();
+            thread7.join();
+            thread8.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -735,9 +757,13 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                                                        Map<String, String> firstMapToHashPassword,
                                                        Map<String, String> secondMapToHashPassword,
                                                        Map<String, String> thirdMapToHashPassword,
-                                                       Map<String, String> fourthMap) {
+                                                       Map<String, String> fourthMapToHashPassword,
+                                                       Map<String, String> fifthMapToHashPassword,
+                                                       Map<String, String> sixthMapToHashPassword,
+                                                       Map<String, String> seventhMapToHashPassword,
+                                                       Map<String, String> eighthMapToHashPassword) {
         int totalSize = mapGenUsernameToGenPassword.size();
-        int chunkSize = totalSize / 4;
+        int chunkSize = totalSize / 8;
         int currentChunk = 1;
 
         for (Map.Entry<String, String> entry : mapGenUsernameToGenPassword.entrySet()) {
@@ -747,12 +773,21 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                 secondMapToHashPassword.put(entry.getKey(), entry.getValue());
             } else if (currentChunk <= 3 * chunkSize) {
                 thirdMapToHashPassword.put(entry.getKey(), entry.getValue());
+            } else if (currentChunk <= 4 * chunkSize) {
+                fourthMapToHashPassword.put(entry.getKey(), entry.getValue());
+            } else if (currentChunk <= 5 * chunkSize) {
+                fifthMapToHashPassword.put(entry.getKey(), entry.getValue());
+            } else if (currentChunk <= 6 * chunkSize) {
+                sixthMapToHashPassword.put(entry.getKey(), entry.getValue());
+            } else if (currentChunk <= 7 * chunkSize) {
+                seventhMapToHashPassword.put(entry.getKey(), entry.getValue());
             } else {
-                fourthMap.put(entry.getKey(), entry.getValue());
+                eighthMapToHashPassword.put(entry.getKey(), entry.getValue());
             }
             currentChunk++;
         }
     }
+
     private void setUserIdIntoClientDetailsInMap(Map<String, ClientDetails> usernameToClientDetailsMap, Map<String, Integer> usernameMapToId) {
         for (String username : usernameMapToId.keySet()) {
             int user_id = usernameMapToId.get(username);
@@ -768,23 +803,15 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         }
     }
 
-    private void generateUsernamesAndPasswordThenPopulateSets(Set<ClientDetails> setOfClients, Set<String> setOfUsernames, Map<String,ClientDetails> mapToPopulate, Map<String, String> mapGenUsernameToGenPassword) {
+    private void generateUsernamesAndPasswordThenPopulateSets(Set<ClientDetails> setOfClients, Set<String> setOfUsernames, Map<String,ClientDetails> mapToPopulate, Set<YogaUser> yogaUsers) {
         for (ClientDetails clientDetails : setOfClients) {
+            YogaUser yogaUser = new YogaUser();
 
-            String generatedPassword;
             String generatedUsername;
             int leftLimit = 48; // numeral '0'
             int rightLimit = 122; // letter 'z'
             int targetStringLength = 10;
             Random random = new Random();
-
-            // create password
-            generatedPassword = random.ints(leftLimit, rightLimit + 1)
-                    .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
-                    .limit(targetStringLength)
-                    .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-                    .toString();
-
 
             // create username
             generatedUsername = random.ints(leftLimit, rightLimit + 1)
@@ -795,7 +822,11 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
             generatedUsername = "user" + generatedUsername;
 
-            mapGenUsernameToGenPassword.put(generatedUsername, generatedPassword);
+//            mapGenUsernameToGenPassword.put(generatedUsername, generatedPassword);
+            yogaUser.setUsername(generatedUsername);
+            yogaUser.setPassword("");
+
+            yogaUsers.add(yogaUser);
 
             setOfUsernames.add(generatedUsername);
             mapToPopulate.put(generatedUsername,clientDetails);

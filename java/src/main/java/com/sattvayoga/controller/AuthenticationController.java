@@ -40,6 +40,11 @@ public class AuthenticationController {
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginDto loginDto) {
 
+        // Check if the password is empty in the database for this specific username
+        if (userDao.isPasswordEmpty(loginDto.getUsername())) {
+            throw new UserNeedsToResetLoginException();
+        }
+
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword());
 

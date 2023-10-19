@@ -26,4 +26,6 @@ public interface UserDao {
     void updateUsernameAndPassword(String username, String password, String usernameToUpdate);
 
     void updatePassword(String password, String usernameToUpdate);
+
+    boolean isPasswordEmpty(String username);
 }

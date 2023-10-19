@@ -69,6 +69,15 @@ public class JdbcUserDao implements UserDao {
         jdbcTemplate.update(sql,password_hash,usernameToUpdate);
     }
 
+    @Override
+    public boolean isPasswordEmpty(String username) {
+        String sql = "SELECT LENGTH(password_hash) FROM users WHERE username = ?;";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, username);
+        if (result.next()) {
+            return result.getInt("length") == 0;
+        }
+        return false;
+    }
 
 
     @Override
