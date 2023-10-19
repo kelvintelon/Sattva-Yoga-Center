@@ -15,6 +15,8 @@ import java.io.InputStreamReader;
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Component
 public class JdbcClientDetailsDao implements ClientDetailsDao {
@@ -607,14 +609,30 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
         Map<String, ClientDetails> usernameToClientDetailsMap = new HashMap<>();
 
-        Set<YogaUser> setOfGeneratedYogaUsers = new HashSet<>();
+        Set<YogaUser> setOfYogaUsers = new HashSet<>();
         Set<String> setOfUsernames = new HashSet<>();
 
+        Map<String, String> mapGenUsernameToGenPassword = new HashMap<>();
+
         // Set of usernames to populate, map to populate
-        generateUsernamesAndPasswordThenPopulateSets(setOfClients, setOfUsernames, usernameToClientDetailsMap, setOfGeneratedYogaUsers);
+        generateUsernamesAndPasswordThenPopulateSets(setOfClients, setOfUsernames, usernameToClientDetailsMap, mapGenUsernameToGenPassword);
+
+        // Separate mapGenUsernameToGenPassword into three maps
+        Map<String, String> firstMapToHashPassword = new HashMap<>();
+        Map<String, String> secondMapToHashPassword = new HashMap<>();
+        Map<String, String> thirdMapToHashPassword = new HashMap<>();
+        Map<String, String> fourthMapToHashPassword = new HashMap<>();
+
+        divideGeneratedUsernameAndPasswordMap(mapGenUsernameToGenPassword, firstMapToHashPassword, secondMapToHashPassword, thirdMapToHashPassword, fourthMapToHashPassword);
+
+        //  A multi-threaded method that each hashes a set amount of passwords.
+        runThreadsToHashPassword(firstMapToHashPassword, secondMapToHashPassword, thirdMapToHashPassword, fourthMapToHashPassword);
+
+        // Combine the maps into one and populate the set of yoga users
+        populateSetOfYogaUsersWithMaps(setOfYogaUsers, firstMapToHashPassword, secondMapToHashPassword, thirdMapToHashPassword, fourthMapToHashPassword);
 
         // send batch of user objects
-        batchCreateUsers(setOfGeneratedYogaUsers);
+        batchCreateUsers(setOfYogaUsers);
 
         // retrieve a Hashmap where <Key username, Value user id>
         Map<String, Integer> usernameMapToId = retrieveUsernameAndIdMap(setOfUsernames);
@@ -625,6 +643,116 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         return usernameToClientDetailsMap;
     }
 
+    private void populateSetOfYogaUsersWithMaps(Set<YogaUser> setOfYogaUsers,
+                                                Map<String, String> firstMapToHashPassword,
+                                                Map<String, String> secondMapToHashPassword,
+                                                Map<String, String> thirdMapToHashPassword,
+                                                Map<String, String> fourthMapToHashPassword) {
+        Map<String, String> combinedMap = new HashMap<>();
+        combinedMap.putAll(firstMapToHashPassword);
+        combinedMap.putAll(secondMapToHashPassword);
+        combinedMap.putAll(thirdMapToHashPassword);
+        combinedMap.putAll(fourthMapToHashPassword);
+
+        for (Map.Entry<String, String> entry : combinedMap.entrySet()) {
+
+            YogaUser yogaUser = new YogaUser();
+
+            String username = entry.getKey();
+            String hashedPassword = entry.getValue();
+
+            yogaUser.setUsername(username);
+            yogaUser.setPassword(hashedPassword);
+            setOfYogaUsers.add(yogaUser);
+        }
+    }
+
+    private void runThreadsToHashPassword(Map<String, String> firstMapToHashPassword,
+                                          Map<String, String> secondMapToHashPassword,
+                                          Map<String, String> thirdMapToHashPassword,
+                                          Map<String, String> fourthMapToHashPassword) {
+        ExecutorService executor = Executors.newFixedThreadPool(3);
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+        Runnable encryptMap = () -> {
+            Map<String, String> mapToProcess = null;
+
+            // Identify which map this thread is responsible for
+            Thread currentThread = Thread.currentThread();
+            if (currentThread.getName().equals("Thread-1")) {
+                mapToProcess = firstMapToHashPassword;
+            } else if (currentThread.getName().equals("Thread-2")) {
+                mapToProcess = secondMapToHashPassword;
+            } else if (currentThread.getName().equals("Thread-3")) {
+                mapToProcess = thirdMapToHashPassword;
+            } else if (currentThread.getName().equals("Thread-4")) {
+                mapToProcess = fourthMapToHashPassword;
+            }
+
+            if (mapToProcess != null) {
+                for (Map.Entry<String, String> entry : mapToProcess.entrySet()) {
+                    String username = entry.getKey();
+                    String password = entry.getValue();
+                    String hashedPassword = passwordEncoder.encode(password);
+
+                    // Update the map with the hashed password
+                    mapToProcess.put(username, hashedPassword);
+                }
+            }
+        };
+
+        // Create and start three threads
+        Thread thread1 = new Thread(encryptMap);
+        Thread thread2 = new Thread(encryptMap);
+        Thread thread3 = new Thread(encryptMap);
+        Thread thread4 = new Thread(encryptMap);
+
+        thread1.setName("Thread-1");
+        thread2.setName("Thread-2");
+        thread3.setName("Thread-3");
+        thread4.setName("Thread-4");
+
+        thread1.start();
+        thread2.start();
+        thread3.start();
+        thread4.start();
+
+        // Wait for all threads to finish
+        try {
+            thread1.join();
+            thread2.join();
+            thread3.join();
+            thread4.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // Shutdown the executor service
+        executor.shutdown();
+    }
+
+    private void divideGeneratedUsernameAndPasswordMap(Map<String, String> mapGenUsernameToGenPassword,
+                                                       Map<String, String> firstMapToHashPassword,
+                                                       Map<String, String> secondMapToHashPassword,
+                                                       Map<String, String> thirdMapToHashPassword,
+                                                       Map<String, String> fourthMap) {
+        int totalSize = mapGenUsernameToGenPassword.size();
+        int chunkSize = totalSize / 4;
+        int currentChunk = 1;
+
+        for (Map.Entry<String, String> entry : mapGenUsernameToGenPassword.entrySet()) {
+            if (currentChunk <= chunkSize) {
+                firstMapToHashPassword.put(entry.getKey(), entry.getValue());
+            } else if (currentChunk <= 2 * chunkSize) {
+                secondMapToHashPassword.put(entry.getKey(), entry.getValue());
+            } else if (currentChunk <= 3 * chunkSize) {
+                thirdMapToHashPassword.put(entry.getKey(), entry.getValue());
+            } else {
+                fourthMap.put(entry.getKey(), entry.getValue());
+            }
+            currentChunk++;
+        }
+    }
     private void setUserIdIntoClientDetailsInMap(Map<String, ClientDetails> usernameToClientDetailsMap, Map<String, Integer> usernameMapToId) {
         for (String username : usernameMapToId.keySet()) {
             int user_id = usernameMapToId.get(username);
@@ -640,9 +768,8 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         }
     }
 
-    private void generateUsernamesAndPasswordThenPopulateSets(Set<ClientDetails> setOfClients, Set<String> setOfUsernames, Map<String,ClientDetails> mapToPopulate, Set<YogaUser> setOfGeneratedYogaUsers) {
+    private void generateUsernamesAndPasswordThenPopulateSets(Set<ClientDetails> setOfClients, Set<String> setOfUsernames, Map<String,ClientDetails> mapToPopulate, Map<String, String> mapGenUsernameToGenPassword) {
         for (ClientDetails clientDetails : setOfClients) {
-            YogaUser yogaUser = new YogaUser();
 
             String generatedPassword;
             String generatedUsername;
@@ -668,15 +795,12 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
             generatedUsername = "user" + generatedUsername;
 
-            yogaUser.setUsername(generatedUsername);
-            yogaUser.setPassword(new BCryptPasswordEncoder().encode(generatedPassword));
+            mapGenUsernameToGenPassword.put(generatedUsername, generatedPassword);
 
-            setOfGeneratedYogaUsers.add(yogaUser);
             setOfUsernames.add(generatedUsername);
             mapToPopulate.put(generatedUsername,clientDetails);
         }
     }
-
 
     public void batchCreateClientDetailsSaveId(final Collection<ClientDetails> clients) {
         jdbcTemplate.batchUpdate(
@@ -847,7 +971,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         if (result.next()) {
             count = result.getInt("count");
         }
-        return count > 0;
+        return count == 0;
     }
 
     private void setStateAbbreviationWithMap(ClientDetails clientDetails, String state) {
