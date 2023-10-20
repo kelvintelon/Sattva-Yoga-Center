@@ -6,9 +6,15 @@ import com.sattvayoga.model.TeacherDetails;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class JdbcTeacherDetailsDao implements TeacherDetailsDao {
@@ -53,6 +59,109 @@ public class JdbcTeacherDetailsDao implements TeacherDetailsDao {
         return jdbcTemplate.update(sql, teacherId)==1;
     }
 
+    @Override
+    public void uploadTeacherCsv(MultipartFile multipartFile) {
+        int count = 0;
+
+        List<String> listOfStringsFromBufferedReader = new ArrayList<>();
+
+        Set<TeacherDetails> teacherDetailsSetFromFile = new HashSet<>();
+
+        try (BufferedReader fileReader = new BufferedReader(new
+                InputStreamReader(multipartFile.getInputStream(), "UTF-8"))) {
+
+            String line;
+            while ((line = fileReader.readLine()) != null) {
+
+                if (count > 0) {
+
+                    listOfStringsFromBufferedReader.add(line);
+
+                }
+                count++;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        readLinesFromListAndPopulateSet(listOfStringsFromBufferedReader, teacherDetailsSetFromFile);
+
+        checkForDuplicateTeachers(teacherDetailsSetFromFile);
+
+        if (!teacherDetailsSetFromFile.isEmpty()) {
+            for (TeacherDetails teacher :
+                    teacherDetailsSetFromFile) {
+                createTeacher(teacher);
+            }
+        }
+
+    }
+
+    private void checkForDuplicateTeachers(Set<TeacherDetails> teacherDetailsSetFromFile) {
+        List<TeacherDetails> existingTeachers = getTeacherList();
+
+        if (!existingTeachers.isEmpty()) {
+            List<TeacherDetails> listOfTeachersNoDuplicates = new ArrayList<>(teacherDetailsSetFromFile);
+            for (int i = 0; i < listOfTeachersNoDuplicates.size(); i++) {
+                TeacherDetails teacherDetails1 = listOfTeachersNoDuplicates.get(i);
+                for (int j = 0; j < existingTeachers.size(); j++) {
+                    TeacherDetails teacherDetails2 = existingTeachers.get(j);
+                    if (teacherDetails1.getFirst_name().equalsIgnoreCase(teacherDetails2.getFirst_name())
+                            && (teacherDetails1.getLast_name() != null && teacherDetails2.getLast_name() != null)
+                            && teacherDetails1.getLast_name().equalsIgnoreCase(teacherDetails2.getLast_name())) {
+                        teacherDetailsSetFromFile.remove(teacherDetails1);
+                    }
+                    if (teacherDetails1.getFirst_name().equalsIgnoreCase(teacherDetails2.getFirst_name())
+                            && (teacherDetails1.getLast_name() == null && teacherDetails2.getLast_name() == null)
+                           ) {
+                        teacherDetailsSetFromFile.remove(teacherDetails1);
+                    }
+                }
+            }
+        }
+    }
+
+    public void readLinesFromListAndPopulateSet(List<String> listFromFile, Set<TeacherDetails> setToPopulate) {
+        for (int i = 0; i < listFromFile.size(); i++) {
+            TeacherDetails teacherDetails = new TeacherDetails();
+
+            int teacherId = 0;
+
+            String thisLine = listFromFile.get(i);
+            String[] splitLine = thisLine.split(",");
+
+            teacherId = Integer.valueOf(splitLine[0]);
+
+            teacherDetails.setTeacher_id(teacherId);
+
+            if (splitLine[1].contains("Self")) {
+                teacherDetails.setFirst_name(splitLine[1]);
+            } else {
+                String[] nameArray = splitLine[1].split(" ");
+
+                if (nameArray.length==1) {
+                    teacherDetails.setFirst_name(nameArray[0]);
+                } else {
+                    teacherDetails.setFirst_name(nameArray[0]);
+                    teacherDetails.setLast_name(nameArray[1]);
+                }
+            }
+
+
+
+            if ((teacherDetails.getFirst_name().equalsIgnoreCase("Margaret")
+                && teacherDetails.getLast_name().equalsIgnoreCase("Green")) ||
+                    (teacherDetails.getFirst_name().equalsIgnoreCase("Chuck")
+                            && teacherDetails.getLast_name().equalsIgnoreCase("Mallur"))) {
+                teacherDetails.setIs_teacher_active(true);
+            } else {
+                teacherDetails.setIs_teacher_active(false);
+            }
+
+            setToPopulate.add(teacherDetails);
+        }
+    }
+
     private TeacherDetails mapRowToTeacher(SqlRowSet rs){
         TeacherDetails teacherDetails = new TeacherDetails();
         teacherDetails.setTeacher_id(rs.getInt("teacher_id"));
@@ -61,6 +170,7 @@ public class JdbcTeacherDetailsDao implements TeacherDetailsDao {
         teacherDetails.setIs_teacher_active(rs.getBoolean("is_teacher_active"));
         return teacherDetails;
     }
+
 
 
 }

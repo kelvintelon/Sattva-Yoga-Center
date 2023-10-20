@@ -5,8 +5,13 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.annotation.Id;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.security.core.parameters.P;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.sql.DataSource;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.Array;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -409,6 +414,13 @@ public class JdbcEventDao implements EventDao {
 
         // < means that we need to make up for more events to fill the gap between (the last event time we have on file VS a year from this current time)
 
+        startBuildingEventsIntoSet(classDetails, theLatestTimestamp, cal1, cal2, eventsToInsert, numberValueFromComparison);
+        // batch insert for events here
+        batchCreateEvents(eventsToInsert);
+    }
+
+    private void startBuildingEventsIntoSet(List<ClassDetails> classDetails, Timestamp theLatestTimestamp, Calendar cal1, Calendar cal2, Set<ClassEvent> eventsToInsert, int numberValueFromComparison) {
+        String startTimeStampBuilder;
         if (numberValueFromComparison < 0) {
             System.out.println("Lacking Future Events... Creating..");
 
@@ -702,11 +714,116 @@ public class JdbcEventDao implements EventDao {
                 }
             }
         }
-        // batch insert for events here
-        batchCreateEvents(eventsToInsert);
     }
 
-    public void batchCreateEvents(final Collection<ClassEvent> events) {
+    @Override
+    public void uploadEventCsv(MultipartFile multipartFile) {
+
+        int count = 0;
+
+        long startTimeForEntireUpload = System.nanoTime();
+
+        List<String> listOfStringsFromBufferedReader = new ArrayList<>();
+
+        Set<ClassEvent> setOfEventsFromFile = new HashSet<>();
+
+        try (BufferedReader fileReader = new BufferedReader(new
+                InputStreamReader(multipartFile.getInputStream(), "UTF-8"))) {
+
+            String line;
+            while ((line = fileReader.readLine()) != null) {
+
+                if (count > 0) {
+
+                    listOfStringsFromBufferedReader.add(line);
+
+                }
+                count++;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        readLinesFromListAndPopulateSet(listOfStringsFromBufferedReader,setOfEventsFromFile);
+
+        //TODO: Check for duplicates
+        Map<Timestamp, Timestamp> mapOfExistingEvents = getMapOfExistingEvents();
+
+        List<ClassEvent> listOfEventsReadFromFile = new ArrayList<>(setOfEventsFromFile);
+
+        for (int i = 0; i < listOfEventsReadFromFile.size(); i++) {
+            ClassEvent thisEvent = listOfEventsReadFromFile.get(i);
+
+            if (mapOfExistingEvents.containsKey(thisEvent.getStart_time()) && (mapOfExistingEvents.get(thisEvent.getStart_time()).compareTo(thisEvent.getEnd_time()) == 0)) {
+                setOfEventsFromFile.remove(thisEvent);
+            }
+        }
+
+        //TODO: Batch create;
+        if (!setOfEventsFromFile.isEmpty()) {
+            batchCreateEvents(setOfEventsFromFile);
+        }
+
+        long endTimeForEntireUpload = System.nanoTime();
+        long totalTimeForEntireUpload = endTimeForEntireUpload - startTimeForEntireUpload;
+        System.out.println("Total time for entire upload in : " + getReadableTime(totalTimeForEntireUpload) + " / " + totalTimeForEntireUpload + " ns");
+
+    }
+
+    private void readLinesFromListAndPopulateSet(List<String> listOfStringsFromBufferedReader, Set<ClassEvent> setOfEventsToPopulate) {
+        for (int i = 0; i < listOfStringsFromBufferedReader.size(); i++) {
+            ClassEvent classEvent = new ClassEvent();
+
+            String thisLine = listOfStringsFromBufferedReader.get(i);
+            String[] splitLine = thisLine.split(",");
+
+            String dateMMDDYYYY = splitLine[0];
+            String startTimeHHmm = splitLine[1];
+            if (startTimeHHmm.length()==7) {
+                startTimeHHmm = "0" + startTimeHHmm;
+            }
+
+            String endTimeHHmm = splitLine[2];
+            if (endTimeHHmm.length()==7) {
+                endTimeHHmm = "0" + endTimeHHmm;
+            }
+            String eventName = splitLine[3];
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy");
+            LocalDate localDate = LocalDate.parse(dateMMDDYYYY, formatter);
+
+            String startTimeStampBuilder = "";
+            String month = String.valueOf(localDate.getMonthValue());
+            String day = String.valueOf(localDate.getDayOfMonth());
+            String year = String.valueOf(localDate.getYear());
+
+            String startTime = LocalTime.parse(startTimeHHmm, DateTimeFormatter.ofPattern("hh:mm a", Locale.US)).format(DateTimeFormatter.ofPattern("HH:mm"));
+            startTimeStampBuilder += year + "-" + month + "-" + day + " " + startTime + ":00.0";
+
+            Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
+
+            classEvent.setStart_time(start);
+
+            String endTimeStampBuilder = "";
+
+            String endTime = LocalTime.parse(endTimeHHmm, DateTimeFormatter.ofPattern("hh:mm a", Locale.US)).format(DateTimeFormatter.ofPattern("HH:mm"));
+            endTimeStampBuilder += year + "-" + month + "-" + day + " " + endTime + ":00.0";
+
+            Timestamp end = Timestamp.valueOf(endTimeStampBuilder);
+
+            classEvent.setEnd_time(end);
+
+            classEvent.setEvent_name(eventName);
+            classEvent.setColor("blue");
+            classEvent.setIs_paid(true);
+            classEvent.setIs_visible_online(true);
+            classEvent.setTimed(true);
+
+            setOfEventsToPopulate.add(classEvent);
+        }
+    }
+
+        public void batchCreateEvents(final Collection<ClassEvent> events) {
         jdbcTemplate.batchUpdate(
                 "INSERT INTO events (class_id, event_name, start_time, " +
                         "end_time, color, timed, is_visible_online, is_paid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -754,6 +871,16 @@ public class JdbcEventDao implements EventDao {
         return jdbcTemplate.update(sql, classEvent.getClass_id(), classEvent.getEvent_name(), classEvent.getStart_time(),
                 classEvent.getEnd_time(), classEvent.getColor(), classEvent.isTimed(),
                 classEvent.isIs_visible_online(), classEvent.isIs_paid(), classEvent.getEvent_id()) == 1;
+    }
+
+    private String getReadableTime(Long nanos){
+
+        long tempSec    = nanos/(1000*1000*1000);
+        long sec        = tempSec % 60;
+        long min        = (tempSec /60) % 60;
+
+        return String.format("%dm %ds", min,sec);
+
     }
 
     @Override
@@ -1680,6 +1807,19 @@ public class JdbcEventDao implements EventDao {
         return allClassEvents;
     }
 
+    public Map<Timestamp, Timestamp> getMapOfExistingEvents() {
+        Map<Timestamp, Timestamp> mapToReturn = new HashMap<>();
+        String sql = "SELECT start_time, end_time FROM events;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
+        while (results.next()) {
+            Timestamp start = results.getTimestamp("start_time");
+            Timestamp end = results.getTimestamp("end_time");
+
+            mapToReturn.put(start,end);
+        }
+        return mapToReturn;
+    }
+
     @Override
     public List<ClassEvent> getHundredEvents() {
         List<ClassEvent> allClassEvents = new ArrayList<>();
@@ -1788,20 +1928,7 @@ public class JdbcEventDao implements EventDao {
         jdbcTemplate.update(sql, packageId, eventId, clientId);
     }
 
-//    @Override
-//    public List<Event> getAllUpcomingClientEvents(int user_id) {
-//        List<Event> allClientEvents = new ArrayList<>();
-//        String sql = "SELECT events.event_id, class_id, event_name, start_time, end_time, color, timed, is_visible_online FROM events \n" +
-//                "JOIN client_event ON events.event_id = client_event.event_id \n" +
-//                "JOIN client_details ON client_details.client_id = client_event.client_id \n" +
-//                "WHERE user_id = ? AND start_time > now() " +
-//                "ORDER BY events.start_time";
-//        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, user_id);
-//        while (result.next()) {
-//            allClientEvents.add(mapRowToEvent(result));
-//        }
-//        return allClientEvents;
-//    }
+
 
     @Override
     public List<ClassEvent> getAllHistoricalClientEvents(int user_id) {
@@ -2211,8 +2338,10 @@ public class JdbcEventDao implements EventDao {
             ClassDetails classDetails = mapRowToClass(result);
 
             // set teacher name for class calling helper method
-            TeacherDetails teacherDetails = getTeacherDetailsByTeacherId(classDetails.getTeacher_id());
-            classDetails.setTeacher_name(teacherDetails.getFirst_name() + " " + teacherDetails.getLast_name());
+            if (classDetails.getTeacher_id() > 0) {
+                TeacherDetails teacherDetails = getTeacherDetailsByTeacherId(classDetails.getTeacher_id());
+                classDetails.setTeacher_name(teacherDetails.getFirst_name() + " " + teacherDetails.getLast_name());
+            }
 
             // set a list of clients for each class calling helper method
             classDetails.setClient_list(getClientDetailsByClassId(classDetails.getClass_id()));
@@ -2283,5 +2412,7 @@ public class JdbcEventDao implements EventDao {
 
         return classDetails;
     }
+
+
 
 }

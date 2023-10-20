@@ -16,25 +16,27 @@ CREATE TABLE users
 CREATE TABLE teacher_details
 (
     teacher_id        serial      NOT NULL,
-    last_name         varchar(30) NOT NULL,
+    last_name         varchar(30) ,
     first_name        varchar(30) NOT NULL, 
     is_teacher_active boolean     NOT NULL,
 	CONSTRAINT PK_teacher_id PRIMARY KEY (teacher_id)
 );
 
+CREATE SEQUENCE teacher_details_id_seq START 200001 OWNED BY teacher_details.teacher_id;
+
+ALTER TABLE teacher_details ALTER COLUMN teacher_id SET DEFAULT nextval('teacher_details_id_seq');
+
 CREATE TABLE class_details
 (
     class_id          serial    NOT NULL,
-    teacher_id        int       NOT NULL,
+    teacher_id        int       ,
 	is_repeating	  boolean   NOT NULL,
 	start_time		  text		NOT NULL,
 	date_range		  text[],	
     class_duration    int       NOT NULL,
     is_paid           boolean,           
     class_description text      NOT NULL,
-    CONSTRAINT PK_class_details PRIMARY KEY (class_id),
-    CONSTRAINT FK_teacher_id FOREIGN KEY (teacher_id) REFERENCES teacher_details (teacher_id)
-
+    CONSTRAINT PK_class_details PRIMARY KEY (class_id)
 );
 
 CREATE TABLE client_details

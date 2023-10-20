@@ -2,7 +2,7 @@
   <v-data-table
     :headers="headers"
     :items="teachers"
-    sort-by="teacher_id"
+    sort-by="first_name"
     class="elevation-1"
   >
     <template v-slot:top>
@@ -196,6 +196,7 @@ export default {
           value: "first_name",
         },
         { text: "Last Name", value: "last_name" },
+        { text: "Teacher ID", value: "teacher_id" },
         { text: "Active", value: "is_teacher_active" },
         { text: "Actions", value: "actions", sortable: false },
       ],

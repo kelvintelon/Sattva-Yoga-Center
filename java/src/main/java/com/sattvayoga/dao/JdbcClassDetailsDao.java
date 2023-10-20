@@ -55,9 +55,10 @@ public class JdbcClassDetailsDao implements ClassDetailsDao {
         while (result.next()) {
             ClassDetails classDetails = mapRowToClass(result);
 
-            // set teacher name for class calling helper method
-            TeacherDetails teacherDetails = getTeacherDetailsByTeacherId(classDetails.getTeacher_id());
-            classDetails.setTeacher_name(teacherDetails.getFirst_name() + " " + teacherDetails.getLast_name());
+            if (classDetails.getTeacher_id() > 0) {
+                TeacherDetails teacherDetails = getTeacherDetailsByTeacherId(classDetails.getTeacher_id());
+                classDetails.setTeacher_name(teacherDetails.getFirst_name() + " " + teacherDetails.getLast_name());
+            }
 
             // set a list of clients for each class calling helper method
             classDetails.setClient_list(getClientDetailsByClassId(classDetails.getClass_id()));

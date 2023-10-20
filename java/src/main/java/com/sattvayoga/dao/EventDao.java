@@ -1,6 +1,7 @@
 package com.sattvayoga.dao;
 
 import com.sattvayoga.model.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -56,4 +57,7 @@ public interface EventDao {
     void updateAllClientsByLookingAtEvents();
 
     SignUpAggregate getSignUpAggregate();
+
+    void uploadEventCsv(MultipartFile multipartFile);
+
 }

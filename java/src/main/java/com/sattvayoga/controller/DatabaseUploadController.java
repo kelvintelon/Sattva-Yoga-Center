@@ -1,6 +1,8 @@
 package com.sattvayoga.controller;
 
 import com.sattvayoga.dao.ClientDetailsDao;
+import com.sattvayoga.dao.EventDao;
+import com.sattvayoga.dao.TeacherDetailsDao;
 import com.sattvayoga.dao.UserDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.support.SimpleCacheManager;
@@ -24,10 +26,30 @@ public class DatabaseUploadController {
     @Autowired
     ClientDetailsDao clientDetailsDao;
 
+    @Autowired
+    TeacherDetailsDao teacherDetailsDao;
+
+    @Autowired
+    EventDao eventDao;
+
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/uploadClients")
     public void uploadClients(@RequestParam("file")MultipartFile multipartFile) {
 
         clientDetailsDao.uploadClientCsv(multipartFile);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/uploadTeachers")
+    public void uploadTeachers(@RequestParam("file")MultipartFile multipartFile) {
+
+        teacherDetailsDao.uploadTeacherCsv(multipartFile);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/uploadEvents")
+    public void uploadEvents(@RequestParam("file")MultipartFile multipartFile) {
+
+        eventDao.uploadEventCsv(multipartFile);
     }
 }
