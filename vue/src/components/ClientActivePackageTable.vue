@@ -105,7 +105,7 @@
                       <v-row v-if="showGiftCardForm">
                         <v-col>
                           <v-text-field
-                            v-model="clientCheckout.email"
+                            v-model="clientCheckout.emailForGift"
                             :counter="30"
                             label="Email for Gift Card"
                           ></v-text-field>
@@ -434,6 +434,29 @@
                       ></v-checkbox>
                     </v-col>
                   </v-row>
+                  <v-row justify="center">
+                    <v-btn small outlined color="indigo">Check</v-btn>
+                    <v-spacer></v-spacer>
+                    <v-btn small outlined color="indigo">Cash</v-btn>
+                    <v-spacer></v-spacer>
+                    <v-btn small outlined color="indigo" v-if="!showEmailForm" @click="showEmailForm = true">E-Receipt</v-btn>
+                  </v-row>
+                  <v-row v-if="showEmailForm">
+                    <v-text-field class="mt-4"
+                      v-model="clientCheckout.emailForReceipt"
+                      :counter="30"
+                      label="Email for Receipt"
+                    ></v-text-field>
+                    <v-btn
+                    class="mt-4"
+                      fab
+                      outlined
+                      small
+                        @click="showEmailForm = false"
+                      >
+                        <v-icon dark> mdi-close </v-icon>
+                    </v-btn>
+                  </v-row>
                 </v-container>
               </v-card-title>
 
@@ -586,7 +609,8 @@ export default {
       currentDiscount: 0,
       clientCheckout: {
         client_id: 0,
-        email: "",
+        emailForGift: "",
+        emailForReceipt: "",
         saveEmail: false,
         discount: 0,
         selectedCheckoutPackages: [],
@@ -606,6 +630,7 @@ export default {
       saveEmailCheckbox: false,
       totalCost: 0,
       showGiftCardForm: false,
+      showEmailForm: false,
       showGiftCodeInput: false,
       showGiftCardResponse: false,
       giftCardCodeObject: {
@@ -665,8 +690,8 @@ export default {
     clientCheckout: {
       handler: function () {
         if (
-          this.clientCheckout.email.length == 0 ||
-          this.clientCheckout.email != this.$store.state.clientDetails.email
+          this.clientCheckout.emailForGift.length == 0 ||
+          this.clientCheckout.emailForGift != this.$store.state.clientDetails.email
         ) {
           this.saveEmailCheckbox = true;
         } else {
@@ -742,10 +767,10 @@ export default {
         runningTotal += element.package_cost;
         if (element.description.includes("Gift")) {
           this.showGiftCardForm = true;
-          this.clientCheckout.email = this.$store.state.clientDetails.email;
+          this.clientCheckout.emailForGift = this.$store.state.clientDetails.email;
           if (
-            this.clientCheckout.email.length == 0 ||
-            this.clientCheckout.email != this.$store.state.clientDetails.email
+            this.clientCheckout.emailForGift.length == 0 ||
+            this.clientCheckout.emailForGift != this.$store.state.clientDetails.email
           ) {
             this.saveEmailCheckbox = true;
           }
@@ -784,9 +809,6 @@ export default {
     //       }
     //     }
     //   });
-    if (this.$store.state.user.username == "admin") {
-      this.retrieveClientDetailsForAdmin();
-    }
     // TODO: CAREFUL DELETING THIS BECAUSE WE FORGOT WHAT IT DOES
     this.$root.$on("getActivePurchasePackageTable", () => {
       this.getActivePurchaseServerRequest();
@@ -795,6 +817,7 @@ export default {
   created() {
     if (this.$store.state.user.username == "admin") {
       this.getSharedActivePackages();
+      this.retrieveClientDetailsForAdmin();
     }
     setTimeout(() => {
       this.getActivePurchaseServerRequest();
@@ -859,7 +882,8 @@ export default {
           if (response.data.client_id != 0) {
             this.clientDetails = response.data;
             this.$store.commit("SET_CLIENT_DETAILS", response.data);
-            this.clientCheckout.email = this.$store.state.clientDetails.email;
+            this.clientCheckout.emailForGift = this.$store.state.clientDetails.email;
+            this.clientCheckout.emailForReceipt = this.$store.state.clientDetails.email;
             // alert("active package table client details")
             if (this.clientDetails.redFlag == true) {
               this.snackBarReconcileWarning = true;
@@ -979,6 +1003,7 @@ export default {
       this.giftCardCost = 0;
       this.giftCardIndex = 0;
       this.showGiftCardForm = false;
+      this.showEmailForm = false;
       this.saveEmailCheckbox = false;
       this.showGiftCodeInput = false;
       this.giftCardCodeObject.code = "";
@@ -991,7 +1016,8 @@ export default {
       }
       this.clientCheckout = {
         client_id: 0,
-        email: this.$store.state.clientDetails.email,
+        emailForGift: this.$store.state.clientDetails.email,
+        emailForReceipt: this.$store.state.clientDetails.email,
         saveEmail: false,
         discount: 0,
         selectedCheckoutPackages: [],
@@ -1292,8 +1318,9 @@ export default {
         this.clientCheckout.client_id =
           this.$store.state.clientDetails.client_id;
 
-        if (this.clientCheckout.email.length == 0) {
-          this.clientCheckout.email = this.$store.state.clientDetails.email;
+        if (this.clientCheckout.emailForGift.length == 0 || this.clientCheckout.emailForReceipt == 0) {
+          this.clientCheckout.emailForGift = this.$store.state.clientDetails.email;
+          this.clientCheckout.emailForReceipt = this.$store.state.clientDetails.email;
         }
         this.clientCheckout.total = this.totalCost;
         this.clientCheckout.selectedCheckoutPackages = this.selectedPackages;
@@ -1316,7 +1343,7 @@ export default {
             if (response.status == 201) {
               // this.retrieveClientDetailsForAdmin();
               if (this.clientCheckout.saveEmail) {
-                this.$store.state.clientDetails.email = this.clientCheckout.email;
+                this.$store.state.clientDetails.email = this.clientCheckout.emailForGift;
               }
               alert("Submitted");
               this.close();

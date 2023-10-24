@@ -10,7 +10,8 @@ public class ClientCheckoutDTO {
     private int client_id;
     private List<PackageDetails> selectedCheckoutPackages;
     private int total;
-    private String email;
+    private String emailForGift;
+    private String emailForReceipt;
     private int discount;
     private boolean saveEmail;
     private String renewalDate;
@@ -25,10 +26,18 @@ public class ClientCheckoutDTO {
         this.client_id = client_id;
         this.selectedCheckoutPackages = selectedCheckoutPackages;
         this.total = total;
-        this.email = email;
+        this.emailForGift = email;
         this.discount = discount;
         this.saveEmail = saveEmail;
         this.renewalDate = renewalDate;
+    }
+
+    public String getEmailForReceipt() {
+        return emailForReceipt;
+    }
+
+    public void setEmailForReceipt(String emailForReceipt) {
+        this.emailForReceipt = emailForReceipt;
     }
 
     public int getIterations() {
@@ -87,12 +96,12 @@ public class ClientCheckoutDTO {
         this.total = total;
     }
 
-    public String getEmail() {
-        return email;
+    public String getEmailForGift() {
+        return emailForGift;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setEmailForGift(String emailForGift) {
+        this.emailForGift = emailForGift;
     }
 
     public int getDiscount() {

@@ -100,7 +100,7 @@ public class JdbcStripeDao implements StripeDao {
             // If they are not then follow through changing the subscription scheduling
             if (!LocalDate.now().toString().equals(clientCheckoutDTO.getRenewalDate())) {
 
-                Customer customer = getCustomerObjectByClientId(clientCheckoutDTO.getClient_id());
+                Customer customer = getCustomerForSubscriptionByClientId(clientCheckoutDTO.getClient_id(),clientCheckoutDTO.getEmailForReceipt());
 
                 LocalDate renewalDate = LocalDate.parse(clientCheckoutDTO.getRenewalDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
@@ -136,6 +136,8 @@ public class JdbcStripeDao implements StripeDao {
                                     .build();
 
                     SubscriptionSchedule subscriptionSchedule = SubscriptionSchedule.create(params);
+
+
 
                 } else {
                     // This one is for creating a discount coupon for a subscription schedule
@@ -186,7 +188,7 @@ public class JdbcStripeDao implements StripeDao {
             }
             else {
 
-                Customer customer = getCustomerObjectByClientId(clientCheckoutDTO.getClient_id());
+                Customer customer = getCustomerForSubscriptionByClientId(clientCheckoutDTO.getClient_id(),clientCheckoutDTO.getEmailForReceipt());
 
                 // By setting the customer ID for creating a subscription. The customer's saved payment method forgoes any need to tap the card
                 List<Object> items = new ArrayList<>();
@@ -284,21 +286,39 @@ public class JdbcStripeDao implements StripeDao {
 
                 modifyMap(clientCheckoutDTO, metaDataMap);
 
-                PaymentIntentCreateParams paymentIntentCreateParams =
-                        PaymentIntentCreateParams.builder()
-                                .setCurrency("usd")
-                                .setCustomer(customer_id)
-                                .setAmount((long) clientCheckoutDTO.getTotal() * 100)
-                                .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
-                                .setPaymentMethod(clientCheckoutDTO.getPaymentMethodId())
-                                .setReturnUrl(returnUrl)
-                                .setConfirm(true)
-                                .putAllMetadata(metaDataMap)
-                                .build();
+                if (clientCheckoutDTO.getEmailForReceipt().length()>0) {
+                    PaymentIntentCreateParams paymentIntentCreateParams =
+                            PaymentIntentCreateParams.builder()
+                                    .setCurrency("usd")
+                                    .setCustomer(customer_id)
+                                    .setAmount((long) clientCheckoutDTO.getTotal() * 100)
+                                    .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
+                                    .setPaymentMethod(clientCheckoutDTO.getPaymentMethodId())
+                                    .setReturnUrl(returnUrl)
+                                    .setReceiptEmail(clientCheckoutDTO.getEmailForReceipt())
+                                    .setConfirm(true)
+                                    .putAllMetadata(metaDataMap)
+                                    .build();
 
-                // This creates a payment intent
-                PaymentIntent paymentIntent = PaymentIntent.create(paymentIntentCreateParams);
+                    // This creates a payment intent
+                    PaymentIntent paymentIntent = PaymentIntent.create(paymentIntentCreateParams);
+                } else {
 
+                    PaymentIntentCreateParams paymentIntentCreateParams =
+                            PaymentIntentCreateParams.builder()
+                                    .setCurrency("usd")
+                                    .setCustomer(customer_id)
+                                    .setAmount((long) clientCheckoutDTO.getTotal() * 100)
+                                    .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
+                                    .setPaymentMethod(clientCheckoutDTO.getPaymentMethodId())
+                                    .setReturnUrl(returnUrl)
+                                    .setConfirm(true)
+                                    .putAllMetadata(metaDataMap)
+                                    .build();
+
+                    // This creates a payment intent
+                    PaymentIntent paymentIntent = PaymentIntent.create(paymentIntentCreateParams);
+                }
                 return "";
             } else {
 
@@ -313,6 +333,12 @@ public class JdbcStripeDao implements StripeDao {
 
                 // This creates a payment intent
                 PaymentIntent paymentIntent = PaymentIntent.create(paymentIntentCreateParams);
+
+                if (clientCheckoutDTO.getEmailForReceipt().length()>0) {
+                    Map<String, Object> params = new HashMap<>();
+                    params.put("receipt_email", clientCheckoutDTO.getEmailForReceipt());
+                    paymentIntent = paymentIntent.update(params);
+                }
 
                 // This creates a parameter to pass in through the reader using the payment intent ID
                 ReaderProcessPaymentIntentParams readerProcessParams = ReaderProcessPaymentIntentParams.builder().setPaymentIntent(paymentIntent.getId()).build();
@@ -425,7 +451,7 @@ public class JdbcStripeDao implements StripeDao {
             String currentPackageName = listOfPackagesBeingPurchased.get(i).getDescription();
 
             if (currentPackageName.contains("Gift")) {
-                metaDataMap.put("giftCardEmail", clientCheckoutDTO.getEmail());
+                metaDataMap.put("giftCardEmail", clientCheckoutDTO.getEmailForGift());
                 metaDataMap.put("saveGiftCardEmail", String.valueOf(clientCheckoutDTO.isSaveEmail()));
             }
 
@@ -486,7 +512,6 @@ public class JdbcStripeDao implements StripeDao {
                             .setCustomer(customer_id)
                             .setAmount((long) clientCheckoutDTO.getTotal() * 100)
                             .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
-                            .setDescription("You bought a 1 class for 10 dollars")
                             .addPaymentMethodType("card_present")
                             .putAllMetadata(metaDataMap)
                             .build();
@@ -680,6 +705,7 @@ public class JdbcStripeDao implements StripeDao {
             params.put("name", clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
             Customer customer = Customer.create(params);
 
+
             customer_id = customer.getId();
 
             // Save customer_id into DB
@@ -688,14 +714,13 @@ public class JdbcStripeDao implements StripeDao {
         return customer_id;
     }
 
-    private Customer getCustomerObjectByClientId(int retrievedClientId) throws StripeException {
+    private Customer getCustomerForSubscriptionByClientId(int retrievedClientId, String emailForReceipt) throws StripeException {
         ClientDetails clientDetails = clientDetailsDao.findClientByClientId(retrievedClientId);
 
         String customer_id = "";
 
         if (clientDetails.getCustomer_id() != null) {
             customer_id = clientDetails.getCustomer_id();
-            return Customer.retrieve(customer_id);
         } else {
             Map<String, Object> params = new HashMap<>();
             params.put("name", clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
@@ -706,6 +731,19 @@ public class JdbcStripeDao implements StripeDao {
             // Save customer_id into DB
             clientDetailsDao.updateClientCustomerId(retrievedClientId, customer_id);
         }
+
+        // save email here
+        if (emailForReceipt.length()>0) {
+
+            Customer customer =
+                    Customer.retrieve(customer_id);
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("email", emailForReceipt);
+
+            Customer updatedCustomer = customer.update(params);
+        }
+
         return Customer.retrieve(customer_id);
     }
 }
