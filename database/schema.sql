@@ -49,6 +49,7 @@ CREATE TABLE client_details
     street_address          varchar(100) ,
     city                    varchar(30) ,
     state_abbreviation      varchar(2)  ,
+	country					varchar(30) ,
     zip_code                varchar(30) ,
     phone_number            varchar(30) ,
     is_on_email_list        boolean     ,

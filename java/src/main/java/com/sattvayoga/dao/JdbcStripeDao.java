@@ -486,6 +486,7 @@ public class JdbcStripeDao implements StripeDao {
                             .setCustomer(customer_id)
                             .setAmount((long) clientCheckoutDTO.getTotal() * 100)
                             .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
+                            .setDescription("You bought a 1 class for 10 dollars")
                             .addPaymentMethodType("card_present")
                             .putAllMetadata(metaDataMap)
                             .build();

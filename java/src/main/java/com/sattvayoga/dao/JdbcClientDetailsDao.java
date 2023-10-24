@@ -17,6 +17,7 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.zip.CheckedOutputStream;
 
 @Component
 public class JdbcClientDetailsDao implements ClientDetailsDao {
@@ -201,54 +202,6 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
     }
 
-    public void uploadClient(ClientDetails client) {
-        String sql = "INSERT INTO client_details (client_id, last_name, first_name, is_client_active, email, is_on_email_list, " +
-                "is_new_client, user_id, date_of_entry, is_allowed_video, street_address, city, state_abbreviation, zip_code, phone_number, has_record_of_liability) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        jdbcTemplate.update(sql, client.getClient_id(), client.getLast_name(), client.getFirst_name(),
-                client.isIs_client_active(), client.getEmail(), client.isIs_on_email_list(), client.isIs_new_client(),
-                client.getUser_id(), client.getDate_of_entry(), client.isIs_allowed_video(), client.getStreet_address(),
-                client.getCity(), client.getState_abbreviation(), client.getZip_code(), client.getPhone_number(), client.isHas_record_of_liability());
-
-        // look up the email here
-//        boolean foundEmail = false;
-//        if (client.getEmail() != null && !(client.getEmail().equalsIgnoreCase(""))) {
-//            foundEmail = isEmailDuplicate(client.getClient_id(),client.getEmail());
-//        }
-//
-//        if (foundEmail || (client.getEmail() != null && ( client.getEmail().equalsIgnoreCase("info@sattva-yoga-center.com") || client.getEmail().equalsIgnoreCase("sattva.yoga.center.michigan@gmail.com")))) {
-//            client.setEmail("");
-//            client.setIs_on_email_list(false);
-//
-//            updateClientDetails(client);
-//        }
-
-    }
-
-    private void uploadClientNoClientId(ClientDetails client) {
-        String sql = "INSERT INTO client_details (last_name, first_name, is_client_active, email, is_on_email_list, " +
-                "is_new_client, user_id, date_of_entry, is_allowed_video, street_address, city, state_abbreviation, zip_code, phone_number, has_record_of_liability) VALUES  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING client_id";
-        int intNewClientId = jdbcTemplate.queryForObject(sql, Integer.class, client.getLast_name(), client.getFirst_name(),
-                client.isIs_client_active(), client.getEmail(), client.isIs_on_email_list(), client.isIs_new_client(),
-                client.getUser_id(), client.getDate_of_entry(), client.isIs_allowed_video(), client.getStreet_address(),
-                client.getCity(), client.getState_abbreviation(), client.getZip_code(), client.getPhone_number(), client.isHas_record_of_liability());
-
-//        client.setClient_id(intNewClientId);
-//        // look up the email here
-//        boolean foundEmail = false;
-//        if (client.getEmail() != null && !(client.getEmail().equalsIgnoreCase(""))) {
-//            foundEmail = isEmailDuplicate(client.getClient_id(), client.getEmail());
-//        }
-//
-//        if (foundEmail || (client.getEmail() != null && ( client.getEmail().equalsIgnoreCase("info@sattva-yoga-center.com") || client.getEmail().equalsIgnoreCase("sattva.yoga.center.michigan@gmail.com")))) {
-//            client.setEmail("");
-//            client.setIs_on_email_list(false);
-//
-//            updateClientDetails(client);
-//
-//
-//        }
-    }
-
     @Override
     public List<ClientDetails> getAllClients() {
         List<ClientDetails> allClients = new ArrayList<>();
@@ -300,12 +253,12 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
     @Override
     public ClientDetails createClient(ClientDetails client) {
         String sql = "INSERT INTO client_details (last_name, first_name, is_client_active, " +
-                "is_new_client, street_address, city, state_abbreviation, zip_code, " +
+                "is_new_client, street_address, city, state_abbreviation, zip_code, country, " +
                 "phone_number, is_on_email_list, email, has_record_of_liability, " +
-                "date_of_entry, is_allowed_video, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING client_id";
+                "date_of_entry, is_allowed_video, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING client_id";
         int clientId = jdbcTemplate.queryForObject(sql, Integer.class, client.getLast_name(), client.getFirst_name(),
                 client.isIs_client_active(), client.isIs_new_client(), client.getStreet_address(), client.getCity(),
-                client.getState_abbreviation(), client.getZip_code(), client.getPhone_number(), client.isIs_on_email_list(),
+                client.getState_abbreviation(), client.getZip_code(), client.getCountry(), client.getPhone_number(), client.isIs_on_email_list(),
                 client.getEmail(), client.isHas_record_of_liability(),
                 client.getDate_of_entry(), client.isIs_allowed_video(), client.getUser_id());
         client.setClient_id(clientId);
@@ -400,6 +353,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                 "city = ? , " +
                 "state_abbreviation = ? , " +
                 "zip_code = ? , " +
+                "country = ? , " +
                 "email = ? , " +
                 "phone_number = ? , " +
                 "is_on_email_list = ? , " +
@@ -410,7 +364,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                 "WHERE user_id = ?";
         return jdbcTemplate.update(sql, clientDetails.getLast_name(), clientDetails.getFirst_name(),
                 clientDetails.getStreet_address(), clientDetails.getCity(), clientDetails.getState_abbreviation(),
-                clientDetails.getZip_code(), clientDetails.getEmail(), clientDetails.getPhone_number(),
+                clientDetails.getZip_code(), clientDetails.getCountry(), clientDetails.getEmail(), clientDetails.getPhone_number(),
                 clientDetails.isIs_on_email_list(), clientDetails.isHas_record_of_liability(),
                 clientDetails.isIs_client_active(), clientDetails.isIs_allowed_video(), clientDetails.isIs_new_client(),
                 clientDetails.getUser_id()) == 1;
@@ -472,6 +426,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         clientDetails.setCity(rs.getString("city"));
         clientDetails.setState_abbreviation(rs.getString("state_abbreviation"));
         clientDetails.setZip_code(rs.getString("zip_code"));
+        clientDetails.setCountry(rs.getString("country"));
         clientDetails.setPhone_number(rs.getString("phone_number"));
         clientDetails.setIs_on_email_list(rs.getBoolean("is_on_email_list"));
         clientDetails.setEmail(rs.getString("email"));
@@ -838,9 +793,9 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                 "INSERT INTO client_details (client_id, last_name, " +
                         "first_name, is_client_active, email, is_on_email_list, " +
                         "is_new_client, user_id, date_of_entry, is_allowed_video, " +
-                        "street_address, city, state_abbreviation, zip_code, " +
+                        "street_address, city, state_abbreviation, zip_code, country, " +
                         "phone_number, has_record_of_liability) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 clients,
                 100,
                 (PreparedStatement ps, ClientDetails clientDetails) -> {
@@ -858,8 +813,9 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                     ps.setString(12, clientDetails.getCity());
                     ps.setString(13, clientDetails.getState_abbreviation());
                     ps.setString(14, clientDetails.getZip_code());
-                    ps.setString(15, clientDetails.getPhone_number());
-                    ps.setBoolean(16, clientDetails.isHas_record_of_liability());
+                    ps.setString(15, clientDetails.getCountry());
+                    ps.setString(16, clientDetails.getPhone_number());
+                    ps.setBoolean(17, clientDetails.isHas_record_of_liability());
 
                 });
 
@@ -870,9 +826,9 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                 "INSERT INTO client_details (last_name, " +
                         "first_name, is_client_active, email, is_on_email_list, " +
                         "is_new_client, user_id, date_of_entry, is_allowed_video, " +
-                        "street_address, city, state_abbreviation, zip_code, " +
+                        "street_address, city, state_abbreviation, zip_code, country, " +
                         "phone_number, has_record_of_liability) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 clients,
                 100,
                 (PreparedStatement ps, ClientDetails clientDetails) -> {
@@ -889,8 +845,9 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                     ps.setString(11, clientDetails.getCity());
                     ps.setString(12, clientDetails.getState_abbreviation());
                     ps.setString(13, clientDetails.getZip_code());
-                    ps.setString(14, clientDetails.getPhone_number());
-                    ps.setBoolean(15, clientDetails.isHas_record_of_liability());
+                    ps.setString(14, clientDetails.getCountry());
+                    ps.setString(15, clientDetails.getPhone_number());
+                    ps.setBoolean(16, clientDetails.isHas_record_of_liability());
 
                 });
 
@@ -1151,6 +1108,10 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
             clientDetails.setZip_code(zipCode);
 
+            String country = splitLine[7];
+
+            setCountry(clientDetails, country);
+
             if (splitLine.length >= 9) {
                 String phoneNumber = splitLine[8];
 
@@ -1178,6 +1139,211 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         }
     }
 
+    private void setCountry(ClientDetails clientDetails, String country) {
+        HashMap<String, String> countryAbbreviations = new HashMap<>();
+
+        countryAbbreviations.put("AF", "Afghanistan");
+        countryAbbreviations.put("AL", "Albania");
+        countryAbbreviations.put("DZ", "Algeria");
+        countryAbbreviations.put("AD", "Andorra");
+        countryAbbreviations.put("AO", "Angola");
+        countryAbbreviations.put("AG", "Antigua and Barbuda");
+        countryAbbreviations.put("AR", "Argentina");
+        countryAbbreviations.put("AM", "Armenia");
+        countryAbbreviations.put("AU", "Australia");
+        countryAbbreviations.put("AT", "Austria");
+        countryAbbreviations.put("AZ", "Azerbaijan");
+        countryAbbreviations.put("BS", "Bahamas");
+        countryAbbreviations.put("BH", "Bahrain");
+        countryAbbreviations.put("BD", "Bangladesh");
+        countryAbbreviations.put("BB", "Barbados");
+        countryAbbreviations.put("BY", "Belarus");
+        countryAbbreviations.put("BE", "Belgium");
+        countryAbbreviations.put("BZ", "Belize");
+        countryAbbreviations.put("BJ", "Benin");
+        countryAbbreviations.put("BT", "Bhutan");
+        countryAbbreviations.put("BO", "Bolivia");
+        countryAbbreviations.put("BA", "Bosnia and Herzegovina");
+        countryAbbreviations.put("BW", "Botswana");
+        countryAbbreviations.put("BR", "Brazil");
+        countryAbbreviations.put("BN", "Brunei");
+        countryAbbreviations.put("BG", "Bulgaria");
+        countryAbbreviations.put("BF", "Burkina Faso");
+        countryAbbreviations.put("BI", "Burundi");
+        countryAbbreviations.put("CV", "Cabo Verde");
+        countryAbbreviations.put("KH", "Cambodia");
+        countryAbbreviations.put("CM", "Cameroon");
+        countryAbbreviations.put("CA", "Canada");
+        countryAbbreviations.put("CF", "Central African Republic");
+        countryAbbreviations.put("TD", "Chad");
+        countryAbbreviations.put("CL", "Chile");
+        countryAbbreviations.put("CN", "China");
+        countryAbbreviations.put("CO", "Colombia");
+        countryAbbreviations.put("KM", "Comoros");
+        countryAbbreviations.put("CD", "Congo (Congo-Kinshasa)");
+        countryAbbreviations.put("CG", "Congo (Congo-Brazzaville)");
+        countryAbbreviations.put("CR", "Costa Rica");
+        countryAbbreviations.put("HR", "Croatia");
+        countryAbbreviations.put("CU", "Cuba");
+        countryAbbreviations.put("CY", "Cyprus");
+        countryAbbreviations.put("CZ", "Czech Republic");
+        countryAbbreviations.put("CI", "Côte d'Ivoire");
+        countryAbbreviations.put("KP", "North Korea");
+        countryAbbreviations.put("KR", "South Korea");
+        countryAbbreviations.put("DK", "Denmark");
+        countryAbbreviations.put("DJ", "Djibouti");
+        countryAbbreviations.put("DM", "Dominica");
+        countryAbbreviations.put("DO", "Dominican Republic");
+        countryAbbreviations.put("EC", "Ecuador");
+        countryAbbreviations.put("EG", "Egypt");
+        countryAbbreviations.put("SV", "El Salvador");
+        countryAbbreviations.put("GQ", "Equatorial Guinea");
+        countryAbbreviations.put("ER", "Eritrea");
+        countryAbbreviations.put("EE", "Estonia");
+        countryAbbreviations.put("ET", "Ethiopia");
+        countryAbbreviations.put("FJ", "Fiji");
+        countryAbbreviations.put("FI", "Finland");
+        countryAbbreviations.put("FR", "France");
+        countryAbbreviations.put("GA", "Gabon");
+        countryAbbreviations.put("GM", "Gambia");
+        countryAbbreviations.put("GE", "Georgia");
+        countryAbbreviations.put("DE", "Germany");
+        countryAbbreviations.put("GH", "Ghana");
+        countryAbbreviations.put("GR", "Greece");
+        countryAbbreviations.put("GD", "Grenada");
+        countryAbbreviations.put("GT", "Guatemala");
+        countryAbbreviations.put("GN", "Guinea");
+        countryAbbreviations.put("GW", "Guinea-Bissau");
+        countryAbbreviations.put("GY", "Guyana");
+        countryAbbreviations.put("HT", "Haiti");
+        countryAbbreviations.put("HN", "Honduras");
+        countryAbbreviations.put("HU", "Hungary");
+        countryAbbreviations.put("IS", "Iceland");
+        countryAbbreviations.put("IN", "India");
+        countryAbbreviations.put("ID", "Indonesia");
+        countryAbbreviations.put("IR", "Iran");
+        countryAbbreviations.put("IQ", "Iraq");
+        countryAbbreviations.put("IE", "Ireland");
+        countryAbbreviations.put("IL", "Israel");
+        countryAbbreviations.put("IT", "Italy");
+        countryAbbreviations.put("JM", "Jamaica");
+        countryAbbreviations.put("JP", "Japan");
+        countryAbbreviations.put("JO", "Jordan");
+        countryAbbreviations.put("KZ", "Kazakhstan");
+        countryAbbreviations.put("KE", "Kenya");
+        countryAbbreviations.put("KI", "Kiribati");
+        countryAbbreviations.put("XK", "Kosovo");
+        countryAbbreviations.put("KW", "Kuwait");
+        countryAbbreviations.put("KG", "Kyrgyzstan");
+        countryAbbreviations.put("LA", "Laos");
+        countryAbbreviations.put("LV", "Latvia");
+        countryAbbreviations.put("LB", "Lebanon");
+        countryAbbreviations.put("LS", "Lesotho");
+        countryAbbreviations.put("LR", "Liberia");
+        countryAbbreviations.put("LY", "Libya");
+        countryAbbreviations.put("LI", "Liechtenstein");
+        countryAbbreviations.put("LT", "Lithuania");
+        countryAbbreviations.put("LU", "Luxembourg");
+        countryAbbreviations.put("MG", "Madagascar");
+        countryAbbreviations.put("MW", "Malawi");
+        countryAbbreviations.put("MY", "Malaysia");
+        countryAbbreviations.put("MV", "Maldives");
+        countryAbbreviations.put("ML", "Mali");
+        countryAbbreviations.put("MT", "Malta");
+        countryAbbreviations.put("MH", "Marshall Islands");
+        countryAbbreviations.put("MR", "Mauritania");
+        countryAbbreviations.put("MU", "Mauritius");
+        countryAbbreviations.put("MX", "Mexico");
+        countryAbbreviations.put("FM", "Micronesia");
+        countryAbbreviations.put("MD", "Moldova");
+        countryAbbreviations.put("MC", "Monaco");
+        countryAbbreviations.put("MN", "Mongolia");
+        countryAbbreviations.put("ME", "Montenegro");
+        countryAbbreviations.put("MA", "Morocco");
+        countryAbbreviations.put("MZ", "Mozambique");
+        countryAbbreviations.put("MM", "Myanmar (Burma)");
+        countryAbbreviations.put("NA", "Namibia");
+        countryAbbreviations.put("NR", "Nauru");
+        countryAbbreviations.put("NP", "Nepal");
+        countryAbbreviations.put("NL", "Netherlands");
+        countryAbbreviations.put("NZ", "New Zealand");
+        countryAbbreviations.put("NI", "Nicaragua");
+        countryAbbreviations.put("NE", "Niger");
+        countryAbbreviations.put("NG", "Nigeria");
+        countryAbbreviations.put("NO", "Norway");
+        countryAbbreviations.put("OM", "Oman");
+        countryAbbreviations.put("PK", "Pakistan");
+        countryAbbreviations.put("PW", "Palau");
+        countryAbbreviations.put("PS", "Palestine");
+        countryAbbreviations.put("PA", "Panama");
+        countryAbbreviations.put("PG", "Papua New Guinea");
+        countryAbbreviations.put("PY", "Paraguay");
+        countryAbbreviations.put("PE", "Peru");
+        countryAbbreviations.put("PH", "Philippines");
+        countryAbbreviations.put("PL", "Poland");
+        countryAbbreviations.put("PT", "Portugal");
+        countryAbbreviations.put("QA", "Qatar");
+        countryAbbreviations.put("RO", "Romania");
+        countryAbbreviations.put("RU", "Russia");
+        countryAbbreviations.put("RW", "Rwanda");
+        countryAbbreviations.put("KN", "Saint Kitts and Nevis");
+        countryAbbreviations.put("LC", "Saint Lucia");
+        countryAbbreviations.put("VC", "Saint Vincent and the Grenadines");
+        countryAbbreviations.put("WS", "Samoa");
+        countryAbbreviations.put("SM", "San Marino");
+        countryAbbreviations.put("ST", "Sao Tome and Principe");
+        countryAbbreviations.put("SA", "Saudi Arabia");
+        countryAbbreviations.put("SN", "Senegal");
+        countryAbbreviations.put("RS", "Serbia");
+        countryAbbreviations.put("SC", "Seychelles");
+        countryAbbreviations.put("SL", "Sierra Leone");
+        countryAbbreviations.put("SG", "Singapore");
+        countryAbbreviations.put("SK", "Slovakia");
+        countryAbbreviations.put("SI", "Slovenia");
+        countryAbbreviations.put("SB", "Solomon Islands");
+        countryAbbreviations.put("SO", "Somalia");
+        countryAbbreviations.put("ZA", "South Africa");
+        countryAbbreviations.put("SS", "South Sudan");
+        countryAbbreviations.put("ES", "Spain");
+        countryAbbreviations.put("LK", "Sri Lanka");
+        countryAbbreviations.put("SD", "Sudan");
+        countryAbbreviations.put("SR", "Suriname");
+        countryAbbreviations.put("SE", "Sweden");
+        countryAbbreviations.put("CH", "Switzerland");
+        countryAbbreviations.put("SY", "Syria");
+        countryAbbreviations.put("TW", "Taiwan");
+        countryAbbreviations.put("TJ", "Tajikistan");
+        countryAbbreviations.put("TZ", "Tanzania");
+        countryAbbreviations.put("TH", "Thailand");
+        countryAbbreviations.put("TG", "Togo");
+        countryAbbreviations.put("TO", "Tonga");
+        countryAbbreviations.put("TT", "Trinidad and Tobago");
+        countryAbbreviations.put("TN", "Tunisia");
+        countryAbbreviations.put("TR", "Turkey");
+        countryAbbreviations.put("TM", "Turkmenistan");
+        countryAbbreviations.put("TV", "Tuvalu");
+        countryAbbreviations.put("UG", "Uganda");
+        countryAbbreviations.put("UA", "Ukraine");
+        countryAbbreviations.put("AE", "United Arab Emirates");
+        countryAbbreviations.put("GB", "United Kingdom");
+        countryAbbreviations.put("US", "United States");
+        countryAbbreviations.put("UY", "Uruguay");
+        countryAbbreviations.put("UZ", "Uzbekistan");
+        countryAbbreviations.put("VU", "Vanuatu");
+        countryAbbreviations.put("VA", "Vatican City (Holy See)");
+        countryAbbreviations.put("VE", "Venezuela");
+        countryAbbreviations.put("VN", "Vietnam");
+        countryAbbreviations.put("YE", "Yemen");
+        countryAbbreviations.put("ZM", "Zambia");
+        countryAbbreviations.put("ZW", "Zimbabwe");
+
+        if (countryAbbreviations.containsKey(country)) {
+            clientDetails.setCountry(countryAbbreviations.get(country));
+        } else {
+            clientDetails.setCountry("");
+        }
+
+    }
 
 
 }

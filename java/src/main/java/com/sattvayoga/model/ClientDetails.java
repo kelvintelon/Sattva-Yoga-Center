@@ -12,6 +12,7 @@ public class ClientDetails {
     private String street_address;
     private String city;
     private String state_abbreviation;
+    private String country;
     private String zip_code;
     private String phone_number;
     private boolean is_on_email_list;
@@ -165,6 +166,14 @@ public class ClientDetails {
 
     public void setState_abbreviation(String state_abbreviation) {
         this.state_abbreviation = state_abbreviation;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
     }
 
     public String getZip_code() {

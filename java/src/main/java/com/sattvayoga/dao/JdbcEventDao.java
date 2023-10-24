@@ -2254,6 +2254,7 @@ public class JdbcEventDao implements EventDao {
         clientDetails.setCity(rs.getString("city"));
         clientDetails.setState_abbreviation(rs.getString("state_abbreviation"));
         clientDetails.setZip_code(rs.getString("zip_code"));
+        clientDetails.setCountry(rs.getString("country"));
         clientDetails.setPhone_number(rs.getString("phone_number"));
         clientDetails.setIs_on_email_list(rs.getBoolean("is_on_email_list"));
         clientDetails.setEmail(rs.getString("email"));
