@@ -71,7 +71,7 @@ public class JdbcEventDao implements EventDao {
         Timestamp OneYearFromToday = Timestamp.valueOf(startTimeStampBuilder);
 
         int days = daysBetween(cal1.getTime(), cal2.getTime());
-
+        Set<ClassEvent> eventsToCreate = new HashSet<>();
         for (int i = 0; i < days; i++) {
 
             String[] dateRange = classDetails.getDate_range();
@@ -117,7 +117,8 @@ public class JdbcEventDao implements EventDao {
 
                     boolean alreadyExists = isThereExistingEventWithStartTime(newClassEvent);
                     if (!alreadyExists) {
-                        createEvent(newClassEvent);
+//                        createEvent(newClassEvent);
+                        eventsToCreate.add(newClassEvent);
                     }
                 }
 
@@ -156,7 +157,8 @@ public class JdbcEventDao implements EventDao {
 
                     boolean alreadyExists = isThereExistingEventWithStartTime(newClassEvent);
                     if (!alreadyExists) {
-                        createEvent(newClassEvent);
+//                        createEvent(newClassEvent);
+                        eventsToCreate.add(newClassEvent);
                     }
                 }
 
@@ -195,7 +197,8 @@ public class JdbcEventDao implements EventDao {
 
                     boolean alreadyExists = isThereExistingEventWithStartTime(newClassEvent);
                     if (!alreadyExists) {
-                        createEvent(newClassEvent);
+//                        createEvent(newClassEvent);
+                        eventsToCreate.add(newClassEvent);
                     }
                 }
 
@@ -234,7 +237,8 @@ public class JdbcEventDao implements EventDao {
 
                     boolean alreadyExists = isThereExistingEventWithStartTime(newClassEvent);
                     if (!alreadyExists) {
-                        createEvent(newClassEvent);
+//                        createEvent(newClassEvent);
+                        eventsToCreate.add(newClassEvent);
                     }
                 }
 
@@ -273,7 +277,8 @@ public class JdbcEventDao implements EventDao {
 
                     boolean alreadyExists = isThereExistingEventWithStartTime(newClassEvent);
                     if (!alreadyExists) {
-                        createEvent(newClassEvent);
+//                        createEvent(newClassEvent);
+                        eventsToCreate.add(newClassEvent);
                     }
                 }
 
@@ -312,7 +317,8 @@ public class JdbcEventDao implements EventDao {
 
                     boolean alreadyExists = isThereExistingEventWithStartTime(newClassEvent);
                     if (!alreadyExists) {
-                        createEvent(newClassEvent);
+//                        createEvent(newClassEvent);
+                        eventsToCreate.add(newClassEvent);
                     }
                 }
 
@@ -351,7 +357,8 @@ public class JdbcEventDao implements EventDao {
 
                     boolean alreadyExists = isThereExistingEventWithStartTime(newClassEvent);
                     if (!alreadyExists) {
-                        createEvent(newClassEvent);
+//                        createEvent(newClassEvent);
+                        eventsToCreate.add(newClassEvent);
                     }
                 }
             }
@@ -362,7 +369,7 @@ public class JdbcEventDao implements EventDao {
                 System.out.println("Error incrementing the timestamp");
             }
         }
-
+        batchCreateEvents(eventsToCreate);
     }
 
     @Override
@@ -841,6 +848,31 @@ public class JdbcEventDao implements EventDao {
                 });
     }
 
+    public void batchUpdateEvents(final Collection<ClassEvent> events) {
+        jdbcTemplate.batchUpdate(
+                "UPDATE events SET class_id = ? , " +
+                        "event_name = ? , " +
+                        "start_time = ? , " +
+                        "end_time = ? , " +
+                        "color = ? , " +
+                        "timed = ? , " +
+                        "is_visible_online = ? , " +
+                        "is_paid = ? " +
+                        "WHERE event_id = ?",
+                events, 100,
+                (PreparedStatement ps, ClassEvent event) -> {
+                    ps.setInt(1, event.getClass_id());
+                    ps.setString(2, event.getEvent_name());
+                    ps.setTimestamp(3, event.getStart_time());
+                    ps.setTimestamp(4, event.getEnd_time());
+                    ps.setString(5, event.getColor());
+                    ps.setBoolean(6, event.isTimed());
+                    ps.setBoolean(7, event.isIs_visible_online());
+                    ps.setBoolean(8, event.isIs_paid());
+                    ps.setInt(9, event.getEvent_id());
+                });
+    }
+
     @Override
     public boolean deleteEvent(int eventId) {
         String sql = "BEGIN TRANSACTION;\n" +
@@ -1173,7 +1205,7 @@ public class JdbcEventDao implements EventDao {
         if (stringToReturn.length() > 0) {
             return stringToReturn;
         }
-
+        Set<ClassEvent> eventsToUpdate = new HashSet<>();
         // second while loop updates it
         while (result.next()) {
             // PULL THE EVENT
@@ -1378,7 +1410,8 @@ public class JdbcEventDao implements EventDao {
                     boolean checkForExistingEventWithStartTime = isThereExistingEventWithStartTime(newClassEvent);
 
                     if (!checkForExistingEventWithStartTime) {
-                        updateEventDetails(newClassEvent);
+//                        updateEventDetails(newClassEvent);
+                        eventsToUpdate.add(newClassEvent);
                     }
 
 
@@ -1439,7 +1472,8 @@ public class JdbcEventDao implements EventDao {
                         boolean checkForExistingEventWithStartTime = isThereExistingEventWithStartTime(newClassEvent);
 
                         if (!checkForExistingEventWithStartTime) {
-                            updateEventDetails(newClassEvent);
+//                            updateEventDetails(newClassEvent);
+                            eventsToUpdate.add(newClassEvent);
                         }
 
 
@@ -1513,7 +1547,8 @@ public class JdbcEventDao implements EventDao {
                             boolean checkForExistingEventWithStartTime = isThereExistingEventWithStartTime(newClassEvent);
 
                             if (!checkForExistingEventWithStartTime) {
-                                updateEventDetails(newClassEvent);
+//                                updateEventDetails(newClassEvent);
+                                eventsToUpdate.add(newClassEvent);
                             }
 
                         }
@@ -1546,7 +1581,8 @@ public class JdbcEventDao implements EventDao {
                     boolean checkForExistingEventWithStartTime = isThereExistingEventWithStartTime(newClassEvent);
 
                     if (!checkForExistingEventWithStartTime) {
-                        updateEventDetails(newClassEvent);
+//                        updateEventDetails(newClassEvent);
+                        eventsToUpdate.add(newClassEvent);
                     }
                 }
 
@@ -1555,7 +1591,7 @@ public class JdbcEventDao implements EventDao {
 
         }
         // Loop through the remaining empty string values and make events for that specific key
-
+        batchUpdateEvents(eventsToUpdate);
 
         for (String day : updatedClassDateRangeMap.keySet()) {
             String currentValue = updatedClassDateRangeMap.get(day);
@@ -1592,6 +1628,7 @@ public class JdbcEventDao implements EventDao {
                 int numberValueFromComparison = theLatestTimestamp.compareTo(OneYearFromToday);
 
                 if (numberValueFromComparison < 0) {
+                    Set<ClassEvent> eventsToCreate = new HashSet<>();
                     int days = daysBetween(cal1.getTime(), cal2.getTime());
 
                     for (int i = 0; i < days; i++) {
@@ -1641,7 +1678,8 @@ public class JdbcEventDao implements EventDao {
 
                             boolean alreadyExists = isThereExistingEventWithStartTime(newClassEvent);
                             if (!alreadyExists) {
-                                createEvent(newClassEvent);
+                                eventsToCreate.add(newClassEvent);
+//                                createEvent(newClassEvent);
                             }
 
                         }
@@ -1653,7 +1691,7 @@ public class JdbcEventDao implements EventDao {
                         }
 
                     }
-
+                    batchCreateEvents(eventsToCreate);
 
                 }
 

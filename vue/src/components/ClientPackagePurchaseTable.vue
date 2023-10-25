@@ -53,7 +53,7 @@
           </router-link>
           </v-row>
         </v-container>
-          <v-dialog v-model="dialog" max-width="500px">
+          <v-dialog v-model="dialog" max-width="500px" persistent>
             <v-card justify="center">
               <v-card-title>
                 <span class="text-h5">Gift Card</span>

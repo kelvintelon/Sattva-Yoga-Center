@@ -18,8 +18,17 @@ public class CheckoutItemDTO {
     private int discount = 0;
     private String giftCardEmail = "";
     private boolean saveGiftCardEmail = false;
+    private int subscriptionDuration;
 
     public CheckoutItemDTO(){
+    }
+
+    public int getSubscriptionDuration() {
+        return subscriptionDuration;
+    }
+
+    public void setSubscriptionDuration(int subscriptionDuration) {
+        this.subscriptionDuration = subscriptionDuration;
     }
 
     public String getGiftCardEmail() {

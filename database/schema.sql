@@ -85,7 +85,7 @@ CREATE TABLE package_details
 	subscription_duration	int,
 	is_subscription		boolean 		NOT NULL, 
 	is_visible_online	boolean			NOT NULL,
-	is_recurring 		boolean			NOT NULL,	
+	is_recurring 		boolean			,	
 	CONSTRAINT PK_package_details PRIMARY KEY (package_id)
 );
 
@@ -102,8 +102,7 @@ CREATE TABLE package_purchase
 	total_amount_paid	decimal(13, 2),
 	discount			decimal(13, 2),
 	paymentId			varchar(30),
-	CONSTRAINT PK_package_purchase PRIMARY KEY (package_purchase_id),
-	CONSTRAINT FK_package_purchase_package_id FOREIGN KEY (package_id) REFERENCES package_details (package_id)
+	CONSTRAINT PK_package_purchase PRIMARY KEY (package_purchase_id)
 );
 
 CREATE TABLE events (

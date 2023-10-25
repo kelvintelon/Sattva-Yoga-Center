@@ -14,7 +14,7 @@
             <v-divider class="mx-4" inset vertical></v-divider>
             <v-spacer></v-spacer>
             <!-- FORM-->
-            <v-dialog v-model="dialog" max-width="500px">
+            <v-dialog v-model="dialog" max-width="500px" persistent>
               <template v-slot:activator="{ on, attrs }">
                 <v-btn
                   color="primary"
@@ -80,11 +80,11 @@
                           required
                           @change="onSubscriptionBooleanChange"
                         ></v-checkbox>
-                        <v-checkbox v-if="toggleRecurring || packageDetails.is_subscription"
+                        <!-- <v-checkbox v-if="toggleRecurring || packageDetails.is_subscription"
                           v-model="packageDetails.is_recurring"
                           label="Is this recurring?"
                           required
-                        ></v-checkbox>
+                        ></v-checkbox> -->
                         <v-checkbox
                           v-model="packageDetails.is_visible_online"
                           label="Should this be Visible Online?"
@@ -122,7 +122,7 @@
             <!-- END OF CREATE PACKAGE FORM -->
 
             <!-- START OF EDIT FORM -->
-            <v-dialog v-model="dialog2" max-width="500px">
+            <v-dialog v-model="dialog2" max-width="500px" persistent>
               <v-card justify="center">
                 <v-card-title>
                   <span class="text-h5">{{ formTitle }}</span>
@@ -177,11 +177,11 @@
                           required
                           @change="onSubscriptionBooleanChange"
                         ></v-checkbox>
-                        <v-checkbox v-if="toggleRecurring || editedItem.is_subscription"
+                        <!-- <v-checkbox v-if="toggleRecurring || editedItem.is_subscription"
                           v-model="editedItem.is_recurring"
                           label="Is this recurring?"
                           required
-                        ></v-checkbox>
+                        ></v-checkbox> -->
                         <v-checkbox
                           v-model="editedItem.is_visible_online"
                           label="Visible Online?"
@@ -330,7 +330,7 @@ export default {
         classes_amount: 0,
         subscription_duration: 0,
         is_subscription: false,
-        is_visible_online: false,
+        is_visible_online: true,
         is_recurring: false,
       },
       dropDownOpen: false,
@@ -345,7 +345,7 @@ export default {
         classes_amount: 0,
         subscription_duration: 0,
         is_subscription: false,
-        is_visible_online: false,
+        is_visible_online: true,
         is_recurring: false,
       },
       descriptionRules: [(v) => !!v || "Description is required"],

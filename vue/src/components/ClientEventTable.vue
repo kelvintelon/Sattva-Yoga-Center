@@ -19,6 +19,7 @@
             v-model="dialog"
             max-width="500px"
             v-if="$store.state.user.username == 'admin'"
+            persistent
           >
             <template v-slot:activator="{ on, attrs }">
               <v-btn

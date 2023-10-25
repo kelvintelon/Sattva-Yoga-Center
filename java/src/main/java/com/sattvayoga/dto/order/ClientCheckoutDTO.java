@@ -19,7 +19,7 @@ public class ClientCheckoutDTO {
     private boolean saveCard;
     private boolean saveAsRecurringPayment;
     private int iterations;
-
+    private int subscriptionDuration;
     private GiftCard giftCard;
 
     public ClientCheckoutDTO(int client_id, List<PackageDetails> selectedCheckoutPackages, int total, String email, int discount, boolean saveEmail, String renewalDate) {
@@ -30,6 +30,14 @@ public class ClientCheckoutDTO {
         this.discount = discount;
         this.saveEmail = saveEmail;
         this.renewalDate = renewalDate;
+    }
+
+    public int getSubscriptionDuration() {
+        return subscriptionDuration;
+    }
+
+    public void setSubscriptionDuration(int subscriptionDuration) {
+        this.subscriptionDuration = subscriptionDuration;
     }
 
     public String getEmailForReceipt() {

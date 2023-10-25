@@ -428,10 +428,10 @@
                       <v-checkbox v-if="showSaveCardCheckbox"
                         v-model="clientCheckout.saveCard" label="Save Payment Method?">
                       </v-checkbox>
-                      <v-checkbox v-if="showSaveRecurringPaymentCheckbox"
+                      <!-- <v-checkbox v-if="showSaveRecurringPaymentCheckbox"
                         v-model="clientCheckout.saveAsRecurringPayment"
                         label="Save As Recurring Payment?"
-                      ></v-checkbox>
+                      ></v-checkbox> -->
                     </v-col>
                   </v-row>
                   <v-row justify="center">

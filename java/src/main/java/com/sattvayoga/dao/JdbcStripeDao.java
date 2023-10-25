@@ -60,14 +60,15 @@ public class JdbcStripeDao implements StripeDao {
 
         for (CheckoutItemDTO checkoutItemDTO : checkoutItemDTOList) {
 
-            if (checkoutItemDTO.isIs_monthly_renew()) {
-                foundSubscription = true;
-                // Handle subscription items
-                sessionItemList.add(createSubscriptionLineItem(checkoutItemDTO));
-            } else {
-                // Handle one-time purchase items
-                sessionItemList.add(createSessionLineItem(checkoutItemDTO));
-            }
+//            if (checkoutItemDTO.isIs_monthly_renew()) {
+//                foundSubscription = true;
+//                // Handle subscription items
+//                sessionItemList.add(createSubscriptionLineItem(checkoutItemDTO));
+//            } else {
+//                // Handle one-time purchase items
+//                sessionItemList.add(createSessionLineItem(checkoutItemDTO));
+//            }
+            sessionItemList.add(createSessionLineItem(checkoutItemDTO));
         }
         // (foundSubscription) ? SessionCreateParams.Mode.SUBSCRIPTION :SessionCreateParams.Mode.PAYMENT
         SessionCreateParams params = SessionCreateParams.builder()
@@ -90,309 +91,310 @@ public class JdbcStripeDao implements StripeDao {
 
         Reader readerResource = getReader();
 
-        boolean discountNeeded = determineDiscountNeeded(clientCheckoutDTO);
+//        boolean discountNeeded = determineDiscountNeeded(clientCheckoutDTO);
 
-        PackageDetails firstPackageDetails = clientCheckoutDTO.getListOfPackages().get(0);
-        if (firstPackageDetails.isIs_recurring() && firstPackageDetails.isIs_subscription()) {
-
-
-            // Compare the renewal Date to today's date to see if they are the same.
-            // If they are not then follow through changing the subscription scheduling
-            if (!LocalDate.now().toString().equals(clientCheckoutDTO.getRenewalDate())) {
-
-                Customer customer = getCustomerForSubscriptionByClientId(clientCheckoutDTO.getClient_id(),clientCheckoutDTO.getEmailForReceipt());
-
-                LocalDate renewalDate = LocalDate.parse(clientCheckoutDTO.getRenewalDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-
-                ZoneId zone = ZoneId.of("America/New_York");
-                LocalDateTime renewalDateLDT = renewalDate.atStartOfDay();
-                ZoneOffset zoneOffSet = zone.getRules().getOffset(renewalDateLDT);
-
-                if (!discountNeeded) {
-                    // Regular subscription scheduling with no discount
-
-                    // Gift card used logic for metadata
-                    Map<String, String> metaDataMap = new HashMap<>();
-                    usedGiftCardInMetaData(clientCheckoutDTO, metaDataMap);
-
-                    SubscriptionScheduleCreateParams params =
-                            SubscriptionScheduleCreateParams.builder()
-                                    .setCustomer(customer.getId())
-                                    .setStartDate(renewalDate.toEpochSecond(LocalTime.from(renewalDateLDT), zoneOffSet))
-                                    .setEndBehavior(SubscriptionScheduleCreateParams.EndBehavior.CANCEL)
-                                    .setDefaultSettings(SubscriptionScheduleCreateParams.DefaultSettings.builder().setDefaultPaymentMethod(clientCheckoutDTO.getPaymentMethodId()).build())
-                                    .addPhase(
-                                            SubscriptionScheduleCreateParams.Phase.builder()
-                                                    .addItem(
-                                                            SubscriptionScheduleCreateParams.Phase.Item.builder()
-                                                                    .setPrice((firstPackageDetails.getDescription().equals("One Month Subscription")) ? "price_1NieCWBV0tnIJdW6WqIm2dti" : "price_1NkWmnBV0tnIJdW6ZGHtezqw")
-                                                                    .setQuantity(1L)
-                                                                    .build()
-                                                    )
-                                                    .setIterations((long) clientCheckoutDTO.getIterations())
-                                                    .build()
-                                    )
-                                    .setMetadata(metaDataMap)
-                                    .build();
-
-                    SubscriptionSchedule subscriptionSchedule = SubscriptionSchedule.create(params);
+//        PackageDetails firstPackageDetails = clientCheckoutDTO.getListOfPackages().get(0);
+        if (clientCheckoutDTO.getPaymentMethodId() != null && clientCheckoutDTO.getPaymentMethodId().length() > 0) {
 
 
+            String customer_id = getCustomerIdString(clientCheckoutDTO.getClient_id());
 
-                } else {
-                    // This one is for creating a discount coupon for a subscription schedule
-                    Map<String, Object> couponParams = new HashMap<>();
-                    couponParams.put("amount_off", clientCheckoutDTO.getDiscount()*100);
-                    couponParams.put("currency", "usd");
-                    if (clientCheckoutDTO.isSaveAsRecurringPayment()) {
-                        couponParams.put("duration", "forever");
-                    } else {
-                        couponParams.put("duration", "once");
-                    }
+            String returnUrl = baseURL + "clientPackageManagement";
 
-                    couponParams.put("name", "$" + clientCheckoutDTO.getDiscount() + " off");
-                    couponParams.put("max_redemptions", 1);
+            Map<String, String> metaDataMap = new HashMap<>();
+            metaDataMap.put("process", "admin");
 
-                    Coupon coupon = Coupon.create(couponParams);
+            modifyMap(clientCheckoutDTO, metaDataMap);
 
-                    // Now we need meta data as well
-                    Map<String, String> metaDataMap = new HashMap<>();
-                    metaDataMap.put("discountAmount", String.valueOf(clientCheckoutDTO.getDiscount()));
-
-                    //Logic for gift card used
-                    usedGiftCardInMetaData(clientCheckoutDTO, metaDataMap);
-
-                    SubscriptionScheduleCreateParams params =
-                            SubscriptionScheduleCreateParams.builder()
-                                    .setCustomer(customer.getId())
-                                    .setStartDate(renewalDate.toEpochSecond(LocalTime.from(renewalDateLDT), zoneOffSet))
-                                    .setEndBehavior(SubscriptionScheduleCreateParams.EndBehavior.CANCEL)
-                                    .setDefaultSettings(SubscriptionScheduleCreateParams.DefaultSettings.builder().setDefaultPaymentMethod(clientCheckoutDTO.getPaymentMethodId()).build())
-                                    .addPhase(
-                                            SubscriptionScheduleCreateParams.Phase.builder()
-                                                    .addItem(
-                                                            SubscriptionScheduleCreateParams.Phase.Item.builder()
-                                                                    .setPrice((firstPackageDetails.getDescription().equals("One Month Subscription")) ? "price_1NieCWBV0tnIJdW6WqIm2dti" : "price_1NkWmnBV0tnIJdW6ZGHtezqw")
-                                                                    .setQuantity(1L)
-                                                                    .build()
-                                                    )
-                                                    .setIterations((long) clientCheckoutDTO.getIterations())
-                                                    .setCoupon(coupon.getId())
-                                                    .build()
-                                    )
-                                    .setMetadata(metaDataMap)
-                                    .build();
-
-                    SubscriptionSchedule subscriptionSchedule = SubscriptionSchedule.create(params);
-                }
-            }
-            else {
-
-                Customer customer = getCustomerForSubscriptionByClientId(clientCheckoutDTO.getClient_id(),clientCheckoutDTO.getEmailForReceipt());
-
-                // By setting the customer ID for creating a subscription. The customer's saved payment method forgoes any need to tap the card
-                List<Object> items = new ArrayList<>();
-                Map<String, Object> item1 = new HashMap<>();
-
-                if (!discountNeeded) {
-                    // Regular subscription no discount no scheduling
-
-                    // Logic for gift card used
-                    Map<String, String> metaDataMap = new HashMap<>();
-                    usedGiftCardInMetaData(clientCheckoutDTO, metaDataMap);
-
-                    item1.put(
-                            "price",
-                            (firstPackageDetails.getDescription().equals("One Month Subscription")) ? "price_1NieCWBV0tnIJdW6WqIm2dti" : "price_1NkWmnBV0tnIJdW6ZGHtezqw"
-                    );
-                    items.add(item1);
-                    Map<String, Object> subscriptionParams = new HashMap<>();
-                    subscriptionParams.put("customer", customer.getId());
-                    subscriptionParams.put("items", items);
-                    subscriptionParams.put("default_payment_method", clientCheckoutDTO.getPaymentMethodId());
-                    subscriptionParams.put("metadata", metaDataMap);
-
-                    //Cancel_at in unix timestamp
-                    createCancelAtTimestampFromIterations(clientCheckoutDTO, firstPackageDetails, subscriptionParams);
-
-                    Subscription subscription =
-                            Subscription.create(subscriptionParams);
-
-                    Invoice invoice = Invoice.retrieve(subscription.getLatestInvoice());
-
-                    PaymentIntent paymentIntent = PaymentIntent.retrieve(invoice.getPaymentIntent());
-                } else {
-                    // This one is for adding a coupon/discount to a subscription that isnt on a schedule
-                    Map<String, Object> couponParams = new HashMap<>();
-                    couponParams.put("amount_off", clientCheckoutDTO.getDiscount()*100);
-                    couponParams.put("currency", "usd");
-                    if (clientCheckoutDTO.isSaveAsRecurringPayment()) {
-                        couponParams.put("duration", "forever");
-                    } else {
-                        couponParams.put("duration", "once");
-                    }
-                    couponParams.put("name", "$" + clientCheckoutDTO.getDiscount() + " off");
-                    couponParams.put("max_redemptions", 1);
-
-                    Coupon coupon = Coupon.create(couponParams);
-
-                    // Now we need meta data as well
-                    Map<String, String> metaDataMap = new HashMap<>();
-                    metaDataMap.put("discountAmount", String.valueOf(clientCheckoutDTO.getDiscount()));
-
-                    // Logic for gift card used
-                    usedGiftCardInMetaData(clientCheckoutDTO, metaDataMap);
-
-                    item1.put(
-                            "price",
-                            (firstPackageDetails.getDescription().equals("One Month Subscription")) ? "price_1NieCWBV0tnIJdW6WqIm2dti" : "price_1NkWmnBV0tnIJdW6ZGHtezqw"
-                    );
-                    items.add(item1);
-                    Map<String, Object> subscriptionParams = new HashMap<>();
-                    subscriptionParams.put("customer", customer.getId());
-                    subscriptionParams.put("items", items);
-                    subscriptionParams.put("default_payment_method", clientCheckoutDTO.getPaymentMethodId());
-                    subscriptionParams.put("coupon", coupon.getId());
-                    // add metaData into params
-                    subscriptionParams.put("metadata", metaDataMap);
-
-                    // Cancel at unix time stamp
-                    createCancelAtTimestampFromIterations(clientCheckoutDTO, firstPackageDetails, subscriptionParams);
-
-                    Subscription subscription =
-                            Subscription.create(subscriptionParams);
-
-                    Invoice invoice = Invoice.retrieve(subscription.getLatestInvoice());
-
-                    PaymentIntent paymentIntent = PaymentIntent.retrieve(invoice.getPaymentIntent());
-                }
-
-            }
-
-
-
-            return "";
-        } else {
-
-            if (clientCheckoutDTO.getPaymentMethodId() != null && clientCheckoutDTO.getPaymentMethodId().length() > 0) {
-
-
-                String customer_id = getCustomerIdString(clientCheckoutDTO.getClient_id());
-
-                String returnUrl = baseURL + "clientPackageManagement";
-
-                Map<String, String> metaDataMap = new HashMap<>();
-                metaDataMap.put("process", "admin");
-
-                modifyMap(clientCheckoutDTO, metaDataMap);
-
-                if (clientCheckoutDTO.getEmailForReceipt().length()>0) {
-                    PaymentIntentCreateParams paymentIntentCreateParams =
-                            PaymentIntentCreateParams.builder()
-                                    .setCurrency("usd")
-                                    .setCustomer(customer_id)
-                                    .setAmount((long) clientCheckoutDTO.getTotal() * 100)
-                                    .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
-                                    .setPaymentMethod(clientCheckoutDTO.getPaymentMethodId())
-                                    .setReturnUrl(returnUrl)
-                                    .setReceiptEmail(clientCheckoutDTO.getEmailForReceipt())
-                                    .setConfirm(true)
-                                    .putAllMetadata(metaDataMap)
-                                    .build();
-
-                    // This creates a payment intent
-                    PaymentIntent paymentIntent = PaymentIntent.create(paymentIntentCreateParams);
-                } else {
-
-                    PaymentIntentCreateParams paymentIntentCreateParams =
-                            PaymentIntentCreateParams.builder()
-                                    .setCurrency("usd")
-                                    .setCustomer(customer_id)
-                                    .setAmount((long) clientCheckoutDTO.getTotal() * 100)
-                                    .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
-                                    .setPaymentMethod(clientCheckoutDTO.getPaymentMethodId())
-                                    .setReturnUrl(returnUrl)
-                                    .setConfirm(true)
-                                    .putAllMetadata(metaDataMap)
-                                    .build();
-
-                    // This creates a payment intent
-                    PaymentIntent paymentIntent = PaymentIntent.create(paymentIntentCreateParams);
-                }
-                return "";
-            } else {
-
-                String customer_id = getCustomerIdString(clientCheckoutDTO.getClient_id());
-
-                Map<String, String> metaDataMap = new HashMap<>();
-                metaDataMap.put("process", "admin");
-
-                modifyMap(clientCheckoutDTO, metaDataMap);
-
-                PaymentIntentCreateParams paymentIntentCreateParams = getPaymentIntentCreateParams(clientCheckoutDTO, customer_id, metaDataMap);
+            if (clientCheckoutDTO.getEmailForReceipt().length()>0) {
+                PaymentIntentCreateParams paymentIntentCreateParams =
+                        PaymentIntentCreateParams.builder()
+                                .setCurrency("usd")
+                                .setCustomer(customer_id)
+                                .setAmount((long) clientCheckoutDTO.getTotal() * 100)
+                                .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
+                                .setPaymentMethod(clientCheckoutDTO.getPaymentMethodId())
+                                .setReturnUrl(returnUrl)
+                                .setReceiptEmail(clientCheckoutDTO.getEmailForReceipt())
+                                .setConfirm(true)
+                                .putAllMetadata(metaDataMap)
+                                .build();
 
                 // This creates a payment intent
                 PaymentIntent paymentIntent = PaymentIntent.create(paymentIntentCreateParams);
+            } else {
 
-                if (clientCheckoutDTO.getEmailForReceipt().length()>0) {
-                    Map<String, Object> params = new HashMap<>();
-                    params.put("receipt_email", clientCheckoutDTO.getEmailForReceipt());
-                    paymentIntent = paymentIntent.update(params);
-                }
+                PaymentIntentCreateParams paymentIntentCreateParams =
+                        PaymentIntentCreateParams.builder()
+                                .setCurrency("usd")
+                                .setCustomer(customer_id)
+                                .setAmount((long) clientCheckoutDTO.getTotal() * 100)
+                                .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
+                                .setPaymentMethod(clientCheckoutDTO.getPaymentMethodId())
+                                .setReturnUrl(returnUrl)
+                                .setConfirm(true)
+                                .putAllMetadata(metaDataMap)
+                                .build();
 
-                // This creates a parameter to pass in through the reader using the payment intent ID
-                ReaderProcessPaymentIntentParams readerProcessParams = ReaderProcessPaymentIntentParams.builder().setPaymentIntent(paymentIntent.getId()).build();
+                // This creates a payment intent
+                PaymentIntent paymentIntent = PaymentIntent.create(paymentIntentCreateParams);
+            }
+            return "";
+        } else {
 
-                int attempt = 0;
-                int tries = 3;
-                while (true) {
-                    attempt++;
-                    try {
-                        // This passes the params into the reader
-                        readerResource.processPaymentIntent(readerProcessParams);
+            String customer_id = getCustomerIdString(clientCheckoutDTO.getClient_id());
 
-                        //TODO: Comment out the following line for a physical reader
-                        // 1. This is for a simulated tap card
-                        Reader reader = readerResource.getTestHelpers().presentPaymentMethod();
+            Map<String, String> metaDataMap = new HashMap<>();
+            metaDataMap.put("process", "admin");
 
-                        // TODO: You can return any string
-                        return readerResource.toJson();
-                    } catch (InvalidRequestException e) {
-                        switch (e.getCode()) {
-                            case "terminal_reader_timeout":
-                                // Temporary networking blip, automatically retry a few times.
-                                if (attempt == tries) {
-                                    return e.getStripeError().toJson();
-                                }
-                                break;
-                            case "terminal_reader_offline":
-                                // Reader is offline and won't respond to API requests. Make sure the reader is
-                                // powered on and connected to the internet before retrying.
+            String desciptionForPayment = modifyMap(clientCheckoutDTO, metaDataMap);
+
+            PaymentIntentCreateParams paymentIntentCreateParams = getPaymentIntentCreateParams(clientCheckoutDTO, customer_id, metaDataMap, desciptionForPayment);
+
+            // This creates a payment intent
+            PaymentIntent paymentIntent = PaymentIntent.create(paymentIntentCreateParams);
+
+            if (clientCheckoutDTO.getEmailForReceipt().length()>0) {
+                Map<String, Object> params = new HashMap<>();
+                params.put("receipt_email", clientCheckoutDTO.getEmailForReceipt());
+                paymentIntent = paymentIntent.update(params);
+            }
+
+            // This creates a parameter to pass in through the reader using the payment intent ID
+            ReaderProcessPaymentIntentParams readerProcessParams = ReaderProcessPaymentIntentParams.builder().setPaymentIntent(paymentIntent.getId()).build();
+
+            int attempt = 0;
+            int tries = 3;
+            while (true) {
+                attempt++;
+                try {
+                    // This passes the params into the reader
+                    readerResource.processPaymentIntent(readerProcessParams);
+
+                    //TODO: Comment out the following line for a physical reader
+                    // 1. This is for a simulated tap card
+                    Reader reader = readerResource.getTestHelpers().presentPaymentMethod();
+
+                    // TODO: You can return any string
+                    return readerResource.toJson();
+                } catch (InvalidRequestException e) {
+                    switch (e.getCode()) {
+                        case "terminal_reader_timeout":
+                            // Temporary networking blip, automatically retry a few times.
+                            if (attempt == tries) {
                                 return e.getStripeError().toJson();
-                            case "terminal_reader_busy":
-                                // Reader is currently busy processing another request, installing updates or
-                                // changing settings. Remember to disable the pay button in your point-of-sale
-                                // application while waiting for a reader to respond to an API request.
-                                return e.getStripeError().toJson();
-                            case "intent_invalid_state":
-                                // Check PaymentIntent status because it's not ready to be processed. It might
-                                // have been already successfully processed or canceled.
-                                PaymentIntent paymentIntentCase = PaymentIntent.retrieve(paymentIntent.getId());
-                                Map<String, String> errorResponse = Collections.singletonMap("error",
-                                        "PaymentIntent is already in " + paymentIntentCase.getStatus() + " state.");
-                                return new Gson().toJson(errorResponse);
+                            }
+                            break;
+                        case "terminal_reader_offline":
+                            // Reader is offline and won't respond to API requests. Make sure the reader is
+                            // powered on and connected to the internet before retrying.
+                            return e.getStripeError().toJson();
+                        case "terminal_reader_busy":
+                            // Reader is currently busy processing another request, installing updates or
+                            // changing settings. Remember to disable the pay button in your point-of-sale
+                            // application while waiting for a reader to respond to an API request.
+                            return e.getStripeError().toJson();
+                        case "intent_invalid_state":
+                            // Check PaymentIntent status because it's not ready to be processed. It might
+                            // have been already successfully processed or canceled.
+                            PaymentIntent paymentIntentCase = PaymentIntent.retrieve(paymentIntent.getId());
+                            Map<String, String> errorResponse = Collections.singletonMap("error",
+                                    "PaymentIntent is already in " + paymentIntentCase.getStatus() + " state.");
+                            return new Gson().toJson(errorResponse);
 
-                            default:
-                                return e.getStripeError().toJson();
-                        }
+                        default:
+                            return e.getStripeError().toJson();
                     }
+                }
 //              finally {
 //                   return "";
 //               }
-                }
             }
-
         }
+//        if (firstPackageDetails.isIs_recurring() && firstPackageDetails.isIs_subscription()) {
+//
+//
+//            // Compare the renewal Date to today's date to see if they are the same.
+//            // If they are not then follow through changing the subscription scheduling
+//            if (!LocalDate.now().toString().equals(clientCheckoutDTO.getRenewalDate())) {
+//
+//                Customer customer = getCustomerForSubscriptionByClientId(clientCheckoutDTO.getClient_id(),clientCheckoutDTO.getEmailForReceipt());
+//
+//                LocalDate renewalDate = LocalDate.parse(clientCheckoutDTO.getRenewalDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+//
+//                ZoneId zone = ZoneId.of("America/New_York");
+//                LocalDateTime renewalDateLDT = renewalDate.atStartOfDay();
+//                ZoneOffset zoneOffSet = zone.getRules().getOffset(renewalDateLDT);
+//
+//                if (!discountNeeded) {
+//                    // Regular subscription scheduling with no discount
+//
+//                    // Gift card used logic for metadata
+//                    Map<String, String> metaDataMap = new HashMap<>();
+//                    usedGiftCardInMetaData(clientCheckoutDTO, metaDataMap);
+//
+//                    SubscriptionScheduleCreateParams params =
+//                            SubscriptionScheduleCreateParams.builder()
+//                                    .setCustomer(customer.getId())
+//                                    .setStartDate(renewalDate.toEpochSecond(LocalTime.from(renewalDateLDT), zoneOffSet))
+//                                    .setEndBehavior(SubscriptionScheduleCreateParams.EndBehavior.CANCEL)
+//                                    .setDefaultSettings(SubscriptionScheduleCreateParams.DefaultSettings.builder().setDefaultPaymentMethod(clientCheckoutDTO.getPaymentMethodId()).build())
+//                                    .addPhase(
+//                                            SubscriptionScheduleCreateParams.Phase.builder()
+//                                                    .addItem(
+//                                                            SubscriptionScheduleCreateParams.Phase.Item.builder()
+//                                                                    .setPrice((firstPackageDetails.getDescription().equals("One Month Subscription")) ? "price_1NieCWBV0tnIJdW6WqIm2dti" : "price_1NkWmnBV0tnIJdW6ZGHtezqw")
+//                                                                    .setQuantity(1L)
+//                                                                    .build()
+//                                                    )
+//                                                    .setIterations((long) clientCheckoutDTO.getIterations())
+//                                                    .build()
+//                                    )
+//                                    .setMetadata(metaDataMap)
+//                                    .build();
+//
+//                    SubscriptionSchedule subscriptionSchedule = SubscriptionSchedule.create(params);
+//
+//
+//
+//                } else {
+//                    // This one is for creating a discount coupon for a subscription schedule
+//                    Map<String, Object> couponParams = new HashMap<>();
+//                    couponParams.put("amount_off", clientCheckoutDTO.getDiscount()*100);
+//                    couponParams.put("currency", "usd");
+//                    if (clientCheckoutDTO.isSaveAsRecurringPayment()) {
+//                        couponParams.put("duration", "forever");
+//                    } else {
+//                        couponParams.put("duration", "once");
+//                    }
+//
+//                    couponParams.put("name", "$" + clientCheckoutDTO.getDiscount() + " off");
+//                    couponParams.put("max_redemptions", 1);
+//
+//                    Coupon coupon = Coupon.create(couponParams);
+//
+//                    // Now we need meta data as well
+//                    Map<String, String> metaDataMap = new HashMap<>();
+//                    metaDataMap.put("discountAmount", String.valueOf(clientCheckoutDTO.getDiscount()));
+//
+//                    //Logic for gift card used
+//                    usedGiftCardInMetaData(clientCheckoutDTO, metaDataMap);
+//
+//                    SubscriptionScheduleCreateParams params =
+//                            SubscriptionScheduleCreateParams.builder()
+//                                    .setCustomer(customer.getId())
+//                                    .setStartDate(renewalDate.toEpochSecond(LocalTime.from(renewalDateLDT), zoneOffSet))
+//                                    .setEndBehavior(SubscriptionScheduleCreateParams.EndBehavior.CANCEL)
+//                                    .setDefaultSettings(SubscriptionScheduleCreateParams.DefaultSettings.builder().setDefaultPaymentMethod(clientCheckoutDTO.getPaymentMethodId()).build())
+//                                    .addPhase(
+//                                            SubscriptionScheduleCreateParams.Phase.builder()
+//                                                    .addItem(
+//                                                            SubscriptionScheduleCreateParams.Phase.Item.builder()
+//                                                                    .setPrice((firstPackageDetails.getDescription().equals("One Month Subscription")) ? "price_1NieCWBV0tnIJdW6WqIm2dti" : "price_1NkWmnBV0tnIJdW6ZGHtezqw")
+//                                                                    .setQuantity(1L)
+//                                                                    .build()
+//                                                    )
+//                                                    .setIterations((long) clientCheckoutDTO.getIterations())
+//                                                    .setCoupon(coupon.getId())
+//                                                    .build()
+//                                    )
+//                                    .setMetadata(metaDataMap)
+//                                    .build();
+//
+//                    SubscriptionSchedule subscriptionSchedule = SubscriptionSchedule.create(params);
+//                }
+//            }
+//            else {
+//
+//                Customer customer = getCustomerForSubscriptionByClientId(clientCheckoutDTO.getClient_id(),clientCheckoutDTO.getEmailForReceipt());
+//
+//                // By setting the customer ID for creating a subscription. The customer's saved payment method forgoes any need to tap the card
+//                List<Object> items = new ArrayList<>();
+//                Map<String, Object> item1 = new HashMap<>();
+//
+//                if (!discountNeeded) {
+//                    // Regular subscription no discount no scheduling
+//
+//                    // Logic for gift card used
+//                    Map<String, String> metaDataMap = new HashMap<>();
+//                    usedGiftCardInMetaData(clientCheckoutDTO, metaDataMap);
+//
+//                    item1.put(
+//                            "price",
+//                            (firstPackageDetails.getDescription().equals("One Month Subscription")) ? "price_1NieCWBV0tnIJdW6WqIm2dti" : "price_1NkWmnBV0tnIJdW6ZGHtezqw"
+//                    );
+//                    items.add(item1);
+//                    Map<String, Object> subscriptionParams = new HashMap<>();
+//                    subscriptionParams.put("customer", customer.getId());
+//                    subscriptionParams.put("items", items);
+//                    subscriptionParams.put("default_payment_method", clientCheckoutDTO.getPaymentMethodId());
+//                    subscriptionParams.put("metadata", metaDataMap);
+//
+//                    //Cancel_at in unix timestamp
+//                    createCancelAtTimestampFromIterations(clientCheckoutDTO, firstPackageDetails, subscriptionParams);
+//
+//                    Subscription subscription =
+//                            Subscription.create(subscriptionParams);
+//
+//                    Invoice invoice = Invoice.retrieve(subscription.getLatestInvoice());
+//
+//                    PaymentIntent paymentIntent = PaymentIntent.retrieve(invoice.getPaymentIntent());
+//                } else {
+//                    // This one is for adding a coupon/discount to a subscription that isnt on a schedule
+//                    Map<String, Object> couponParams = new HashMap<>();
+//                    couponParams.put("amount_off", clientCheckoutDTO.getDiscount()*100);
+//                    couponParams.put("currency", "usd");
+//                    if (clientCheckoutDTO.isSaveAsRecurringPayment()) {
+//                        couponParams.put("duration", "forever");
+//                    } else {
+//                        couponParams.put("duration", "once");
+//                    }
+//                    couponParams.put("name", "$" + clientCheckoutDTO.getDiscount() + " off");
+//                    couponParams.put("max_redemptions", 1);
+//
+//                    Coupon coupon = Coupon.create(couponParams);
+//
+//                    // Now we need meta data as well
+//                    Map<String, String> metaDataMap = new HashMap<>();
+//                    metaDataMap.put("discountAmount", String.valueOf(clientCheckoutDTO.getDiscount()));
+//
+//                    // Logic for gift card used
+//                    usedGiftCardInMetaData(clientCheckoutDTO, metaDataMap);
+//
+//                    item1.put(
+//                            "price",
+//                            (firstPackageDetails.getDescription().equals("One Month Subscription")) ? "price_1NieCWBV0tnIJdW6WqIm2dti" : "price_1NkWmnBV0tnIJdW6ZGHtezqw"
+//                    );
+//                    items.add(item1);
+//                    Map<String, Object> subscriptionParams = new HashMap<>();
+//                    subscriptionParams.put("customer", customer.getId());
+//                    subscriptionParams.put("items", items);
+//                    subscriptionParams.put("default_payment_method", clientCheckoutDTO.getPaymentMethodId());
+//                    subscriptionParams.put("coupon", coupon.getId());
+//                    // add metaData into params
+//                    subscriptionParams.put("metadata", metaDataMap);
+//
+//                    // Cancel at unix time stamp
+//                    createCancelAtTimestampFromIterations(clientCheckoutDTO, firstPackageDetails, subscriptionParams);
+//
+//                    Subscription subscription =
+//                            Subscription.create(subscriptionParams);
+//
+//                    Invoice invoice = Invoice.retrieve(subscription.getLatestInvoice());
+//
+//                    PaymentIntent paymentIntent = PaymentIntent.retrieve(invoice.getPaymentIntent());
+//                }
+//
+//            }
+//
+//
+//
+//            return "";
+//        } else {
+//
+//
+//
+//        }
     }
 
     private void createCancelAtTimestampFromIterations(ClientCheckoutDTO clientCheckoutDTO, PackageDetails firstPackageDetails, Map<String, Object> subscriptionParams) {
@@ -441,41 +443,69 @@ public class JdbcStripeDao implements StripeDao {
         return false;
     }
 
-    private void modifyMap(ClientCheckoutDTO clientCheckoutDTO, Map<String, String> metaDataMap) {
+    private String modifyMap(ClientCheckoutDTO clientCheckoutDTO, Map<String, String> metaDataMap) {
         List<PackageDetails> listOfPackagesBeingPurchased = clientCheckoutDTO.getListOfPackages();
 
 
         int runningDiscountAmount = clientCheckoutDTO.getDiscount();
 
+        Map<String, String> mapForDescription = new HashMap<>();
+        String descriptionToReturn = "";
         for (int i = 0; i < listOfPackagesBeingPurchased.size(); i++) {
-            String currentPackageName = listOfPackagesBeingPurchased.get(i).getDescription();
+        String currentPackageName = listOfPackagesBeingPurchased.get(i).getDescription();
 
-            if (currentPackageName.contains("Gift")) {
-                metaDataMap.put("giftCardEmail", clientCheckoutDTO.getEmailForGift());
-                metaDataMap.put("saveGiftCardEmail", String.valueOf(clientCheckoutDTO.isSaveEmail()));
-            }
-
-            int packagePrice = listOfPackagesBeingPurchased.get(i).getPackage_cost().intValue();
-
-            int discountApplied = 0;
-            if (runningDiscountAmount > 0) {
-
-                if (runningDiscountAmount - packagePrice <= 0) {
-                    packagePrice -= runningDiscountAmount;
-                    discountApplied = runningDiscountAmount;
-                    runningDiscountAmount = 0;
-                } else if (runningDiscountAmount - packagePrice > 0) {
-                    runningDiscountAmount -= packagePrice;
-                    discountApplied = packagePrice;
-                    packagePrice = 0;
-                }
-            }
-
-            String mapValueForPackage = packagePrice + "," + discountApplied;
-            metaDataMap.put(currentPackageName, mapValueForPackage);
+        if (currentPackageName.contains("Gift")) {
+            metaDataMap.put("giftCardEmail", clientCheckoutDTO.getEmailForGift());
+            metaDataMap.put("saveGiftCardEmail", String.valueOf(clientCheckoutDTO.isSaveEmail()));
         }
 
-        usedGiftCardInMetaData(clientCheckoutDTO, metaDataMap);
+        int packagePrice = listOfPackagesBeingPurchased.get(i).getPackage_cost().intValue();
+
+        int discountApplied = 0;
+        if (runningDiscountAmount > 0) {
+
+            if (runningDiscountAmount - packagePrice <= 0) {
+                packagePrice -= runningDiscountAmount;
+                discountApplied = runningDiscountAmount;
+                runningDiscountAmount = 0;
+            } else if (runningDiscountAmount - packagePrice > 0) {
+                runningDiscountAmount -= packagePrice;
+                discountApplied = packagePrice;
+                packagePrice = 0;
+            }
+        }
+
+        String mapValueForPackage = packagePrice + "," + discountApplied;
+        metaDataMap.put(currentPackageName, mapValueForPackage);
+        mapForDescription.put(currentPackageName, mapValueForPackage);
+    }
+        List<String> listOfKeys = new ArrayList<>(mapForDescription.keySet());
+    for (int i = 0; i < listOfKeys.size(); i++) {
+        String nameOfProduct = listOfKeys.get(i);
+        String[] valuesSplit = mapForDescription.get(nameOfProduct).split(",");
+        String pricePaid = valuesSplit[0];
+        String discountApplied = valuesSplit[1];
+        if (i == listOfKeys.size()-1) {
+            // Don't add a new line here on last one
+            descriptionToReturn += nameOfProduct + " - ";
+            if (Integer.valueOf(pricePaid) == 0) {
+                descriptionToReturn += "PAID/COVERED" ;
+            } else {
+                descriptionToReturn += "$" + pricePaid;
+            }
+        } else {
+            // Add a new line here
+            descriptionToReturn += nameOfProduct + " - ";
+            if (Integer.valueOf(pricePaid) == 0) {
+                descriptionToReturn += "PAID/COVERED" + "\n";
+            } else {
+                descriptionToReturn += "$" + pricePaid + "\n";
+            }
+        }
+    }
+
+    usedGiftCardInMetaData(clientCheckoutDTO, metaDataMap);
+        return descriptionToReturn;
     }
 
     private void usedGiftCardInMetaData(ClientCheckoutDTO clientCheckoutDTO, Map<String, String> metaDataMap) {
@@ -491,7 +521,7 @@ public class JdbcStripeDao implements StripeDao {
         }
     }
 
-    private PaymentIntentCreateParams getPaymentIntentCreateParams(ClientCheckoutDTO clientCheckoutDTO, String customer_id, Map<String, String> metaDataMap) {
+    private PaymentIntentCreateParams getPaymentIntentCreateParams(ClientCheckoutDTO clientCheckoutDTO, String customer_id, Map<String, String> metaDataMap, String description) {
         PaymentIntentCreateParams paymentIntentCreateParams = null;
 
         if (clientCheckoutDTO.isSaveCard()) {
@@ -503,6 +533,7 @@ public class JdbcStripeDao implements StripeDao {
                             .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
                             .addPaymentMethodType("card_present")
                             .setSetupFutureUsage(PaymentIntentCreateParams.SetupFutureUsage.OFF_SESSION)
+                            .setDescription(description)
                             .putAllMetadata(metaDataMap)
                             .build();
         } else {
@@ -513,6 +544,7 @@ public class JdbcStripeDao implements StripeDao {
                             .setAmount((long) clientCheckoutDTO.getTotal() * 100)
                             .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
                             .addPaymentMethodType("card_present")
+                            .setDescription(description)
                             .putAllMetadata(metaDataMap)
                             .build();
 

@@ -18,10 +18,10 @@ INSERT INTO package_details (description,package_cost,classes_amount,subscriptio
 INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online,is_recurring) VALUES ('1 Class',14,1,0,false,true,false);
 INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online,is_recurring) VALUES ('10 Class Package',120,10,0,false,true,false);
 INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online,is_recurring) VALUES ('20 Class Package',220,20,0,false,true,false);
-INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online,is_recurring) VALUES ('One Month Subscription',95,0,1,true,true,true);
-INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online,is_recurring) VALUES ('Six Month Subscription',540,0,6,true,true,true);
-INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online,is_recurring) VALUES ('One Month Package',95,0,1,true,true,false);
-INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online,is_recurring) VALUES ('Six Month Package',540,0,6,true,true,false);
+-- INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online,is_recurring) VALUES ('One Month Subscription',95,0,1,true,true,true);
+-- INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online,is_recurring) VALUES ('Six Month Subscription',540,0,6,true,true,true);
+INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online,is_recurring) VALUES ('One Month Unlimited',95,0,1,true,true,false);
+INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online,is_recurring) VALUES ('Six Month Unlimited',540,0,6,true,true,false);
 INSERT INTO package_details (description,package_cost,classes_amount,subscription_duration,is_subscription,is_visible_online,is_recurring) VALUES ('Gift Card',10,0,0,false,true,false);
 
 

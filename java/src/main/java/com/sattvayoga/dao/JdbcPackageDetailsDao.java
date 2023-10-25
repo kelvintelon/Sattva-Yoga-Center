@@ -91,14 +91,11 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
     public boolean deletePackage(int packageId) {
         String sql = "BEGIN TRANSACTION;\n" +
                 "\n" +
-                "DELETE FROM package_purchase \n" +
-                "WHERE package_purchase.package_id = ?;\n" +
-                "\n" +
                 "DELETE FROM package_details\n" +
                 "WHERE package_id = ?;\n" +
                 "\n" +
                 "COMMIT TRANSACTION;";
-        return jdbcTemplate.update(sql, packageId, packageId)==1;
+        return jdbcTemplate.update(sql, packageId)==1;
     }
 
     @Override

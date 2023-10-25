@@ -16,7 +16,7 @@
             <v-divider class="mx-4" inset vertical></v-divider>
             <v-spacer></v-spacer>
             <!-- FORM from CreateClassForm-->
-            <v-dialog v-model="dialog" max-width="500px">
+            <v-dialog v-model="dialog" max-width="500px" persistent>
               <template v-slot:activator="{ on, attrs }">
                 <v-btn
                   color="primary"
@@ -201,7 +201,7 @@
             <!-- END OF CREATE CLASS FORM -->
 
             <!-- START OF EDIT FORM -->
-            <v-dialog v-model="dialog2" max-width="500px">
+            <v-dialog v-model="dialog2" max-width="500px" persistent>
               <v-card justify="center">
                 <v-card-title>
                   <span class="text-h5">{{ formTitle }}</span>
@@ -370,7 +370,7 @@
             <!-- END OF EDIT FORM -->
 
             <!-- DELETE ? -->
-            <v-dialog v-model="dialogDelete" max-width="500px">
+            <v-dialog v-model="dialogDelete" max-width="500px" persistent>
               <v-card>
                 <v-card-title class="text-h7"
                   >Sure you want to delete this class?</v-card-title
@@ -618,7 +618,7 @@ export default {
       descriptionRules: [(v) => !!v || "Description is required"],
       durationRules: [(v) => !!v || "Duration is required"],
       teacherNames: [],
-      teacherObj: [],
+      teacherList: [],
       days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
       fullName: "",
       fullname2: "",
@@ -669,8 +669,11 @@ export default {
       
     },
     editItem(item) {
+      
       this.editedIndex = this.classes.indexOf(item);
+      if (item.teacher_name != null && item.teacher_name.value.length > 0) {
       this.editedTeacherName = item.teacher_name.value;
+      }
       this.editedItem = Object.assign({}, item);
       this.dialog2 = true;
     },
@@ -722,7 +725,6 @@ export default {
     // ==================== this is form stuff vvvv
     checkCreateForm() {
       if (
-        this.classDetails.teacher_id == 0 ||
         this.classDetails.class_duration == 0 ||
         this.classDetails.class_description == "" ||
         this.classDetails.start_time == "" ||
@@ -739,7 +741,6 @@ export default {
       
         // compare two objects to see if they are exact
         _.isEqual(this.editedItem, this.classes[this.editedIndex]) ||
-        this.editedItem.teacher_id == 0 ||
         this.editedItem.class_duration == 0 ||
         this.editedItem.class_description == "" ||
         this.editedItem.start_time == "" ||
@@ -761,7 +762,7 @@ export default {
       this.loading = true;
       this.overlay = !this.overlay
       // assign teacher name to object
-      this.teacherObj.forEach((item) => {
+      this.teacherList.forEach((item) => {
         this.fullName = item.first_name + " " + item.last_name;
         if (this.selectedTeacherName == this.fullName) {
           this.classDetails.teacher_id = item.teacher_id;
@@ -793,7 +794,7 @@ export default {
       this.loading = true;
       this.overlay = !this.overlay
       // assign teacher name to object
-      this.teacherObj.forEach((item2) => {
+      this.teacherList.forEach((item2) => {
         this.fullName2 = item2.first_name + " " + item2.last_name;
         if (this.editedTeacherName == this.fullName2) {
           this.editedItem.teacher_id = item2.teacher_id;
@@ -827,8 +828,8 @@ export default {
     },
     fetchTeachers() {
       teacherService.getTeacherList().then((response) => {
-        this.teacherObj = response.data;
-        this.teacherObj.forEach((item) => {
+        this.teacherList = response.data;
+        this.teacherList.forEach((item) => {
           this.teacherNames.push(item.first_name + " " + item.last_name);
         });
       });

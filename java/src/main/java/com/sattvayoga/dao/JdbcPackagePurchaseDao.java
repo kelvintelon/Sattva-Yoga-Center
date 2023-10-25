@@ -76,7 +76,11 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             PackagePurchase packagePurchase = mapRowToPackagePurchase(result);
 
             // set package description
-            packagePurchase.setPackage_description(getPackageDescriptionByPackageId(packagePurchase.getPackage_id()));
+            String description = "";
+            if (getPackageDescriptionByPackageId(packagePurchase.getPackage_id()) != null) {
+                description = getPackageDescriptionByPackageId(packagePurchase.getPackage_id());
+            }
+            packagePurchase.setPackage_description(description);
             packagePurchase.setIs_subscription(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
             allUserPackagePurchase.add(packagePurchase);
         }
@@ -337,7 +341,10 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         if (result.next()) {
             packageDetails = mapRowToPackage(result);
         }
-        return packageDetails.getDescription();
+        if (packageDetails != null) {
+            return packageDetails.getDescription();
+        }
+        return "";
     }
 
     // helper
@@ -435,11 +442,8 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     }
 
     private LocalDate returnCorrectPackageExpirationDate(CheckoutItemDTO checkoutItemDTO) {
-        if (checkoutItemDTO.getProductName().equals("One Month Package")) {
-            return LocalDate.now().plusMonths(1).plusDays(1);
-        }
-        if (checkoutItemDTO.getProductName().equals("Six Month Package")) {
-            return LocalDate.now().plusMonths(6).plusDays(1);
+        if (checkoutItemDTO.getSubscriptionDuration() > 0) {
+            return LocalDate.now().plusMonths(checkoutItemDTO.getSubscriptionDuration()).plusDays(1);
         }
         return LocalDate.now().plusYears(1).plusDays(1);
     }

@@ -111,7 +111,7 @@
           <v-divider class="mx-4" inset vertical></v-divider>
           Count: {{ listOfSignedUpClients.length }}
           <v-spacer></v-spacer>
-          <v-dialog v-model="dialog" max-width="500px">
+          <v-dialog v-model="dialog" max-width="500px" persistent>
             <template v-slot:activator="{ on, attrs }">
               <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
                 Client Sign Up

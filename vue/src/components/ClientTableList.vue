@@ -19,7 +19,7 @@
         @keypress="getSearchedClientTablePaginated" @keyup.delete="resetThePageOnEmptyLength"></v-text-field>
       <v-spacer></v-spacer>
 
-      <v-dialog v-model="mergeDialog" max-width="500px">
+      <v-dialog v-model="mergeDialog" max-width="500px" persistent>
         <template v-slot:activator="{ on, attrs }">
           <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on" @click.prevent="retrieveDuplicateClients">
             Merge
@@ -132,7 +132,7 @@
         </v-card>
       </v-dialog>
       <!-- Carousel forms starts here -->
-      <v-dialog v-model="profileChoiceDialog" max-width="500px">
+      <v-dialog v-model="profileChoiceDialog" max-width="500px" persistent>
         <v-card justify="center">
           <v-card-title>
             <span class="text-h5">Store Client Info</span>
@@ -194,7 +194,7 @@
       </v-dialog>
       <v-spacer></v-spacer>
       <!-- Add a new client -->
-      <v-dialog v-model="newClientDialog" max-width="500px">
+      <v-dialog v-model="newClientDialog" max-width="500px" persistent>
         <template v-slot:activator="{ on, attrs }">
           <v-btn color="primary" dark fab class="mx-2" v-bind="attrs" v-on="on">
             <v-icon large>mdi-new-box</v-icon>
@@ -235,7 +235,7 @@
         </v-card>
       </v-dialog>
       <v-spacer></v-spacer>
-      <v-dialog v-model="dialog2" max-width="500px">
+      <v-dialog v-model="dialog2" max-width="500px" persistent>
         <template v-slot:activator="{ on, attrs }">
           <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
             Add to Shared Group
@@ -283,7 +283,7 @@
       <template v-slot:top>
         <v-toolbar flat max-height="10px">
           <!-- START OF EDIT CLIENT FORM -->
-          <v-dialog v-model="dialog" max-width="500px">
+          <v-dialog v-model="dialog" max-width="500px" persistent>
             <v-card justify="center" align="center">
               <v-card-title justify="center" align="center">
                 <span class="text-h5" align="center"> Edit Client </span>
