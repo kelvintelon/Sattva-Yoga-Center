@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.*;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Component
@@ -456,7 +455,10 @@ public class JdbcStripeDao implements StripeDao {
 
         if (currentPackageName.contains("Gift")) {
             metaDataMap.put("giftCardEmail", clientCheckoutDTO.getEmailForGift());
-            metaDataMap.put("saveGiftCardEmail", String.valueOf(clientCheckoutDTO.isSaveEmail()));
+            metaDataMap.put("saveGiftCardEmail", String.valueOf(clientCheckoutDTO.isSaveEmailGiftCardPurchase()));
+        }
+        if (clientCheckoutDTO.isSaveEmailReceiptPurchase()) {
+            metaDataMap.put("saveReceiptEmail", clientCheckoutDTO.getEmailForReceipt());
         }
 
         int packagePrice = listOfPackagesBeingPurchased.get(i).getPackage_cost().intValue();
@@ -662,6 +664,23 @@ public class JdbcStripeDao implements StripeDao {
         setupIntentParams.put("payment_method", paymentMethod);
 
         SetupIntent.create(setupIntentParams);
+
+    }
+
+    @Override
+    public void updateCustomerEmail(String customerId, String newEmail) {
+        SetStripeKey();
+
+        try {
+            Customer customer = Customer.retrieve(customerId);
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("email", newEmail);
+
+            Customer updatedCustomer = customer.update(params);
+        } catch (StripeException e) {
+            System.out.println("Error retrieving customer from stripe in updating their email");
+        }
 
     }
 

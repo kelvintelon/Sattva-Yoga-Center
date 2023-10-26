@@ -108,6 +108,7 @@ public class WebHookController {
                     String giftCardEmail = "";
                     boolean saveGiftCard = false;
 
+
                     if (metaDataMap.get("Gift Card") != null) {
                         giftCardEmail = metaDataMap.get("giftCardEmail");
                         saveGiftCard = Boolean.parseBoolean(metaDataMap.get("saveGiftCardEmail"));
@@ -115,6 +116,17 @@ public class WebHookController {
                         metaDataMap.remove("saveGiftCardEmail");
                     }
 
+                    // Get receipt logic out the way
+
+                    String receiptEmail = "";
+                    boolean saveReceiptEmail = false;
+                    if (metaDataMap.get("saveReceiptEmail") != null) {
+                        saveReceiptEmail = true;
+                        receiptEmail = metaDataMap.get("saveReceiptEmail");
+                        metaDataMap.remove("saveReceiptEmail");
+                    }
+
+                    // By this point the map should only have packages
                     for (Map.Entry<String,String> mapElement : metaDataMap.entrySet()) {
                         String keyDescription = mapElement.getKey();
                         String value = mapElement.getValue();
@@ -135,6 +147,10 @@ public class WebHookController {
                             checkoutItemDTO.setGiftCardEmail(giftCardEmail);
                             checkoutItemDTO.setSaveGiftCardEmail(saveGiftCard);
                         }
+
+                        // Email receipt logic
+                        checkoutItemDTO.setSaveReceiptEmail(saveReceiptEmail);
+                        checkoutItemDTO.setReceiptEmail(receiptEmail);
 
                         checkoutItemDTO.setProductName(keyDescription);
                         checkoutItemDTO.setPrice(totalPaid);

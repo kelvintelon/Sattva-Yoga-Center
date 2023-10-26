@@ -14,6 +14,7 @@ public interface StripeDao {
     List<PaymentMethodOptions> retrievePaymentMethodOptions(int clientId) throws StripeException;
     void addPaymentMethodThroughReader(int clientId) throws StripeException;
     void addPaymentMethodManually(int clientId, PaymentMethodOptions paymentMethodOption) throws StripeException;
+    void updateCustomerEmail(String customerId, String newEmail);
     //   Reader createSimulatedReader() throws StripeException;
 //    Session createSubscriptionSession(List<CheckoutSubscriptionItemDTO> checkoutItemDTOList) throws StripeException;
 }

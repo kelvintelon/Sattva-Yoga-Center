@@ -1,5 +1,6 @@
 package com.sattvayoga.dto.order;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sattvayoga.model.GiftCard;
 import com.sattvayoga.model.PackageDetails;
 
@@ -13,7 +14,8 @@ public class ClientCheckoutDTO {
     private String emailForGift;
     private String emailForReceipt;
     private int discount;
-    private boolean saveEmail;
+    private boolean saveEmailGiftCardPurchase;
+    private boolean saveEmailReceiptPurchase;
     private String renewalDate;
     private String paymentMethodId;
     private boolean saveCard;
@@ -28,8 +30,16 @@ public class ClientCheckoutDTO {
         this.total = total;
         this.emailForGift = email;
         this.discount = discount;
-        this.saveEmail = saveEmail;
+        this.saveEmailGiftCardPurchase = saveEmail;
         this.renewalDate = renewalDate;
+    }
+
+    public boolean isSaveEmailReceiptPurchase() {
+        return saveEmailReceiptPurchase;
+    }
+
+    public void setSaveEmailReceiptPurchase(boolean saveEmailReceiptPurchase) {
+        this.saveEmailReceiptPurchase = saveEmailReceiptPurchase;
     }
 
     public int getSubscriptionDuration() {
@@ -120,12 +130,12 @@ public class ClientCheckoutDTO {
         this.discount = discount;
     }
 
-    public boolean isSaveEmail() {
-        return saveEmail;
+    public boolean isSaveEmailGiftCardPurchase() {
+        return saveEmailGiftCardPurchase;
     }
 
-    public void setSaveEmail(boolean saveEmail) {
-        this.saveEmail = saveEmail;
+    public void setSaveEmailGiftCardPurchase(boolean saveEmailGiftCardPurchase) {
+        this.saveEmailGiftCardPurchase = saveEmailGiftCardPurchase;
     }
 
     public String getRenewalDate() {

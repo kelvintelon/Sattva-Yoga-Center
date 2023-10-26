@@ -17,10 +17,28 @@ public class CheckoutItemDTO {
     private String paymentId;
     private int discount = 0;
     private String giftCardEmail = "";
+    private String receiptEmail = "";
     private boolean saveGiftCardEmail = false;
+    private boolean saveReceiptEmail = false;
     private int subscriptionDuration;
 
     public CheckoutItemDTO(){
+    }
+
+    public String getReceiptEmail() {
+        return receiptEmail;
+    }
+
+    public void setReceiptEmail(String receiptEmail) {
+        this.receiptEmail = receiptEmail;
+    }
+
+    public boolean isSaveReceiptEmail() {
+        return saveReceiptEmail;
+    }
+
+    public void setSaveReceiptEmail(boolean saveReceiptEmail) {
+        this.saveReceiptEmail = saveReceiptEmail;
     }
 
     public int getSubscriptionDuration() {

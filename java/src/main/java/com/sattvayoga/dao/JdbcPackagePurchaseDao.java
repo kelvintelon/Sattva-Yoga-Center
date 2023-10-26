@@ -31,6 +31,9 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     ClientDetailsDao clientDetailsDao;
 
     @Autowired
+    StripeDao stripeDao;
+
+    @Autowired
     private EmailSenderService senderService;
 
     @Override
@@ -502,11 +505,26 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                     }
 
                     if (eachPackage.isSaveGiftCardEmail()) {
-                        // SAVE EMAIL TO CLIENT OBJECT
+
+                        // SAVE EMAIL TO CLIENT OBJECT IN OUR DB
                         clientDetailsDao.saveNewClientEmail(clientDetails.getClient_id(), eachPackage.getGiftCardEmail());
+
+                        // SAVE EMAIL TO CUSTOMER OBJECT IN STRIPE
+                        stripeDao.updateCustomerEmail(clientDetails.getCustomer_id(), eachPackage.getGiftCardEmail());
                     }
+
                 }
 
+            }
+            if (eachPackage.isSaveReceiptEmail()) {
+                ClientDetails clientDetails =
+                        clientDetailsDao.findClientByClientId(eachPackage.getClient_id());
+
+                // SAVE EMAIL TO CLIENT OBJECT IN OUR DB
+                clientDetailsDao.saveNewClientEmail(eachPackage.getClient_id(), eachPackage.getReceiptEmail());
+
+                // SAVE EMAIL TO CUSTOMER OBJECT IN STRIPE
+                stripeDao.updateCustomerEmail(clientDetails.getCustomer_id(), eachPackage.getReceiptEmail());
             } else if (eachPackage.getProductName().contains("One") && eachPackage.isIs_monthly_renew()) {
                 createOneMonthAutoRenewPurchase(eachPackage);
             } else if (eachPackage.getProductName().contains("Six") && eachPackage.isIs_monthly_renew()) {

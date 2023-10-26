@@ -111,8 +111,9 @@
                           ></v-text-field>
                         </v-col>
                         <v-checkbox
-                          v-if="saveEmailCheckbox"
-                          v-model="clientCheckout.saveEmail"
+                        class="mt-4"
+                          v-if="saveEmailForGiftCardCheckbox"
+                          v-model="clientCheckout.saveEmailGiftCardPurchase"
                           label="Save?"
                         ></v-checkbox>
                       </v-row>
@@ -447,16 +448,25 @@
                       :counter="30"
                       label="Email for Receipt"
                     ></v-text-field>
+                    <v-checkbox
+                      class="mt-4"
+                          v-if="saveEmailForReceiptCheckbox"
+                          v-model="clientCheckout.saveEmailReceiptPurchase"
+                          label="Save?"
+                        ></v-checkbox>
                     <v-btn
                     class="mt-4"
                       fab
                       outlined
                       small
-                        @click="showEmailForm = false"
+                        @click="function() { showEmailForm = false; clientCheckout.saveEmailReceiptPurchase = false; }"
                       >
                         <v-icon dark> mdi-close </v-icon>
                     </v-btn>
                   </v-row>
+                  <v-row>
+                      
+                    </v-row>
                 </v-container>
               </v-card-title>
 
@@ -611,7 +621,8 @@ export default {
         client_id: 0,
         emailForGift: "",
         emailForReceipt: "",
-        saveEmail: false,
+        saveEmailGiftCardPurchase: false,
+        saveEmailReceiptPurchase: false,
         discount: 0,
         selectedCheckoutPackages: [],
         total: 0,
@@ -627,7 +638,8 @@ export default {
       },
       giftCardCost: 0,
       giftCardIndex: 0,
-      saveEmailCheckbox: false,
+      saveEmailForGiftCardCheckbox: false,
+      saveEmailForReceiptCheckbox: false,
       totalCost: 0,
       showGiftCardForm: false,
       showEmailForm: false,
@@ -693,9 +705,17 @@ export default {
           this.clientCheckout.emailForGift.length == 0 ||
           this.clientCheckout.emailForGift != this.$store.state.clientDetails.email
         ) {
-          this.saveEmailCheckbox = true;
+          this.saveEmailForGiftCardCheckbox = true;
         } else {
-          this.saveEmailCheckbox = false;
+          this.saveEmailForGiftCardCheckbox = false;
+        }
+
+        if (
+          this.clientCheckout.emailForReceipt != this.$store.state.clientDetails.email
+        ) {
+          this.saveEmailForReceiptCheckbox = true;
+        } else {
+          this.saveEmailForReceiptCheckbox = false;
         }
       },
       deep: true,
@@ -772,7 +792,7 @@ export default {
             this.clientCheckout.emailForGift.length == 0 ||
             this.clientCheckout.emailForGift != this.$store.state.clientDetails.email
           ) {
-            this.saveEmailCheckbox = true;
+            this.saveEmailForGiftCardCheckbox = true;
           }
           foundGiftCard = true;
           this.giftCardIndex = index;
@@ -790,7 +810,7 @@ export default {
       }
       if (!foundGiftCard) {
         this.showGiftCardForm = false;
-        this.saveEmailCheckbox = false;
+        this.saveEmailForGiftCardCheckbox = false;
       }
       if (!foundSubscription) {
         this.showRenewalDatePicker = false;
@@ -1004,7 +1024,8 @@ export default {
       this.giftCardIndex = 0;
       this.showGiftCardForm = false;
       this.showEmailForm = false;
-      this.saveEmailCheckbox = false;
+      this.saveEmailForGiftCardCheckbox = false;
+      this.saveEmailForReceiptCheckbox = false;
       this.showGiftCodeInput = false;
       this.giftCardCodeObject.code = "";
       this.showGiftCardResponse = false;
@@ -1318,10 +1339,11 @@ export default {
         this.clientCheckout.client_id =
           this.$store.state.clientDetails.client_id;
 
-        if (this.clientCheckout.emailForGift.length == 0 || this.clientCheckout.emailForReceipt == 0) {
+        if ((this.clientCheckout.emailForGift.length == 0 || this.clientCheckout.emailForReceipt == 0) && (this.$store.state.clientDetails.email.length >= 1)) {
           this.clientCheckout.emailForGift = this.$store.state.clientDetails.email;
           this.clientCheckout.emailForReceipt = this.$store.state.clientDetails.email;
         }
+
         this.clientCheckout.total = this.totalCost;
         this.clientCheckout.selectedCheckoutPackages = this.selectedPackages;
         this.clientCheckout.discount = this.returnDiscount;
@@ -1342,8 +1364,11 @@ export default {
           .then((response) => {
             if (response.status == 201) {
               // this.retrieveClientDetailsForAdmin();
-              if (this.clientCheckout.saveEmail) {
+              if (this.clientCheckout.saveEmailGiftCardPurchase) {
                 this.$store.state.clientDetails.email = this.clientCheckout.emailForGift;
+              }
+              if (this.clientCheckout.saveEmailReceiptPurchase) {
+                this.$store.state.clientDetails.email = this.clientCheckout.emailForReceipt;
               }
               alert("Submitted");
               this.close();
