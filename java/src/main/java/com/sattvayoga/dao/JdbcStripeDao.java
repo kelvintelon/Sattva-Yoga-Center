@@ -93,6 +93,25 @@ public class JdbcStripeDao implements StripeDao {
 //        boolean discountNeeded = determineDiscountNeeded(clientCheckoutDTO);
 
 //        PackageDetails firstPackageDetails = clientCheckoutDTO.getListOfPackages().get(0);
+
+        // if it's comp/Free then return immediately
+        if (clientCheckoutDTO.isCompFree()) {
+            // just process everything here and return at the end;
+            int totalAmount = clientCheckoutDTO.getTotal() + clientCheckoutDTO.getCash() + clientCheckoutDTO.getCheck() + clientCheckoutDTO.getDiscount();
+
+            // TODO: Insert everything that was in the list into package purchase
+            //  1. grab package purchase IDs and package description
+            //  2. If there is an email to save or a gift card to process we should still do it
+
+            // TODO: Insert into sales/order table
+            //  1. Import Package purchase IDs into int[] field
+            //  2. Grab serialized sale ID;
+
+            // TODO: Insert into transactions table last
+            //  1. Import serialized sale ID and package description, along with the type of payment that was used.
+
+            // TODO: Just return
+        }
         if (clientCheckoutDTO.getPaymentMethodId() != null && clientCheckoutDTO.getPaymentMethodId().length() > 0) {
 
 

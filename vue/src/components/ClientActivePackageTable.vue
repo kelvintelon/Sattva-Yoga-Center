@@ -264,8 +264,31 @@
                       <div class="text--primary">
                         Package Discount: -${{ returnDiscount }}
                       </div>
+      
+                      
                       <v-row>
-                        <v-col>
+                        <!-- total cash -->
+                        <v-col sm="4" v-if="showCashInput">
+                          <v-text-field
+                            v-model.number="totalCash"
+                            class="mt-6 pt-0"
+                            type="number"
+                            label="Cash: $"
+                            min="0"
+                          ></v-text-field>
+                        </v-col>
+                        <!-- total check -->
+                        <v-col sm="4" v-if="showCheckInput">
+                          <v-text-field
+                            v-model.number="totalCheck"
+                            class="mt-6 pt-0"
+                            type="number"
+                            label="Check: $"
+                            min="0"
+                          ></v-text-field>
+                        </v-col>
+                        <!-- Total cost -->
+                        <v-col sm="4">
                           <v-text-field
                             v-model.number="totalCost"
                             class="mt-6 pt-0"
@@ -429,6 +452,9 @@
                       <v-checkbox v-if="showSaveCardCheckbox"
                         v-model="clientCheckout.saveCard" label="Save Payment Method?">
                       </v-checkbox>
+                      <v-checkbox
+                        v-model="clientCheckout.compFree" label="Comp/Free?">
+                      </v-checkbox>
                       <!-- <v-checkbox v-if="showSaveRecurringPaymentCheckbox"
                         v-model="clientCheckout.saveAsRecurringPayment"
                         label="Save As Recurring Payment?"
@@ -436,9 +462,11 @@
                     </v-col>
                   </v-row>
                   <v-row justify="center">
-                    <v-btn small outlined color="indigo">Check</v-btn>
+                    <v-btn small outlined color="indigo" v-if="!showCashInput" @click="showCashInput = true">Cash</v-btn>
+                    <v-btn small color="primary" v-if="showCashInput" @click="toggleCashForm">Cash</v-btn>
                     <v-spacer></v-spacer>
-                    <v-btn small outlined color="indigo">Cash</v-btn>
+                    <v-btn small outlined color="indigo" v-if="!showCheckInput" @click="showCheckInput = true">Check</v-btn>
+                    <v-btn small color="primary" v-if="showCheckInput" @click="toggleCheckForm">Check</v-btn>
                     <v-spacer></v-spacer>
                     <v-btn small outlined color="indigo" v-if="!showEmailForm" @click="showEmailForm = true">E-Receipt</v-btn>
                   </v-row>
@@ -626,6 +654,9 @@ export default {
         discount: 0,
         selectedCheckoutPackages: [],
         total: 0,
+        cash: 0,
+        check: 0,
+        compFree: false,
         paymentMethodId: "",
         iterations: 1,
         saveCard: false,
@@ -641,6 +672,8 @@ export default {
       saveEmailForGiftCardCheckbox: false,
       saveEmailForReceiptCheckbox: false,
       totalCost: 0,
+      totalCash: 0,
+      totalCheck: 0,
       showGiftCardForm: false,
       showEmailForm: false,
       showGiftCodeInput: false,
@@ -663,7 +696,9 @@ export default {
       addPaymentMethodDialog: false,
       showCardForm: false,
       showSaveCardCheckbox: false,
-      showSaveRecurringPaymentCheckbox: false
+      showSaveRecurringPaymentCheckbox: false,
+      showCashInput: false,
+      showCheckInput: false,
     };
   },
   watch: {
@@ -679,19 +714,67 @@ export default {
     totalCost: function (val) {
       this.returnTotal = val;
       
-      let runningTotal = 0;
+      // let runningTotal = 0;
     
-      for (let index = 0; index < this.selectedPackages.length; index++) {
-        let element = this.selectedPackages[index];
-        runningTotal += element.package_cost;
+      // for (let index = 0; index < this.selectedPackages.length; index++) {
+      //   let element = this.selectedPackages[index];
+      //   runningTotal += element.package_cost;
   
-      }
-      if (runningTotal > val) {
-        this.showSaveRecurringPaymentCheckbox = true;
-      } else {
-        this.showSaveRecurringPaymentCheckbox = false;
-      }
+      // }
+      // if (runningTotal > val) {
+      //   this.showSaveRecurringPaymentCheckbox = true;
+      // } else {
+      //   this.showSaveRecurringPaymentCheckbox = false;
+      // }
     },
+    returnCash: function (val) {
+      this.totalCash = val;
+    },
+    totalCash: function (val) {
+      this.returnCash = val;
+    },
+    returnCheck: function(val) {
+      this.totalCheck = val;
+    },
+    totalCheck: function (val) {
+      this.returnCheck = val;
+    },
+    // totalCash: function (val) {
+    //   val
+    //   let runningTotal = 0;
+
+    //   // My attempt at capping the total cash
+    //   for (let index = 0; index < this.selectedPackages.length; index++) {
+    //     let element = this.selectedPackages[index];
+    //     runningTotal += element.package_cost;
+  
+    //   }
+    //   runningTotal
+    //   // Cash with Discount + check
+    //   if (this.showCashInput) {
+    //     if (this.totalCost < 0) {
+    //       this.totalCash = 0;
+    //     } 
+    //   }
+      
+    // },
+    // totalCheck: function (val) {
+    //   val
+    //   // let runningTotal = 0;
+    //   // // My attempt at capping the total cash
+    //   // for (let index = 0; index < this.selectedPackages.length; index++) {
+    //   //   let element = this.selectedPackages[index];
+    //   //   runningTotal += element.package_cost;
+  
+    //   // } 
+    //   // Check w/ Cash + Discount
+    //   if (this.showCheckInput) {
+    //   //   if (val >= runningTotal - this.returnDiscount() - this.totalCash) {
+    //   //   this.totalCheck = runningTotal - this.returnDiscount() - this.totalCash;
+    //   // }
+    //   }
+      
+    // },
     returnDiscount: function (val) {
       if (val > 0) {
         this.showSaveRecurringPaymentCheckbox = true
@@ -742,8 +825,27 @@ export default {
     },
     giftCardRedeemObject: {
       handler: function() {
+        let runningTotal = 0;
+
+        // My attempt at capping the total cash
+        for (let index = 0; index < this.selectedPackages.length; index++) {
+            let element = this.selectedPackages[index];
+            runningTotal += element.package_cost;
+        }
+        if (this.showCashInput) {
+          runningTotal -= this.totalCash;
+          }
+          if (this.showCheckInput) {
+          runningTotal -= this.totalCheck;
+          }
+          if (this.returnDiscount > 0) {
+        runningTotal -= this.returnDiscount
+      }
         if (this.giftCardRedeemObject.amount > this.giftCardResponse.amountAvailable) {
           this.giftCardRedeemObject.amount = this.giftCardResponse.amountAvailable
+        }
+        if (this.giftCardRedeemObject.amount > runningTotal) {
+          this.giftCardRedeemObject.amount = runningTotal;
         }
       },
       deep: true,
@@ -886,6 +988,18 @@ export default {
 
   },
   methods: {
+    toggleCashForm() {
+      
+        this.showCashInput = false;
+        this.totalCash = 0;
+      
+    },
+    toggleCheckForm() {
+      
+        this.showCheckInput = false;
+        this.totalCheck = 0;
+      
+    },
     closeCardForm() {
       this.showCardForm = false;
       this.newCardObject = {
@@ -1020,6 +1134,8 @@ export default {
       this.percentDiscount = 0;
       this.currentDiscount = 0;
       this.totalCost = 0;
+      this.totalCash = 0;
+      this.totalCheck = 0;
       this.giftCardCost = 0;
       this.giftCardIndex = 0;
       this.showGiftCardForm = false;
@@ -1039,12 +1155,16 @@ export default {
         client_id: 0,
         emailForGift: this.$store.state.clientDetails.email,
         emailForReceipt: this.$store.state.clientDetails.email,
-        saveEmail: false,
+        saveEmailGiftCardPurchase: false,
+        saveEmailReceiptPurchase: false,
         discount: 0,
         selectedCheckoutPackages: [],
         iterations: 1,
         saveAsRecurringPayment: false,
         total: 0,
+        cash: 0,
+        check: 0,
+        compFree: false,
         giftCard: {},
         renewalDate: new Date(
           Date.now() - new Date().getTimezoneOffset() * 60000
@@ -1058,6 +1178,8 @@ export default {
       this.selectedPaymentMethod = {};
       this.showPaymentMethodOptions = false;
       this.showSaveRecurringPaymentCheckbox = false;
+      this.toggleCashForm();
+      this.toggleCheckForm();
     },
     // closeReconcile(){
     //   this.snackBarReconcilePackages = false;
@@ -1343,7 +1465,7 @@ export default {
           this.clientCheckout.emailForGift = this.$store.state.clientDetails.email;
           this.clientCheckout.emailForReceipt = this.$store.state.clientDetails.email;
         }
-
+        
         this.clientCheckout.total = this.totalCost;
         this.clientCheckout.selectedCheckoutPackages = this.selectedPackages;
         this.clientCheckout.discount = this.returnDiscount;
@@ -1413,23 +1535,79 @@ export default {
   },
 
   computed: {
+    returnCash() {
+      let runningTotal = 0;
+      for (let index = 0; index < this.selectedPackages.length; index++) {
+        runningTotal += this.selectedPackages[index].package_cost;
+      }
+      if (this.showGiftCardResponse) {
+        runningTotal -= this.giftCardRedeemObject.amount;
+      }
+      if (this.showCheckInput) {
+        runningTotal -= this.totalCheck;
+      }
+      if (this.returnDiscount > 0) {
+        runningTotal -= this.returnDiscount
+      }
+      if (this.showCashInput && runningTotal >= 0) {
+        if (this.totalCash < runningTotal) {
+          return this.totalCash;
+        } else {
+          return runningTotal;
+        }
+      }  
+        return 0;
+    },
+    returnCheck() {
+      let runningTotal = 0;
+      for (let index = 0; index < this.selectedPackages.length; index++) {
+        runningTotal += this.selectedPackages[index].package_cost;
+      }
+      if (this.showGiftCardResponse) {
+        runningTotal -= this.giftCardRedeemObject.amount;
+      }
+      if (this.showCashInput) {
+        runningTotal -= this.totalCash;
+      }
+      if (this.returnDiscount > 0) {
+        runningTotal -= this.returnDiscount
+      }
+      if (this.showCheckInput && runningTotal >= 0) {
+        if (this.totalCheck < runningTotal) {
+          return this.totalCheck;
+        } else {
+          return runningTotal;
+        }
+      }  
+        return 0;
+    },
     returnDiscount() {
       let runningTotal = 0;
       for (let index = 0; index < this.selectedPackages.length; index++) {
         runningTotal += this.selectedPackages[index].package_cost;
       }
-
+      if (this.showGiftCardResponse) {
+          runningTotal -= this.giftCardRedeemObject.amount;
+          }
+          if (this.showCashInput) {
+          runningTotal -= this.totalCash;
+          }
+          if (this.showCheckInput) {
+          runningTotal -= this.totalCheck;
+          }
+      
       if (this.showPercentDiscount && runningTotal >= 0) {
         // this.selectedPackage.discount = this.selectedPackage.package_cost * (1-this.percentDiscount);
         let num =
           runningTotal - runningTotal * (1 - this.percentDiscount / 100);
         let math = Math.round(num * 100) / 100;
-        if (runningTotal > math) {
+        if (math < runningTotal) {
           return math;
         }
         return 0;
       } else if (this.currentDiscount >= 0 && runningTotal >= 0) {
         if (this.currentDiscount < runningTotal) {
+          
           return this.currentDiscount;
         } else {
           return runningTotal;
@@ -1445,20 +1623,26 @@ export default {
       if (this.showGiftCardResponse) {
         runningTotal -= this.giftCardRedeemObject.amount;
       }
-      if (this.showPercentDiscount && runningTotal >= 0) {
+      if (this.showCashInput) {
+        runningTotal -= this.totalCash;
+      }
+      if (this.showCheckInput) {
+        runningTotal -= this.totalCheck;
+      }
+      if (this.showPercentDiscount && runningTotal > 0) {
         let num = runningTotal * (1 - this.percentDiscount / 100);
         if (num > 0) {
           return Math.round(num * 100) / 100;
         }
         return 0;
-      } else if (this.currentDiscount >= 0 && runningTotal >= 0) {
+      } else if (this.currentDiscount > 0 && runningTotal > 0) {
         let difference = runningTotal - this.currentDiscount;
         if (difference > runningTotal || difference < 0) {
           return 0;
         }
 
         return difference;
-      } else if (runningTotal >= 0) {
+      } else if (runningTotal > 0) {
         return runningTotal;
       } else {
         return 0;

@@ -11,9 +11,11 @@ public class ClientCheckoutDTO {
     private int client_id;
     private List<PackageDetails> selectedCheckoutPackages;
     private int total;
+    private int discount;
+    private int cash;
+    private int check;
     private String emailForGift;
     private String emailForReceipt;
-    private int discount;
     private boolean saveEmailGiftCardPurchase;
     private boolean saveEmailReceiptPurchase;
     private String renewalDate;
@@ -23,6 +25,7 @@ public class ClientCheckoutDTO {
     private int iterations;
     private int subscriptionDuration;
     private GiftCard giftCard;
+    private boolean compFree;
 
     public ClientCheckoutDTO(int client_id, List<PackageDetails> selectedCheckoutPackages, int total, String email, int discount, boolean saveEmail, String renewalDate) {
         this.client_id = client_id;
@@ -32,6 +35,30 @@ public class ClientCheckoutDTO {
         this.discount = discount;
         this.saveEmailGiftCardPurchase = saveEmail;
         this.renewalDate = renewalDate;
+    }
+
+    public int getCash() {
+        return cash;
+    }
+
+    public void setCash(int cash) {
+        this.cash = cash;
+    }
+
+    public int getCheck() {
+        return check;
+    }
+
+    public void setCheck(int check) {
+        this.check = check;
+    }
+
+    public boolean isCompFree() {
+        return compFree;
+    }
+
+    public void setCompFree(boolean compFree) {
+        this.compFree = compFree;
     }
 
     public boolean isSaveEmailReceiptPurchase() {
