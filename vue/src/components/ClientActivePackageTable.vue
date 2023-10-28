@@ -1467,6 +1467,8 @@ export default {
         }
         
         this.clientCheckout.total = this.totalCost;
+        this.clientCheckout.cash = this.totalCash;
+        this.clientCheckout.check = this.totalCheck;
         this.clientCheckout.selectedCheckoutPackages = this.selectedPackages;
         this.clientCheckout.discount = this.returnDiscount;
         if (this.showGiftCardResponse) {
