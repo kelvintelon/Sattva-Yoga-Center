@@ -17,7 +17,10 @@ public class JdbcTransactionDao implements TransactionDao{
 
     @Override
     public int createTransaction(Transaction transaction) {
-        return 0;
+        String sql = "INSERT INTO transactions (sale_id, client_id, payment_type, payment_amount) " +
+                "VALUES (?,?,?,?) RETURNING transaction_id";
+        return jdbcTemplate.queryForObject(sql, Integer.class, transaction.getSale_id(), transaction.getClient_id(),
+                transaction.getPayment_type(), transaction.getPayment_amount());
     }
 
     @Override

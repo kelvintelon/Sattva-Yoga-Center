@@ -108,9 +108,11 @@ CREATE TABLE package_purchase
 CREATE TABLE sales
 (
 	sale_id						serial NOT NULL,
+	client_id					int NOT NULL,
 	packages_purchased_array	int[],
 	batch_number				int,
-	CONSTRAINT PK_sale_id PRIMARY KEY (sale_id)
+	CONSTRAINT PK_sale_id PRIMARY KEY (sale_id),
+	CONSTRAINT FK_sale_client_id FOREIGN KEY (client_id) REFERENCES client_details(client_id)
 );
 
 CREATE SEQUENCE sales_id_seq START 200001 OWNED BY sales.sale_id;
@@ -120,10 +122,12 @@ ALTER TABLE sales ALTER COLUMN sale_id SET DEFAULT nextval('sales_id_seq');
 CREATE TABLE transactions
 (
 	transaction_id				serial NOT NULL,
+	client_id					int NOT NULL,
 	sale_id						int NOT NULL,
 	payment_type				varchar(50) NOT NULL,
 	payment_amount				decimal(13,2) NOT NULL,
 	CONSTRAINT PK_transaction_id PRIMARY KEY (transaction_id),
+	CONSTRAINT FK_transaction_client_id FOREIGN KEY (client_id) REFERENCES client_details(client_id),
 	CONSTRAINT FK_transaction_sale_id FOREIGN KEY (sale_id) REFERENCES sales(sale_id)
 );
 

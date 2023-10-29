@@ -4,6 +4,7 @@ public class Transaction {
 
     private int transaction_id;
     private int sale_id;
+    private int client_id;
     private String payment_type;
     private double payment_amount;
 
@@ -12,6 +13,14 @@ public class Transaction {
 
     public int getTransaction_id() {
         return transaction_id;
+    }
+
+    public int getClient_id() {
+        return client_id;
+    }
+
+    public void setClient_id(int client_id) {
+        this.client_id = client_id;
     }
 
     public void setTransaction_id(int transaction_id) {

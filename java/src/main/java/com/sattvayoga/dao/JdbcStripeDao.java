@@ -169,6 +169,7 @@ public class JdbcStripeDao implements StripeDao {
             int[] arrayOfPackagePurchaseIDs = packagePurchaseIDs.stream().mapToInt(i -> i).toArray();
             Sale sale = new Sale();
             sale.setPackages_purchased_array(arrayOfPackagePurchaseIDs);
+            sale.setClient_id(clientCheckoutDTO.getClient_id());
             int saleId = saleDao.createSaleNoBatch(sale);
 
 
@@ -178,9 +179,184 @@ public class JdbcStripeDao implements StripeDao {
             transation.setSale_id(saleId);
             transation.setPayment_type("Comp/free");
             transation.setPayment_amount(runningTotal);
+            transation.setClient_id(clientCheckoutDTO.getClient_id());
 
-
+            transactionDao.createTransaction(transation);
             // Just return
+            return "success";
+        }
+        if (clientCheckoutDTO.getBalance() == 0) {
+            List<PackageDetails> listOfPackagesBeingPurchased = clientCheckoutDTO.getSelectedCheckoutPackages();
+            List<Integer> packagePurchaseIDs = new ArrayList<>();
+
+            int runningDiscountAmount = clientCheckoutDTO.getDiscount();
+
+            boolean isGiftCardUsed = false;
+            double giftAmountUsed = 0;
+
+            if (clientCheckoutDTO.getGiftCard() != null && clientCheckoutDTO.getGiftCard().getCode() != null && clientCheckoutDTO.getGiftCard().getAmount() > 0) {
+                isGiftCardUsed = true;
+                GiftCard giftCardUsed = clientCheckoutDTO.getGiftCard();
+                String giftCode = giftCardUsed.getCode();
+                giftAmountUsed = giftCardUsed.getAmount();
+
+                GiftCard originalGiftCard = packagePurchaseDao.retrieveGiftCard(giftCode);
+
+                packagePurchaseDao.updateGiftCard(originalGiftCard, clientCheckoutDTO.getClient_id(), giftAmountUsed);
+            }
+
+            // Insert everything that was in the list into package purchase
+            //  1. grab package purchase IDs and package description
+            for (int i = 0; i < listOfPackagesBeingPurchased.size(); i++) {
+                PackageDetails currentPackage = listOfPackagesBeingPurchased.get(i);
+
+                int packagePrice = currentPackage.getPackage_cost().intValue();
+                int discountApplied = 0;
+
+                //  2. If there is an email to save or a gift card to process we should still do it
+                if (currentPackage.getDescription().contains("Gift")) {
+                    String giftEmail = clientCheckoutDTO.getEmailForGift();
+
+                    CheckoutItemDTO checkoutItemDTO = new CheckoutItemDTO();
+                    checkoutItemDTO.setClient_id(clientCheckoutDTO.getClient_id());
+                    checkoutItemDTO.setPackage_id(currentPackage.getPackage_id());
+
+                    if (runningDiscountAmount > 0) {
+
+                        if (runningDiscountAmount - packagePrice <= 0) {
+                            packagePrice -= runningDiscountAmount;
+                            discountApplied = runningDiscountAmount;
+                            runningDiscountAmount = 0;
+                        } else if (runningDiscountAmount - packagePrice > 0) {
+                            runningDiscountAmount -= packagePrice;
+                            discountApplied = packagePrice;
+                            packagePrice = 0;
+                        }
+                    }
+
+                    checkoutItemDTO.setTotal_amount_paid(BigDecimal.valueOf(packagePrice));
+
+                    checkoutItemDTO.setDiscount(discountApplied);
+
+                    //Create a concatenated string for payment ID cash/check/giftCardcode used
+
+                    String paymentIdString = "";
+
+                    if (clientCheckoutDTO.getCash() > 0) {
+                        paymentIdString += "cash/";
+                    }
+
+                    if (clientCheckoutDTO.getCheck() > 0) {
+                        paymentIdString += "check/";
+                    }
+
+                    if (isGiftCardUsed) {
+                        paymentIdString += "giftCardCode/";
+                    }
+
+                    checkoutItemDTO.setPaymentId(paymentIdString);
+
+                    String code = packagePurchaseDao.generateGiftCardCode();
+                    packagePurchaseDao.createGiftCard(code, currentPackage.getPackage_cost().doubleValue());
+                    int packagePurchaseId = packagePurchaseDao.createGiftCardPurchase(checkoutItemDTO);
+
+                    packagePurchaseIDs.add(packagePurchaseId);
+
+                    try {
+                        senderService.sendEmail(giftEmail,"Sattva Yoga Center Gift Card Code", "Your Gift Card code is: " + code + " . Please note: The Gift Card Code can only be redeemed in person. Once redeemed, it cannot be used by anyone else.");
+                    } catch (Throwable e) {
+                        System.out.println("Error sending gift card email to client id: " + clientCheckoutDTO.getClient_id());
+                    }
+
+                } else {
+                    PackagePurchase packagePurchase = new PackagePurchase();
+
+
+                    packagePurchase.setClient_id(clientCheckoutDTO.getClient_id());
+                    packagePurchase.setPackage_id(currentPackage.getPackage_id());
+                    packagePurchase.setClasses_remaining(currentPackage.getClasses_amount());
+                    packagePurchase.setIs_monthly_renew(currentPackage.isIs_recurring());
+
+                    if (runningDiscountAmount > 0) {
+
+                        if (runningDiscountAmount - packagePrice <= 0) {
+                            packagePrice -= runningDiscountAmount;
+                            discountApplied = runningDiscountAmount;
+                            runningDiscountAmount = 0;
+                        } else if (runningDiscountAmount - packagePrice > 0) {
+                            runningDiscountAmount -= packagePrice;
+                            discountApplied = packagePrice;
+                            packagePrice = 0;
+                        }
+                    }
+
+
+                    packagePurchase.setTotal_amount_paid(BigDecimal.valueOf(packagePrice));
+
+                    packagePurchase.setDiscount(BigDecimal.valueOf(discountApplied));
+
+                    //Create a concatenated string for payment ID cash/check/giftCardcode used
+
+                    String paymentIdString = "";
+
+                    if (clientCheckoutDTO.getCash() > 0) {
+                        paymentIdString += "cash/";
+                    }
+
+                    if (clientCheckoutDTO.getCheck() > 0) {
+                        paymentIdString += "check/";
+                    }
+
+                    if (isGiftCardUsed) {
+                        paymentIdString += "giftCardCode/";
+                    }
+
+                    packagePurchase.setPaymentId(paymentIdString);
+
+                    int packagePurchaseId = packagePurchaseDao.createAdminPackagePurchase(packagePurchase);
+
+                    packagePurchaseIDs.add(packagePurchaseId);
+
+                }
+
+            }
+
+            // Set all package purchase IDS into sale table
+            int[] arrayOfPackagePurchaseIDs = packagePurchaseIDs.stream().mapToInt(i -> i).toArray();
+            Sale sale = new Sale();
+            sale.setPackages_purchased_array(arrayOfPackagePurchaseIDs);
+            sale.setClient_id(clientCheckoutDTO.getClient_id());
+            int saleId = saleDao.createSaleNoBatch(sale);
+
+            // SET Cash/Check/GiftAmount used TRANSACTION TABLES
+            if (clientCheckoutDTO.getCash() > 0) {
+                Transaction transation = new Transaction();
+                transation.setSale_id(saleId);
+                transation.setPayment_type("Cash");
+                transation.setPayment_amount(clientCheckoutDTO.getCash());
+                transation.setClient_id(clientCheckoutDTO.getClient_id());
+
+                transactionDao.createTransaction(transation);
+            }
+            if (clientCheckoutDTO.getCheck() > 0 ) {
+                Transaction transation = new Transaction();
+                transation.setSale_id(saleId);
+                transation.setPayment_type("Check");
+                transation.setPayment_amount(clientCheckoutDTO.getCheck());
+                transation.setClient_id(clientCheckoutDTO.getClient_id());
+
+                transactionDao.createTransaction(transation);
+            }
+            if (isGiftCardUsed) {
+                Transaction transation = new Transaction();
+                transation.setSale_id(saleId);
+                transation.setPayment_type("Gift Card Used");
+                transation.setPayment_amount(giftAmountUsed);
+                transation.setClient_id(clientCheckoutDTO.getClient_id());
+
+                transactionDao.createTransaction(transation);
+            }
+
             return "success";
         }
         if (clientCheckoutDTO.getPaymentMethodId() != null && clientCheckoutDTO.getPaymentMethodId().length() > 0) {
@@ -200,7 +376,7 @@ public class JdbcStripeDao implements StripeDao {
                         PaymentIntentCreateParams.builder()
                                 .setCurrency("usd")
                                 .setCustomer(customer_id)
-                                .setAmount((long) clientCheckoutDTO.getTotal() * 100)
+                                .setAmount((long) clientCheckoutDTO.getBalance() * 100)
                                 .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
                                 .setPaymentMethod(clientCheckoutDTO.getPaymentMethodId())
                                 .setReturnUrl(returnUrl)
@@ -217,7 +393,7 @@ public class JdbcStripeDao implements StripeDao {
                         PaymentIntentCreateParams.builder()
                                 .setCurrency("usd")
                                 .setCustomer(customer_id)
-                                .setAmount((long) clientCheckoutDTO.getTotal() * 100)
+                                .setAmount((long) clientCheckoutDTO.getBalance() * 100)
                                 .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
                                 .setPaymentMethod(clientCheckoutDTO.getPaymentMethodId())
                                 .setReturnUrl(returnUrl)
@@ -523,7 +699,7 @@ public class JdbcStripeDao implements StripeDao {
             originalRunningTotal += currentPackage.getPackage_cost().intValue();
         }
 
-        clientCheckoutDTO.setDiscount(originalRunningTotal - clientCheckoutDTO.getTotal());
+        clientCheckoutDTO.setDiscount(originalRunningTotal - clientCheckoutDTO.getBalance());
 
         int discountAmount = clientCheckoutDTO.getDiscount();
         if (discountAmount > 0) {
@@ -621,7 +797,7 @@ public class JdbcStripeDao implements StripeDao {
                     PaymentIntentCreateParams.builder()
                             .setCurrency("usd")
                             .setCustomer(customer_id)
-                            .setAmount((long) clientCheckoutDTO.getTotal() * 100)
+                            .setAmount((long) clientCheckoutDTO.getBalance() * 100)
                             .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
                             .addPaymentMethodType("card_present")
                             .setSetupFutureUsage(PaymentIntentCreateParams.SetupFutureUsage.OFF_SESSION)
@@ -633,7 +809,7 @@ public class JdbcStripeDao implements StripeDao {
                     PaymentIntentCreateParams.builder()
                             .setCurrency("usd")
                             .setCustomer(customer_id)
-                            .setAmount((long) clientCheckoutDTO.getTotal() * 100)
+                            .setAmount((long) clientCheckoutDTO.getBalance() * 100)
                             .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
                             .addPaymentMethodType("card_present")
                             .setDescription(description)

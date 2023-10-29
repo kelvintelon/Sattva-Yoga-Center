@@ -1,6 +1,5 @@
 package com.sattvayoga.dto.order;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sattvayoga.model.GiftCard;
 import com.sattvayoga.model.PackageDetails;
 
@@ -10,7 +9,7 @@ public class ClientCheckoutDTO {
 
     private int client_id;
     private List<PackageDetails> selectedCheckoutPackages;
-    private int total;
+    private int balance;
     private int discount;
     private int cash;
     private int check;
@@ -30,7 +29,7 @@ public class ClientCheckoutDTO {
     public ClientCheckoutDTO(int client_id, List<PackageDetails> selectedCheckoutPackages, int total, String email, int discount, boolean saveEmail, String renewalDate) {
         this.client_id = client_id;
         this.selectedCheckoutPackages = selectedCheckoutPackages;
-        this.total = total;
+        this.balance = total;
         this.emailForGift = email;
         this.discount = discount;
         this.saveEmailGiftCardPurchase = saveEmail;
@@ -133,12 +132,12 @@ public class ClientCheckoutDTO {
         this.selectedCheckoutPackages = selectedCheckoutPackages;
     }
 
-    public int getTotal() {
-        return total;
+    public int getBalance() {
+        return balance;
     }
 
-    public void setTotal(int total) {
-        this.total = total;
+    public void setBalance(int balance) {
+        this.balance = balance;
     }
 
     public String getEmailForGift() {

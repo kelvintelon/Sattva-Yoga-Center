@@ -247,7 +247,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     }
 
     @Override
-    public boolean updateGiftCard(GiftCard originalGiftCard, int clientId, int amountUsed) {
+    public boolean updateGiftCard(GiftCard originalGiftCard, int clientId, double amountUsed) {
         int newAmount = (int) (originalGiftCard.getAmount() - amountUsed);
         String sql = "UPDATE gift_card SET amount = ? , client_id = ? WHERE code ILIKE ?";
         return jdbcTemplate.update(sql, newAmount, clientId, originalGiftCard.getCode())==1;

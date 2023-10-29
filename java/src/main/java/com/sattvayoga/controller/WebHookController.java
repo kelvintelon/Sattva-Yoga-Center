@@ -98,7 +98,7 @@ public class WebHookController {
 
                         GiftCard originalGiftCard = packagePurchaseDao.retrieveGiftCard(giftCodeUsed);
 
-                        packagePurchaseDao.updateGiftCard(originalGiftCard,clientId,giftAmountUsed);
+                        packagePurchaseDao.updateGiftCard(originalGiftCard,clientId,doubleGiftAmountUsed);
                     }
 
                     List<CheckoutItemDTO> listOfItemsToCheckout = new ArrayList<>();
@@ -262,7 +262,7 @@ public class WebHookController {
             if (metaDataMap.get("giftCodeUsed") != null) {
                 String giftCodeUsed = metaDataMap.get("giftCodeUsed");
                 double doubleGiftAmountUsed = Double.valueOf(metaDataMap.get("giftAmountUsed"));
-                int giftAmountUsed = (int) doubleGiftAmountUsed;
+                double giftAmountUsed = doubleGiftAmountUsed;
 
                 metaDataMap.remove("giftCodeUsed");
                 metaDataMap.remove("giftAmountUsed");

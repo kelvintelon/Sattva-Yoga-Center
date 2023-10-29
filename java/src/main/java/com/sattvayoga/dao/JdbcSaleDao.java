@@ -15,9 +15,9 @@ public class JdbcSaleDao implements SaleDao {
 
     @Override
     public int createSaleNoBatch(Sale sale) {
-        String sql = "INSERT INTO sales (packages_purchased_array) VALUES (?) RETURNING sale_id;";
+        String sql = "INSERT INTO sales (client_id, packages_purchased_array) VALUES (?, ?) RETURNING sale_id;";
 
-        return jdbcTemplate.queryForObject(sql, Integer.class, sale.getPackages_purchased_array());
+        return jdbcTemplate.queryForObject(sql, Integer.class, sale.getClient_id(), sale.getPackages_purchased_array());
     }
 
     @Override

@@ -5,8 +5,17 @@ public class Sale {
     private int sale_id;
     private int[] packages_purchased_array;
     private int batch_number;
+    private int client_id;
 
     public Sale() {
+    }
+
+    public int getClient_id() {
+        return client_id;
+    }
+
+    public void setClient_id(int client_id) {
+        this.client_id = client_id;
     }
 
     public int getSale_id() {

@@ -52,5 +52,5 @@ public interface PackagePurchaseDao {
 
     GiftCard retrieveGiftCard(String code);
 
-    boolean updateGiftCard(GiftCard originalGiftCard, int clientId, int amountUsed);
+    boolean updateGiftCard(GiftCard originalGiftCard, int clientId, double amountUsed);
 }
