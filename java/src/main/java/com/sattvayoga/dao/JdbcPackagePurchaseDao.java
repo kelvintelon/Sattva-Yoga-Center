@@ -435,18 +435,38 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         return coupon.toString();
     }
 
-    public void createStripePackagePurchase(CheckoutItemDTO checkoutItemDTO) {
-        String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, classes_remaining, activation_date, expiration_date, is_monthly_renew, total_amount_paid, discount, paymentId ) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        jdbcTemplate.update(sql, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
+    public int createStripePackagePurchase(CheckoutItemDTO checkoutItemDTO) {
+        String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, " +
+                "classes_remaining, activation_date, expiration_date, " +
+                "is_monthly_renew, total_amount_paid, discount, paymentId ) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING package_purchase_id";
+        return jdbcTemplate.queryForObject(sql, Integer.class, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
                 checkoutItemDTO.getPackage_id(), checkoutItemDTO.getClasses_remaining(),
-                LocalDate.now(), returnCorrectPackageExpirationDate(checkoutItemDTO), checkoutItemDTO.isIs_monthly_renew(),
+                LocalDate.now(), returnCorrectPackageExpirationDateForCheckoutItem(checkoutItemDTO), checkoutItemDTO.isIs_monthly_renew(),
                 checkoutItemDTO.getTotal_amount_paid(), checkoutItemDTO.getDiscount(), checkoutItemDTO.getPaymentId());
     }
 
-    private LocalDate returnCorrectPackageExpirationDate(CheckoutItemDTO checkoutItemDTO) {
+    private LocalDate returnCorrectPackageExpirationDateForCheckoutItem(CheckoutItemDTO checkoutItemDTO) {
         if (checkoutItemDTO.getSubscriptionDuration() > 0) {
             return LocalDate.now().plusMonths(checkoutItemDTO.getSubscriptionDuration()).plusDays(1);
+        }
+        return LocalDate.now().plusYears(1).plusDays(1);
+    }
+
+    public int createAdminPackagePurchase(PackagePurchase packagePurchase) {
+        String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, " +
+                "classes_remaining, activation_date, expiration_date, " +
+                "is_monthly_renew, total_amount_paid, discount, paymentId ) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING package_purchase_id";
+        return jdbcTemplate.queryForObject(sql, Integer.class, packagePurchase.getClient_id(), LocalDateTime.now(),
+                packagePurchase.getPackage_id(), packagePurchase.getClasses_remaining(),
+                LocalDate.now(), returnCorrectPackageExpirationDateForPackagePurchase(packagePurchase), packagePurchase.isIs_monthly_renew(),
+                packagePurchase.getTotal_amount_paid(), packagePurchase.getDiscount(), packagePurchase.getPaymentId());
+    }
+
+    private LocalDate returnCorrectPackageExpirationDateForPackagePurchase(PackagePurchase packagePurchase) {
+        if (packagePurchase.getSubscription_duration() > 0) {
+            return LocalDate.now().plusMonths(packagePurchase.getSubscription_duration()).plusDays(1);
         }
         return LocalDate.now().plusYears(1).plusDays(1);
     }
@@ -469,10 +489,10 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 checkoutItemDTO.getTotal_amount_paid(), checkoutItemDTO.getDiscount(), checkoutItemDTO.getPaymentId());
     }
 
-    public void createGiftCardPurchase(CheckoutItemDTO checkoutItemDTO) {
+    public int createGiftCardPurchase(CheckoutItemDTO checkoutItemDTO) {
         String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, classes_remaining, activation_date, expiration_date, is_monthly_renew, total_amount_paid, discount, paymentId ) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        jdbcTemplate.update(sql, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING package_purchase_id";
+        return jdbcTemplate.queryForObject(sql, Integer.class, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
                 checkoutItemDTO.getPackage_id(), 0, LocalDate.now(),
                 LocalDate.now().plusMonths(60), false,
                 checkoutItemDTO.getTotal_amount_paid(), checkoutItemDTO.getDiscount(), checkoutItemDTO.getPaymentId());

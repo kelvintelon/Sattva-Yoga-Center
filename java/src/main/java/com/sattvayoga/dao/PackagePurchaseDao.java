@@ -38,13 +38,15 @@ public interface PackagePurchaseDao {
 
     void createGiftCard(String code, double amount);
 
-    void createStripePackagePurchase(CheckoutItemDTO checkoutItemDTO);
+    int createStripePackagePurchase(CheckoutItemDTO checkoutItemDTO);
+
+    int createAdminPackagePurchase(PackagePurchase packagePurchase);
 
     void createOneMonthAutoRenewPurchase(CheckoutItemDTO checkoutItemDTO);
 
     void createSixMonthAutoRenewPurchase(CheckoutItemDTO checkoutItemDTO);
 
-    void createGiftCardPurchase(CheckoutItemDTO checkoutItemDTO);
+    int createGiftCardPurchase(CheckoutItemDTO checkoutItemDTO);
 
     void purchaseLineItems(List<CheckoutItemDTO> itemList);
 

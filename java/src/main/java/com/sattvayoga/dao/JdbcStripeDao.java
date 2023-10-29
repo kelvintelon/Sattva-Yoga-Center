@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.*;
 import java.util.*;
 
@@ -33,12 +34,25 @@ public class JdbcStripeDao implements StripeDao {
     @Autowired
     PackageDetailsDao packageDetailsDao;
 
+    @Autowired
+    PackagePurchaseDao packagePurchaseDao;
+
     // TODO: If you want to deploy uncomment below
 //    @Autowired
 //    private SecretManagerService secretManagerService;
 
     @Autowired
     private ClientDetailsDao clientDetailsDao;
+
+    @Autowired
+    private SaleDao saleDao;
+
+    @Autowired
+    private TransactionDao transactionDao;
+
+    @Autowired
+    private EmailSenderService senderService;
+
 
     @Override
     public Session createSession(List<CheckoutItemDTO> checkoutItemDTOList) throws StripeException {
@@ -97,20 +111,79 @@ public class JdbcStripeDao implements StripeDao {
         // if it's comp/Free then return immediately
         if (clientCheckoutDTO.isCompFree()) {
             // just process everything here and return at the end;
-            int totalAmount = clientCheckoutDTO.getTotal() + clientCheckoutDTO.getCash() + clientCheckoutDTO.getCheck() + clientCheckoutDTO.getDiscount();
+            double runningTotal = 0;
 
-            // TODO: Insert everything that was in the list into package purchase
+            List<PackageDetails> listOfPackagesBeingPurchased = clientCheckoutDTO.getSelectedCheckoutPackages();
+            List<Integer> packagePurchaseIDs = new ArrayList<>();
+
+            // Insert everything that was in the list into package purchase
             //  1. grab package purchase IDs and package description
-            //  2. If there is an email to save or a gift card to process we should still do it
+            for (int i = 0; i < listOfPackagesBeingPurchased.size(); i++) {
+                PackageDetails currentPackage = listOfPackagesBeingPurchased.get(i);
 
-            // TODO: Insert into sales/order table
+                //  2. If there is an email to save or a gift card to process we should still do it
+                if (currentPackage.getDescription().contains("Gift")) {
+                    String giftEmail = clientCheckoutDTO.getEmailForGift();
+
+                    CheckoutItemDTO checkoutItemDTO = new CheckoutItemDTO();
+                    checkoutItemDTO.setClient_id(clientCheckoutDTO.getClient_id());
+                    checkoutItemDTO.setPackage_id(currentPackage.getPackage_id());
+                    runningTotal += currentPackage.getPackage_cost().doubleValue();
+                    checkoutItemDTO.setTotal_amount_paid(currentPackage.getPackage_cost());
+                    checkoutItemDTO.setDiscount(0);
+                    checkoutItemDTO.setPaymentId("comp/free");
+
+                    String code = packagePurchaseDao.generateGiftCardCode();
+                    packagePurchaseDao.createGiftCard(code, currentPackage.getPackage_cost().doubleValue());
+                    int packagePurchaseId = packagePurchaseDao.createGiftCardPurchase(checkoutItemDTO);
+
+                    packagePurchaseIDs.add(packagePurchaseId);
+
+                    try {
+                        senderService.sendEmail(giftEmail,"Sattva Yoga Center Gift Card Code", "Your Gift Card code is: " + code + " . Please note: The Gift Card Code can only be redeemed in person. Once redeemed, it cannot be used by anyone else.");
+                    } catch (Throwable e) {
+                        System.out.println("Error sending gift card email to client id: " + clientCheckoutDTO.getClient_id());
+                    }
+                } else {
+                    PackagePurchase packagePurchase = new PackagePurchase();
+                    packagePurchase.setClient_id(clientCheckoutDTO.getClient_id());
+                    packagePurchase.setPackage_id(currentPackage.getPackage_id());
+                    packagePurchase.setClasses_remaining(currentPackage.getClasses_amount());
+                    packagePurchase.setIs_monthly_renew(currentPackage.isIs_recurring());
+
+                    runningTotal += currentPackage.getPackage_cost().doubleValue();
+                    packagePurchase.setTotal_amount_paid(currentPackage.getPackage_cost());
+                    packagePurchase.setDiscount(BigDecimal.valueOf(0.0));
+                    packagePurchase.setPaymentId("comp/free");
+
+                    int packagePurchaseId = packagePurchaseDao.createAdminPackagePurchase(packagePurchase);
+
+                    packagePurchaseIDs.add(packagePurchaseId);
+
+                }
+
+
+
+            }
+            // Insert into sales/order table
             //  1. Import Package purchase IDs into int[] field
             //  2. Grab serialized sale ID;
+            int[] arrayOfPackagePurchaseIDs = packagePurchaseIDs.stream().mapToInt(i -> i).toArray();
+            Sale sale = new Sale();
+            sale.setPackages_purchased_array(arrayOfPackagePurchaseIDs);
+            int saleId = saleDao.createSaleNoBatch(sale);
 
-            // TODO: Insert into transactions table last
+
+            // Insert into transactions table last
             //  1. Import serialized sale ID and package description, along with the type of payment that was used.
+            Transaction transation = new Transaction();
+            transation.setSale_id(saleId);
+            transation.setPayment_type("Comp/free");
+            transation.setPayment_amount(runningTotal);
+
 
             // TODO: Just return
+            return "success";
         }
         if (clientCheckoutDTO.getPaymentMethodId() != null && clientCheckoutDTO.getPaymentMethodId().length() > 0) {
 

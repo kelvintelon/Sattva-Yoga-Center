@@ -18,6 +18,8 @@ public class PackagePurchase {
     private BigDecimal discount;
     private String package_description;
     private boolean is_subscription;
+    private int subscription_duration;
+    private String paymentId;
 
     public PackagePurchase(int package_purchase_id, int client_id, Timestamp date_purchased, int package_id,
                            int classes_remaining, Date activation_date,
@@ -54,6 +56,22 @@ public class PackagePurchase {
 
     public PackagePurchase() {
 
+    }
+
+    public String getPaymentId() {
+        return paymentId;
+    }
+
+    public void setPaymentId(String paymentId) {
+        this.paymentId = paymentId;
+    }
+
+    public int getSubscription_duration() {
+        return subscription_duration;
+    }
+
+    public void setSubscription_duration(int subscription_duration) {
+        this.subscription_duration = subscription_duration;
     }
 
     public String getPackage_description() {

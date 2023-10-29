@@ -293,7 +293,7 @@
                             v-model.number="totalCost"
                             class="mt-6 pt-0"
                             type="number"
-                            label="Total: $"
+                            label="Balance: $"
                             min="0"
                           ></v-text-field>
                         </v-col>
@@ -447,7 +447,7 @@
                         </v-row>
                         
                       <div class="text--primary" style="border-top: 1px solid">
-                        Total Cost: ${{ totalCost }}
+                        Balance: ${{ totalCost }}
                       </div>
                       <v-checkbox v-if="showSaveCardCheckbox"
                         v-model="clientCheckout.saveCard" label="Save Payment Method?">
@@ -1464,6 +1464,9 @@ export default {
         if ((this.clientCheckout.emailForGift.length == 0 || this.clientCheckout.emailForReceipt == 0) && (this.$store.state.clientDetails.email.length >= 1)) {
           this.clientCheckout.emailForGift = this.$store.state.clientDetails.email;
           this.clientCheckout.emailForReceipt = this.$store.state.clientDetails.email;
+        } else if (this.clientCheckout.emailForGift.length == 0) {
+          alert("We need an email for Gift")
+          return
         }
         
         this.clientCheckout.total = this.totalCost;

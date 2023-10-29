@@ -1,6 +1,6 @@
 BEGIN TRANSACTION;
 
-DROP TABLE IF EXISTS users,teacher_details,class_details,client_details,client_class,package_purchase,package_details,events,client_event,client_family,families,website_descriptions, gift_card CASCADE;
+DROP TABLE IF EXISTS users,teacher_details,class_details,client_details,client_class,package_purchase,package_details,sales,transactions,events,client_event,client_family,families,website_descriptions, gift_card CASCADE;
 
 
 CREATE TABLE users 
@@ -103,6 +103,28 @@ CREATE TABLE package_purchase
 	discount			decimal(13, 2),
 	paymentId			varchar(30),
 	CONSTRAINT PK_package_purchase PRIMARY KEY (package_purchase_id)
+);
+
+CREATE TABLE sales
+(
+	sale_id						serial NOT NULL,
+	packages_purchased_array	int[],
+	batch_number				int,
+	CONSTRAINT PK_sale_id PRIMARY KEY (sale_id)
+);
+
+CREATE SEQUENCE sales_id_seq START 200001 OWNED BY sales.sale_id;
+
+ALTER TABLE sales ALTER COLUMN sale_id SET DEFAULT nextval('sales_id_seq');
+
+CREATE TABLE transactions
+(
+	transaction_id				serial NOT NULL,
+	sale_id						int NOT NULL,
+	payment_type				varchar(50) NOT NULL,
+	payment_amount				decimal(13,2) NOT NULL,
+	CONSTRAINT PK_transaction_id PRIMARY KEY (transaction_id),
+	CONSTRAINT FK_transaction_sale_id FOREIGN KEY (sale_id) REFERENCES sales(sale_id)
 );
 
 CREATE TABLE events (
