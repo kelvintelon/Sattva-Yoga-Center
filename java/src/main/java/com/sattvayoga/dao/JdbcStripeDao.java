@@ -162,8 +162,6 @@ public class JdbcStripeDao implements StripeDao {
 
                 }
 
-
-
             }
             // Insert into sales/order table
             //  1. Import Package purchase IDs into int[] field
@@ -182,7 +180,7 @@ public class JdbcStripeDao implements StripeDao {
             transation.setPayment_amount(runningTotal);
 
 
-            // TODO: Just return
+            // Just return
             return "success";
         }
         if (clientCheckoutDTO.getPaymentMethodId() != null && clientCheckoutDTO.getPaymentMethodId().length() > 0) {
@@ -230,7 +228,7 @@ public class JdbcStripeDao implements StripeDao {
                 // This creates a payment intent
                 PaymentIntent paymentIntent = PaymentIntent.create(paymentIntentCreateParams);
             }
-            return "";
+            return "Success";
         } else {
 
             String customer_id = getCustomerIdString(clientCheckoutDTO.getClient_id());
