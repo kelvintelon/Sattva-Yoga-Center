@@ -2,6 +2,7 @@ package com.sattvayoga.dao;
 
 import com.sattvayoga.dto.order.CheckoutItemDTO;
 import com.sattvayoga.model.*;
+import org.apache.tomcat.jni.Local;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -35,6 +36,12 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
     @Autowired
     private EmailSenderService senderService;
+
+    @Autowired
+    SaleDao saleDao;
+
+    @Autowired
+    TransactionDao transactionDao;
 
     @Override
     public List<PackagePurchase> getAllUserPackagePurchases(int userId) {
@@ -436,56 +443,105 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     }
 
     public int createStripePackagePurchase(CheckoutItemDTO checkoutItemDTO) {
+        LocalDate activationDate = LocalDate.now();
+
+        if (checkoutItemDTO.getSubscriptionDuration() > 0) {
+            String sql = "SELECT expiration_date FROM package_purchase JOIN package_details ON package_details.package_id = package_purchase.package_id WHERE package_details.is_subscription = true AND client_id = ? ORDER BY expiration_date DESC LIMIT 1;";
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, checkoutItemDTO.getClient_id());
+            if (results.next()) {
+                activationDate = results.getDate("expiration_date").toLocalDate();
+                activationDate.plusDays(1);
+            } else {
+                activationDate = LocalDate.now();
+            }
+        }
+
         String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, " +
                 "classes_remaining, activation_date, expiration_date, " +
                 "is_monthly_renew, total_amount_paid, discount, paymentId ) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING package_purchase_id";
         return jdbcTemplate.queryForObject(sql, Integer.class, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
                 checkoutItemDTO.getPackage_id(), checkoutItemDTO.getClasses_remaining(),
-                LocalDate.now(), returnCorrectPackageExpirationDateForCheckoutItem(checkoutItemDTO), checkoutItemDTO.isIs_monthly_renew(),
+                activationDate, returnCorrectPackageExpirationDateForCheckoutItem(checkoutItemDTO, activationDate), checkoutItemDTO.isIs_monthly_renew(),
                 checkoutItemDTO.getTotal_amount_paid(), checkoutItemDTO.getDiscount(), checkoutItemDTO.getPaymentId());
     }
 
-    private LocalDate returnCorrectPackageExpirationDateForCheckoutItem(CheckoutItemDTO checkoutItemDTO) {
+    private LocalDate returnCorrectPackageExpirationDateForCheckoutItem(CheckoutItemDTO checkoutItemDTO, LocalDate activationDate) {
         if (checkoutItemDTO.getSubscriptionDuration() > 0) {
-            return LocalDate.now().plusMonths(checkoutItemDTO.getSubscriptionDuration()).plusDays(1);
+            return activationDate.plusMonths(checkoutItemDTO.getSubscriptionDuration()).plusDays(1);
         }
         return LocalDate.now().plusYears(1).plusDays(1);
     }
 
     public int createAdminPackagePurchase(PackagePurchase packagePurchase) {
+
+        LocalDate activationDate = findActivationDateForClient(packagePurchase);
+
         String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, " +
                 "classes_remaining, activation_date, expiration_date, " +
                 "is_monthly_renew, total_amount_paid, discount, paymentId ) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING package_purchase_id";
         return jdbcTemplate.queryForObject(sql, Integer.class, packagePurchase.getClient_id(), LocalDateTime.now(),
                 packagePurchase.getPackage_id(), packagePurchase.getClasses_remaining(),
-                LocalDate.now(), returnCorrectPackageExpirationDateForPackagePurchase(packagePurchase), packagePurchase.isIs_monthly_renew(),
+                activationDate, returnCorrectPackageExpirationDateForPackagePurchase(packagePurchase, activationDate), packagePurchase.isIs_monthly_renew(),
                 packagePurchase.getTotal_amount_paid(), packagePurchase.getDiscount(), packagePurchase.getPaymentId());
     }
 
-    private LocalDate returnCorrectPackageExpirationDateForPackagePurchase(PackagePurchase packagePurchase) {
+    private LocalDate findActivationDateForClient(PackagePurchase packagePurchase) {
         if (packagePurchase.getSubscription_duration() > 0) {
-            return LocalDate.now().plusMonths(packagePurchase.getSubscription_duration()).plusDays(1);
+        String sql = "SELECT expiration_date FROM package_purchase JOIN package_details ON package_details.package_id = package_purchase.package_id WHERE package_details.is_subscription = true AND client_id = ? ORDER BY expiration_date DESC LIMIT 1;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, packagePurchase.getClient_id());
+            if (results.next()) {
+                LocalDate localDate = results.getDate("expiration_date").toLocalDate();
+                return localDate.plusDays(1);
+            }
+        }
+        return LocalDate.now();
+    }
+
+    private LocalDate returnCorrectPackageExpirationDateForPackagePurchase(PackagePurchase packagePurchase, LocalDate activationDate) {
+        if (packagePurchase.getSubscription_duration() > 0) {
+
+
+            return activationDate.plusMonths(packagePurchase.getSubscription_duration()).plusDays(1);
         }
         return LocalDate.now().plusYears(1).plusDays(1);
     }
 
-    public void createOneMonthAutoRenewPurchase(CheckoutItemDTO checkoutItemDTO){
-        String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, classes_remaining, activation_date, expiration_date, is_monthly_renew, total_amount_paid, discount, paymentId ) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        jdbcTemplate.update(sql, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
-                checkoutItemDTO.getPackage_id(), 0, LocalDate.now(),
-                LocalDate.now().plusMonths(1).plusDays(1), true,
+    public int createOneMonthAutoRenewPurchase(CheckoutItemDTO checkoutItemDTO){
+        LocalDate activationDate;
+        String sql = "SELECT expiration_date FROM package_purchase JOIN package_details ON package_details.package_id = package_purchase.package_id WHERE package_details.is_subscription = true AND client_id = ? ORDER BY expiration_date DESC LIMIT 1;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, checkoutItemDTO.getClient_id());
+        if (results.next()) {
+            activationDate = results.getDate("expiration_date").toLocalDate();
+            activationDate.plusDays(1);
+        } else {
+            activationDate = LocalDate.now();
+        }
+        String sql2 = "INSERT INTO package_purchase (client_id, date_purchased, package_id, classes_remaining, activation_date, expiration_date, is_monthly_renew, total_amount_paid, discount, paymentId ) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING package_purchase_id";
+        return jdbcTemplate.queryForObject(sql2, Integer.class, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
+                checkoutItemDTO.getPackage_id(), 0, activationDate,
+                activationDate.plusMonths(1).plusDays(1), true,
                 checkoutItemDTO.getTotal_amount_paid(), checkoutItemDTO.getDiscount(), checkoutItemDTO.getPaymentId());
     }
 
-    public void createSixMonthAutoRenewPurchase(CheckoutItemDTO checkoutItemDTO){
-        String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, classes_remaining, activation_date, expiration_date, is_monthly_renew, total_amount_paid, discount, paymentId ) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        jdbcTemplate.update(sql, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
-                checkoutItemDTO.getPackage_id(), 0, LocalDate.now(),
-                LocalDate.now().plusMonths(6).plusDays(1), true,
+    public int createSixMonthAutoRenewPurchase(CheckoutItemDTO checkoutItemDTO){
+        LocalDate activationDate;
+        String sql = "SELECT expiration_date FROM package_purchase JOIN package_details ON package_details.package_id = package_purchase.package_id WHERE package_details.is_subscription = true AND client_id = ? ORDER BY expiration_date DESC LIMIT 1;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, checkoutItemDTO.getClient_id());
+        if (results.next()) {
+            activationDate = results.getDate("expiration_date").toLocalDate();
+            activationDate.plusDays(1);
+        } else {
+            activationDate = LocalDate.now();
+        }
+
+        String sql2 = "INSERT INTO package_purchase (client_id, date_purchased, package_id, classes_remaining, activation_date, expiration_date, is_monthly_renew, total_amount_paid, discount, paymentId ) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING package_purchase_id";
+        return jdbcTemplate.queryForObject(sql2, Integer.class, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
+                checkoutItemDTO.getPackage_id(), 0, activationDate,
+                activationDate.plusMonths(6).plusDays(1), true,
                 checkoutItemDTO.getTotal_amount_paid(), checkoutItemDTO.getDiscount(), checkoutItemDTO.getPaymentId());
     }
 
@@ -499,12 +555,14 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     }
 
     @Override
-    public void purchaseLineItems(List<CheckoutItemDTO> itemList) {
+    public void purchaseLineItems(List<CheckoutItemDTO> itemList, List<Transaction> transactions) {
+        List<Integer> packagePurchaseIDs = new ArrayList<>();
         for (CheckoutItemDTO eachPackage : itemList) {
             if (eachPackage.getProductName().contains("Gift")) {
                 String code = generateGiftCardCode();
                 createGiftCard(code, eachPackage.getPrice());
-                createGiftCardPurchase(eachPackage);
+                int packagePurchaseId = createGiftCardPurchase(eachPackage);
+                packagePurchaseIDs.add(packagePurchaseId);
                 ClientDetails clientDetails =
                         clientDetailsDao.findClientByClientId(eachPackage.getClient_id());
 
@@ -546,13 +604,28 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 // SAVE EMAIL TO CUSTOMER OBJECT IN STRIPE
                 stripeDao.updateCustomerEmail(clientDetails.getCustomer_id(), eachPackage.getReceiptEmail());
             } else if (eachPackage.getProductName().contains("One") && eachPackage.isIs_monthly_renew()) {
-                createOneMonthAutoRenewPurchase(eachPackage);
+                int packagePurchaseId = createOneMonthAutoRenewPurchase(eachPackage);
+                packagePurchaseIDs.add(packagePurchaseId);
             } else if (eachPackage.getProductName().contains("Six") && eachPackage.isIs_monthly_renew()) {
-                createSixMonthAutoRenewPurchase(eachPackage);
+                int packagePurchaseId = createSixMonthAutoRenewPurchase(eachPackage);
+                packagePurchaseIDs.add(packagePurchaseId);
             } else {
-                createStripePackagePurchase(eachPackage);
+                int packagePurchaseId = createStripePackagePurchase(eachPackage);
+                packagePurchaseIDs.add(packagePurchaseId);
             }
         }
+        int[] arrayOfPackagePurchaseIDs = packagePurchaseIDs.stream().mapToInt(i -> i).toArray();
+        Sale sale = new Sale();
+        sale.setPackages_purchased_array(arrayOfPackagePurchaseIDs);
+        sale.setClient_id(itemList.get(0).getClient_id());
+        int saleId = saleDao.createSaleNoBatch(sale);
+
+        for(Transaction transaction : transactions){
+            transaction.setSale_id(saleId);
+
+            transactionDao.createTransaction(transaction);
+        }
+
     }
 
 

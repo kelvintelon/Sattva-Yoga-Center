@@ -330,31 +330,31 @@ public class JdbcStripeDao implements StripeDao {
 
             // SET Cash/Check/GiftAmount used TRANSACTION TABLES
             if (clientCheckoutDTO.getCash() > 0) {
-                Transaction transation = new Transaction();
-                transation.setSale_id(saleId);
-                transation.setPayment_type("Cash");
-                transation.setPayment_amount(clientCheckoutDTO.getCash());
-                transation.setClient_id(clientCheckoutDTO.getClient_id());
+                Transaction transaction = new Transaction();
+                transaction.setSale_id(saleId);
+                transaction.setPayment_type("Cash");
+                transaction.setPayment_amount(clientCheckoutDTO.getCash());
+                transaction.setClient_id(clientCheckoutDTO.getClient_id());
 
-                transactionDao.createTransaction(transation);
+                transactionDao.createTransaction(transaction);
             }
             if (clientCheckoutDTO.getCheck() > 0 ) {
-                Transaction transation = new Transaction();
-                transation.setSale_id(saleId);
-                transation.setPayment_type("Check");
-                transation.setPayment_amount(clientCheckoutDTO.getCheck());
-                transation.setClient_id(clientCheckoutDTO.getClient_id());
+                Transaction transaction = new Transaction();
+                transaction.setSale_id(saleId);
+                transaction.setPayment_type("Check");
+                transaction.setPayment_amount(clientCheckoutDTO.getCheck());
+                transaction.setClient_id(clientCheckoutDTO.getClient_id());
 
-                transactionDao.createTransaction(transation);
+                transactionDao.createTransaction(transaction);
             }
             if (isGiftCardUsed) {
-                Transaction transation = new Transaction();
-                transation.setSale_id(saleId);
-                transation.setPayment_type("Gift Card Used");
-                transation.setPayment_amount(giftAmountUsed);
-                transation.setClient_id(clientCheckoutDTO.getClient_id());
+                Transaction transaction = new Transaction();
+                transaction.setSale_id(saleId);
+                transaction.setPayment_type("Gift Card Code");
+                transaction.setPayment_amount(giftAmountUsed);
+                transaction.setClient_id(clientCheckoutDTO.getClient_id());
 
-                transactionDao.createTransaction(transation);
+                transactionDao.createTransaction(transaction);
             }
 
             return "success";
@@ -367,9 +367,10 @@ public class JdbcStripeDao implements StripeDao {
             String returnUrl = baseURL + "clientPackageManagement";
 
             Map<String, String> metaDataMap = new HashMap<>();
-            metaDataMap.put("process", "admin");
+            String descriptionForPayment = metaDataMap.put("process", "admin");
 
-            modifyMap(clientCheckoutDTO, metaDataMap);
+            boolean isPaymentKeyedStored = true;
+            modifyMap(clientCheckoutDTO, metaDataMap, isPaymentKeyedStored);
 
             if (clientCheckoutDTO.getEmailForReceipt().length()>0) {
                 PaymentIntentCreateParams paymentIntentCreateParams =
@@ -381,6 +382,7 @@ public class JdbcStripeDao implements StripeDao {
                                 .setPaymentMethod(clientCheckoutDTO.getPaymentMethodId())
                                 .setReturnUrl(returnUrl)
                                 .setReceiptEmail(clientCheckoutDTO.getEmailForReceipt())
+                                .setDescription(descriptionForPayment)
                                 .setConfirm(true)
                                 .putAllMetadata(metaDataMap)
                                 .build();
@@ -397,6 +399,7 @@ public class JdbcStripeDao implements StripeDao {
                                 .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
                                 .setPaymentMethod(clientCheckoutDTO.getPaymentMethodId())
                                 .setReturnUrl(returnUrl)
+                                .setDescription(descriptionForPayment)
                                 .setConfirm(true)
                                 .putAllMetadata(metaDataMap)
                                 .build();
@@ -412,9 +415,10 @@ public class JdbcStripeDao implements StripeDao {
             Map<String, String> metaDataMap = new HashMap<>();
             metaDataMap.put("process", "admin");
 
-            String desciptionForPayment = modifyMap(clientCheckoutDTO, metaDataMap);
+            boolean isPaymentKeyedStored = false;
+            String descriptionForPayment = modifyMap(clientCheckoutDTO, metaDataMap, isPaymentKeyedStored);
 
-            PaymentIntentCreateParams paymentIntentCreateParams = getPaymentIntentCreateParams(clientCheckoutDTO, customer_id, metaDataMap, desciptionForPayment);
+            PaymentIntentCreateParams paymentIntentCreateParams = getPaymentIntentCreateParams(clientCheckoutDTO, customer_id, metaDataMap, descriptionForPayment);
 
             // This creates a payment intent
             PaymentIntent paymentIntent = PaymentIntent.create(paymentIntentCreateParams);
@@ -708,7 +712,7 @@ public class JdbcStripeDao implements StripeDao {
         return false;
     }
 
-    private String modifyMap(ClientCheckoutDTO clientCheckoutDTO, Map<String, String> metaDataMap) {
+    private String modifyMap(ClientCheckoutDTO clientCheckoutDTO, Map<String, String> metaDataMap, Boolean keyedStoredOrSwiped) {
         List<PackageDetails> listOfPackagesBeingPurchased = clientCheckoutDTO.getListOfPackages();
 
 
@@ -721,11 +725,12 @@ public class JdbcStripeDao implements StripeDao {
 
         if (currentPackageName.contains("Gift")) {
             metaDataMap.put("giftCardEmail", clientCheckoutDTO.getEmailForGift());
-            metaDataMap.put("saveGiftCardEmail", String.valueOf(clientCheckoutDTO.isSaveEmailGiftCardPurchase()));
+//            metaDataMap.put("saveGiftCardEmail", String.valueOf(clientCheckoutDTO.isSaveEmailGiftCardPurchase()));
         }
-        if (clientCheckoutDTO.isSaveEmailReceiptPurchase()) {
-            metaDataMap.put("saveReceiptEmail", clientCheckoutDTO.getEmailForReceipt());
-        }
+
+//        if (clientCheckoutDTO.isSaveEmailReceiptPurchase()) {
+//            metaDataMap.put("saveReceiptEmail", clientCheckoutDTO.getEmailForReceipt());
+//        }
 
         int packagePrice = listOfPackagesBeingPurchased.get(i).getPackage_cost().intValue();
 
@@ -747,6 +752,23 @@ public class JdbcStripeDao implements StripeDao {
         metaDataMap.put(currentPackageName, mapValueForPackage);
         mapForDescription.put(currentPackageName, mapValueForPackage);
     }
+
+        // keyedStoredOrSwiped = true means keyedStored, if = false then swiped
+        if (keyedStoredOrSwiped) {
+            metaDataMap.put("stripeKeyedStored", String.valueOf(clientCheckoutDTO.getBalance()));
+        } else {
+            metaDataMap.put("stripeSwiped", String.valueOf(clientCheckoutDTO.getBalance()));
+        }
+
+        if (clientCheckoutDTO.getCash() > 0) {
+            metaDataMap.put("cash", String.valueOf(clientCheckoutDTO.getCash()));
+        }
+
+        if (clientCheckoutDTO.getCheck() > 0) {
+            metaDataMap.put("check", String.valueOf(clientCheckoutDTO.getCheck()));
+        }
+
+
         List<String> listOfKeys = new ArrayList<>(mapForDescription.keySet());
     for (int i = 0; i < listOfKeys.size(); i++) {
         String nameOfProduct = listOfKeys.get(i);

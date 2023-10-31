@@ -1,10 +1,7 @@
 package com.sattvayoga.dao;
 
 import com.sattvayoga.dto.order.CheckoutItemDTO;
-import com.sattvayoga.model.ClassEvent;
-import com.sattvayoga.model.GiftCard;
-import com.sattvayoga.model.PackagePurchase;
-import com.sattvayoga.model.PaginatedListOfPurchasedPackages;
+import com.sattvayoga.model.*;
 
 import java.util.List;
 
@@ -42,13 +39,13 @@ public interface PackagePurchaseDao {
 
     int createAdminPackagePurchase(PackagePurchase packagePurchase);
 
-    void createOneMonthAutoRenewPurchase(CheckoutItemDTO checkoutItemDTO);
+    int createOneMonthAutoRenewPurchase(CheckoutItemDTO checkoutItemDTO);
 
-    void createSixMonthAutoRenewPurchase(CheckoutItemDTO checkoutItemDTO);
+    int createSixMonthAutoRenewPurchase(CheckoutItemDTO checkoutItemDTO);
 
     int createGiftCardPurchase(CheckoutItemDTO checkoutItemDTO);
 
-    void purchaseLineItems(List<CheckoutItemDTO> itemList);
+    void purchaseLineItems(List<CheckoutItemDTO> itemList, List<Transaction> transactions);
 
     GiftCard retrieveGiftCard(String code);
 

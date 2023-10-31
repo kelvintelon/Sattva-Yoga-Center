@@ -5,6 +5,7 @@ import com.sattvayoga.dto.order.CheckoutItemDTO;
 import com.sattvayoga.model.ClientDetails;
 import com.sattvayoga.model.GiftCard;
 import com.sattvayoga.model.PackageDetails;
+import com.sattvayoga.model.Transaction;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.*;
@@ -79,27 +80,80 @@ public class WebHookController {
                     // Get Payment ID and Customer ID
                     String paymentIntentId = ((PaymentIntent) stripeObject).getId();
                     String customerId = ((PaymentIntent) stripeObject).getCustomer();
+                    clientId = getClientId(clientId, customerId);
 
                     Map<String, String> metaDataMap = ((PaymentIntent) stripeObject).getMetadata();
 
 
                     metaDataMap.remove("process");
 
+                    List<Transaction> listOfTransactions = new ArrayList<>();
+
                     // Gift Card Code being used logic
                     if (metaDataMap.get("giftCodeUsed") != null) {
+
+                        Transaction transaction = new Transaction();
+
                         String giftCodeUsed = metaDataMap.get("giftCodeUsed");
                         double doubleGiftAmountUsed = Double.valueOf(metaDataMap.get("giftAmountUsed"));
                         int giftAmountUsed = (int) doubleGiftAmountUsed;
 
+                        transaction.setPayment_amount(doubleGiftAmountUsed);
+                        transaction.setPayment_type("Gift Card Code");
+
                         metaDataMap.remove("giftCodeUsed");
                         metaDataMap.remove("giftAmountUsed");
 
-                        clientId = getClientId(clientId, customerId);
+
+
+                        transaction.setClient_id(clientId);
 
                         GiftCard originalGiftCard = packagePurchaseDao.retrieveGiftCard(giftCodeUsed);
 
                         packagePurchaseDao.updateGiftCard(originalGiftCard,clientId,doubleGiftAmountUsed);
+                        listOfTransactions.add(transaction);
                     }
+
+                    // Stripe Swipe or Keyed/Stored logic out the way
+
+                    if (metaDataMap.get("stripeKeyedStored") != null) {
+                        Transaction transaction = new Transaction();
+
+                        transaction.setClient_id(clientId);
+                        transaction.setPayment_type("Credit Card Keyed/Stored");
+                        transaction.setPayment_amount(Double.valueOf(metaDataMap.get("stripeKeyedStored")));
+                        metaDataMap.remove("stripeKeyedStored");
+                        listOfTransactions.add(transaction);
+                    }
+                    if (metaDataMap.get("stripeSwiped") != null){
+                        Transaction transaction = new Transaction();
+
+                        transaction.setClient_id(clientId);
+                        transaction.setPayment_type("Credit Card Swiped");
+                        transaction.setPayment_amount(Double.valueOf(metaDataMap.get("stripeSwiped")));
+                        metaDataMap.remove("stripeSwiped");
+                        listOfTransactions.add(transaction);
+                    }
+                    if (metaDataMap.get("cash") != null) {
+                        Transaction transaction = new Transaction();
+
+                        transaction.setClient_id(clientId);
+                        transaction.setPayment_type("Cash");
+                        transaction.setPayment_amount(Double.valueOf(metaDataMap.get("cash")));
+                        metaDataMap.remove("cash");
+                        listOfTransactions.add(transaction);
+                    }
+                    if (metaDataMap.get("check") != null) {
+                        Transaction transaction = new Transaction();
+
+                        transaction.setClient_id(clientId);
+                        transaction.setPayment_type("Check");
+                        transaction.setPayment_amount(Double.valueOf(metaDataMap.get("check")));
+                        metaDataMap.remove("check");
+                        listOfTransactions.add(transaction);
+                    }
+
+
 
                     List<CheckoutItemDTO> listOfItemsToCheckout = new ArrayList<>();
 
@@ -111,9 +165,9 @@ public class WebHookController {
 
                     if (metaDataMap.get("Gift Card") != null) {
                         giftCardEmail = metaDataMap.get("giftCardEmail");
-                        saveGiftCard = Boolean.parseBoolean(metaDataMap.get("saveGiftCardEmail"));
+//                        saveGiftCard = Boolean.parseBoolean(metaDataMap.get("saveGiftCardEmail"));
                         metaDataMap.remove("giftCardEmail");
-                        metaDataMap.remove("saveGiftCardEmail");
+//                        metaDataMap.remove("saveGiftCardEmail");
                     }
 
                     // Get receipt logic out the way
@@ -134,8 +188,6 @@ public class WebHookController {
                         String[] valueArray = value.split(",");
                         int totalPaid = Integer.valueOf(valueArray[0]);
                         int discount = Integer.valueOf(valueArray[1]);
-
-                        clientId = getClientId(clientId, customerId);
 
                         // Find original package details
                         PackageDetails currentPackageDetails = packageDetailsDao.findPackageByPackageName(keyDescription);
@@ -166,7 +218,7 @@ public class WebHookController {
 
                     }
 
-                    packagePurchaseDao.purchaseLineItems(listOfItemsToCheckout);
+                    packagePurchaseDao.purchaseLineItems(listOfItemsToCheckout, listOfTransactions);
 
                 }
             case "checkout.session.completed":
@@ -190,8 +242,20 @@ public class WebHookController {
 
                     List<CheckoutItemDTO> checkoutItemDTOList = getCheckoutItemDTOList((Session) stripeObject, lineItems);
 
+                    double amountPaid = 0;
+
+                    for (CheckoutItemDTO checkoutItemDTO : checkoutItemDTOList) {
+                        amountPaid += checkoutItemDTO.getPrice();
+                    }
+
+                    List<Transaction> transactions = new ArrayList<>();
+                    Transaction transaction = new Transaction();
+                    transaction.setPayment_type("Online Payment");
+                    transaction.setClient_id(checkoutItemDTOList.get(0).getClient_id());
+                    transaction.setPayment_amount(amountPaid);
+                    transactions.add(transaction);
                     // After you grab line Items pass them in through a method that saves them into the DB
-                    packagePurchaseDao.purchaseLineItems(checkoutItemDTOList);
+                    packagePurchaseDao.purchaseLineItems(checkoutItemDTOList, transactions);
 
                     break;
                 }
@@ -352,12 +416,12 @@ public class WebHookController {
             checkoutItemDTO.setQuantity(currentItem.getQuantity().intValue());
             checkoutItemDTO.setPrice(currentItem.getPrice().getUnitAmount()/100.00);
 
-            clientId = getClientId(clientId, customerId);
+
             ClientDetails clientDetails = clientDetailsDao.findClientByClientId(clientId);
 
             checkoutItemDTO.setGiftCardEmail(clientDetails.getEmail());
             checkoutItemDTO.setSaveGiftCardEmail(false);
-
+            clientId = getClientId(clientId, customerId);
             checkoutItemDTO.setClient_id(clientId);
 
             int packageId = 0;
