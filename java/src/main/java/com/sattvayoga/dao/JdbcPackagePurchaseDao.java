@@ -592,7 +592,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                     }
 
                 }
-
+                continue;
             }
             if (eachPackage.isSaveReceiptEmail()) {
                 ClientDetails clientDetails =
