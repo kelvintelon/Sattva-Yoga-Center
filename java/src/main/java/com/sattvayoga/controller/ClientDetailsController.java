@@ -29,7 +29,7 @@ public class ClientDetailsController {
     private UserDao userDao;
     private EventDao eventDao;
     private StripeDao stripeDao;
-    
+
     public ClientDetailsController(ClientDetailsDao clientDao, UserDao userDao, EventDao eventDao, StripeDao stripeDao) {
         this.clientDetailsDao = clientDao;
         this.userDao = userDao;
