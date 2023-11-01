@@ -29,7 +29,7 @@ public class ClientDetailsController {
     private UserDao userDao;
     private EventDao eventDao;
     private StripeDao stripeDao;
-
+    
     public ClientDetailsController(ClientDetailsDao clientDao, UserDao userDao, EventDao eventDao, StripeDao stripeDao) {
         this.clientDetailsDao = clientDao;
         this.userDao = userDao;
@@ -210,6 +210,7 @@ public class ClientDetailsController {
             clientDetailsDao.saveNewClientEmail(clientDetails.getClient_id(), clientDetails.getEmail());
 
             stripeDao.updateCustomerEmail(retrievedClient.getCustomer_id(), clientDetails.getEmail());
+
         }
 
         return "Successful";

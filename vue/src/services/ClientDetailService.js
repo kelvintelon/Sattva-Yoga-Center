@@ -32,8 +32,6 @@ export default {
         return axios.put(`/updateClientDetails`, clientDetails )
     },
 
-   
-
     removeClient(clientId) {
         return axios.delete(`/removeClient/${clientId}`)
     },
