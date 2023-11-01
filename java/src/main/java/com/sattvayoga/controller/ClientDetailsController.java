@@ -193,7 +193,7 @@ public class ClientDetailsController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @RequestMapping(value =" /updateEmailForClient", method = RequestMethod.PUT)
+    @RequestMapping(value ="/updateEmailForClient", method = RequestMethod.PUT)
     public String updateEmailForClient(@RequestBody ClientDetails clientDetails) {
         boolean foundEmail = false;
 

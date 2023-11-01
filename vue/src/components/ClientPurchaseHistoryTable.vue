@@ -104,13 +104,13 @@
                             ></v-date-picker> </v-menu
                         ></v-col>
                       </v-row>
-                      <v-row
+                      <!-- <v-row
                         ><v-checkbox
                           v-model="editedItem.is_monthly_renew"
                           label="Renew Monthly?"
                           required
                         ></v-checkbox
-                      ></v-row>
+                      ></v-row> -->
                       <v-row justify="center" align="center">
                         <v-col>
                           <v-btn class="mr-4" type="submit">
