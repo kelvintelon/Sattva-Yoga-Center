@@ -603,12 +603,12 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
                 // SAVE EMAIL TO CUSTOMER OBJECT IN STRIPE
                 stripeDao.updateCustomerEmail(clientDetails.getCustomer_id(), eachPackage.getReceiptEmail());
-            } else if (eachPackage.getProductName().contains("One") && eachPackage.isIs_monthly_renew()) {
-                int packagePurchaseId = createOneMonthAutoRenewPurchase(eachPackage);
-                packagePurchaseIDs.add(packagePurchaseId);
-            } else if (eachPackage.getProductName().contains("Six") && eachPackage.isIs_monthly_renew()) {
-                int packagePurchaseId = createSixMonthAutoRenewPurchase(eachPackage);
-                packagePurchaseIDs.add(packagePurchaseId);
+//            } else if (eachPackage.getProductName().contains("One") && eachPackage.isIs_monthly_renew()) {
+//                int packagePurchaseId = createOneMonthAutoRenewPurchase(eachPackage);
+//                packagePurchaseIDs.add(packagePurchaseId);
+//            } else if (eachPackage.getProductName().contains("Six") && eachPackage.isIs_monthly_renew()) {
+//                int packagePurchaseId = createSixMonthAutoRenewPurchase(eachPackage);
+//                packagePurchaseIDs.add(packagePurchaseId);
             } else {
                 int packagePurchaseId = createStripePackagePurchase(eachPackage);
                 packagePurchaseIDs.add(packagePurchaseId);

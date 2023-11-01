@@ -672,7 +672,7 @@ export default {
       giftCardIndex: 0,
       saveEmailForGiftCardCheckbox: false,
       saveEmailForReceiptCheckbox: false,
-      balanceCost: 0,
+      totalCost: 0,
       balanceCash: 0,
       balanceCheck: 0,
       showGiftCardForm: false,
@@ -1101,7 +1101,7 @@ export default {
       this.dialog = false;
       this.percentDiscount = 0;
       this.currentDiscount = 0;
-      this.balanceCost = 0;
+      this.totalCost = 0;
       this.balanceCash = 0;
       this.balanceCheck = 0;
       this.giftCardCost = 0;
@@ -1476,7 +1476,7 @@ export default {
           alert("We need an email for Gift")
           return
         }
-        this.clientCheckout.balance = this.balanceCost;
+        this.clientCheckout.balance = this.totalCost;
         this.clientCheckout.cash = this.balanceCash;
         this.clientCheckout.check = this.balanceCheck;
         this.clientCheckout.selectedCheckoutPackages = this.selectedPackages;
@@ -1598,6 +1598,15 @@ export default {
       for (let index = 0; index < this.selectedPackages.length; index++) {
         runningTotal += this.selectedPackages[index].package_cost;
       }
+      if (this.showGiftCardResponse) {
+          runningTotal -= this.giftCardRedeemObject.amount;
+          }
+          if (this.showCashInput) {
+          runningTotal -= this.balanceCash;
+          }
+          if (this.showCheckInput) {
+          runningTotal -= this.balanceCheck;
+          }
 
       if (this.showPercentDiscount && runningTotal >= 0) {
         // this.selectedPackage.discount = this.selectedPackage.package_cost * (1-this.percentDiscount);
@@ -1624,6 +1633,12 @@ export default {
       }
       if (this.showGiftCardResponse) {
         runningTotal -= this.giftCardRedeemObject.amount;
+      }
+      if (this.showCashInput) {
+        runningTotal -= this.balanceCash;
+      }
+      if (this.showCheckInput) {
+        runningTotal -= this.balanceCheck;
       }
       if (this.showPercentDiscount && runningTotal >= 0) {
         let num = runningTotal * (1 - this.percentDiscount / 100);
