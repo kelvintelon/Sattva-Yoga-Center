@@ -29,10 +29,12 @@ export default {
         return axios.put(`/updateClientDetails`, clientDetails )
     },
 
-   
-
     removeClient(clientId) {
         return axios.delete(`/removeClient/${clientId}`)
+    },
+
+    updateEmailForClient(clientId, email) {
+        return axios.put(`updateEmailForClient/${clientId}`, email)
     },
     getDuplicateClients(){
         return axios.get('/duplicateList')
