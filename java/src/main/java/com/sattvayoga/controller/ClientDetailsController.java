@@ -3,6 +3,7 @@ package com.sattvayoga.controller;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sattvayoga.dao.ClientDetailsDao;
 import com.sattvayoga.dao.EventDao;
+import com.sattvayoga.dao.StripeDao;
 import com.sattvayoga.dao.UserDao;
 import com.sattvayoga.model.*;
 import org.springframework.http.HttpHeaders;
@@ -27,10 +28,13 @@ public class ClientDetailsController {
     private UserDao userDao;
     private EventDao eventDao;
 
-    public ClientDetailsController(ClientDetailsDao clientDao, UserDao userDao, EventDao eventDao) {
+    private StripeDao stripeDao;
+
+    public ClientDetailsController(ClientDetailsDao clientDao, UserDao userDao, EventDao eventDao, StripeDao stripeDao) {
         this.clientDetailsDao = clientDao;
         this.userDao = userDao;
         this.eventDao = eventDao;
+        this.stripeDao = stripeDao;
     }
 
 //    http://localhost:8080/getPaginatedClients?page=1&limit=10
@@ -186,6 +190,29 @@ public class ClientDetailsController {
             clientDetailsDao.updateClientDetails(clientDetails);
         }
 
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value="/updateEmailForClient/{clientId}")
+    public String updateEmailForClient(@PathVariable int clientId, @RequestBody String email) {
+        boolean foundEmail = false;
+
+        if (email != null && !(email.equalsIgnoreCase(""))) {
+            foundEmail = clientDetailsDao.isEmailDuplicate(clientId,email);
+        }
+
+        if (foundEmail || (email != null && ( email.equalsIgnoreCase("info@sattva-yoga-center.com") || email.equalsIgnoreCase("sattva.yoga.center.michigan@gmail.com")))) {
+            return "Email in use";
+        } else {
+            ClientDetails clientDetails =
+                    clientDetailsDao.findClientByClientId(clientId);
+
+            clientDetailsDao.saveNewClientEmail(clientId, email);
+
+            stripeDao.updateCustomerEmail(clientDetails.getCustomer_id(), email);
+        }
+
+        return "Successful";
     }
 
     @PreAuthorize("hasRole('ADMIN')")

@@ -63,7 +63,7 @@
       :loading="loading"
       loading-text="Loading... Please wait"
       :options.sync="options"
-      :server-items-length="balancePackagesPurchased"
+      :server-items-length="totalPackagesPurchased"
       hide-default-footer
     >
       <template v-slot:top>
@@ -105,16 +105,16 @@
                       <v-row v-if="showGiftCardForm">
                         <v-col>
                           <v-text-field
-                            v-model="clientCheckout.emailForGift"
+                            v-model="clientCheckout.email"
                             :counter="30"
                             label="Email for Gift Card"
                           ></v-text-field>
                         </v-col>
                         <v-checkbox
-                        class="mt-4"
-                          v-if="saveEmailForGiftCardCheckbox"
-                          v-model="clientCheckout.saveEmailGiftCardPurchase"
+                          v-if="saveEmailCheckbox"
+                          v-model="clientCheckout.saveEmail"
                           label="Save?"
+                          @click="saveEmail"
                         ></v-checkbox>
                       </v-row>
                       <v-row v-if="showGiftCardForm">
@@ -264,36 +264,13 @@
                       <div class="text--primary">
                         Package Discount: -${{ returnDiscount }}
                       </div>
-      
-                      
                       <v-row>
-                        <!-- balance cash -->
-                        <v-col sm="4" v-if="showCashInput">
+                        <v-col>
                           <v-text-field
-                            v-model.number="balanceCash"
+                            v-model.number="totalCost"
                             class="mt-6 pt-0"
                             type="number"
-                            label="Cash: $"
-                            min="0"
-                          ></v-text-field>
-                        </v-col>
-                        <!-- balance check -->
-                        <v-col sm="4" v-if="showCheckInput">
-                          <v-text-field
-                            v-model.number="balanceCheck"
-                            class="mt-6 pt-0"
-                            type="number"
-                            label="Check: $"
-                            min="0"
-                          ></v-text-field>
-                        </v-col>
-                        <!-- balance cost -->
-                        <v-col sm="4">
-                          <v-text-field
-                            v-model.number="balanceCost"
-                            class="mt-6 pt-0"
-                            type="number"
-                            label="Balance: $"
+                            label="Total: $"
                             min="0"
                           ></v-text-field>
                         </v-col>
@@ -447,54 +424,17 @@
                         </v-row>
                         
                       <div class="text--primary" style="border-top: 1px solid">
-                        Balance: ${{ balanceCost }}
+                        Total Cost: ${{ totalCost }}
                       </div>
                       <v-checkbox v-if="showSaveCardCheckbox"
                         v-model="clientCheckout.saveCard" label="Save Payment Method?">
                       </v-checkbox>
-                      <v-checkbox
-                        v-model="clientCheckout.compFree" label="Comp/Free?">
-                      </v-checkbox>
-                      <!-- <v-checkbox v-if="showSaveRecurringPaymentCheckbox"
+                      <v-checkbox v-if="showSaveRecurringPaymentCheckbox"
                         v-model="clientCheckout.saveAsRecurringPayment"
                         label="Save As Recurring Payment?"
-                      ></v-checkbox> -->
+                      ></v-checkbox>
                     </v-col>
                   </v-row>
-                  <v-row justify="center">
-                    <v-btn small outlined color="indigo" v-if="!showCashInput" @click="showCashInput = true">Cash</v-btn>
-                    <v-btn small color="primary" v-if="showCashInput" @click="toggleCashForm">Cash</v-btn>
-                    <v-spacer></v-spacer>
-                    <v-btn small outlined color="indigo" v-if="!showCheckInput" @click="showCheckInput = true">Check</v-btn>
-                    <v-btn small color="primary" v-if="showCheckInput" @click="toggleCheckForm">Check</v-btn>
-                    <v-spacer></v-spacer>
-                    <v-btn small outlined color="indigo" v-if="!showEmailForm" @click="showEmailForm = true">E-Receipt</v-btn>
-                  </v-row>
-                  <v-row v-if="showEmailForm">
-                    <v-text-field class="mt-4"
-                      v-model="clientCheckout.emailForReceipt"
-                      :counter="30"
-                      label="Email for Receipt"
-                    ></v-text-field>
-                    <v-checkbox
-                      class="mt-4"
-                          v-if="saveEmailForReceiptCheckbox"
-                          v-model="clientCheckout.saveEmailReceiptPurchase"
-                          label="Save?"
-                        ></v-checkbox>
-                    <v-btn
-                    class="mt-4"
-                      fab
-                      outlined
-                      small
-                        @click="function() { showEmailForm = false; clientCheckout.saveEmailReceiptPurchase = false; }"
-                      >
-                        <v-icon dark> mdi-close </v-icon>
-                    </v-btn>
-                  </v-row>
-                  <v-row>
-                      
-                    </v-row>
                 </v-container>
               </v-card-title>
 
@@ -534,9 +474,9 @@
       <v-col lg="10" md="9" sm="9">
         <v-pagination
           v-model="page"
-          :length="Math.ceil(balancePackagesPurchased / pageSize)"
+          :length="Math.ceil(totalPackagesPurchased / pageSize)"
           @input="temporaryPageMethod"
-          balance-visible="8"
+          total-visible="8"
         ></v-pagination>
       </v-col>
       <v-col lg="2" md="3" class="mt-2" sm="3">
@@ -583,8 +523,8 @@ export default {
         },
         { text: "Purchase Date", value: "date_purchased", sortable: true },
         {
-          text: "balance Cost",
-          value: "balance_amount_paid",
+          text: "Total Cost",
+          value: "total_amount_paid",
         },
         {
           text: "Activation Date",
@@ -610,7 +550,7 @@ export default {
       pageSize: 10,
       sortBy: "date_purchased",
       sortDesc: false,
-      balancePackagesPurchased: 0,
+      totalPackagesPurchased: 0,
       paginatedObject: {},
       packages: [],
       packagePurchase: {
@@ -621,7 +561,7 @@ export default {
         classes_remaining: "",
         activation_date: "",
         expiration_date: "",
-        balance_amount_paid: 0,
+        total_amount_paid: 0,
         is_monthly_renew: "",
         discount: 0,
         package_description: "",
@@ -647,16 +587,11 @@ export default {
       currentDiscount: 0,
       clientCheckout: {
         client_id: 0,
-        emailForGift: "",
-        emailForReceipt: "",
-        saveEmailGiftCardPurchase: false,
-        saveEmailReceiptPurchase: false,
+        email: "",
+        saveEmail: false,
         discount: 0,
         selectedCheckoutPackages: [],
-        balance: 0,
-        cash: 0,
-        check: 0,
-        compFree: false,
+        total: 0,
         paymentMethodId: "",
         iterations: 1,
         saveCard: false,
@@ -669,13 +604,9 @@ export default {
       },
       giftCardCost: 0,
       giftCardIndex: 0,
-      saveEmailForGiftCardCheckbox: false,
-      saveEmailForReceiptCheckbox: false,
-      balanceCost: 0,
-      balanceCash: 0,
-      balanceCheck: 0,
+      saveEmailCheckbox: false,
+      totalCost: 0,
       showGiftCardForm: false,
-      showEmailForm: false,
       showGiftCodeInput: false,
       showGiftCardResponse: false,
       giftCardCodeObject: {
@@ -696,9 +627,7 @@ export default {
       addPaymentMethodDialog: false,
       showCardForm: false,
       showSaveCardCheckbox: false,
-      showSaveRecurringPaymentCheckbox: false,
-      showCashInput: false,
-      showCheckInput: false,
+      showSaveRecurringPaymentCheckbox: false
     };
   },
   watch: {
@@ -708,73 +637,25 @@ export default {
       },
       deep: true,
     },
-    returnbalance: function (val) {
-      this.balanceCost = val;
+    returnTotal: function (val) {
+      this.totalCost = val;
     },
-    balanceCost: function (val) {
-      this.returnbalance = val;
+    totalCost: function (val) {
+      this.returnTotal = val;
       
-      // let runningbalance = 0;
+      let runningTotal = 0;
     
-      // for (let index = 0; index < this.selectedPackages.length; index++) {
-      //   let element = this.selectedPackages[index];
-      //   runningbalance += element.package_cost;
+      for (let index = 0; index < this.selectedPackages.length; index++) {
+        let element = this.selectedPackages[index];
+        runningTotal += element.package_cost;
   
-      // }
-      // if (runningbalance > val) {
-      //   this.showSaveRecurringPaymentCheckbox = true;
-      // } else {
-      //   this.showSaveRecurringPaymentCheckbox = false;
-      // }
+      }
+      if (runningTotal > val) {
+        this.showSaveRecurringPaymentCheckbox = true;
+      } else {
+        this.showSaveRecurringPaymentCheckbox = false;
+      }
     },
-    returnCash: function (val) {
-      this.balanceCash = val;
-    },
-    balanceCash: function (val) {
-      this.returnCash = val;
-    },
-    returnCheck: function(val) {
-      this.balanceCheck = val;
-    },
-    balanceCheck: function (val) {
-      this.returnCheck = val;
-    },
-    // balanceCash: function (val) {
-    //   val
-    //   let runningbalance = 0;
-
-    //   // My attempt at capping the balance cash
-    //   for (let index = 0; index < this.selectedPackages.length; index++) {
-    //     let element = this.selectedPackages[index];
-    //     runningbalance += element.package_cost;
-  
-    //   }
-    //   runningbalance
-    //   // Cash with Discount + check
-    //   if (this.showCashInput) {
-    //     if (this.balanceCost < 0) {
-    //       this.balanceCash = 0;
-    //     } 
-    //   }
-      
-    // },
-    // balanceCheck: function (val) {
-    //   val
-    //   // let runningbalance = 0;
-    //   // // My attempt at capping the balance cash
-    //   // for (let index = 0; index < this.selectedPackages.length; index++) {
-    //   //   let element = this.selectedPackages[index];
-    //   //   runningbalance += element.package_cost;
-  
-    //   // } 
-    //   // Check w/ Cash + Discount
-    //   if (this.showCheckInput) {
-    //   //   if (val >= runningbalance - this.returnDiscount() - this.balanceCash) {
-    //   //   this.balanceCheck = runningbalance - this.returnDiscount() - this.balanceCash;
-    //   // }
-    //   }
-      
-    // },
     returnDiscount: function (val) {
       if (val > 0) {
         this.showSaveRecurringPaymentCheckbox = true
@@ -785,20 +666,12 @@ export default {
     clientCheckout: {
       handler: function () {
         if (
-          this.clientCheckout.emailForGift.length == 0 ||
-          this.clientCheckout.emailForGift != this.$store.state.clientDetails.email
+          this.clientCheckout.email.length == 0 ||
+          this.clientCheckout.email != this.$store.state.clientDetails.email
         ) {
-          this.saveEmailForGiftCardCheckbox = true;
+          this.saveEmailCheckbox = true;
         } else {
-          this.saveEmailForGiftCardCheckbox = false;
-        }
-
-        if (
-          this.clientCheckout.emailForReceipt != this.$store.state.clientDetails.email
-        ) {
-          this.saveEmailForReceiptCheckbox = true;
-        } else {
-          this.saveEmailForReceiptCheckbox = false;
+          this.saveEmailCheckbox = false;
         }
       },
       deep: true,
@@ -825,27 +698,8 @@ export default {
     },
     giftCardRedeemObject: {
       handler: function() {
-        let runningbalance = 0;
-
-        // My attempt at capping the balance cash
-        for (let index = 0; index < this.selectedPackages.length; index++) {
-            let element = this.selectedPackages[index];
-            runningbalance += element.package_cost;
-        }
-        if (this.showCashInput) {
-          runningbalance -= this.balanceCash;
-          }
-          if (this.showCheckInput) {
-          runningbalance -= this.balanceCheck;
-          }
-          if (this.returnDiscount > 0) {
-        runningbalance -= this.returnDiscount
-      }
         if (this.giftCardRedeemObject.amount > this.giftCardResponse.amountAvailable) {
           this.giftCardRedeemObject.amount = this.giftCardResponse.amountAvailable
-        }
-        if (this.giftCardRedeemObject.amount > runningbalance) {
-          this.giftCardRedeemObject.amount = runningbalance;
         }
       },
       deep: true,
@@ -881,20 +735,20 @@ export default {
       }
 
       // this loop checks for giftcard or subscriptions
-      let runningbalance = 0;
+      let runningTotal = 0;
       let foundGiftCard = false;
       let foundSubscription = false;
       for (let index = 0; index < this.selectedPackages.length; index++) {
         let element = this.selectedPackages[index];
-        runningbalance += element.package_cost;
+        runningTotal += element.package_cost;
         if (element.description.includes("Gift")) {
           this.showGiftCardForm = true;
-          this.clientCheckout.emailForGift = this.$store.state.clientDetails.email;
+          this.clientCheckout.email = this.$store.state.clientDetails.email;
           if (
-            this.clientCheckout.emailForGift.length == 0 ||
-            this.clientCheckout.emailForGift != this.$store.state.clientDetails.email
+            this.clientCheckout.email.length == 0 ||
+            this.clientCheckout.email != this.$store.state.clientDetails.email
           ) {
-            this.saveEmailForGiftCardCheckbox = true;
+            this.saveEmailCheckbox = true;
           }
           foundGiftCard = true;
           this.giftCardIndex = index;
@@ -905,14 +759,14 @@ export default {
           this.showSaveCardCheckbox = false;
         }
       }
-      if (runningbalance > this.returnbalance()) {
+      if (runningTotal > this.returnTotal()) {
         this.showSaveRecurringPaymentCheckbox = true;
       } else {
         this.showSaveRecurringPaymentCheckbox = false;
       }
       if (!foundGiftCard) {
         this.showGiftCardForm = false;
-        this.saveEmailForGiftCardCheckbox = false;
+        this.saveEmailCheckbox = false;
       }
       if (!foundSubscription) {
         this.showRenewalDatePicker = false;
@@ -931,6 +785,9 @@ export default {
     //       }
     //     }
     //   });
+    if (this.$store.state.user.username == "admin") {
+      this.retrieveClientDetailsForAdmin();
+    }
     // TODO: CAREFUL DELETING THIS BECAUSE WE FORGOT WHAT IT DOES
     this.$root.$on("getActivePurchasePackageTable", () => {
       this.getActivePurchaseServerRequest();
@@ -939,7 +796,6 @@ export default {
   created() {
     if (this.$store.state.user.username == "admin") {
       this.getSharedActivePackages();
-      this.retrieveClientDetailsForAdmin();
     }
     setTimeout(() => {
       this.getActivePurchaseServerRequest();
@@ -988,17 +844,9 @@ export default {
 
   },
   methods: {
-    toggleCashForm() {
-      
-        this.showCashInput = false;
-        this.balanceCash = 0;
-      
-    },
-    toggleCheckForm() {
-      
-        this.showCheckInput = false;
-        this.balanceCheck = 0;
-      
+    saveEmail() {
+      // clientCheckout.email or
+      alert("clicked")
     },
     closeCardForm() {
       this.showCardForm = false;
@@ -1016,8 +864,7 @@ export default {
           if (response.data.client_id != 0) {
             this.clientDetails = response.data;
             this.$store.commit("SET_CLIENT_DETAILS", response.data);
-            this.clientCheckout.emailForGift = this.$store.state.clientDetails.email;
-            this.clientCheckout.emailForReceipt = this.$store.state.clientDetails.email;
+            this.clientCheckout.email = this.$store.state.clientDetails.email;
             // alert("active package table client details")
             if (this.clientDetails.redFlag == true) {
               this.snackBarReconcileWarning = true;
@@ -1133,15 +980,11 @@ export default {
       this.dialog = false;
       this.percentDiscount = 0;
       this.currentDiscount = 0;
-      this.balanceCost = 0;
-      this.balanceCash = 0;
-      this.balanceCheck = 0;
+      this.totalCost = 0;
       this.giftCardCost = 0;
       this.giftCardIndex = 0;
       this.showGiftCardForm = false;
-      this.showEmailForm = false;
-      this.saveEmailForGiftCardCheckbox = false;
-      this.saveEmailForReceiptCheckbox = false;
+      this.saveEmailCheckbox = false;
       this.showGiftCodeInput = false;
       this.giftCardCodeObject.code = "";
       this.showGiftCardResponse = false;
@@ -1153,18 +996,13 @@ export default {
       }
       this.clientCheckout = {
         client_id: 0,
-        emailForGift: this.$store.state.clientDetails.email,
-        emailForReceipt: this.$store.state.clientDetails.email,
-        saveEmailGiftCardPurchase: false,
-        saveEmailReceiptPurchase: false,
+        email: this.$store.state.clientDetails.email,
+        saveEmail: false,
         discount: 0,
         selectedCheckoutPackages: [],
         iterations: 1,
         saveAsRecurringPayment: false,
-        balance: 0,
-        cash: 0,
-        check: 0,
-        compFree: false,
+        total: 0,
         giftCard: {},
         renewalDate: new Date(
           Date.now() - new Date().getTimezoneOffset() * 60000
@@ -1178,8 +1016,6 @@ export default {
       this.selectedPaymentMethod = {};
       this.showPaymentMethodOptions = false;
       this.showSaveRecurringPaymentCheckbox = false;
-      this.toggleCashForm();
-      this.toggleCheckForm();
     },
     // closeReconcile(){
     //   this.snackBarReconcilePackages = false;
@@ -1224,7 +1060,7 @@ export default {
               var yyyy = today.getFullYear();
               today = yyyy + "-" + mm + "-" + dd;
               this.paginatedObject = response.data;
-              this.balancePackagesPurchased = this.paginatedObject.balanceRows;
+              this.totalPackagesPurchased = this.paginatedObject.totalRows;
               this.packages = this.paginatedObject.listOfPurchasedPackages;
               // this.packages = this.paginatedObject.listOfPurchasedPackages.filter((item) => {
               //   return (
@@ -1284,7 +1120,7 @@ export default {
               var yyyy = today.getFullYear();
               today = yyyy + "-" + mm + "-" + dd;
               this.paginatedObject = response.data;
-              this.balancePackagesPurchased = this.paginatedObject.balanceRows;
+              this.totalPackagesPurchased = this.paginatedObject.totalRows;
               this.packages =
                 this.paginatedObject.listOfPurchasedPackages.filter((item) => {
                   // return (item.expiration_date >= today) || (item.expiration_date == null && item.classes_remaining > 0) || (item.expiration_date >= today && item.classes_remaining > 0);
@@ -1338,7 +1174,6 @@ export default {
       });
     },
     addPackageForClient() {
-      // NOT IN USE ANYMORE
       this.loading = true;
       this.overlay = !this.overlay;
       this.packagePurchase.client_id = parseInt(this.$route.params.clientId);
@@ -1408,7 +1243,7 @@ export default {
         let num =
           this.selectedPackage.package_cost * (1 - this.percentDiscount / 100);
         this.packagePurchase.discount = this.selectedPackage.package_cost - num;
-        this.packagePurchase.balance_amount_paid = Math.round(num * 100) / 100;
+        this.packagePurchase.total_amount_paid = Math.round(num * 100) / 100;
       } else if (
         this.selectedPackage.discount >= 0 &&
         this.selectedPackage.package_cost >= 0 &&
@@ -1416,10 +1251,10 @@ export default {
       ) {
         // if it's in dollars
         this.packagePurchase.discount = this.selectedPackage.discount;
-        this.packagePurchase.balance_amount_paid =
+        this.packagePurchase.total_amount_paid =
           this.selectedPackage.package_cost - this.selectedPackage.discount;
       } else {
-        this.packagePurchase.balance_amount_paid =
+        this.packagePurchase.total_amount_paid =
           this.selectedPackage.package_cost;
       }
 
@@ -1462,17 +1297,10 @@ export default {
         this.clientCheckout.client_id =
           this.$store.state.clientDetails.client_id;
 
-        if ((this.clientCheckout.emailForGift.length == 0 || this.clientCheckout.emailForReceipt == 0) && (this.$store.state.clientDetails.email.length >= 1)) {
-          this.clientCheckout.emailForGift = this.$store.state.clientDetails.email;
-          this.clientCheckout.emailForReceipt = this.$store.state.clientDetails.email;
-        } else if (this.clientCheckout.emailForGift.length == 0 && this.showGiftCardForm) {
-          alert("We need an email for Gift")
-          return
+        if (this.clientCheckout.email.length == 0) {
+          this.clientCheckout.email = this.$store.state.clientDetails.email;
         }
-        
-        this.clientCheckout.balance = this.balanceCost;
-        this.clientCheckout.cash = this.balanceCash;
-        this.clientCheckout.check = this.balanceCheck;
+        this.clientCheckout.total = this.totalCost;
         this.clientCheckout.selectedCheckoutPackages = this.selectedPackages;
         this.clientCheckout.discount = this.returnDiscount;
         if (this.showGiftCardResponse) {
@@ -1482,7 +1310,7 @@ export default {
         if (this.clientCheckout.selectedCheckoutPackages[0].is_recurring && (this.clientCheckout.paymentMethodId == undefined || this.clientCheckout.paymentMethodId == "" )) {
           alert("Please Choose a Payment Method For Subscription")
         } else {
-          if (this.clientCheckout.balance == 0 && this.clientCheckout.selectedCheckoutPackages.length == 0) {
+          if (this.clientCheckout.total == 0) {
             alert("Price cannot be zero")
           } else {
 
@@ -1492,11 +1320,8 @@ export default {
           .then((response) => {
             if (response.status == 201) {
               // this.retrieveClientDetailsForAdmin();
-              if (this.clientCheckout.saveEmailGiftCardPurchase) {
-                this.$store.state.clientDetails.email = this.clientCheckout.emailForGift;
-              }
-              if (this.clientCheckout.saveEmailReceiptPurchase) {
-                this.$store.state.clientDetails.email = this.clientCheckout.emailForReceipt;
+              if (this.clientCheckout.saveEmail) {
+                this.$store.state.clientDetails.email = this.clientCheckout.email;
               }
               alert("Submitted");
               this.close();
@@ -1541,115 +1366,53 @@ export default {
   },
 
   computed: {
-    returnCash() {
-      let runningbalance = 0;
-      for (let index = 0; index < this.selectedPackages.length; index++) {
-        runningbalance += this.selectedPackages[index].package_cost;
-      }
-      if (this.showGiftCardResponse) {
-        runningbalance -= this.giftCardRedeemObject.amount;
-      }
-      if (this.showCheckInput) {
-        runningbalance -= this.balanceCheck;
-      }
-      if (this.returnDiscount > 0) {
-        runningbalance -= this.returnDiscount
-      }
-      if (this.showCashInput && runningbalance >= 0) {
-        if (this.balanceCash < runningbalance) {
-          return this.balanceCash;
-        } else {
-          return runningbalance;
-        }
-      }  
-        return 0;
-    },
-    returnCheck() {
-      let runningbalance = 0;
-      for (let index = 0; index < this.selectedPackages.length; index++) {
-        runningbalance += this.selectedPackages[index].package_cost;
-      }
-      if (this.showGiftCardResponse) {
-        runningbalance -= this.giftCardRedeemObject.amount;
-      }
-      if (this.showCashInput) {
-        runningbalance -= this.balanceCash;
-      }
-      if (this.returnDiscount > 0) {
-        runningbalance -= this.returnDiscount
-      }
-      if (this.showCheckInput && runningbalance >= 0) {
-        if (this.balanceCheck < runningbalance) {
-          return this.balanceCheck;
-        } else {
-          return runningbalance;
-        }
-      }  
-        return 0;
-    },
     returnDiscount() {
-      let runningbalance = 0;
+      let runningTotal = 0;
       for (let index = 0; index < this.selectedPackages.length; index++) {
-        runningbalance += this.selectedPackages[index].package_cost;
+        runningTotal += this.selectedPackages[index].package_cost;
       }
-      if (this.showGiftCardResponse) {
-          runningbalance -= this.giftCardRedeemObject.amount;
-          }
-          if (this.showCashInput) {
-          runningbalance -= this.balanceCash;
-          }
-          if (this.showCheckInput) {
-          runningbalance -= this.balanceCheck;
-          }
-      
-      if (this.showPercentDiscount && runningbalance >= 0) {
+
+      if (this.showPercentDiscount && runningTotal >= 0) {
         // this.selectedPackage.discount = this.selectedPackage.package_cost * (1-this.percentDiscount);
         let num =
-          runningbalance - runningbalance * (1 - this.percentDiscount / 100);
+          runningTotal - runningTotal * (1 - this.percentDiscount / 100);
         let math = Math.round(num * 100) / 100;
-        if (math < runningbalance) {
+        if (runningTotal > math) {
           return math;
         }
         return 0;
-      } else if (this.currentDiscount >= 0 && runningbalance >= 0) {
-        if (this.currentDiscount < runningbalance) {
-          
+      } else if (this.currentDiscount >= 0 && runningTotal >= 0) {
+        if (this.currentDiscount < runningTotal) {
           return this.currentDiscount;
         } else {
-          return runningbalance;
+          return runningTotal;
         }
       }
       return 0;
     },
-    returnbalance() {
-      let runningbalance = 0;
+    returnTotal() {
+      let runningTotal = 0;
       for (let index = 0; index < this.selectedPackages.length; index++) {
-        runningbalance = runningbalance + this.selectedPackages[index].package_cost;
+        runningTotal = runningTotal + this.selectedPackages[index].package_cost;
       }
       if (this.showGiftCardResponse) {
-        runningbalance -= this.giftCardRedeemObject.amount;
+        runningTotal -= this.giftCardRedeemObject.amount;
       }
-      if (this.showCashInput) {
-        runningbalance -= this.balanceCash;
-      }
-      if (this.showCheckInput) {
-        runningbalance -= this.balanceCheck;
-      }
-      if (this.showPercentDiscount && runningbalance > 0) {
-        let num = runningbalance * (1 - this.percentDiscount / 100);
+      if (this.showPercentDiscount && runningTotal >= 0) {
+        let num = runningTotal * (1 - this.percentDiscount / 100);
         if (num > 0) {
           return Math.round(num * 100) / 100;
         }
         return 0;
-      } else if (this.currentDiscount > 0 && runningbalance > 0) {
-        let difference = runningbalance - this.currentDiscount;
-        if (difference > runningbalance || difference < 0) {
+      } else if (this.currentDiscount >= 0 && runningTotal >= 0) {
+        let difference = runningTotal - this.currentDiscount;
+        if (difference > runningTotal || difference < 0) {
           return 0;
         }
 
         return difference;
-      } else if (runningbalance > 0) {
-        return runningbalance;
+      } else if (runningTotal >= 0) {
+        return runningTotal;
       } else {
         return 0;
       }
