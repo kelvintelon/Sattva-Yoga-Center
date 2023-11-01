@@ -126,7 +126,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 "JOIN client_details on client_details.client_id = pp.client_id " +
                 "WHERE client_details.user_id = ? " +
                 "AND ( ( pp.classes_remaining > 0 AND pp.expiration_date > NOW()) " +
-                "OR (package_details.is_subscription = true AND pp.expiration_date > NOW()) ) " +
+                "OR (package_details.unlimited = true AND pp.expiration_date > NOW()) ) " +
                 "ORDER BY " + sortBy + " " + sortDirection + offsetString;
 
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId, offset);
@@ -145,7 +145,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 "JOIN client_details on client_details.client_id = pp.client_id " +
                 "WHERE client_details.user_id = ? " +
                 "AND ( ( pp.classes_remaining > 0 AND pp.expiration_date > NOW()) " +
-                "OR (package_details.is_subscription = true AND pp.expiration_date > NOW()) ) ";
+                "OR (package_details.unlimited = true AND pp.expiration_date > NOW()) ) ";
 
         int count = jdbcTemplate.queryForObject(countSql, Integer.class, userId);
 
@@ -165,7 +165,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 "JOIN client_details on client_details.client_id = pp.client_id " +
                 "WHERE client_details.user_id = ? " +
                 "AND ( ( pp.classes_remaining > 0 AND pp.expiration_date > NOW()) " +
-                "OR (package_details.is_subscription = true AND pp.expiration_date > NOW()) ) ";
+                "OR (package_details.unlimited = true AND pp.expiration_date > NOW()) ) ";
 
 
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId);
@@ -214,10 +214,10 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
     public boolean IsSubscriptionOrNot(int packageId){
         boolean isSubscription = false;
-        String sql = "SELECT is_subscription from package_details WHERE package_id = ?";
+        String sql = "SELECT unlimited from package_details WHERE package_id = ?";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, packageId);
         if(result.next()){
-            return result.getBoolean("is_subscription");
+            return result.getBoolean("unlimited");
         }
         return isSubscription;
     }
@@ -365,10 +365,10 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         if (rs.getInt("classes_amount") != 0) {
             packageDetails.setClasses_amount(rs.getInt("classes_amount"));
         }
-        if (rs.getInt("subscription_duration") != 0) {
-            packageDetails.setPackage_duration(rs.getInt("subscription_duration"));
+        if (rs.getInt("package_duration") != 0) {
+            packageDetails.setPackage_duration(rs.getInt("package_duration"));
         }
-        packageDetails.setUnlimited(rs.getBoolean("is_subscription"));
+        packageDetails.setUnlimited(rs.getBoolean("unlimited"));
         packageDetails.setIs_visible_online((rs.getBoolean("is_visible_online")));
         packageDetails.setIs_recurring(rs.getBoolean("is_recurring"));
         packageDetails.setActive(rs.getBoolean("active"));
@@ -446,7 +446,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         LocalDate activationDate = LocalDate.now();
 
         if (checkoutItemDTO.getPackageDuration() > 0) {
-            String sql = "SELECT expiration_date FROM package_purchase JOIN package_details ON package_details.package_id = package_purchase.package_id WHERE package_details.is_subscription = true AND client_id = ? AND expiration_date > NOW() ORDER BY expiration_date DESC LIMIT 1;";
+            String sql = "SELECT expiration_date FROM package_purchase JOIN package_details ON package_details.package_id = package_purchase.package_id WHERE package_details.unlimited = true AND client_id = ? AND expiration_date > NOW() ORDER BY expiration_date DESC LIMIT 1;";
             SqlRowSet results = jdbcTemplate.queryForRowSet(sql, checkoutItemDTO.getClient_id());
             if (results.next()) {
                 activationDate = results.getDate("expiration_date").toLocalDate();
@@ -489,7 +489,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
     private LocalDate findActivationDateForClient(PackagePurchase packagePurchase) {
         if (packagePurchase.getPackage_duration() > 0) {
-        String sql = "SELECT expiration_date FROM package_purchase JOIN package_details ON package_details.package_id = package_purchase.package_id WHERE package_details.is_subscription = true AND client_id = ? ORDER BY expiration_date DESC LIMIT 1;";
+        String sql = "SELECT expiration_date FROM package_purchase JOIN package_details ON package_details.package_id = package_purchase.package_id WHERE package_details.unlimited = true AND client_id = ? ORDER BY expiration_date DESC LIMIT 1;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, packagePurchase.getClient_id());
             if (results.next()) {
                 LocalDate localDate = results.getDate("expiration_date").toLocalDate();
@@ -510,7 +510,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
     public int createOneMonthAutoRenewPurchase(CheckoutItemDTO checkoutItemDTO){
         LocalDate activationDate;
-        String sql = "SELECT expiration_date FROM package_purchase JOIN package_details ON package_details.package_id = package_purchase.package_id WHERE package_details.is_subscription = true AND client_id = ? AND expiration_date > NOW() ORDER BY expiration_date DESC LIMIT 1;";
+        String sql = "SELECT expiration_date FROM package_purchase JOIN package_details ON package_details.package_id = package_purchase.package_id WHERE package_details.unlimited = true AND client_id = ? AND expiration_date > NOW() ORDER BY expiration_date DESC LIMIT 1;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, checkoutItemDTO.getClient_id());
         if (results.next()) {
             activationDate = results.getDate("expiration_date").toLocalDate();
@@ -528,7 +528,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
     public int createSixMonthAutoRenewPurchase(CheckoutItemDTO checkoutItemDTO){
         LocalDate activationDate;
-        String sql = "SELECT expiration_date FROM package_purchase JOIN package_details ON package_details.package_id = package_purchase.package_id WHERE package_details.is_subscription = true AND client_id = ? AND expiration_date > NOW() ORDER BY expiration_date DESC LIMIT 1;";
+        String sql = "SELECT expiration_date FROM package_purchase JOIN package_details ON package_details.package_id = package_purchase.package_id WHERE package_details.unlimited = true AND client_id = ? AND expiration_date > NOW() ORDER BY expiration_date DESC LIMIT 1;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, checkoutItemDTO.getClient_id());
         if (results.next()) {
             activationDate = results.getDate("expiration_date").toLocalDate();

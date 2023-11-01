@@ -480,7 +480,7 @@ public class JdbcStripeDao implements StripeDao {
 //               }
             }
         }
-//        if (firstPackageDetails.isIs_recurring() && firstPackageDetails.isIs_subscription()) {
+//        if (firstPackageDetails.isIs_recurring() && firstPackageDetails.isUnlimited()) {
 //
 //
 //            // Compare the renewal Date to today's date to see if they are the same.

@@ -76,9 +76,14 @@
                         ></v-text-field>
                         <v-checkbox
                           v-model="packageDetails.unlimited"
-                          label="Is this a Subscription?"
+                          label="Unlimited?"
                           required
                           @change="onSubscriptionBooleanChange"
+                        ></v-checkbox>
+                        <v-checkbox
+                          v-model="packageDetails.active"
+                          label="Active?"
+                          required
                         ></v-checkbox>
                         <!-- <v-checkbox v-if="toggleRecurring || packageDetails.unlimited"
                           v-model="packageDetails.is_recurring"
@@ -255,6 +260,12 @@
             disabled
           ></v-simple-checkbox>
         </template>
+        <template v-slot:[`item.active`]="{ item }">
+          <v-simple-checkbox
+            v-model="item.active"
+            disabled
+          ></v-simple-checkbox>
+        </template>
         <!-- ACTIONS / ICONS  -->
         <template v-slot:[`item.actions`]="{ item }">
           <v-icon small class="mr-2" @click="editItem(item)">
@@ -311,6 +322,11 @@ export default {
           value: "is_visible_online",
           sortable: false,
         },
+        {
+          text: "Active",
+          value: "active",
+          sortable: false,
+        },
         { text: "Actions", value: "actions", sortable: false },
       ],
       packages: [],
@@ -345,6 +361,7 @@ export default {
         classes_amount: 0,
         package_duration: 0,
         unlimited: false,
+        active: true,
         is_visible_online: true,
         is_recurring: false,
       },

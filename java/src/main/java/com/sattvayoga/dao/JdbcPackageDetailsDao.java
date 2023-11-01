@@ -21,7 +21,7 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
     @Override
     public boolean createPackage(PackageDetails packageDetails) {
         String sql = "INSERT INTO package_details (description, package_cost, " +
-                "classes_amount, subscription_duration, is_subscription, is_visible_online, is_recurring) VALUES " +
+                "classes_amount, package_duration, unlimited, is_visible_online, is_recurring) VALUES " +
                 "(?, ?, ?, ?, ?, ?, ?)";
 
         return jdbcTemplate.update(sql, packageDetails.getDescription(), packageDetails.getPackage_cost(),
@@ -59,7 +59,7 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
 
     @Override
     public PackageDetails findPackageBySubscriptionDuration(int subscriptionDuration) {
-        String sql = "SELECT * FROM package_details WHERE is_recurring = true AND is_subscription = true AND subscription_duration = ?;";
+        String sql = "SELECT * FROM package_details WHERE is_recurring = true AND unlimited = true AND package_duration = ?;";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, subscriptionDuration);
         PackageDetails packageDetails = new PackageDetails();
         if (result.next()) {
@@ -74,8 +74,8 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
                 "description = ? , " +
                 "package_cost = ? , " +
                 "classes_amount = ? , " +
-                "subscription_duration = ? , " +
-                "is_subscription = ? , " +
+                "package_duration = ? , " +
+                "unlimited = ? , " +
                 "is_visible_online = ? , " +
                 "is_recurring = ? " +
                 "WHERE package_id = ?";
@@ -120,10 +120,10 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
         if (rs.getInt("classes_amount") != 0) {
             packageDetails.setClasses_amount(rs.getInt("classes_amount"));
         }
-        if (rs.getInt("subscription_duration") != 0) {
-            packageDetails.setPackage_duration(rs.getInt("subscription_duration"));
+        if (rs.getInt("package_duration") != 0) {
+            packageDetails.setPackage_duration(rs.getInt("package_duration"));
         }
-        packageDetails.setUnlimited(rs.getBoolean("is_subscription"));
+        packageDetails.setUnlimited(rs.getBoolean("unlimited"));
         packageDetails.setIs_visible_online(rs.getBoolean("is_visible_online"));
         packageDetails.setIs_recurring(rs.getBoolean("is_recurring"));
         packageDetails.setActive(rs.getBoolean("active"));
