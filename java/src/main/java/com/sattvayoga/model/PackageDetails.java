@@ -8,24 +8,34 @@ public class PackageDetails {
     private String description;
     private BigDecimal package_cost;
     private int classes_amount;
-    private int subscription_duration;
-    private boolean is_subscription;
+    private int package_duration;
+    private boolean unlimited;
 
     private boolean is_visible_online;
     private boolean is_recurring;
 
-    public PackageDetails(int package_id, String description, BigDecimal package_cost, int classes_amount, int subscription_duration, boolean is_subscription, boolean is_visible_online, boolean is_recurring) {
+    private boolean active;
+
+    public PackageDetails(int package_id, String description, BigDecimal package_cost, int classes_amount, int package_duration, boolean unlimited, boolean is_visible_online, boolean is_recurring) {
         this.package_id = package_id;
         this.description = description;
         this.package_cost = package_cost;
         this.classes_amount = classes_amount;
-        this.subscription_duration = subscription_duration;
-        this.is_subscription = is_subscription;
+        this.package_duration = package_duration;
+        this.unlimited = unlimited;
         this.is_visible_online = is_visible_online;
         this.is_recurring = is_recurring;
     }
 
     public PackageDetails() {
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public int getPackage_id() {
@@ -60,20 +70,20 @@ public class PackageDetails {
         this.classes_amount = classes_amount;
     }
 
-    public boolean isIs_subscription() {
-        return is_subscription;
+    public boolean isUnlimited() {
+        return unlimited;
     }
 
-    public void setIs_subscription(boolean is_subscription) {
-        this.is_subscription = is_subscription;
+    public void setUnlimited(boolean unlimited) {
+        this.unlimited = unlimited;
     }
 
-    public int getSubscription_duration() {
-        return subscription_duration;
+    public int getPackage_duration() {
+        return package_duration;
     }
 
-    public void setSubscription_duration(int subscription_duration) {
-        this.subscription_duration = subscription_duration;
+    public void setPackage_duration(int package_duration) {
+        this.package_duration = package_duration;
     }
 
     public boolean isIs_visible_online() {

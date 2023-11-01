@@ -213,7 +213,7 @@ public class WebHookController {
                         checkoutItemDTO.setIs_monthly_renew(false);
                         checkoutItemDTO.setDiscount(discount);
                         checkoutItemDTO.setPaymentId(paymentIntentId);
-                        checkoutItemDTO.setSubscriptionDuration(currentPackageDetails.getSubscription_duration());
+                        checkoutItemDTO.setPackageDuration(currentPackageDetails.getPackage_duration());
                         listOfItemsToCheckout.add(checkoutItemDTO);
 
                     }
@@ -433,7 +433,7 @@ public class WebHookController {
             checkoutItemDTO.setTotal_amount_paid(BigDecimal.valueOf(checkoutItemDTO.getPrice()));
             checkoutItemDTO.setIs_monthly_renew(packageDetails.isIs_recurring());
             checkoutItemDTO.setPaymentId(paymentIntentId);
-            checkoutItemDTO.setSubscriptionDuration(packageDetails.getSubscription_duration());
+            checkoutItemDTO.setPackageDuration(packageDetails.getPackage_duration());
             checkoutItemDTOList.add(checkoutItemDTO);
         }
         return checkoutItemDTOList;

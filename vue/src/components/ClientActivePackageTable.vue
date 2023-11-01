@@ -830,14 +830,14 @@ export default {
         let firstIndex = 0;
         let firstElement = this.selectedPackages[firstIndex];
         if (
-          element.is_subscription &&
+          element.unlimited &&
           element.is_recurring &&
           index == this.selectedPackages.length - 1
         ) {
           this.selectedPackages = [element];
           break;
         } else if (
-          firstElement.is_subscription &&
+          firstElement.unlimited &&
           firstElement.is_recurring &&
           this.selectedPackages.length == 2
         ) {
@@ -864,7 +864,7 @@ export default {
           foundGiftCard = true;
           this.giftCardIndex = index;
         }
-        if (element.is_subscription && element.is_recurring) {
+        if (element.unlimited && element.is_recurring) {
           foundSubscription = true;
           this.showRenewalDatePicker = true;
           this.showSaveCardCheckbox = false;
@@ -1196,8 +1196,8 @@ export default {
               this.packages = this.paginatedObject.listOfPurchasedPackages;
               // this.packages = this.paginatedObject.listOfPurchasedPackages.filter((item) => {
               //   return (
-              //     (item.is_subscription && item.expiration_date >= today) ||
-              //     (!item.is_subscription &&
+              //     (item.unlimited && item.expiration_date >= today) ||
+              //     (!item.unlimited &&
               //       item.expiration_date >= today &&
               //       item.classes_remaining > 0)
               //   );
@@ -1257,8 +1257,8 @@ export default {
                 this.paginatedObject.listOfPurchasedPackages.filter((item) => {
                   // return (item.expiration_date >= today) || (item.expiration_date == null && item.classes_remaining > 0) || (item.expiration_date >= today && item.classes_remaining > 0);
                   return (
-                    (item.is_subscription && item.expiration_date) ||
-                    (!item.is_subscription &&
+                    (item.unlimited && item.expiration_date) ||
+                    (!item.unlimited &&
                       item.expiration_date >= today &&
                       item.classes_remaining > 0)
                   );
@@ -1321,8 +1321,8 @@ export default {
         // loop to find another package that is a subscription
         for (let index = 0; index < this.packages.length; index++) {
           if (
-            this.packages[index].is_subscription &&
-            this.selectedPackage.is_subscription
+            this.packages[index].unlimited &&
+            this.selectedPackage.unlimited
           ) {
             foundSubscription = true;
             // use that expiration date to create the activation date and expiration date of the new subscription
@@ -1338,35 +1338,35 @@ export default {
 
             this.packagePurchase.expiration_date = this.addMonths(
               new Date(newActivationDate),
-              this.selectedPackage.subscription_duration
+              this.selectedPackage.package_duration
             );
           }
         }
 
         // what to do if you don't find a subscription
-        if (!this.selectedPackage.is_subscription) {
+        if (!this.selectedPackage.unlimited) {
           this.packagePurchase.expiration_date = this.addMonths(new Date(), 12);
-        } else if (!foundSubscription && this.selectedPackage.is_subscription) {
+        } else if (!foundSubscription && this.selectedPackage.unlimited) {
           this.packagePurchase.activation_date = new Date();
-          if (this.selectedPackage.subscription_duration > 0) {
+          if (this.selectedPackage.package_duration > 0) {
             this.packagePurchase.expiration_date = this.addMonths(
               new Date(),
-              this.selectedPackage.subscription_duration
+              this.selectedPackage.package_duration
             );
           }
         }
       }
 
-      if (this.selectedPackage.is_subscription && this.packages.length == 0) {
+      if (this.selectedPackage.unlimited && this.packages.length == 0) {
         this.packagePurchase.activation_date = new Date();
-        if (this.selectedPackage.subscription_duration > 0) {
+        if (this.selectedPackage.package_duration > 0) {
           this.packagePurchase.expiration_date = this.addMonths(
             new Date(),
-            this.selectedPackage.subscription_duration
+            this.selectedPackage.package_duration
           );
         }
       }
-      if (!this.selectedPackage.is_subscription && this.packages.length == 0) {
+      if (!this.selectedPackage.unlimited && this.packages.length == 0) {
         this.packagePurchase.expiration_date = this.addMonths(new Date(), 12);
       }
 

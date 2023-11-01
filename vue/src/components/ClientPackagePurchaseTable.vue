@@ -241,7 +241,7 @@ export default {
             this.packagePurchase.activation_date = "";
             this.packagePurchase.expiration_date = "";
             // SUBSCRIPTION LOGIC
-            if (this.purchaseItem.is_subscription == true) {
+            if (this.purchaseItem.unlimited == true) {
               let latestExpDate = new Date();
               this.$store.state.activePackageList.forEach((item) => {
                 let currentIndexExpDate = new Date(
@@ -249,7 +249,7 @@ export default {
                 );
                 if (
                   currentIndexExpDate > latestExpDate &&
-                  item.is_subscription
+                  item.unlimited
                 ) {
                   latestExpDate = currentIndexExpDate.setDate(
                     currentIndexExpDate.getDate() + 1
@@ -259,11 +259,11 @@ export default {
 
               this.packagePurchase.activation_date = latestExpDate;
 
-              if (this.purchaseItem.subscription_duration > 0) {
+              if (this.purchaseItem.package_duration > 0) {
                 // console.log(new Date(this.packagePurchase.activation_date))
                 this.packagePurchase.expiration_date = this.addMonths(
                   new Date(this.packagePurchase.activation_date),
-                  this.purchaseItem.subscription_duration
+                  this.purchaseItem.package_duration
                 );
               }
 
@@ -291,7 +291,7 @@ export default {
             this.packagePurchase.is_expired = false;
             this.packagePurchase.classes_remaining =
               this.purchaseItem.classes_amount;
-            if (this.purchaseItem.is_subscription == false) {
+            if (this.purchaseItem.unlimited == false) {
               this.packagePurchase.expiration_date = this.addMonths(
                 new Date(),
                 12
@@ -373,7 +373,7 @@ export default {
           index++
         ) {
           if (
-            item.is_subscription &&
+            item.unlimited &&
             item.is_recurring
           ) {
             continueWithShopping = false;
@@ -402,7 +402,7 @@ export default {
           obj.client_id = this.$store.state.clientDetails.client_id;
           obj.package_id = item.package_id;
           obj.classes_remaining = item.classes_amount;
-          obj.is_monthly_renew = (item.is_subscription && item.is_recurring);
+          obj.is_monthly_renew = (item.unlimited && item.is_recurring);
           obj.total_amount_paid = item.package_cost;
           this.lineItems.push(obj);
           this.$store.commit("SET_STRIPE_LINE_ITEMS", this.lineItems);
@@ -416,7 +416,7 @@ export default {
         obj.client_id = this.$store.state.clientDetails.client_id;
         obj.package_id = item.package_id;
         obj.classes_remaining = item.classes_amount;
-        obj.is_monthly_renew = (item.is_subscription && item.is_recurring);
+        obj.is_monthly_renew = (item.unlimited && item.is_recurring);
         obj.total_amount_paid = item.package_cost;
         this.lineItems.push(obj);
         this.$store.commit("SET_STRIPE_LINE_ITEMS", this.lineItems);

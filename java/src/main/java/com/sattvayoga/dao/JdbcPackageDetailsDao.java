@@ -1,10 +1,8 @@
 package com.sattvayoga.dao;
 
-import com.sattvayoga.model.ClientDetails;
 import com.sattvayoga.model.PackageDetails;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -27,8 +25,8 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
                 "(?, ?, ?, ?, ?, ?, ?)";
 
         return jdbcTemplate.update(sql, packageDetails.getDescription(), packageDetails.getPackage_cost(),
-                packageDetails.getClasses_amount(), packageDetails.getSubscription_duration(),
-                packageDetails.isIs_subscription(), packageDetails.isIs_visible_online(), packageDetails.isIs_recurring()) == 1;
+                packageDetails.getClasses_amount(), packageDetails.getPackage_duration(),
+                packageDetails.isUnlimited(), packageDetails.isIs_visible_online(), packageDetails.isIs_recurring()) == 1;
     }
 
 
@@ -83,7 +81,7 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
                 "WHERE package_id = ?";
         return jdbcTemplate.update(sql, packageDetails.getPackage_id(), packageDetails.getDescription(),
                 packageDetails.getPackage_cost(), packageDetails.getClasses_amount(),
-                packageDetails.getSubscription_duration(), packageDetails.isIs_subscription(),
+                packageDetails.getPackage_duration(), packageDetails.isUnlimited(),
                 packageDetails.isIs_visible_online(), packageDetails.isIs_recurring(), packageDetails.getPackage_id())==1;
    }
 
@@ -123,11 +121,12 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
             packageDetails.setClasses_amount(rs.getInt("classes_amount"));
         }
         if (rs.getInt("subscription_duration") != 0) {
-            packageDetails.setSubscription_duration(rs.getInt("subscription_duration"));
+            packageDetails.setPackage_duration(rs.getInt("subscription_duration"));
         }
-        packageDetails.setIs_subscription(rs.getBoolean("is_subscription"));
+        packageDetails.setUnlimited(rs.getBoolean("is_subscription"));
         packageDetails.setIs_visible_online(rs.getBoolean("is_visible_online"));
         packageDetails.setIs_recurring(rs.getBoolean("is_recurring"));
+        packageDetails.setActive(rs.getBoolean("active"));
         return packageDetails;
     }
 

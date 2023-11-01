@@ -82,10 +82,11 @@ CREATE TABLE package_details
 	description			text			NOT NULL,
 	package_cost		decimal(13, 2)	NOT NULL,
 	classes_amount		int,
-	subscription_duration	int,
-	is_subscription		boolean 		NOT NULL, 
+	package_duration	int,
+	unlimited			boolean 		NOT NULL, 
 	is_visible_online	boolean			NOT NULL,
-	is_recurring 		boolean			,	
+	is_recurring 		boolean			,
+	active				boolean			,	
 	CONSTRAINT PK_package_details PRIMARY KEY (package_id)
 );
 

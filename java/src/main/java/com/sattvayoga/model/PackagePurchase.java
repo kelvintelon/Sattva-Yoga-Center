@@ -17,8 +17,8 @@ public class PackagePurchase {
     private boolean is_monthly_renew;
     private BigDecimal discount;
     private String package_description;
-    private boolean is_subscription;
-    private int subscription_duration;
+    private boolean unlimited;
+    private int package_duration;
     private String paymentId;
 
     public PackagePurchase(int package_purchase_id, int client_id, Timestamp date_purchased, int package_id,
@@ -66,12 +66,12 @@ public class PackagePurchase {
         this.paymentId = paymentId;
     }
 
-    public int getSubscription_duration() {
-        return subscription_duration;
+    public int getPackage_duration() {
+        return package_duration;
     }
 
-    public void setSubscription_duration(int subscription_duration) {
-        this.subscription_duration = subscription_duration;
+    public void setPackage_duration(int package_duration) {
+        this.package_duration = package_duration;
     }
 
     public String getPackage_description() {
@@ -162,11 +162,11 @@ public class PackagePurchase {
         this.discount = discount;
     }
 
-    public boolean isIs_subscription() {
-        return is_subscription;
+    public boolean isUnlimited() {
+        return unlimited;
     }
 
-    public void setIs_subscription(boolean is_subscription) {
-        this.is_subscription = is_subscription;
+    public void setUnlimited(boolean unlimited) {
+        this.unlimited = unlimited;
     }
 }

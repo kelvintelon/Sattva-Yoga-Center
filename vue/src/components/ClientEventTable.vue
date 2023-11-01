@@ -415,8 +415,8 @@ export default {
 
             this.packages = response.data.filter((item) => {
               return (
-                (item.is_subscription && item.expiration_date >= today) ||
-                (!item.is_subscription &&
+                (item.unlimited && item.expiration_date >= today) ||
+                (!item.unlimited &&
                   item.expiration_date >= today &&
                   item.classes_remaining > 0)
               );
@@ -433,7 +433,7 @@ export default {
               );
             });
             if (refundPackage.length > 0) {
-              if (refundPackage[0].is_subscription == true) {
+              if (refundPackage[0].unlimited == true) {
                 this.hasSubscriptionPackage = true;
               }
             }

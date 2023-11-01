@@ -59,11 +59,11 @@
                           required
                         ></v-select>
                         <v-select
-                          v-model.number="packageDetails.subscription_duration"
+                          v-model.number="packageDetails.package_duration"
                           :items="durationOptions"
                           label="Duration in months"
                           required
-                          @change="onSubscriptionDurationChange"
+                          @change="onPackageDurationChange"
                         ></v-select>
                         <br />
                         <v-text-field
@@ -75,12 +75,12 @@
                           min="10"
                         ></v-text-field>
                         <v-checkbox
-                          v-model="packageDetails.is_subscription"
+                          v-model="packageDetails.unlimited"
                           label="Is this a Subscription?"
                           required
                           @change="onSubscriptionBooleanChange"
                         ></v-checkbox>
-                        <!-- <v-checkbox v-if="toggleRecurring || packageDetails.is_subscription"
+                        <!-- <v-checkbox v-if="toggleRecurring || packageDetails.unlimited"
                           v-model="packageDetails.is_recurring"
                           label="Is this recurring?"
                           required
@@ -155,11 +155,11 @@
                           required
                         ></v-select>
                         <v-select
-                          v-model.number="editedItem.subscription_duration"
+                          v-model.number="editedItem.package_duration"
                           :items="durationOptions"
                           label="Duration in months"
                           required
-                          @change="onSubscriptionDurationChange"
+                          @change="onPackageDurationChange"
                         ></v-select>
                         <br />
                         <v-text-field
@@ -172,12 +172,12 @@
                         ></v-text-field>
 
                         <v-checkbox
-                          v-model="editedItem.is_subscription"
+                          v-model="editedItem.unlimited"
                           label="Subscription?"
                           required
                           @change="onSubscriptionBooleanChange"
                         ></v-checkbox>
-                        <!-- <v-checkbox v-if="toggleRecurring || editedItem.is_subscription"
+                        <!-- <v-checkbox v-if="toggleRecurring || editedItem.unlimited"
                           v-model="editedItem.is_recurring"
                           label="Is this recurring?"
                           required
@@ -243,9 +243,9 @@
           </v-toolbar>
         </template>
         <!-- CHECK BOX for IS_PAID AND IS_REPEATING -->
-        <template v-slot:[`item.is_subscription`]="{ item }">
+        <template v-slot:[`item.unlimited`]="{ item }">
           <v-simple-checkbox
-            v-model="item.is_subscription"
+            v-model="item.unlimited"
             disabled
           ></v-simple-checkbox>
         </template>
@@ -302,10 +302,10 @@ export default {
         },
         {
           text: "Subscription Duration (months)",
-          value: "subscription_duration",
+          value: "package_duration",
           sortable: false,
         },
-        { text: "Subscription?", value: "is_subscription", sortable: false },
+        { text: "Subscription?", value: "unlimited", sortable: false },
         {
           text: "Visible Online?",
           value: "is_visible_online",
@@ -328,8 +328,8 @@ export default {
         description: "",
         package_cost: 10,
         classes_amount: 0,
-        subscription_duration: 0,
-        is_subscription: false,
+        package_duration: 0,
+        unlimited: false,
         is_visible_online: true,
         is_recurring: false,
       },
@@ -343,8 +343,8 @@ export default {
         description: "",
         package_cost: 10,
         classes_amount: 0,
-        subscription_duration: 0,
-        is_subscription: false,
+        package_duration: 0,
+        unlimited: false,
         is_visible_online: true,
         is_recurring: false,
       },
@@ -360,37 +360,37 @@ export default {
     // ==================== this is form stuff vvvv
   },
   methods: {
-    onSubscriptionDurationChange(){
-      if (this.packageDetails.subscription_duration > 0){
-        this.packageDetails.is_subscription = true;
+    onPackageDurationChange(){
+      if (this.packageDetails.package_duration > 0){
+        this.packageDetails.unlimited = true;
         this.toggleRecurring = true;
       } else {
-        this.packageDetails.is_subscription = false;
+        this.packageDetails.unlimited = false;
         this.toggleRecurring = false;
       }
-      if (this.editedItem.subscription_duration > 0){
-        this.editedItem.is_subscription = true;
+      if (this.editedItem.package_duration > 0){
+        this.editedItem.unlimited = true;
         this.toggleRecurring = true;
       } else {
-        this.editedItem.is_subscription = false;
+        this.editedItem.unlimited = false;
         this.toggleRecurring = false;
 
       }
     },
     onSubscriptionBooleanChange(){
-      if (this.packageDetails.is_subscription == true){
-        this.packageDetails.subscription_duration = 1;
+      if (this.packageDetails.unlimited == true){
+        this.packageDetails.package_duration = 1;
         this.toggleRecurring = true;
       } else {
-        this.packageDetails.subscription_duration = 0;
+        this.packageDetails.package_duration = 0;
         this.toggleRecurring = false;
 
       }
-      if (this.editedItem.is_subscription == true){
-        this.editedItem.subscription_duration = 1;
+      if (this.editedItem.unlimited == true){
+        this.editedItem.package_duration = 1;
         this.toggleRecurring = true;
       } else {
-        this.editedItem.subscription_duration = 0;
+        this.editedItem.package_duration = 0;
         this.toggleRecurring = false;
 
       }
@@ -464,8 +464,8 @@ export default {
 
     submit() {
       this.checkCreateForm();
-      if (this.packageDetails.is_subscription == false) {
-        this.packageDetails.subscription_duration = 0;
+      if (this.packageDetails.unlimited == false) {
+        this.packageDetails.package_duration = 0;
       }
       if (this.createFormIncomplete == false) {
         // after completing the object do the POST REQUEST
@@ -485,8 +485,8 @@ export default {
     },
     update() {
       this.checkEditForm();
-      if (this.editedItem.is_subscription == false) {
-        this.editedItem.subscription_duration = 0;
+      if (this.editedItem.unlimited == false) {
+        this.editedItem.package_duration = 0;
       }
       if (this.editFormIncomplete == false) {
         // after completing the object do the PUT REQUEST

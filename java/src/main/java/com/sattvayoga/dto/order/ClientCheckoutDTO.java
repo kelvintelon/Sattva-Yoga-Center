@@ -22,7 +22,7 @@ public class ClientCheckoutDTO {
     private boolean saveCard;
     private boolean saveAsRecurringPayment;
     private int iterations;
-    private int subscriptionDuration;
+    private int packageDuration;
     private GiftCard giftCard;
     private boolean compFree;
 
@@ -68,12 +68,12 @@ public class ClientCheckoutDTO {
         this.saveEmailReceiptPurchase = saveEmailReceiptPurchase;
     }
 
-    public int getSubscriptionDuration() {
-        return subscriptionDuration;
+    public int getPackageDuration() {
+        return packageDuration;
     }
 
-    public void setSubscriptionDuration(int subscriptionDuration) {
-        this.subscriptionDuration = subscriptionDuration;
+    public void setPackageDuration(int packageDuration) {
+        this.packageDuration = packageDuration;
     }
 
     public String getEmailForReceipt() {

@@ -98,7 +98,7 @@ public class EventController {
             eventDao.deleteEventForClient(eventId, clientId);
 
             // increment back up if it wasn't a subscription
-            if (packagePurchase.getPackage_purchase_id() > 0 && !packagePurchase.isIs_subscription()) {
+            if (packagePurchase.getPackage_purchase_id() > 0 && !packagePurchase.isUnlimited()) {
                 packagePurchaseDao.incrementByOne(packagePurchaseId);
             }
         }
@@ -129,7 +129,7 @@ public class EventController {
             // filter the list of packages to just one
             PackagePurchase packagePurchase = packagePurchaseDao.filterPackageList(allUserPackagePurchase, classEventList.get(i));
 
-            if (packagePurchase.getClasses_remaining() == 0 && !packagePurchase.isIs_subscription()) {
+            if (packagePurchase.getClasses_remaining() == 0 && !packagePurchase.isUnlimited()) {
                 //  update the packagePurchase in the database here then leave/break right after
                 packagePurchaseDao.updatePackage(packagePurchase);
 
@@ -148,7 +148,7 @@ public class EventController {
             eventDao.reconcileClassWithPackageId(packagePurchase.getPackage_purchase_id(), classEventList.get(i).getEvent_id(), clientId);
 
             // decrement each time if it's a bundle.
-            if (!packagePurchase.isIs_subscription() && packagePurchase.getClasses_remaining() > 0) {
+            if (!packagePurchase.isUnlimited() && packagePurchase.getClasses_remaining() > 0) {
                 int currentAmountOfClasses = packagePurchase.getClasses_remaining();
                 packagePurchase.setClasses_remaining(currentAmountOfClasses-1);
                 packagePurchaseDao.updatePackage(packagePurchase);
@@ -307,7 +307,7 @@ public class EventController {
                 }
 
                 // decrement if it's a quantity bundle but register it into the table either way
-                if (!packagePurchase.isIs_subscription()) {
+                if (!packagePurchase.isUnlimited()) {
                     packagePurchaseDao.decrementByOne(packagePurchase.getPackage_purchase_id());
                 }
 
@@ -359,7 +359,7 @@ public class EventController {
                 }
 
                 // decrement if it's a quantity bundle but register it into the table either way
-                if (!packagePurchase.isIs_subscription()) {
+                if (!packagePurchase.isUnlimited()) {
                     packagePurchaseDao.decrementByOne(packagePurchase.getPackage_purchase_id());
                 }
             } else {

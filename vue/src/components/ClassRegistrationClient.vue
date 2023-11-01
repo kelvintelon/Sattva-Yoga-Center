@@ -210,8 +210,8 @@ export default {
           this.packages = response.data.filter((item) => {
             // return item.expiration_date >= today || item.classes_remaining > 0;
             return (
-              (item.is_subscription && item.expiration_date >= today) ||
-              (!item.is_subscription &&
+              (item.unlimited && item.expiration_date >= today) ||
+              (!item.unlimited &&
                 item.expiration_date >= today &&
                 item.classes_remaining > 0)
             );
@@ -259,11 +259,11 @@ export default {
           // TODO: Handle Gift Card logic here when SQUARE is in place
           if (item.classes_remaining > 0 || todaysDate < expirationDate) {
             this.allowSignUp = true;
-            if (item.is_subscription) {
+            if (item.unlimited) {
               this.hasSubscriptionPackage = true;
               this.subscriptionPackages =
                 this.$store.state.activePackageList.filter((item) => {
-                  return item.is_subscription;
+                  return item.unlimited;
                 });
               this.initial1 = this.subscriptionPackages[0];
               this.subscriptionPackages.forEach((item) => {
@@ -278,7 +278,7 @@ export default {
                 this.$store.state.activePackageList.filter((item) => {
                   //
                   return (
-                    item.is_subscription == false &&
+                    item.unlimited == false &&
                     (item.expiration_date == null ||
                       todaysDate < item.expiration_date) &&
                     item.classes_remaining > 0
@@ -425,8 +425,8 @@ export default {
           this.packages = response.data.filter((item) => {
             // return item.expiration_date >= today || item.classes_remaining > 0;
             return (
-              (item.is_subscription && item.expiration_date >= today) ||
-              (!item.is_subscription &&
+              (item.unlimited && item.expiration_date >= today) ||
+              (!item.unlimited &&
                 item.expiration_date >= today &&
                 item.classes_remaining > 0)
             );
@@ -444,7 +444,7 @@ export default {
           });
           //console.log(refundPackage);
           if (refundPackage.length > 0) {
-            if (refundPackage[0].is_subscription == true) {
+            if (refundPackage[0].unlimited == true) {
               this.hasSubscriptionPackage = true;
             }
           }

@@ -693,11 +693,11 @@ export default {
           // TODO: Handle Gift Card logic here when SQUARE is in place
           if (item.classes_remaining > 0 || todaysDate < expirationDate) {
             this.allowSignUp = true;
-            if (item.is_subscription) {
+            if (item.unlimited) {
               this.hasSubscriptionPackage = true;
               this.subscriptionPackages =
                 this.$store.state.activePackageList.filter((item) => {
-                  return item.is_subscription;
+                  return item.unlimited;
                 });
               this.initial = this.subscriptionPackages[0];
               this.subscriptionPackages.forEach((item) => {
@@ -711,7 +711,7 @@ export default {
               this.quantityPackages =
                 this.$store.state.activePackageList.filter((item) => {
                   return (
-                    item.is_subscription == false &&
+                    item.unlimited == false &&
                     (item.expiration_date == null ||
                       todaysDate < item.expiration_date)
                   );

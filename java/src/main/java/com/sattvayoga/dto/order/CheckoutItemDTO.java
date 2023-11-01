@@ -1,7 +1,6 @@
 package com.sattvayoga.dto.order;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 public class CheckoutItemDTO {
@@ -20,7 +19,7 @@ public class CheckoutItemDTO {
     private String receiptEmail = "";
     private boolean saveGiftCardEmail = false;
     private boolean saveReceiptEmail = false;
-    private int subscriptionDuration;
+    private int packageDuration;
 
     public CheckoutItemDTO(){
     }
@@ -41,12 +40,12 @@ public class CheckoutItemDTO {
         this.saveReceiptEmail = saveReceiptEmail;
     }
 
-    public int getSubscriptionDuration() {
-        return subscriptionDuration;
+    public int getPackageDuration() {
+        return packageDuration;
     }
 
-    public void setSubscriptionDuration(int subscriptionDuration) {
-        this.subscriptionDuration = subscriptionDuration;
+    public void setPackageDuration(int packageDuration) {
+        this.packageDuration = packageDuration;
     }
 
     public String getGiftCardEmail() {

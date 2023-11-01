@@ -2,7 +2,6 @@ package com.sattvayoga.dao;
 
 import com.sattvayoga.dto.order.CheckoutItemDTO;
 import com.sattvayoga.model.*;
-import org.apache.tomcat.jni.Local;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -55,7 +54,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
             // set package description
             packagePurchase.setPackage_description(getPackageDescriptionByPackageId(packagePurchase.getPackage_id()));
-            packagePurchase.setIs_subscription(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
+            packagePurchase.setUnlimited(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
             allUserPackagePurchase.add(packagePurchase);
         }
         return allUserPackagePurchase;
@@ -91,7 +90,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 description = getPackageDescriptionByPackageId(packagePurchase.getPackage_id());
             }
             packagePurchase.setPackage_description(description);
-            packagePurchase.setIs_subscription(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
+            packagePurchase.setUnlimited(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
             allUserPackagePurchase.add(packagePurchase);
         }
 
@@ -136,7 +135,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
             // set package description
             packagePurchase.setPackage_description(getPackageDescriptionByPackageId(packagePurchase.getPackage_id()));
-            packagePurchase.setIs_subscription(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
+            packagePurchase.setUnlimited(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
             allUserPackagePurchase.add(packagePurchase);
         }
 
@@ -175,7 +174,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
             // set package description
             packagePurchase.setPackage_description(getPackageDescriptionByPackageId(packagePurchase.getPackage_id()));
-            packagePurchase.setIs_subscription(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
+            packagePurchase.setUnlimited(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
 
             allUserPackagePurchase.add(packagePurchase);
         }
@@ -207,7 +206,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
             // set package description
             packagePurchase.setPackage_description(getPackageDescriptionByPackageId(packagePurchase.getPackage_id()));
-            packagePurchase.setIs_subscription(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
+            packagePurchase.setUnlimited(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
 
         }
         return packagePurchase;
@@ -227,7 +226,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     public boolean expirePackage(PackagePurchase packagePurchase) {
         String sql = "UPDATE package_purchase SET classes_remaining = 0 " +
                 "WHERE package_purchase_id = ?;";
-        if (packagePurchase.isIs_subscription()) {
+        if (packagePurchase.isUnlimited()) {
             sql = "UPDATE package_purchase SET expiration_date = current_date - INTEGER '1' " +
                     "WHERE package_purchase_id = ?;";
         }
@@ -272,7 +271,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             PackagePurchase currentPackage = packagePurchaseList.get(i);
 
             // if they have a subscription make sure the class they are being signed up for is not after their expiration date
-            if (currentPackage.isIs_subscription()) {
+            if (currentPackage.isUnlimited()) {
 
                 // could check for the expiration date right here as well/
                 // compare the expiration date to the starting time of the event
@@ -294,7 +293,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 }
 
             }
-            else if (!currentPackage.isIs_subscription() && currentPackage.getClasses_remaining() > 0) {
+            else if (!currentPackage.isUnlimited() && currentPackage.getClasses_remaining() > 0) {
                 // compare the expiration date to the starting time of the event
                 Timestamp eventTime = classEvent.getStart_time();
                 Date expirationDate = currentPackage.getExpiration_date();
@@ -367,11 +366,12 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             packageDetails.setClasses_amount(rs.getInt("classes_amount"));
         }
         if (rs.getInt("subscription_duration") != 0) {
-            packageDetails.setSubscription_duration(rs.getInt("subscription_duration"));
+            packageDetails.setPackage_duration(rs.getInt("subscription_duration"));
         }
-        packageDetails.setIs_subscription(rs.getBoolean("is_subscription"));
+        packageDetails.setUnlimited(rs.getBoolean("is_subscription"));
         packageDetails.setIs_visible_online((rs.getBoolean("is_visible_online")));
         packageDetails.setIs_recurring(rs.getBoolean("is_recurring"));
+        packageDetails.setActive(rs.getBoolean("active"));
         return packageDetails;
     }
 
@@ -445,7 +445,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     public int createStripePackagePurchase(CheckoutItemDTO checkoutItemDTO) {
         LocalDate activationDate = LocalDate.now();
 
-        if (checkoutItemDTO.getSubscriptionDuration() > 0) {
+        if (checkoutItemDTO.getPackageDuration() > 0) {
             String sql = "SELECT expiration_date FROM package_purchase JOIN package_details ON package_details.package_id = package_purchase.package_id WHERE package_details.is_subscription = true AND client_id = ? AND expiration_date > NOW() ORDER BY expiration_date DESC LIMIT 1;";
             SqlRowSet results = jdbcTemplate.queryForRowSet(sql, checkoutItemDTO.getClient_id());
             if (results.next()) {
@@ -467,8 +467,8 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     }
 
     private LocalDate returnCorrectPackageExpirationDateForCheckoutItem(CheckoutItemDTO checkoutItemDTO, LocalDate activationDate) {
-        if (checkoutItemDTO.getSubscriptionDuration() > 0) {
-            return activationDate.plusMonths(checkoutItemDTO.getSubscriptionDuration()).plusDays(1);
+        if (checkoutItemDTO.getPackageDuration() > 0) {
+            return activationDate.plusMonths(checkoutItemDTO.getPackageDuration()).plusDays(1);
         }
         return LocalDate.now().plusYears(1).plusDays(1);
     }
@@ -488,7 +488,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     }
 
     private LocalDate findActivationDateForClient(PackagePurchase packagePurchase) {
-        if (packagePurchase.getSubscription_duration() > 0) {
+        if (packagePurchase.getPackage_duration() > 0) {
         String sql = "SELECT expiration_date FROM package_purchase JOIN package_details ON package_details.package_id = package_purchase.package_id WHERE package_details.is_subscription = true AND client_id = ? ORDER BY expiration_date DESC LIMIT 1;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, packagePurchase.getClient_id());
             if (results.next()) {
@@ -500,10 +500,10 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     }
 
     private LocalDate returnCorrectPackageExpirationDateForPackagePurchase(PackagePurchase packagePurchase, LocalDate activationDate) {
-        if (packagePurchase.getSubscription_duration() > 0) {
+        if (packagePurchase.getPackage_duration() > 0) {
 
 
-            return activationDate.plusMonths(packagePurchase.getSubscription_duration()).plusDays(1);
+            return activationDate.plusMonths(packagePurchase.getPackage_duration()).plusDays(1);
         }
         return LocalDate.now().plusYears(1).plusDays(1);
     }
