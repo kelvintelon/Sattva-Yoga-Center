@@ -63,7 +63,7 @@
       :loading="loading"
       loading-text="Loading... Please wait"
       :options.sync="options"
-      :server-items-length="balancePackagesPurchased"
+      :server-items-length="totalPackagesPurchased"
       hide-default-footer
     >
       <template v-slot:top>
@@ -113,6 +113,7 @@
                         <v-checkbox
                         class="mt-4"
                           v-if="saveEmailForGiftCardCheckbox"
+                          @click="saveEmail"
                           v-model="clientCheckout.saveEmailGiftCardPurchase"
                           label="Save?"
                         ></v-checkbox>
@@ -480,6 +481,7 @@
                       class="mt-4"
                           v-if="saveEmailForReceiptCheckbox"
                           v-model="clientCheckout.saveEmailReceiptPurchase"
+                          @click="saveEmail"
                           label="Save?"
                         ></v-checkbox>
                     <v-btn
@@ -534,9 +536,9 @@
       <v-col lg="10" md="9" sm="9">
         <v-pagination
           v-model="page"
-          :length="Math.ceil(balancePackagesPurchased / pageSize)"
+          :length="Math.ceil(totalPackagesPurchased / pageSize)"
           @input="temporaryPageMethod"
-          balance-visible="8"
+          total-visible="8"
         ></v-pagination>
       </v-col>
       <v-col lg="2" md="3" class="mt-2" sm="3">
@@ -583,8 +585,8 @@ export default {
         },
         { text: "Purchase Date", value: "date_purchased", sortable: true },
         {
-          text: "balance Cost",
-          value: "balance_amount_paid",
+          text: "Cost",
+          value: "total_amount_paid",
         },
         {
           text: "Activation Date",
@@ -610,7 +612,7 @@ export default {
       pageSize: 10,
       sortBy: "date_purchased",
       sortDesc: false,
-      balancePackagesPurchased: 0,
+      totalPackagesPurchased: 0,
       paginatedObject: {},
       packages: [],
       packagePurchase: {
@@ -621,7 +623,7 @@ export default {
         classes_remaining: "",
         activation_date: "",
         expiration_date: "",
-        balance_amount_paid: 0,
+        total_amount_paid: 0,
         is_monthly_renew: "",
         discount: 0,
         package_description: "",
@@ -1224,7 +1226,7 @@ export default {
               var yyyy = today.getFullYear();
               today = yyyy + "-" + mm + "-" + dd;
               this.paginatedObject = response.data;
-              this.balancePackagesPurchased = this.paginatedObject.balanceRows;
+              this.totalPackagesPurchased = this.paginatedObject.totalRows;
               this.packages = this.paginatedObject.listOfPurchasedPackages;
               // this.packages = this.paginatedObject.listOfPurchasedPackages.filter((item) => {
               //   return (
@@ -1284,7 +1286,7 @@ export default {
               var yyyy = today.getFullYear();
               today = yyyy + "-" + mm + "-" + dd;
               this.paginatedObject = response.data;
-              this.balancePackagesPurchased = this.paginatedObject.balanceRows;
+              this.totalPackagesPurchased = this.paginatedObject.totalRows;
               this.packages =
                 this.paginatedObject.listOfPurchasedPackages.filter((item) => {
                   // return (item.expiration_date >= today) || (item.expiration_date == null && item.classes_remaining > 0) || (item.expiration_date >= today && item.classes_remaining > 0);
@@ -1408,7 +1410,7 @@ export default {
         let num =
           this.selectedPackage.package_cost * (1 - this.percentDiscount / 100);
         this.packagePurchase.discount = this.selectedPackage.package_cost - num;
-        this.packagePurchase.balance_amount_paid = Math.round(num * 100) / 100;
+        this.packagePurchase.total_amount_paid = Math.round(num * 100) / 100;
       } else if (
         this.selectedPackage.discount >= 0 &&
         this.selectedPackage.package_cost >= 0 &&
@@ -1416,10 +1418,10 @@ export default {
       ) {
         // if it's in dollars
         this.packagePurchase.discount = this.selectedPackage.discount;
-        this.packagePurchase.balance_amount_paid =
+        this.packagePurchase.total_amount_paid =
           this.selectedPackage.package_cost - this.selectedPackage.discount;
       } else {
-        this.packagePurchase.balance_amount_paid =
+        this.packagePurchase.total_amount_paid =
           this.selectedPackage.package_cost;
       }
 
@@ -1457,6 +1459,46 @@ export default {
       date.setDate(date.getDate() - 1);
       return date;
     },
+    saveEmail() {
+      // clientCheckout.emailForReceipt or clientCheckout.emailForGift
+      
+      let email = ""
+      let giftCardSave = false;
+      if (this.clientCheckout.saveEmailGiftCardPurchase && this.saveEmailForGiftCardCheckbox) {
+        giftCardSave = true;
+        email = this.clientCheckout.emailForGift;
+      } else if (this.clientCheckout.saveEmailReceiptPurchase && this.saveEmailForReceiptCheckbox) {
+        email = this.clientCheckout.emailForReceipt;
+       
+      }
+      let clientId = parseInt(this.$route.params.clientId);
+      let ClientDetails = {
+        client_id: clientId,
+        email: email
+      };
+      clientDetailService.updateEmailForClient(ClientDetails)
+      .then((response) => {
+        if (response.status == 200) {
+         
+        if (response.data === "Successful") {
+          
+              if (giftCardSave) {
+                this.saveEmailForGiftCardCheckbox = false;
+                this.$store.state.clientDetails.email = this.clientCheckout.emailForGift;
+                this.clientCheckout.emailForReceipt = this.clientCheckout.emailForGift;
+                alert("Email saved")
+              } else {
+                this.saveEmailForReceiptCheckbox = false;
+                this.$store.state.clientDetails.email = this.clientCheckout.emailForReceipt;
+            
+                alert("Email saved")
+              }
+          } else if (response.data == "Email in use") {
+            alert("Email in use")
+          }
+        }
+      })
+    },
     submitClientCheckout() {
       if (this.selectedPackages.length != 0) {
         this.clientCheckout.client_id =
@@ -1492,12 +1534,12 @@ export default {
           .then((response) => {
             if (response.status == 201) {
               // this.retrieveClientDetailsForAdmin();
-              if (this.clientCheckout.saveEmailGiftCardPurchase) {
-                this.$store.state.clientDetails.email = this.clientCheckout.emailForGift;
-              }
-              if (this.clientCheckout.saveEmailReceiptPurchase) {
-                this.$store.state.clientDetails.email = this.clientCheckout.emailForReceipt;
-              }
+              // if (this.clientCheckout.saveEmailGiftCardPurchase) {
+              //   this.$store.state.clientDetails.email = this.clientCheckout.emailForGift;
+              // }
+              // if (this.clientCheckout.saveEmailReceiptPurchase) {
+              //   this.$store.state.clientDetails.email = this.clientCheckout.emailForReceipt;
+              // }
               alert("Submitted");
               this.close();
 
@@ -1522,12 +1564,12 @@ export default {
               this.$root.$refs.D.getClientEventTable();
               }, 15000);
 
-              setTimeout(() => {
-              this.getActivePurchaseServerRequest();
+              // setTimeout(() => {
+              // this.getActivePurchaseServerRequest();
 
-              this.$root.$refs.B.getPackageHistoryTable();
-              this.$root.$refs.D.getClientEventTable();
-              }, 20000);
+              // this.$root.$refs.B.getPackageHistoryTable();
+              // this.$root.$refs.D.getClientEventTable();
+              // }, 20000);
 
               this.loading = false;
             }

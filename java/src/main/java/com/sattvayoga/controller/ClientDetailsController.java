@@ -3,8 +3,10 @@ package com.sattvayoga.controller;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sattvayoga.dao.ClientDetailsDao;
 import com.sattvayoga.dao.EventDao;
+import com.sattvayoga.dao.StripeDao;
 import com.sattvayoga.dao.UserDao;
 import com.sattvayoga.model.*;
+import com.stripe.Stripe;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,11 +28,13 @@ public class ClientDetailsController {
     private ClientDetailsDao clientDetailsDao;
     private UserDao userDao;
     private EventDao eventDao;
+    private StripeDao stripeDao;
 
-    public ClientDetailsController(ClientDetailsDao clientDao, UserDao userDao, EventDao eventDao) {
+    public ClientDetailsController(ClientDetailsDao clientDao, UserDao userDao, EventDao eventDao, StripeDao stripeDao) {
         this.clientDetailsDao = clientDao;
         this.userDao = userDao;
         this.eventDao = eventDao;
+        this.stripeDao = stripeDao;
     }
 
 //    http://localhost:8080/getPaginatedClients?page=1&limit=10
@@ -186,6 +190,29 @@ public class ClientDetailsController {
             clientDetailsDao.updateClientDetails(clientDetails);
         }
 
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value =" /updateEmailForClient", method = RequestMethod.PUT)
+    public String updateEmailForClient(@RequestBody ClientDetails clientDetails) {
+        boolean foundEmail = false;
+
+        if (clientDetails.getEmail() != null && !(clientDetails.getEmail().equalsIgnoreCase(""))) {
+            foundEmail = clientDetailsDao.isEmailDuplicate(clientDetails.getClient_id(), clientDetails.getEmail());
+        }
+
+        if (foundEmail || (clientDetails.getEmail() != null && ( clientDetails.getEmail().equalsIgnoreCase("info@sattva-yoga-center.com") || clientDetails.getEmail().equalsIgnoreCase("sattva.yoga.center.michigan@gmail.com")))) {
+            return "Email in use";
+        } else {
+            ClientDetails retrievedClient =
+                    clientDetailsDao.findClientByClientId(clientDetails.getClient_id());
+
+            clientDetailsDao.saveNewClientEmail(clientDetails.getClient_id(), clientDetails.getEmail());
+
+            stripeDao.updateCustomerEmail(retrievedClient.getCustomer_id(), clientDetails.getEmail());
+        }
+
+        return "Successful";
     }
 
     @PreAuthorize("hasRole('ADMIN')")

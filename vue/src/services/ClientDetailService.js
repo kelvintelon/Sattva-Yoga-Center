@@ -17,6 +17,9 @@ export default {
     registerClient(clientDetails) {
         return axios.post('/registerClient', clientDetails)
     },
+    updateEmailForClient(clientDetails) {
+        return axios.put(`/updateEmailForClient`, clientDetails)
+    },
     
     getClientDetailsOfLoggedInUser() {
         return axios.get('/getClientDetails')
