@@ -1292,6 +1292,7 @@ export default {
         });
     },
     Remove(item) {
+      item.date_purchased = new Date(item.date_purchased).toJSON();
       // this will be an update
       packagePurchaseService.expirePackage(item).then((response) => {
         if (response.status == 200) {
@@ -1483,6 +1484,9 @@ export default {
         this.clientCheckout.discount = this.returnDiscount;
         if (this.showGiftCardResponse) {
           this.clientCheckout.giftCard = this.giftCardRedeemObject
+        }
+        if (this.showEmailForm) {
+          this.clientCheckout.sendEmail = true;
         }
         this.clientCheckout.paymentMethodId = this.selectedPaymentMethod.paymentMethodId;
         if (this.clientCheckout.selectedCheckoutPackages[0].is_recurring && (this.clientCheckout.paymentMethodId == undefined || this.clientCheckout.paymentMethodId == "" )) {

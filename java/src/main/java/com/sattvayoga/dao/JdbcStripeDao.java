@@ -116,6 +116,12 @@ public class JdbcStripeDao implements StripeDao {
             List<PackageDetails> listOfPackagesBeingPurchased = clientCheckoutDTO.getSelectedCheckoutPackages();
             List<Integer> packagePurchaseIDs = new ArrayList<>();
 
+            String packagesBeingBoughtForEmail = "";
+            for (int i = 0; i < clientCheckoutDTO.getSelectedCheckoutPackages().size(); i++) {
+                PackageDetails currentPackage = clientCheckoutDTO.getSelectedCheckoutPackages().get(i);
+                packagesBeingBoughtForEmail += currentPackage.getDescription() + "\n";
+            }
+
             // Insert everything that was in the list into package purchase
             //  1. grab package purchase IDs and package description
             for (int i = 0; i < listOfPackagesBeingPurchased.size(); i++) {
@@ -129,7 +135,7 @@ public class JdbcStripeDao implements StripeDao {
                     checkoutItemDTO.setClient_id(clientCheckoutDTO.getClient_id());
                     checkoutItemDTO.setPackage_id(currentPackage.getPackage_id());
                     runningTotal += currentPackage.getPackage_cost().doubleValue();
-                    checkoutItemDTO.setTotal_amount_paid(currentPackage.getPackage_cost());
+                    checkoutItemDTO.setTotal_amount_paid(BigDecimal.valueOf(0));
                     checkoutItemDTO.setDiscount(0);
                     checkoutItemDTO.setPaymentId("comp/free");
 
@@ -152,7 +158,7 @@ public class JdbcStripeDao implements StripeDao {
                     packagePurchase.setIs_monthly_renew(currentPackage.isIs_recurring());
 
                     runningTotal += currentPackage.getPackage_cost().doubleValue();
-                    packagePurchase.setTotal_amount_paid(currentPackage.getPackage_cost());
+                    packagePurchase.setTotal_amount_paid(BigDecimal.valueOf(0));
                     packagePurchase.setDiscount(BigDecimal.valueOf(0.0));
                     packagePurchase.setPaymentId("comp/free");
 
@@ -175,13 +181,50 @@ public class JdbcStripeDao implements StripeDao {
 
             // Insert into transactions table last
             //  1. Import serialized sale ID and package description, along with the type of payment that was used.
-            Transaction transation = new Transaction();
-            transation.setSale_id(saleId);
-            transation.setPayment_type("Comp/free");
-            transation.setPayment_amount(runningTotal);
-            transation.setClient_id(clientCheckoutDTO.getClient_id());
+            Transaction transaction = new Transaction();
+            transaction.setSale_id(saleId);
+            transaction.setPayment_type("Comp/free");
+            transaction.setPayment_amount(0);
+            transaction.setClient_id(clientCheckoutDTO.getClient_id());
 
-            transactionDao.createTransaction(transation);
+            transactionDao.createTransaction(transaction);
+
+
+            if (clientCheckoutDTO.getEmailForReceipt().length()>0 && clientCheckoutDTO.isSendEmail()) {
+                String saleDate = LocalDate.now().toString();
+                String firstName = clientDetailsDao.findClientByClientId(clientCheckoutDTO.getClient_id()).getFirst_name();
+                String paymentType = "Comp/Free";
+                String subject = "Receipt for Your Sattva Yoga Center LLC Purchase";
+                String subTotal = "$0.00";
+                String tax = "$0.00";
+                String total = "$0.00";
+                String paymentDetails = "<Payment Method>" + "\t" + "<Amount>" + "\n" +
+                                 paymentType + "\t" + "$" + runningTotal + "\n" + "\n" + "\t" + "Customer Copy" + "\n";
+                String body = "Dear, " + firstName + "\n" +
+                        "Thank you for shopping at our store. Below is your purchase receipt; please keep a copy for your records." + "\n" +
+                        "Sale Date:" + "\t" + saleDate + "\n" +
+                        "Sale ID:" + "\t" + saleId + "\n" +
+                        packagesBeingBoughtForEmail + "\n" +
+                        "Subtotal: " + subTotal + "\n" +
+                        "Tax: " + tax + "\n" +
+                        "Total: " + total + "\n" +
+                        paymentDetails + "\n" +
+                        "We appreciate your business! When you in come in for a class, please bring a yoga mat and arrive on time." + "\n" +
+                        "Please retain this receipt for your records. Thank you!" + "\n" +
+                        "If you have any additional questions, then please feel free to contact us using the email or phone number listed below." + "\n" + "\n" +
+                        "Thank you!" + "\n" +
+                        "Sattva Yoga Center LLC" + "\n" +
+                        "Web: http://www.sattva-yoga-center.com" + "\n" +
+                        "Phone: (313)-274-3995";
+
+                // send email
+                try {
+                    senderService.sendEmail(clientCheckoutDTO.getEmailForReceipt(), subject, body);
+                } catch (Throwable e) {
+                    System.out.println("Error sending comp/free email receipt");
+                }
+            }
+
             // Just return
             return "success";
         }
@@ -372,7 +415,7 @@ public class JdbcStripeDao implements StripeDao {
             boolean isPaymentKeyedStored = true;
             modifyMap(clientCheckoutDTO, metaDataMap, isPaymentKeyedStored);
 
-            if (clientCheckoutDTO.getEmailForReceipt().length()>0) {
+            if (clientCheckoutDTO.getEmailForReceipt().length()>0 && clientCheckoutDTO.isSendEmail()) {
                 PaymentIntentCreateParams paymentIntentCreateParams =
                         PaymentIntentCreateParams.builder()
                                 .setCurrency("usd")
@@ -423,7 +466,7 @@ public class JdbcStripeDao implements StripeDao {
             // This creates a payment intent
             PaymentIntent paymentIntent = PaymentIntent.create(paymentIntentCreateParams);
 
-            if (clientCheckoutDTO.getEmailForReceipt().length()>0) {
+            if (clientCheckoutDTO.getEmailForReceipt().length()>0 && clientCheckoutDTO.isSendEmail()) {
                 Map<String, Object> params = new HashMap<>();
                 params.put("receipt_email", clientCheckoutDTO.getEmailForReceipt());
                 paymentIntent = paymentIntent.update(params);

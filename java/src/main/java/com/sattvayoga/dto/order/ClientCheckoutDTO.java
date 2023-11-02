@@ -17,6 +17,7 @@ public class ClientCheckoutDTO {
     private String emailForReceipt;
     private boolean saveEmailGiftCardPurchase;
     private boolean saveEmailReceiptPurchase;
+    private boolean sendEmail;
     private String renewalDate;
     private String paymentMethodId;
     private boolean saveCard;
@@ -34,6 +35,14 @@ public class ClientCheckoutDTO {
         this.discount = discount;
         this.saveEmailGiftCardPurchase = saveEmail;
         this.renewalDate = renewalDate;
+    }
+
+    public boolean isSendEmail() {
+        return sendEmail;
+    }
+
+    public void setSendEmail(boolean sendEmail) {
+        this.sendEmail = sendEmail;
     }
 
     public int getCash() {

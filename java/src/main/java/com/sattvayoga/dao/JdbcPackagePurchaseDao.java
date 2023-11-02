@@ -227,7 +227,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         String sql = "UPDATE package_purchase SET classes_remaining = 0 " +
                 "WHERE package_purchase_id = ?;";
         if (packagePurchase.isUnlimited()) {
-            sql = "UPDATE package_purchase SET expiration_date = current_date - INTEGER '1' " +
+            sql = "UPDATE package_purchase SET expiration_date = current_date - INTEGER '1', activation_date = current_date - INTEGER '1' " +
                     "WHERE package_purchase_id = ?;";
         }
         return jdbcTemplate.update(sql, packagePurchase.getPackage_purchase_id())==1;
