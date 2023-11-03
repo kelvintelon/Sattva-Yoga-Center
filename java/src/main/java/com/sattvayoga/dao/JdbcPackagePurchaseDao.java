@@ -89,6 +89,26 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             if (getPackageDescriptionByPackageId(packagePurchase.getPackage_id()) != null) {
                 description = getPackageDescriptionByPackageId(packagePurchase.getPackage_id());
             }
+
+            int saleId = 0;
+            String sql2 = "SELECT sale_id FROM sales WHERE ? = ANY (packages_purchased_array);";
+            SqlRowSet result2 = jdbcTemplate.queryForRowSet(sql2, packagePurchase.getPackage_purchase_id());
+            if (result2.next()) {
+                saleId = result2.getInt("sale_id");
+            }
+
+            String paymentDescriptions = "";
+            String sql3 = "SELECT payment_type FROM transactions WHERE sale_id = ?";
+            if (saleId > 0) {
+                SqlRowSet result3 = jdbcTemplate.queryForRowSet(sql3, saleId);
+                while (result3.next()) {
+                    paymentDescriptions += result3.getString("payment_Type") + "/";
+                }
+            }
+            if (paymentDescriptions.length() > 0) {
+                paymentDescriptions = paymentDescriptions.substring(0,paymentDescriptions.length()-1);
+            }
+            packagePurchase.setPayment_description(paymentDescriptions);
             packagePurchase.setPackage_description(description);
             packagePurchase.setUnlimited(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
             allUserPackagePurchase.add(packagePurchase);
@@ -132,6 +152,26 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId, offset);
         while (result.next()) {
             PackagePurchase packagePurchase = mapRowToPackagePurchase(result);
+
+            int saleId = 0;
+            String sql2 = "SELECT sale_id FROM sales WHERE ? = ANY (packages_purchased_array);";
+            SqlRowSet result2 = jdbcTemplate.queryForRowSet(sql2, packagePurchase.getPackage_purchase_id());
+            if (result2.next()) {
+                saleId = result2.getInt("sale_id");
+            }
+
+            String paymentDescriptions = "";
+            String sql3 = "SELECT payment_type FROM transactions WHERE sale_id = ?";
+            if (saleId > 0) {
+                SqlRowSet result3 = jdbcTemplate.queryForRowSet(sql3, saleId);
+                while (result3.next()) {
+                    paymentDescriptions += result3.getString("payment_Type") + "/";
+                }
+            }
+            if (paymentDescriptions.length() > 0) {
+                paymentDescriptions = paymentDescriptions.substring(0,paymentDescriptions.length()-1);
+            }
+            packagePurchase.setPayment_description(paymentDescriptions);
 
             // set package description
             packagePurchase.setPackage_description(getPackageDescriptionByPackageId(packagePurchase.getPackage_id()));

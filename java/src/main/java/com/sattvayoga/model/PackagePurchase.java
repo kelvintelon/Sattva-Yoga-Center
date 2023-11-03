@@ -17,6 +17,7 @@ public class PackagePurchase {
     private boolean is_monthly_renew;
     private BigDecimal discount;
     private String package_description;
+    private String payment_description;
     private boolean unlimited;
     private int package_duration;
     private String paymentId;
@@ -56,6 +57,14 @@ public class PackagePurchase {
 
     public PackagePurchase() {
 
+    }
+
+    public String getPayment_description() {
+        return payment_description;
+    }
+
+    public void setPayment_description(String payment_description) {
+        this.payment_description = payment_description;
     }
 
     public String getPaymentId() {

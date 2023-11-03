@@ -598,6 +598,11 @@ export default {
           sortable: true,
         },
         {
+          text: "Payment",
+          value: "payment_description",
+          sortable: false,
+        },
+        {
           text: "Classes Remaning",
           value: "classes_remaining",
           sortable: true,
