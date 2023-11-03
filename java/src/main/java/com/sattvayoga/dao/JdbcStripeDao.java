@@ -165,7 +165,7 @@ public class JdbcStripeDao implements StripeDao {
 
                     int packagePurchaseId = packagePurchaseDao.createAdminPackagePurchase(packagePurchase);
                     PackagePurchase packagePurchase1 = packagePurchaseDao.getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseId);
-                    packagesBeingBoughtForEmail += currentPackage.getDescription() + " - $0.00 - " + "Expires on: " + packagePurchase1.getExpiration_date().toString();
+                    packagesBeingBoughtForEmail += currentPackage.getDescription() + " - $0.00 - " + "Expires on: " + packagePurchase1.getExpiration_date().toString() + "\n";
                     packagePurchaseIDs.add(packagePurchaseId);
 
                 }
