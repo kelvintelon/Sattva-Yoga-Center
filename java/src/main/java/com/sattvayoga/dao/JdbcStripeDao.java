@@ -104,6 +104,7 @@ public class JdbcStripeDao implements StripeDao {
 
         Reader readerResource = getReader();
 
+        String customer_id = getCustomerIdString(clientCheckoutDTO.getClient_id());
 //        boolean discountNeeded = determineDiscountNeeded(clientCheckoutDTO);
 
 //        PackageDetails firstPackageDetails = clientCheckoutDTO.getListOfPackages().get(0);
@@ -189,41 +190,15 @@ public class JdbcStripeDao implements StripeDao {
 
             transactionDao.createTransaction(transaction);
 
-
-            if (clientCheckoutDTO.getEmailForReceipt().length()>0 && clientCheckoutDTO.isSendEmail()) {
-                String saleDate = LocalDate.now().toString();
-                String firstName = clientDetailsDao.findClientByClientId(clientCheckoutDTO.getClient_id()).getFirst_name();
-                String paymentType = "Comp/Free";
-                String subject = "Receipt for Your Sattva Yoga Center LLC Purchase";
-                String subTotal = "$0.00";
-                String tax = "$0.00";
-                String total = "$0.00";
-                String paymentDetails = "<Payment Method>" + "\t" + "<Amount>" + "\n" +
-                                 paymentType + "\t" + "$" + runningTotal + "\n" + "\n" + "\t" + "Customer Copy" + "\n";
-                String body = "Dear, " + firstName + "\n" +
-                        "Thank you for shopping at our store. Below is your purchase receipt; please keep a copy for your records." + "\n" +
-                        "Sale Date:" + "\t" + saleDate + "\n" +
-                        "Sale ID:" + "\t" + saleId + "\n" +
-                        packagesBeingBoughtForEmail + "\n" +
-                        "Subtotal: " + subTotal + "\n" +
-                        "Tax: " + tax + "\n" +
-                        "Total: " + total + "\n" +
-                        paymentDetails + "\n" +
-                        "We appreciate your business! When you in come in for a class, please bring a yoga mat and arrive on time." + "\n" +
-                        "Please retain this receipt for your records. Thank you!" + "\n" +
-                        "If you have any additional questions, then please feel free to contact us using the email or phone number listed below." + "\n" + "\n" +
-                        "Thank you!" + "\n" +
-                        "Sattva Yoga Center LLC" + "\n" +
-                        "Web: http://www.sattva-yoga-center.com" + "\n" +
-                        "Phone: (313)-274-3995";
-
-                // send email
-                try {
-                    senderService.sendEmail(clientCheckoutDTO.getEmailForReceipt(), subject, body);
-                } catch (Throwable e) {
-                    System.out.println("Error sending comp/free email receipt");
-                }
-            }
+            String saleDate = LocalDate.now().toString();
+            String firstName = clientDetailsDao.findClientByClientId(clientCheckoutDTO.getClient_id()).getFirst_name();
+            String paymentType = "Comp/Free";
+            String subject = "Receipt for Your Sattva Yoga Center LLC Purchase";
+            String subTotal = "$0.00";
+            String tax = "$0.00";
+            String total = "$0.00";
+            String usedPaymentTypes = paymentType + "\t" + "$" + runningTotal + "\n";
+            sendEmailReceipt(clientCheckoutDTO, packagesBeingBoughtForEmail, saleId, saleDate, firstName, subject, subTotal, tax, total, usedPaymentTypes);
 
             // Just return
             return "success";
@@ -246,6 +221,17 @@ public class JdbcStripeDao implements StripeDao {
                 GiftCard originalGiftCard = packagePurchaseDao.retrieveGiftCard(giftCode);
 
                 packagePurchaseDao.updateGiftCard(originalGiftCard, clientCheckoutDTO.getClient_id(), giftAmountUsed);
+            }
+
+            String packagesBeingBoughtForEmail = "";
+            for (int i = 0; i < clientCheckoutDTO.getSelectedCheckoutPackages().size(); i++) {
+                PackageDetails currentPackage = clientCheckoutDTO.getSelectedCheckoutPackages().get(i);
+                packagesBeingBoughtForEmail += currentPackage.getDescription() + "\n";
+            }
+            packagesBeingBoughtForEmail += "\n";
+
+            if (runningDiscountAmount > 0) {
+                packagesBeingBoughtForEmail += "Discount: $" + runningDiscountAmount + "\n";
             }
 
             // Insert everything that was in the list into package purchase
@@ -400,12 +386,30 @@ public class JdbcStripeDao implements StripeDao {
                 transactionDao.createTransaction(transaction);
             }
 
+            String saleDate = LocalDate.now().toString();
+            String firstName = clientDetailsDao.findClientByClientId(clientCheckoutDTO.getClient_id()).getFirst_name();
+            String subject = "Receipt for Your Sattva Yoga Center LLC Purchase";
+            String subTotal = "$" + (clientCheckoutDTO.getCash() + clientCheckoutDTO.getCheck() + giftAmountUsed) + ".00";
+            String tax = "$0.00";
+            String total = "$" + (clientCheckoutDTO.getCash() + clientCheckoutDTO.getCheck() + giftAmountUsed) + ".00";
+            String usedPaymentTypes = "";
+            if (clientCheckoutDTO.getCash() > 0) {
+                usedPaymentTypes += "Cash" + "\t" + "$" + clientCheckoutDTO.getCash() + "\n";
+            }
+            if (clientCheckoutDTO.getCheck() > 0) {
+                usedPaymentTypes += "Check" + "\t" + "$" + clientCheckoutDTO.getCheck() + "\n";
+            }
+            if (isGiftCardUsed) {
+                usedPaymentTypes += "Gift Card Code" + "\t" + "$" + giftAmountUsed + "\n";
+            }
+            //paymentType + "\t" + "$" + runningTotal + "\n";
+            sendEmailReceipt(clientCheckoutDTO, packagesBeingBoughtForEmail, saleId, saleDate, firstName, subject, subTotal, tax, total, usedPaymentTypes);
+
+
             return "success";
         }
         if (clientCheckoutDTO.getPaymentMethodId() != null && clientCheckoutDTO.getPaymentMethodId().length() > 0) {
 
-
-            String customer_id = getCustomerIdString(clientCheckoutDTO.getClient_id());
 
             String returnUrl = baseURL + "clientPackageManagement";
 
@@ -452,8 +456,6 @@ public class JdbcStripeDao implements StripeDao {
             }
             return "Success";
         } else {
-
-            String customer_id = getCustomerIdString(clientCheckoutDTO.getClient_id());
 
             Map<String, String> metaDataMap = new HashMap<>();
             metaDataMap.put("process", "admin");
@@ -707,6 +709,37 @@ public class JdbcStripeDao implements StripeDao {
 //
 //
 //        }
+    }
+
+    private void sendEmailReceipt(ClientCheckoutDTO clientCheckoutDTO, String packagesBeingBoughtForEmail, int saleId, String saleDate, String firstName, String subject, String subTotal, String tax, String total, String usedPaymentTypes) {
+        if (clientCheckoutDTO.getEmailForReceipt().length()>0 && clientCheckoutDTO.isSendEmail()) {
+
+            String paymentDetails = "<Payment Method>" + "\t" + "<Amount>" + "\n" +
+                    usedPaymentTypes + "\n" + "\n" + "\t" + "Customer Copy" + "\n";
+            String body = "Dear, " + firstName + "\n" +
+                    "Thank you for shopping at our store. Below is your purchase receipt; please keep a copy for your records." + "\n" +
+                    "Sale Date:" + "\t" + saleDate + "\n" +
+                    "Sale ID:" + "\t" + saleId + "\n" +
+                    packagesBeingBoughtForEmail + "\n" +
+                    "Subtotal: " + subTotal + "\n" +
+                    "Tax: " + tax + "\n" +
+                    "Total: " + total + "\n" + "\n" +
+                    paymentDetails + "\n" +
+                    "We appreciate your business! When you in come in for a class, please bring a yoga mat and arrive on time." + "\n" +
+                    "Please retain this receipt for your records. Thank you!" + "\n" +
+                    "If you have any additional questions, then please feel free to contact us using the email or phone number listed below." + "\n" + "\n" +
+                    "Thank you!" + "\n" +
+                    "Sattva Yoga Center LLC" + "\n" +
+                    "Web: http://www.sattva-yoga-center.com" + "\n" +
+                    "Phone: (313)-274-3995";
+
+            // send email
+            try {
+                senderService.sendEmail(clientCheckoutDTO.getEmailForReceipt(), subject, body);
+            } catch (Throwable e) {
+                System.out.println("Error sending comp/free email receipt");
+            }
+        }
     }
 
     private void createCancelAtTimestampFromIterations(ClientCheckoutDTO clientCheckoutDTO, PackageDetails firstPackageDetails, Map<String, Object> subscriptionParams) {
