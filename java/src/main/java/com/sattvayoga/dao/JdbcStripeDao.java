@@ -118,10 +118,10 @@ public class JdbcStripeDao implements StripeDao {
             List<Integer> packagePurchaseIDs = new ArrayList<>();
 
             String packagesBeingBoughtForEmail = "";
-            for (int i = 0; i < clientCheckoutDTO.getSelectedCheckoutPackages().size(); i++) {
-                PackageDetails currentPackage = clientCheckoutDTO.getSelectedCheckoutPackages().get(i);
-                packagesBeingBoughtForEmail += currentPackage.getDescription() + "\n";
-            }
+//            for (int i = 0; i < clientCheckoutDTO.getSelectedCheckoutPackages().size(); i++) {
+//                PackageDetails currentPackage = clientCheckoutDTO.getSelectedCheckoutPackages().get(i);
+//                packagesBeingBoughtForEmail += currentPackage.getDescription() + "\n";
+//            }
 
             // Insert everything that was in the list into package purchase
             //  1. grab package purchase IDs and package description
@@ -164,7 +164,8 @@ public class JdbcStripeDao implements StripeDao {
                     packagePurchase.setPaymentId("comp/free");
 
                     int packagePurchaseId = packagePurchaseDao.createAdminPackagePurchase(packagePurchase);
-
+                    PackagePurchase packagePurchase1 = packagePurchaseDao.getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseId);
+                    packagesBeingBoughtForEmail += currentPackage.getDescription() + " - $0.00 - " + "Expires on: " + packagePurchase1.getExpiration_date().toString();
                     packagePurchaseIDs.add(packagePurchaseId);
 
                 }
@@ -224,15 +225,11 @@ public class JdbcStripeDao implements StripeDao {
             }
 
             String packagesBeingBoughtForEmail = "";
-            for (int i = 0; i < clientCheckoutDTO.getSelectedCheckoutPackages().size(); i++) {
-                PackageDetails currentPackage = clientCheckoutDTO.getSelectedCheckoutPackages().get(i);
-                packagesBeingBoughtForEmail += currentPackage.getDescription() + "\n";
-            }
-            packagesBeingBoughtForEmail += "\n";
+//            for (int i = 0; i < clientCheckoutDTO.getSelectedCheckoutPackages().size(); i++) {
+//                PackageDetails currentPackage = clientCheckoutDTO.getSelectedCheckoutPackages().get(i);
+//                packagesBeingBoughtForEmail += currentPackage.getDescription() + "\n";
+//            }
 
-            if (runningDiscountAmount > 0) {
-                packagesBeingBoughtForEmail += "Discount: $" + runningDiscountAmount + "\n";
-            }
 
             // Insert everything that was in the list into package purchase
             //  1. grab package purchase IDs and package description
@@ -291,6 +288,10 @@ public class JdbcStripeDao implements StripeDao {
 
                     packagePurchaseIDs.add(packagePurchaseId);
 
+                    PackagePurchase packagePurchase1 = packagePurchaseDao.getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseId);
+                    packagesBeingBoughtForEmail += currentPackage.getDescription() + " - $" + currentPackage.getPackage_cost() + " - " + "Expires on: " + packagePurchase1.getExpiration_date().toString();
+
+
                     try {
                         senderService.sendEmail(giftEmail,"Sattva Yoga Center Gift Card Code", "Your Gift Card code is: " + code + " . Please note: The Gift Card Code can only be redeemed in person. Once redeemed, it cannot be used by anyone else.");
                     } catch (Throwable e) {
@@ -346,6 +347,9 @@ public class JdbcStripeDao implements StripeDao {
 
                     packagePurchaseIDs.add(packagePurchaseId);
 
+                    PackagePurchase packagePurchase1 = packagePurchaseDao.getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseId);
+                    packagesBeingBoughtForEmail += currentPackage.getDescription() + " - $" + currentPackage.getPackage_cost() + " - " + "Expires on: " + packagePurchase1.getExpiration_date().toString();
+
                 }
 
             }
@@ -384,6 +388,12 @@ public class JdbcStripeDao implements StripeDao {
                 transaction.setClient_id(clientCheckoutDTO.getClient_id());
 
                 transactionDao.createTransaction(transaction);
+            }
+
+            packagesBeingBoughtForEmail += "\n";
+
+            if (clientCheckoutDTO.getDiscount() > 0) {
+                packagesBeingBoughtForEmail += "Discount: $" + clientCheckoutDTO.getDiscount() + "\n";
             }
 
             String saleDate = LocalDate.now().toString();
