@@ -157,7 +157,7 @@ public class JdbcStripeDao implements StripeDao {
                     packagePurchase.setPackage_id(currentPackage.getPackage_id());
                     packagePurchase.setClasses_remaining(currentPackage.getClasses_amount());
                     packagePurchase.setIs_monthly_renew(currentPackage.isIs_recurring());
-
+                    packagePurchase.setPackage_duration(currentPackage.getPackage_duration());
                     runningTotal += currentPackage.getPackage_cost().doubleValue();
                     packagePurchase.setTotal_amount_paid(BigDecimal.valueOf(0));
                     packagePurchase.setDiscount(BigDecimal.valueOf(0.0));
@@ -289,7 +289,7 @@ public class JdbcStripeDao implements StripeDao {
                     packagePurchaseIDs.add(packagePurchaseId);
 
                     PackagePurchase packagePurchase1 = packagePurchaseDao.getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseId);
-                    packagesBeingBoughtForEmail += currentPackage.getDescription() + " - $" + currentPackage.getPackage_cost() + " - " + "Expires on: " + packagePurchase1.getExpiration_date().toString();
+                    packagesBeingBoughtForEmail += currentPackage.getDescription() + " - $" + currentPackage.getPackage_cost() + " - " + "Expires on: " + packagePurchase1.getExpiration_date().toString()  + "\n";
 
 
                     try {
@@ -306,7 +306,7 @@ public class JdbcStripeDao implements StripeDao {
                     packagePurchase.setPackage_id(currentPackage.getPackage_id());
                     packagePurchase.setClasses_remaining(currentPackage.getClasses_amount());
                     packagePurchase.setIs_monthly_renew(currentPackage.isIs_recurring());
-
+                    packagePurchase.setPackage_duration(currentPackage.getPackage_duration());
                     if (runningDiscountAmount > 0) {
 
                         if (runningDiscountAmount - packagePrice <= 0) {
@@ -348,7 +348,7 @@ public class JdbcStripeDao implements StripeDao {
                     packagePurchaseIDs.add(packagePurchaseId);
 
                     PackagePurchase packagePurchase1 = packagePurchaseDao.getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseId);
-                    packagesBeingBoughtForEmail += currentPackage.getDescription() + " - $" + currentPackage.getPackage_cost() + " - " + "Expires on: " + packagePurchase1.getExpiration_date().toString();
+                    packagesBeingBoughtForEmail += currentPackage.getDescription() + " - $" + currentPackage.getPackage_cost() + " - " + "Expires on: " + packagePurchase1.getExpiration_date().toString() + "\n";
 
                 }
 

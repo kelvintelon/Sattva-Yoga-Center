@@ -450,7 +450,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             SqlRowSet results = jdbcTemplate.queryForRowSet(sql, checkoutItemDTO.getClient_id());
             if (results.next()) {
                 activationDate = results.getDate("expiration_date").toLocalDate();
-                activationDate.plusDays(1);
+                activationDate = activationDate.plusDays(1);
             } else {
                 activationDate = LocalDate.now();
             }
