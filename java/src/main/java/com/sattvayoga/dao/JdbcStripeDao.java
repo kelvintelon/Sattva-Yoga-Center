@@ -389,9 +389,9 @@ public class JdbcStripeDao implements StripeDao {
             String saleDate = LocalDate.now().toString();
             String firstName = clientDetailsDao.findClientByClientId(clientCheckoutDTO.getClient_id()).getFirst_name();
             String subject = "Receipt for Your Sattva Yoga Center LLC Purchase";
-            String subTotal = "$" + (clientCheckoutDTO.getCash() + clientCheckoutDTO.getCheck() + giftAmountUsed) + ".00";
+            String subTotal = "$" + (clientCheckoutDTO.getCash() + clientCheckoutDTO.getCheck() + giftAmountUsed;
             String tax = "$0.00";
-            String total = "$" + (clientCheckoutDTO.getCash() + clientCheckoutDTO.getCheck() + giftAmountUsed) + ".00";
+            String total = "$" + (clientCheckoutDTO.getCash() + clientCheckoutDTO.getCheck() + giftAmountUsed);
             String usedPaymentTypes = "";
             if (clientCheckoutDTO.getCash() > 0) {
                 usedPaymentTypes += "Cash" + "\t" + "$" + clientCheckoutDTO.getCash() + "\n";
@@ -719,7 +719,7 @@ public class JdbcStripeDao implements StripeDao {
             String body = "Dear, " + firstName + "\n" +
                     "Thank you for shopping at our store. Below is your purchase receipt; please keep a copy for your records." + "\n" +
                     "Sale Date:" + "\t" + saleDate + "\n" +
-                    "Sale ID:" + "\t" + saleId + "\n" +
+                    "Sale ID:" + "\t" + saleId + "\n" + "\n" +
                     packagesBeingBoughtForEmail + "\n" +
                     "Subtotal: " + subTotal + "\n" +
                     "Tax: " + tax + "\n" +
@@ -731,7 +731,9 @@ public class JdbcStripeDao implements StripeDao {
                     "Thank you!" + "\n" +
                     "Sattva Yoga Center LLC" + "\n" +
                     "Web: http://www.sattva-yoga-center.com" + "\n" +
-                    "Phone: (313)-274-3995";
+                    "Phone: (313)-274-3995" + "\n" + "\n" +
+                    "835 Mason Street, Suite B120, Dearborn, MI 48124" + "\n" +
+                    "info@sattva-yoga-center.com";
 
             // send email
             try {

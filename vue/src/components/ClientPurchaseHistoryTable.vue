@@ -213,10 +213,6 @@ export default {
           value: "classes_remaining",
           sortable: true,
         },
-        {
-          text: "Monthly Renewal?",
-          value: "is_monthly_renew",
-        },
       ],
       page: 1,
       pageSize: 10,
