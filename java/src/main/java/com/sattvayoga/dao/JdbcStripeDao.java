@@ -389,7 +389,7 @@ public class JdbcStripeDao implements StripeDao {
             String saleDate = LocalDate.now().toString();
             String firstName = clientDetailsDao.findClientByClientId(clientCheckoutDTO.getClient_id()).getFirst_name();
             String subject = "Receipt for Your Sattva Yoga Center LLC Purchase";
-            String subTotal = "$" + (clientCheckoutDTO.getCash() + clientCheckoutDTO.getCheck() + giftAmountUsed;
+            String subTotal = "$" + (clientCheckoutDTO.getCash() + clientCheckoutDTO.getCheck() + giftAmountUsed);
             String tax = "$0.00";
             String total = "$" + (clientCheckoutDTO.getCash() + clientCheckoutDTO.getCheck() + giftAmountUsed);
             String usedPaymentTypes = "";
