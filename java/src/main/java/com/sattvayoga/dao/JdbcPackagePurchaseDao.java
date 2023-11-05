@@ -149,7 +149,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         double runningTotal = 0;
         double runningDiscount = 0;
 
-        String usedPaymentTypes = "";
+
         for (int i = 0; i < listOfPackagesPurchased.size(); i++) {
             PackagePurchase currentPackage = listOfPackagesPurchased.get(i);
             runningTotal += currentPackage.getTotal_amount_paid().doubleValue();
@@ -162,8 +162,8 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         String total = "$" + runningTotal;
 
         boolean compFree = false;
-
-        setUsedPaymentTypes(usedPaymentTypes, compFree, runningTotal, saleId);
+        String usedPaymentTypesPrototype = "";
+        String usedPaymentTypes = setUsedPaymentTypes(usedPaymentTypesPrototype, compFree, runningTotal, saleId);
 
         String packagesBeingBoughtForEmail = "";
 
@@ -189,12 +189,45 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         ClientCheckoutDTO clientCheckoutDTO = new ClientCheckoutDTO();
         clientCheckoutDTO.setSendEmail(true);
         clientCheckoutDTO.setEmailForReceipt(resendEmailDTO.getEmail());
-        stripeDao.sendEmailReceipt(clientCheckoutDTO, packagesBeingBoughtForEmail, saleId, saleDate, firstName, subject, subTotal, tax, total, usedPaymentTypes);
+        sendEmailReceipt(clientCheckoutDTO, packagesBeingBoughtForEmail, saleId, saleDate, firstName, subject, subTotal, tax, total, usedPaymentTypes);
 
         // You need all the payment methods that were used, plug in the sale id into the transaction table to find that out.
     }
 
-    private void setUsedPaymentTypes(String usedPaymentTypes, boolean compFree, double runningTotal, int saleId) {
+    public void sendEmailReceipt(ClientCheckoutDTO clientCheckoutDTO, String packagesBeingBoughtForEmail, int saleId, String saleDate, String firstName, String subject, String subTotal, String tax, String total, String usedPaymentTypes) {
+        if (clientCheckoutDTO.getEmailForReceipt().length()>0 && clientCheckoutDTO.isSendEmail()) {
+
+            String paymentDetails = "<Payment Method>" + "\t" + "<Amount>" + "\n" +
+                    usedPaymentTypes + "\n" + "\n" + "\t" + "Customer Copy" + "\n";
+            String body = "Dear, " + firstName + "\n" +
+                    "Thank you for shopping at our store. Below is your purchase receipt; please keep a copy for your records." + "\n" +
+                    "Sale Date:" + "\t" + saleDate + "\n" +
+                    "Sale ID:" + "\t" + saleId + "\n" + "\n" +
+                    packagesBeingBoughtForEmail + "\n" +
+                    "Subtotal: " + subTotal + "\n" +
+                    "Tax: " + tax + "\n" +
+                    "Total: " + total + "\n" + "\n" +
+                    paymentDetails + "\n" +
+                    "We appreciate your business! When you in come in for a class, please bring a yoga mat and arrive on time." + "\n" +
+                    "Please retain this receipt for your records. Thank you!" + "\n" +
+                    "If you have any additional questions, then please feel free to contact us using the email or phone number listed below." + "\n" + "\n" +
+                    "Thank you!" + "\n" +
+                    "Sattva Yoga Center LLC" + "\n" +
+                    "Web: http://www.sattva-yoga-center.com" + "\n" +
+                    "Phone: (313)-274-3995" + "\n" + "\n" +
+                    "835 Mason Street, Suite B120, Dearborn, MI 48124" + "\n" +
+                    "info@sattva-yoga-center.com";
+
+            // send email
+            try {
+                senderService.sendEmail(clientCheckoutDTO.getEmailForReceipt(), subject, body);
+            } catch (Throwable e) {
+                System.out.println("Error sending comp/free email receipt");
+            }
+        }
+    }
+
+    private String setUsedPaymentTypes(String usedPaymentTypes, boolean compFree, double runningTotal, int saleId) {
         double cash = 0;
         double check = 0;
         double giftAmountUsed = 0;
@@ -252,6 +285,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         if (onlinePayment > 0) {
             usedPaymentTypes += "Online Payment" + "\t" + "$" + onlinePayment + "\n";
         }
+        return usedPaymentTypes;
     }
 
     private int retrieveSaleAndPackagesPurchased(PackagePurchase packagePurchase, int saleId, List<PackagePurchase> listOfPackagesPurchased) {

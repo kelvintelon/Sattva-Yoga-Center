@@ -82,6 +82,7 @@ public class PackagePurchaseController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping(value = "/resendEmail")
     public void resendEmail(@RequestBody ResendEmailDTO resendEmailDTO) {
         packagePurchaseDao.resendEmail(resendEmailDTO);
     }

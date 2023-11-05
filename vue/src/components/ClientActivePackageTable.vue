@@ -603,7 +603,7 @@ export default {
           sortable: false,
         },
         {
-          text: "Classes Remaning",
+          text: "Classes Remaining",
           value: "classes_remaining",
           sortable: true,
         },

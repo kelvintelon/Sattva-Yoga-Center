@@ -204,7 +204,7 @@
           <v-btn
             color="primary"
             text
-            @click="resendEmailToClient"
+            @click.stop="resendEmailToClient"
           >
             Send
           </v-btn>
@@ -250,7 +250,7 @@ export default {
           sortable: false,
         },
         {
-          text: "Classes Remaning",
+          text: "Classes Remaining",
           value: "classes_remaining",
           sortable: true,
         },
@@ -404,7 +404,7 @@ export default {
     this.$root.$refs.B = this;
 
     if (this.$store.state.user.username == "admin") {
-      this.headers.push({ text: "Edit", value: "actions", sortable: false });
+      this.headers.push({ text: "Actions", value: "actions", sortable: false });
        this.headers.unshift({ text: "Package ID", value: "package_purchase_id", sortable: true });
         this.headers.splice(-5, 0, { text: "Discount", value: "discount", sortable: false });
     }
@@ -419,10 +419,10 @@ export default {
     resendEmailToClient() {
       this.showEmailForm = false;
       packagePurchaseService.resendEmail(this.resendEmailObj).then((response) => {
-        if (response.status == 200) {
+        if (response.status == 201) {
           alert("Email sent")
         }
-      })
+      });
     },
     temporaryPageMethod() {
      
