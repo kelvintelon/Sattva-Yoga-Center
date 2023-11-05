@@ -137,7 +137,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         // Use the package_purchase_id for that.
         PackagePurchase packagePurchase = getPackagePurchaseObjectByPackagePurchaseId(resendEmailDTO.getPackage_purchase_id());
         ClientDetails clientDetails = clientDetailsDao.findClientByClientId(packagePurchase.getClient_id());
-        String saleDate = packagePurchase.getDate_purchased().toString();
+        String saleDate = packagePurchase.getDate_purchased().toString().split(" ")[0];
         String firstName = clientDetails.getFirst_name();
         String subject = "Receipt for Your Sattva Yoga Center LLC Purchase";
 
@@ -173,8 +173,9 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             double amountPaid = 0;
 
             if (!compFree) {
-                amountPaid = currentPackage.getTotal_amount_paid().doubleValue();
+                amountPaid = currentPackage.getTotal_amount_paid().doubleValue() + currentPackage.getDiscount().doubleValue();
             }
+
             packagesBeingBoughtForEmail += getPackageDescriptionByPackageId(currentPackage.getPackage_id()) + " - $" + amountPaid + " - " + "Expires on: " + currentPackage.getExpiration_date().toString() + "\n";
         }
 
