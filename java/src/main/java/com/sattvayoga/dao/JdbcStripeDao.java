@@ -721,7 +721,8 @@ public class JdbcStripeDao implements StripeDao {
 //        }
     }
 
-    private void sendEmailReceipt(ClientCheckoutDTO clientCheckoutDTO, String packagesBeingBoughtForEmail, int saleId, String saleDate, String firstName, String subject, String subTotal, String tax, String total, String usedPaymentTypes) {
+    @Override
+    public void sendEmailReceipt(ClientCheckoutDTO clientCheckoutDTO, String packagesBeingBoughtForEmail, int saleId, String saleDate, String firstName, String subject, String subTotal, String tax, String total, String usedPaymentTypes) {
         if (clientCheckoutDTO.getEmailForReceipt().length()>0 && clientCheckoutDTO.isSendEmail()) {
 
             String paymentDetails = "<Payment Method>" + "\t" + "<Amount>" + "\n" +

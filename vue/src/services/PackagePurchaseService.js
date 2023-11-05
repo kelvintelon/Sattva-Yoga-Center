@@ -22,6 +22,9 @@ export default {
     createPackagePurchase(packagePurchase) {
         return axios.post('/createPackagePurchase', packagePurchase)
     },
+    resendEmail(resendEmailObj) {
+        return axios.post('/resendEmail', resendEmailObj)
+    },
     expirePackage(packagePurchaseObject) {
         return axios.put(`/expirePackage`, packagePurchaseObject)
     },

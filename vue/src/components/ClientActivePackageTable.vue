@@ -473,7 +473,7 @@
                   <v-row v-if="showEmailForm">
                     <v-text-field class="mt-4"
                       v-model="clientCheckout.emailForReceipt"
-                      :counter="30"
+                    
                       label="Email for Receipt"
                     ></v-text-field>
                     <v-checkbox

@@ -1,6 +1,7 @@
 package com.sattvayoga.dao;
 
 import com.sattvayoga.dto.order.CheckoutItemDTO;
+import com.sattvayoga.dto.order.ResendEmailDTO;
 import com.sattvayoga.model.*;
 
 import java.util.List;
@@ -50,4 +51,6 @@ public interface PackagePurchaseDao {
     GiftCard retrieveGiftCard(String code);
 
     boolean updateGiftCard(GiftCard originalGiftCard, int clientId, double amountUsed);
+
+    void resendEmail(ResendEmailDTO resendEmailDTO);
 }

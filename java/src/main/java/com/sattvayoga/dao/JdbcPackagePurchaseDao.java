@@ -1,12 +1,17 @@
 package com.sattvayoga.dao;
 
 import com.sattvayoga.dto.order.CheckoutItemDTO;
+import com.sattvayoga.dto.order.ClientCheckoutDTO;
+import com.sattvayoga.dto.order.ResendEmailDTO;
 import com.sattvayoga.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 
+import java.sql.Array;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -123,6 +128,159 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         PaginatedListOfPurchasedPackages paginatedListOfPurchasedPackages = new PaginatedListOfPurchasedPackages(allUserPackagePurchase,count);
 
         return paginatedListOfPurchasedPackages;
+    }
+
+    @Override
+    public void resendEmail(ResendEmailDTO resendEmailDTO) {
+
+        // You need all objects that were purchased within the same order which is in the Sale table.
+        // Use the package_purchase_id for that.
+        PackagePurchase packagePurchase = getPackagePurchaseObjectByPackagePurchaseId(resendEmailDTO.getPackage_purchase_id());
+        ClientDetails clientDetails = clientDetailsDao.findClientByClientId(packagePurchase.getClient_id());
+        String saleDate = packagePurchase.getDate_purchased().toString();
+        String firstName = clientDetails.getFirst_name();
+        String subject = "Receipt for Your Sattva Yoga Center LLC Purchase";
+
+        int saleId = 0;
+
+        List<PackagePurchase> listOfPackagesPurchased = new ArrayList<>();
+        saleId = retrieveSaleAndPackagesPurchased(packagePurchase, saleId, listOfPackagesPurchased);
+
+        double runningTotal = 0;
+        double runningDiscount = 0;
+
+        String usedPaymentTypes = "";
+        for (int i = 0; i < listOfPackagesPurchased.size(); i++) {
+            PackagePurchase currentPackage = listOfPackagesPurchased.get(i);
+            runningTotal += currentPackage.getTotal_amount_paid().doubleValue();
+            runningDiscount += currentPackage.getDiscount().doubleValue();
+
+        }
+
+        String subTotal = "$" + runningTotal;
+        String tax = "$0.00";
+        String total = "$" + runningTotal;
+
+        boolean compFree = false;
+
+        setUsedPaymentTypes(usedPaymentTypes, compFree, runningTotal, saleId);
+
+        String packagesBeingBoughtForEmail = "";
+
+        for (int i = 0; i < listOfPackagesPurchased.size(); i++) {
+            PackagePurchase currentPackage = listOfPackagesPurchased.get(i);
+
+            double amountPaid = 0;
+
+            if (!compFree) {
+                amountPaid = currentPackage.getTotal_amount_paid().doubleValue();
+            }
+            packagesBeingBoughtForEmail += getPackageDescriptionByPackageId(currentPackage.getPackage_id()) + " - $" + amountPaid + " - " + "Expires on: " + currentPackage.getExpiration_date().toString() + "\n";
+        }
+
+        packagesBeingBoughtForEmail += "\n";
+
+        if (runningDiscount > 0) {
+            packagesBeingBoughtForEmail += "Discount: $" + runningDiscount + "\n";
+        }
+
+
+        //paymentType + "\t" + "$" + runningTotal + "\n";
+        ClientCheckoutDTO clientCheckoutDTO = new ClientCheckoutDTO();
+        clientCheckoutDTO.setSendEmail(true);
+        clientCheckoutDTO.setEmailForReceipt(resendEmailDTO.getEmail());
+        stripeDao.sendEmailReceipt(clientCheckoutDTO, packagesBeingBoughtForEmail, saleId, saleDate, firstName, subject, subTotal, tax, total, usedPaymentTypes);
+
+        // You need all the payment methods that were used, plug in the sale id into the transaction table to find that out.
+    }
+
+    private void setUsedPaymentTypes(String usedPaymentTypes, boolean compFree, double runningTotal, int saleId) {
+        double cash = 0;
+        double check = 0;
+        double giftAmountUsed = 0;
+        double creditCardSwiped = 0;
+        double creditCardKeyedStored = 0;
+        double onlinePayment = 0;
+
+        // Get all Transactions by this point
+        String sql = "SELECT * FROM transactions WHERE sale_id = ?";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, saleId);
+
+        while (result.next()) {
+            if (result.getString("payment_type").equalsIgnoreCase("Comp/Free")) {
+                compFree = true;
+            }
+            if (result.getString("payment_type").equalsIgnoreCase("Cash")) {
+                cash = result.getDouble("payment_amount");
+            }
+            if (result.getString("payment_type").equalsIgnoreCase("Check")) {
+                check = result.getDouble("payment_amount");
+            }
+            if (result.getString("payment_type").equalsIgnoreCase("Gift Card Code")) {
+                giftAmountUsed = result.getDouble("payment_amount");
+            }
+            if (result.getString("payment_type").equalsIgnoreCase("Credit Card Swiped")) {
+                creditCardSwiped = result.getDouble("payment_amount");
+            }
+            if (result.getString("payment_type").equalsIgnoreCase("Credit Card Keyed/Stored")) {
+                creditCardKeyedStored = result.getDouble("payment_amount");
+            }
+            if (result.getString("payment_type").equalsIgnoreCase("Online Payment")) {
+                onlinePayment = result.getDouble("payment_amount");
+            }
+        }
+
+        if (compFree) {
+            usedPaymentTypes += "Comp/Free" + "\t" + "$" + runningTotal + "\n";
+        }
+
+        if (cash > 0) {
+            usedPaymentTypes += "Cash" + "\t" + "$" + cash + "\n";
+        }
+        if (check > 0) {
+            usedPaymentTypes += "Check" + "\t" + "$" + check + "\n";
+        }
+        if (giftAmountUsed > 0) {
+            usedPaymentTypes += "Gift Card Code" + "\t" + "$" + giftAmountUsed + "\n";
+        }
+        if (creditCardSwiped > 0) {
+            usedPaymentTypes += "Credit Card Swiped" + "\t" + "$" + creditCardSwiped + "\n";
+        }
+        if (creditCardKeyedStored > 0) {
+            usedPaymentTypes += "Credit Card Keyed/Stored" + "\t" + "$" + creditCardKeyedStored + "\n";
+        }
+        if (onlinePayment > 0) {
+            usedPaymentTypes += "Online Payment" + "\t" + "$" + onlinePayment + "\n";
+        }
+    }
+
+    private int retrieveSaleAndPackagesPurchased(PackagePurchase packagePurchase, int saleId, List<PackagePurchase> listOfPackagesPurchased) {
+        String sql = "SELECT * FROM sales WHERE ? = ANY (packages_purchased_array);";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, packagePurchase.getPackage_purchase_id());
+        if (result.next()) {
+            saleId = result.getInt("sale_id");
+
+            Object newObject = result.getObject("packages_purchased_array");
+
+            if (newObject instanceof Array) {
+                Array tempArray = (Array) newObject;
+                Object[] tempObjectArray = new Object[0];
+                try {
+                    tempObjectArray = (Object[]) tempArray.getArray();
+                } catch (SQLException e) {
+                    System.out.println("Error trying to retrieve array of packages purchased");
+                }
+                int[] packagePurchaseArray = new int[tempObjectArray.length];
+                for (int i = 0; i < tempObjectArray.length; i++) {
+                    packagePurchaseArray[i] = Integer.valueOf(tempObjectArray[i].toString());
+                }
+                for (int i = 0; i < packagePurchaseArray.length; i++) {
+                    PackagePurchase packagePurchaseFromSale = getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseArray[i]);
+                    listOfPackagesPurchased.add(packagePurchaseFromSale);
+                }
+            }
+        }
+        return saleId;
     }
 
     @Override
@@ -298,6 +456,8 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         String sql = "UPDATE gift_card SET amount = ? , client_id = ? WHERE code ILIKE ?";
         return jdbcTemplate.update(sql, newAmount, clientId, originalGiftCard.getCode())==1;
     }
+
+
 
     //helper
     @Override

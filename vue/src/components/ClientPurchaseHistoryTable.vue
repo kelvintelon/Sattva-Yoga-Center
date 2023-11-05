@@ -145,6 +145,7 @@
         v-if="$store.state.user.username == 'admin'"
       >
         <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
+        <v-icon small class="mr-2" @click.stop="resendEmailForm(item)"> mdi-email </v-icon>
       </template>
     </v-data-table>
     <v-row>
@@ -176,6 +177,41 @@
         size="70"
       ></v-progress-circular>
     </v-overlay>
+    <v-row justify="center">
+    <v-dialog
+      v-model="showEmailForm"
+      persistent
+      max-width="400"
+    >
+      <v-card>
+        <v-card-title class="text-h5">
+          Resend Email
+        </v-card-title>
+        <v-text-field class="ml-4 mr-4"
+                      v-model="resendEmailObj.email"
+                     
+                      label="Email for Receipt"
+                    ></v-text-field>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="primary"
+            text
+            @click="showEmailForm = false"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="primary"
+            text
+            @click="resendEmailToClient"
+          >
+            Send
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </v-row>
   </v-container>
 </template>
 
@@ -350,6 +386,8 @@ export default {
     ],
     loading: true,
     overlay: false,
+    showEmailForm: false,
+    resendEmailObj : {},
     };
   },
   watch: {
@@ -373,6 +411,19 @@ export default {
     
   },
   methods: {
+    resendEmailForm(item) {
+      this.showEmailForm = true;
+      this.resendEmailObj.package_purchase_id = item.package_purchase_id;
+      this.resendEmailObj.email = this.$store.state.clientDetails.email;
+    },
+    resendEmailToClient() {
+      this.showEmailForm = false;
+      packagePurchaseService.resendEmail(this.resendEmailObj).then((response) => {
+        if (response.status == 200) {
+          alert("Email sent")
+        }
+      })
+    },
     temporaryPageMethod() {
      
       this.getPackageHistoryTable();

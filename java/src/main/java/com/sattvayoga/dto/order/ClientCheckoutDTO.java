@@ -37,6 +37,10 @@ public class ClientCheckoutDTO {
         this.renewalDate = renewalDate;
     }
 
+    public ClientCheckoutDTO() {
+
+    }
+
     public boolean isSendEmail() {
         return sendEmail;
     }

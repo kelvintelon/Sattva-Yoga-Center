@@ -3,6 +3,7 @@ package com.sattvayoga.controller;
 import com.sattvayoga.dao.ClientDetailsDao;
 import com.sattvayoga.dao.PackagePurchaseDao;
 import com.sattvayoga.dao.UserDao;
+import com.sattvayoga.dto.order.ResendEmailDTO;
 import com.sattvayoga.model.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -79,6 +80,11 @@ public class PackagePurchaseController {
         packagePurchaseDao.createPackagePurchase(packagePurchase);
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN')")
+    public void resendEmail(@RequestBody ResendEmailDTO resendEmailDTO) {
+        packagePurchaseDao.resendEmail(resendEmailDTO);
+    }
 
 
     @RequestMapping(value= "/userPackagePurchaseListByUserId/{userId}", method = RequestMethod.GET)
