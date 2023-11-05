@@ -21,12 +21,12 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
     @Override
     public boolean createPackage(PackageDetails packageDetails) {
         String sql = "INSERT INTO package_details (description, package_cost, " +
-                "classes_amount, package_duration, unlimited, is_visible_online, is_recurring) VALUES " +
-                "(?, ?, ?, ?, ?, ?, ?)";
+                "classes_amount, package_duration, unlimited, is_visible_online, is_recurring, active) VALUES " +
+                "(?, ?, ?, ?, ?, ?, ?, ?)";
 
         return jdbcTemplate.update(sql, packageDetails.getDescription(), packageDetails.getPackage_cost(),
                 packageDetails.getClasses_amount(), packageDetails.getPackage_duration(),
-                packageDetails.isUnlimited(), packageDetails.isIs_visible_online(), packageDetails.isIs_recurring()) == 1;
+                packageDetails.isUnlimited(), packageDetails.isIs_visible_online(), packageDetails.isIs_recurring(), packageDetails.isActive()) == 1;
     }
 
 
@@ -77,12 +77,13 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
                 "package_duration = ? , " +
                 "unlimited = ? , " +
                 "is_visible_online = ? , " +
+                "active = ? , " +
                 "is_recurring = ? " +
                 "WHERE package_id = ?";
         return jdbcTemplate.update(sql, packageDetails.getPackage_id(), packageDetails.getDescription(),
                 packageDetails.getPackage_cost(), packageDetails.getClasses_amount(),
                 packageDetails.getPackage_duration(), packageDetails.isUnlimited(),
-                packageDetails.isIs_visible_online(), packageDetails.isIs_recurring(), packageDetails.getPackage_id())==1;
+                packageDetails.isIs_visible_online(), packageDetails.isActive(), packageDetails.isIs_recurring(), packageDetails.getPackage_id())==1;
    }
 
     @Override
@@ -100,7 +101,7 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
     public List<PackageDetails> getAllPublicPackages() {
         List<PackageDetails> allPackages = new ArrayList<>();
 
-        String sql = "SELECT * FROM package_details WHERE is_visible_online = TRUE;";
+        String sql = "SELECT * FROM package_details WHERE is_visible_online = TRUE AND active = TRUE;";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
         while (result.next()) {
             PackageDetails packageDetails = mapRowToPackage(result);

@@ -178,9 +178,14 @@
 
                         <v-checkbox
                           v-model="editedItem.unlimited"
-                          label="Subscription?"
+                          label="Unlimited?"
                           required
                           @change="onSubscriptionBooleanChange"
+                        ></v-checkbox>
+                        <v-checkbox
+                          v-model="editedItem.active"
+                          label="Active?"
+                          required
                         ></v-checkbox>
                         <!-- <v-checkbox v-if="toggleRecurring || editedItem.unlimited"
                           v-model="editedItem.is_recurring"
