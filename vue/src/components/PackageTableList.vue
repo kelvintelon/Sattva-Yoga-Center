@@ -5,7 +5,7 @@
         :headers="headers"
         :items="packages"
         class="elevation-5"
-        sort-by="package_id"
+        sort-by="package_order"
         dense
       >
         <template v-slot:top>
@@ -65,7 +65,6 @@
                           required
                           @change="onPackageDurationChange"
                         ></v-select>
-                        <br />
                         <v-text-field
                           v-model="packageDetails.package_cost"
                           class="mt-0 pt-0"
@@ -73,6 +72,14 @@
                           style="width: 60px"
                           label="Cost: $"
                           min="10"
+                        ></v-text-field>
+                        <v-text-field
+                          v-model="packageDetails.package_order"
+                          class="mt-0 pt-0"
+                          type="number"
+                          style="width: 60px"
+                          label="Order: "
+                          min="1"
                         ></v-text-field>
                         <v-checkbox
                           v-model="packageDetails.unlimited"
@@ -85,6 +92,7 @@
                           label="Active?"
                           required
                         ></v-checkbox>
+                        
                         <!-- <v-checkbox v-if="toggleRecurring || packageDetails.unlimited"
                           v-model="packageDetails.is_recurring"
                           label="Is this recurring?"
@@ -166,7 +174,7 @@
                           required
                           @change="onPackageDurationChange"
                         ></v-select>
-                        <br />
+                        
                         <v-text-field
                           v-model="editedItem.package_cost"
                           class="mt-0 pt-0"
@@ -175,7 +183,14 @@
                           label="Cost: $"
                           min="10"
                         ></v-text-field>
-
+                        <v-text-field
+                          v-model="editedItem.package_order"
+                          class="mt-0 pt-0"
+                          type="number"
+                          style="width: 60px"
+                          label="Order: "
+                          min="1"
+                        ></v-text-field>
                         <v-checkbox
                           v-model="editedItem.unlimited"
                           label="Unlimited?"
@@ -187,6 +202,7 @@
                           label="Active?"
                           required
                         ></v-checkbox>
+                        
                         <!-- <v-checkbox v-if="toggleRecurring || editedItem.unlimited"
                           v-model="editedItem.is_recurring"
                           label="Is this recurring?"
@@ -302,9 +318,14 @@ export default {
       headers: [
         {
           text: "Package ID",
-          align: "start",
           sortable: true,
           value: "package_id",
+        },
+        {
+          text: "Order",
+          align: "start",
+          sortable: true,
+          value: "package_order"
         },
         {
           text: "Package Description",
@@ -467,13 +488,23 @@ export default {
     },
     // ==================== this is form stuff vvvv
     checkCreateForm() {
+      let foundDuplicateName = false
+      for (let index = 0; index < this.packages.length; index++) {
+        let element = this.packages[index];
+        if (element.description == this.packageDetails.description) {
+          foundDuplicateName = true;
+        }
+      }
       if (this.packageDetails.description == "") {
         alert("Please fill out your form");
+      } else if (foundDuplicateName) {
+        alert("Package name already taken")
       } else {
         this.createFormIncomplete = false;
       }
     },
     checkEditForm() {
+      
       if (this.editedItem.description == "") {
         alert("Please fill out your form");
       } else {
@@ -481,7 +512,16 @@ export default {
       }
     },
     reset() {
-      this.$refs.form.reset();
+      this.packageDetails = {
+        description: "",
+        package_cost: 10,
+        classes_amount: 0,
+        package_duration: 0,
+        unlimited: false,
+        active: true,
+        is_visible_online: true,
+        is_recurring: false,
+      }
     },
 
     submit() {
@@ -532,6 +572,7 @@ export default {
   watch: {
     dialog(val) {
       val || this.close();
+      this.packageDetails.package_order = this.packages.length+1;
     },
     dialogDelete(val) {
       val || this.closeDelete();

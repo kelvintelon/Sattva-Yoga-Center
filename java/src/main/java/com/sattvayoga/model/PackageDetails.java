@@ -16,6 +16,8 @@ public class PackageDetails {
 
     private boolean active;
 
+    private int package_order;
+
     public PackageDetails(int package_id, String description, BigDecimal package_cost, int classes_amount, int package_duration, boolean unlimited, boolean is_visible_online, boolean is_recurring) {
         this.package_id = package_id;
         this.description = description;
@@ -28,6 +30,14 @@ public class PackageDetails {
     }
 
     public PackageDetails() {
+    }
+
+    public int getPackage_order() {
+        return package_order;
+    }
+
+    public void setPackage_order(int package_order) {
+        this.package_order = package_order;
     }
 
     public boolean isActive() {

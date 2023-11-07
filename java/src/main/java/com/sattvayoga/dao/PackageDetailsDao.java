@@ -6,11 +6,13 @@ import java.util.List;
 
 public interface PackageDetailsDao {
 
-    boolean createPackage(PackageDetails packageDetails);
+    void createPackage(PackageDetails packageDetails);
 
     List<PackageDetails> getAllPackages();
 
-    boolean updatePackage(PackageDetails packageDetails);
+    void updateSinglePackage(PackageDetails packageDetails);
+
+    void updatePackages(PackageDetails packageDetails);
 
     boolean deletePackage(int packageId);
 

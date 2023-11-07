@@ -90,6 +90,12 @@ This controller contains the `/login` and `/register` routes and works with the 
 The authentication controller uses the `JdbcUserDao` to read and write data from the users table.
 
 
+## Stripe
+Download the Stripe CLI and follow the instructions they have for Windows, where you set the path of the download into the system's environment variables. 
+To run locally make sure you have a stripe test key that works within the SetStripeKey method in JdbcStripeDao. 
+A valid test reader identification string in getReader method. 
+And that you run the something like the following so that Stripe listens to events in the WebHookController: stripe listen --forward-to localhost:9000/webhook
+
 ## Testing
 
 

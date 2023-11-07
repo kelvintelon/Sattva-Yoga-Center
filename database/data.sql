@@ -13,16 +13,14 @@ INSERT INTO class_details (is_repeating, start_time, date_range, class_duration,
 INSERT INTO class_details (is_repeating, start_time, date_range, class_duration, is_paid, class_description) VALUES (true,'05:45 PM','{Mon,Tue,Wed,Thu,Fri}',60,false,'All Levels');
 INSERT INTO class_details (is_repeating, start_time, date_range, class_duration, is_paid, class_description) VALUES (true,'07:15 PM','{Mon,Tue,Wed,Thu}',60,false,'All Levels');
 
-INSERT INTO package_details (description,package_cost,classes_amount,package_duration,unlimited,is_visible_online,is_recurring, active) VALUES ('New Client First Class',10,1,0,false,true,false,true);
-INSERT INTO package_details (description,package_cost,classes_amount,package_duration,unlimited,is_visible_online,is_recurring, active) VALUES ('New Client First Month Package',40,0,1,true,true,false,true);
-INSERT INTO package_details (description,package_cost,classes_amount,package_duration,unlimited,is_visible_online,is_recurring, active) VALUES ('1 Class',14,1,0,false,true,false,true);
-INSERT INTO package_details (description,package_cost,classes_amount,package_duration,unlimited,is_visible_online,is_recurring, active) VALUES ('10 Class Package',120,10,0,false,true,false,true);
-INSERT INTO package_details (description,package_cost,classes_amount,package_duration,unlimited,is_visible_online,is_recurring, active) VALUES ('20 Class Package',220,20,0,false,true,false,true);
--- INSERT INTO package_details (description,package_cost,classes_amount,package_duration,unlimited,is_visible_online,is_recurring, active) VALUES ('One Month Subscription',95,0,1,true,true,true,true);
--- INSERT INTO package_details (description,package_cost,classes_amount,package_duration,unlimited,is_visible_online,is_recurring, active) VALUES ('Six Month Subscription',540,0,6,true,true,true,true);
-INSERT INTO package_details (description,package_cost,classes_amount,package_duration,unlimited,is_visible_online,is_recurring, active) VALUES ('One Month Unlimited',95,0,1,true,true,false,true);
-INSERT INTO package_details (description,package_cost,classes_amount,package_duration,unlimited,is_visible_online,is_recurring, active) VALUES ('Six Month Unlimited',540,0,6,true,true,false,true);
-INSERT INTO package_details (description,package_cost,classes_amount,package_duration,unlimited,is_visible_online,is_recurring, active) VALUES ('Gift Card',10,0,0,false,true,false,true);
+INSERT INTO package_details (description,package_cost,classes_amount,package_duration,unlimited,is_visible_online,is_recurring, active, package_order) VALUES ('New Client First Class',10,1,0,false,true,false,true,1);
+INSERT INTO package_details (description,package_cost,classes_amount,package_duration,unlimited,is_visible_online,is_recurring, active, package_order) VALUES ('New Client First Month Package',40,0,1,true,true,false,true,2);
+INSERT INTO package_details (description,package_cost,classes_amount,package_duration,unlimited,is_visible_online,is_recurring, active, package_order) VALUES ('1 Class',14,1,0,false,true,false,true,3);
+INSERT INTO package_details (description,package_cost,classes_amount,package_duration,unlimited,is_visible_online,is_recurring, active, package_order) VALUES ('10 Class Package',120,10,0,false,true,false,true,4);
+INSERT INTO package_details (description,package_cost,classes_amount,package_duration,unlimited,is_visible_online,is_recurring, active, package_order) VALUES ('20 Class Package',220,20,0,false,true,false,true,5);
+INSERT INTO package_details (description,package_cost,classes_amount,package_duration,unlimited,is_visible_online,is_recurring, active, package_order) VALUES ('One Month Unlimited',95,0,1,true,true,false,true,6);
+INSERT INTO package_details (description,package_cost,classes_amount,package_duration,unlimited,is_visible_online,is_recurring, active, package_order) VALUES ('Six Month Unlimited',540,0,6,true,true,false,true,7);
+INSERT INTO package_details (description,package_cost,classes_amount,package_duration,unlimited,is_visible_online,is_recurring, active, package_order) VALUES ('Gift Card',10,0,0,false,true,false,true,8);
 
 
 INSERT INTO website_descriptions(location_name, description) VALUES ('News and Events', 'New Website Coming Soon 2023!');

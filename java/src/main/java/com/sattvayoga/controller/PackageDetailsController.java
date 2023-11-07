@@ -1,7 +1,6 @@
 package com.sattvayoga.controller;
 
 import com.sattvayoga.dao.PackageDetailsDao;
-import com.sattvayoga.model.ClassDetails;
 import com.sattvayoga.model.PackageDetails;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -40,7 +39,7 @@ public class PackageDetailsController {
     @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value= "/updatePackage", method = RequestMethod.PUT)
     public void updatePackage(@RequestBody PackageDetails packageDetails) {
-        packageDetailsDao.updatePackage(packageDetails);
+        packageDetailsDao.updatePackages(packageDetails);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

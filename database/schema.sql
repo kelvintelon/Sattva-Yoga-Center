@@ -86,7 +86,8 @@ CREATE TABLE package_details
 	unlimited			boolean 		NOT NULL, 
 	is_visible_online	boolean			NOT NULL,
 	is_recurring 		boolean			,
-	active				boolean			,	
+	active				boolean			,
+	package_order		int				,	
 	CONSTRAINT PK_package_details PRIMARY KEY (package_id)
 );
 
