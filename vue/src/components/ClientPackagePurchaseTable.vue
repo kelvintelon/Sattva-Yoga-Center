@@ -37,13 +37,15 @@
       :headers="headers"
       :items="packages"
       class="elevation-5"
+      sort-by="package_order"
     >
       <template v-slot:top>
         <v-toolbar flat>
           <v-container>
           <v-row>
-          <v-toolbar-title>Available Packages</v-toolbar-title>
+          <v-toolbar-title>Available Packages: {{packages.length}}</v-toolbar-title>
           <v-divider class="mx-4" inset vertical></v-divider>
+          
           <v-spacer v-if="$vuetify.breakpoint.mdAndUp"></v-spacer>
           <router-link to="/shoppingCart">
             <v-btn color="yellow" role="button">
