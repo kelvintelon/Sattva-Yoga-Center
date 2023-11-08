@@ -871,15 +871,17 @@ export default {
           this.showSaveCardCheckbox = false;
         }
       }
+      if (!foundGiftCard) {
+        
+        this.showGiftCardForm = false;
+        this.saveEmailForGiftCardCheckbox = false;
+      }
       if (runningTotal > this.returnTotal()) {
         this.showSaveRecurringPaymentCheckbox = true;
       } else {
         this.showSaveRecurringPaymentCheckbox = false;
       }
-      if (!foundGiftCard) {
-        this.showGiftCardForm = false;
-        this.saveEmailForGiftCardCheckbox = false;
-      }
+      
       if (!foundSubscription) {
         this.showRenewalDatePicker = false;
         this.showSaveCardCheckbox = true;
