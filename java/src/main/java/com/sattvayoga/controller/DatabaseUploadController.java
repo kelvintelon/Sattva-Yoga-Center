@@ -1,9 +1,7 @@
 package com.sattvayoga.controller;
 
-import com.sattvayoga.dao.ClientDetailsDao;
-import com.sattvayoga.dao.EventDao;
-import com.sattvayoga.dao.TeacherDetailsDao;
-import com.sattvayoga.dao.UserDao;
+import com.sattvayoga.dao.*;
+import com.sattvayoga.model.PackageDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.support.SimpleCacheManager;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,6 +30,12 @@ public class DatabaseUploadController {
     @Autowired
     EventDao eventDao;
 
+    @Autowired
+    PackageDetailsDao packageDetailsDao;
+
+    @Autowired
+    PackagePurchaseDao packagePurchaseDao;
+
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/uploadClients")
     public void uploadClients(@RequestParam("file")MultipartFile multipartFile) {
@@ -51,5 +55,26 @@ public class DatabaseUploadController {
     public void uploadEvents(@RequestParam("file")MultipartFile multipartFile) {
 
         eventDao.uploadEventCsv(multipartFile);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/uploadPackages")
+    public void uploadPackages(@RequestParam("file")MultipartFile multipartFile) {
+
+
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/uploadSales")
+    public void uploadSales(@RequestParam("file")MultipartFile multipartFile) {
+
+
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/uploadGiftCardReport")
+    public void uploadGiftCardReport(@RequestParam("file")MultipartFile multipartFile) {
+
+
     }
 }

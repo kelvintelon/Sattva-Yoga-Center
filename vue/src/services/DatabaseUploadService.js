@@ -14,6 +14,17 @@ export default {
         return axios.post(`/uploadEvents`, eventCSV, {headers: {Accept: 'application/json', 'Content-Type': 'multipart/form-data'} })
     },
 
+    uploadPackages(packagesCSV) {
+        return axios.post(`/uploadPackages`, packagesCSV, {headers: {Accept: 'application/json', 'Content-Type': 'multipart/form-data'} })
+    },
+    uploadSales(salesCSV) {
+        return axios.post(`/uploadSales`, salesCSV, {headers: {Accept: 'application/json', 'Content-Type': 'multipart/form-data'} })
+    },
+    uploadGiftReport(giftCardCSV) {
+        return axios.post(`/uploadGiftCardReport`, giftCardCSV, {headers: {Accept: 'application/json', 'Content-Type': 'multipart/form-data'} })
+    },
+
+
     
 
 }
