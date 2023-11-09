@@ -44,7 +44,6 @@
           <v-select
             v-model="clientDetails.state_abbreviation"
             :items="items"
-            :rules="[(v) => !!v || 'Item is required']"
             label="State"
           ></v-select>
 
@@ -57,7 +56,6 @@
           <v-select
             v-model="clientDetails.country"
             :items="countryItems"
-            :rules="[(v) => !!v || 'Item is required']"
             label="Country"
           ></v-select>
           <v-text-field
@@ -83,11 +81,15 @@
             v-model="clientDetails.has_record_of_liability"
             label="Record of Liability?"
           ></v-checkbox>
+          <v-checkbox
+            v-model="consentToCookie"
+            label="This website will not function correctly without the use of cookies. Do you give us consent to use your cookies?"
+          ></v-checkbox>
           <v-btn
             v-if="!readLiabilityRelease"
             @click="readLiabilityRelease = true"
           >
-            Read and Accept Studio Liability Release
+            Read, Accept Studio Liability Release
           </v-btn>
           <div v-else>
             Studio Liability Release: I understand that yoga can be physically
@@ -432,6 +434,7 @@ export default {
     formComplete: false,
     acceptTerms: false,
     readLiabilityRelease: false,
+    consentToCookie: false
   }),
 
   methods: {
@@ -450,6 +453,8 @@ export default {
         alert("Please fill out the form with your phone number");
       } else if (this.acceptTerms == false) {
         alert("To complete the form, please read and accept the terms");
+      } else if (this.consentToCookie == false) {
+        alert("This website will not function correctly without the use of cookies. Please check the box to give us consent to use your cookies")
       } else {
         this.formComplete = true;
       }
