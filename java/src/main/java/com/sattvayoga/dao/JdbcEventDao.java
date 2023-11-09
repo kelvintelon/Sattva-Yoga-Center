@@ -109,7 +109,7 @@ public class JdbcEventDao implements EventDao {
                     startTimeStampBuilder += year + "-" + month + "-" + day + " " + time.substring(0, 5) + ":00.00";
 
                     Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
-                    Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
+                    Timestamp end = new Timestamp(start.getTime() + TimeUnit.MINUTES.toMillis(classDetails.getClass_duration()));
                     newClassEvent.setStart_time(start);
                     newClassEvent.setEnd_time(end);
 
@@ -151,7 +151,7 @@ public class JdbcEventDao implements EventDao {
                     startTimeStampBuilder += year + "-" + month + "-" + day + " " + time + ":00.0";
 
                     Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
-                    Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
+                    Timestamp end = new Timestamp(start.getTime() + TimeUnit.MINUTES.toMillis(classDetails.getClass_duration()));
                     newClassEvent.setStart_time(start);
                     newClassEvent.setEnd_time(end);
 
@@ -191,7 +191,7 @@ public class JdbcEventDao implements EventDao {
                     startTimeStampBuilder += year + "-" + month + "-" + day + " " + time + ":00.0";
 
                     Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
-                    Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
+                    Timestamp end = new Timestamp(start.getTime() + TimeUnit.MINUTES.toMillis(classDetails.getClass_duration()));
                     newClassEvent.setStart_time(start);
                     newClassEvent.setEnd_time(end);
 
@@ -231,7 +231,7 @@ public class JdbcEventDao implements EventDao {
                     startTimeStampBuilder += year + "-" + month + "-" + day + " " + time + ":00.0";
 
                     Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
-                    Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
+                    Timestamp end = new Timestamp(start.getTime() + TimeUnit.MINUTES.toMillis(classDetails.getClass_duration()));
                     newClassEvent.setStart_time(start);
                     newClassEvent.setEnd_time(end);
 
@@ -271,7 +271,7 @@ public class JdbcEventDao implements EventDao {
                     startTimeStampBuilder += year + "-" + month + "-" + day + " " + time + ":00.0";
 
                     Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
-                    Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
+                    Timestamp end = new Timestamp(start.getTime() + TimeUnit.MINUTES.toMillis(classDetails.getClass_duration()));
                     newClassEvent.setStart_time(start);
                     newClassEvent.setEnd_time(end);
 
@@ -311,7 +311,7 @@ public class JdbcEventDao implements EventDao {
                     startTimeStampBuilder += year + "-" + month + "-" + day + " " + time + ":00.0";
 
                     Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
-                    Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
+                    Timestamp end = new Timestamp(start.getTime() + TimeUnit.MINUTES.toMillis(classDetails.getClass_duration()));
                     newClassEvent.setStart_time(start);
                     newClassEvent.setEnd_time(end);
 
@@ -351,7 +351,7 @@ public class JdbcEventDao implements EventDao {
                     startTimeStampBuilder += year + "-" + month + "-" + day + " " + time + ":00.0";
 
                     Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
-                    Timestamp end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
+                    Timestamp end = new Timestamp(start.getTime() + TimeUnit.MINUTES.toMillis(classDetails.getClass_duration()));
                     newClassEvent.setStart_time(start);
                     newClassEvent.setEnd_time(end);
 
@@ -830,7 +830,7 @@ public class JdbcEventDao implements EventDao {
         }
     }
 
-        public void batchCreateEvents(final Collection<ClassEvent> events) {
+    public void batchCreateEvents(final Collection<ClassEvent> events) {
         jdbcTemplate.batchUpdate(
                 "INSERT INTO events (class_id, event_name, start_time, " +
                         "end_time, color, timed, is_visible_online, is_paid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
