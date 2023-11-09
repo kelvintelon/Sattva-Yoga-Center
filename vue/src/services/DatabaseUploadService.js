@@ -23,7 +23,9 @@ export default {
     uploadGiftReport(giftCardCSV) {
         return axios.post(`/uploadGiftCardReport`, giftCardCSV, {headers: {Accept: 'application/json', 'Content-Type': 'multipart/form-data'} })
     },
-
+    uploadAttendance(attendanceCSV) {
+        return axios.post(`/uploadAttendance`, attendanceCSV, {headers: {Accept: 'application/json', 'Content-Type': 'multipart/form-data'} })
+    },
 
     
 

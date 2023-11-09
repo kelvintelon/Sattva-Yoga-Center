@@ -3,14 +3,14 @@
       <form ref="uploadForm" @submit.prevent="submit">
           <v-row>
               <v-col>
-                  <v-btn @click="uploadGiftReportCSV" v-if="!attemptedUpload">
-                      Upload Gift Card Report
+                  <v-btn @click="uploadAttendanceCSV" v-if="!attemptedUpload">
+                      Upload Attendance
                   </v-btn>
-                  <v-btn @click="uploadGiftReportCSV" v-if="attemptedUpload && successfulGiftReportUpload" color="green">
-                      Upload Gift Card Report
+                  <v-btn @click="uploadAttendanceCSV" v-if="attemptedUpload && successfulAttendanceUpload" color="green">
+                      Upload Attendance
                   </v-btn>
-                  <v-btn @click="uploadGiftReportCSV" v-if="attemptedUpload && !successfulGiftReportUpload" color="red">
-                      Upload Gift Card Report
+                  <v-btn @click="uploadAttendanceCSV" v-if="attemptedUpload && !successfulAttendanceUpload" color="red">
+                      Upload Attendance
                   </v-btn>
               </v-col>
               <v-col>
@@ -26,13 +26,13 @@
 <script>
   import databaseUploadService from "../services/DatabaseUploadService";
   export default {
-    name: "upload-Gift-Report-Component",
+    name: "upload-Attendance-Component",
     components: {},
     data() {
       return {
-          giftReportFormData: null,
+          attendanceFormData: null,
           attemptedUpload: false,
-          successfulGiftReportUpload: false,
+          successfulAttendanceUpload: false,
           overlay: false
       };
     },
@@ -41,19 +41,19 @@
     methods: {
       onCSVUpload() {
           let file = this.$refs.uploadCSV.files[0];
-          this.giftReportFormData = new FormData();
-          this.giftReportFormData.append("file", file)
+          this.attendanceFormData = new FormData();
+          this.attendanceFormData.append("file", file)
       },
-      uploadGiftReportCSV() {
+      uploadAttendanceCSV() {
           
-          if (this.giftReportFormData != null) {
+          if (this.attendanceFormData != null) {
               this.attemptedUpload = true;
               this.overlay = true;
-              databaseUploadService.uploadGiftReport(this.giftReportFormData).then((response) => {
+              databaseUploadService.uploadAttendance(this.attendanceFormData).then((response) => {
                   if (response.status == 200) {
                       this.overlay = false;
-                      alert("Successfully uploaded gift card report to database")
-                      this.successfulGiftReportUpload = true;
+                      alert("Successfully uploaded attendance to database")
+                      this.successfulAttendanceUpload = true;
                   } 
               }).catch((error) => {
             const response = error.response;

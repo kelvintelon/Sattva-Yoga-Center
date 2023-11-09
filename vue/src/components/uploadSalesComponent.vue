@@ -52,7 +52,7 @@
               databaseUploadService.uploadSales(this.salesFormData).then((response) => {
                   if (response.status == 200) {
                       this.overlay = false;
-                      alert("Successfully uploaded events to database")
+                      alert("Successfully uploaded sales to database")
                       this.successfulSalesUpload = true;
                   } 
               }).catch((error) => {

@@ -6,6 +6,7 @@
     <upload-packages-component></upload-packages-component>
     <upload-sales-component></upload-sales-component>
     <upload-gift-report-component></upload-gift-report-component>
+    <upload-attendance-component></upload-attendance-component>
   </div>
 </template>
   
@@ -16,6 +17,7 @@ import uploadEventComponent from "../components/uploadEventComponent.vue";
 import uploadPackagesComponent from '../components/uploadPackagesComponent.vue';
 import uploadSalesComponent from '../components/uploadSalesComponent.vue';
 import uploadGiftReportComponent from "../components/uploadGiftReportComponent.vue";
+import uploadAttendanceComponent from "../components/uploadAttendanceComponent.vue";
 
 export default {
   name: "database-upload",
@@ -25,6 +27,7 @@ export default {
     uploadPackagesComponent,
     uploadSalesComponent,
     uploadGiftReportComponent,
+    uploadAttendanceComponent
    },
   data() {
     return {
