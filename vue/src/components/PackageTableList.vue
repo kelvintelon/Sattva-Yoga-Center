@@ -338,11 +338,11 @@ export default {
           sortable: false,
         },
         {
-          text: "Subscription Duration (months)",
+          text: "Unlimited Duration (months)",
           value: "package_duration",
           sortable: false,
         },
-        { text: "Subscription?", value: "unlimited", sortable: false },
+        { text: "Unlimited?", value: "unlimited", sortable: false },
         {
           text: "Visible Online?",
           value: "is_visible_online",

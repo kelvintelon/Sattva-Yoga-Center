@@ -168,7 +168,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                     "WHERE exists (SELECT * " +
                     "FROM client_details a2 " +
                     "WHERE a2.last_name = a1.last_name AND SUBSTRING(a2.first_name from 0 for 3) = SUBSTRING(a1.first_name from 0 for 3) " +
-                    "AND a2.client_id <> a1.client_id) " + offsetString;
+                    "AND a2.client_id <> a1.client_id) ORDER BY a1.last_name, a1.first_name " + offsetString;
 
             SqlRowSet result = jdbcTemplate.queryForRowSet(sql, offset);
             while (result.next()) {
@@ -232,7 +232,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
                 "WHERE exists (SELECT * " +
                 "FROM client_details a2 " +
                 "WHERE a2.last_name = a1.last_name AND SUBSTRING(a2.first_name from 0 for 3) = SUBSTRING(a1.first_name from 0 for 3) " +
-                "AND a2.client_id <> a1.client_id);";
+                "AND a2.client_id <> a1.client_id) ORDER BY a1.last_name, a1.first_name;";
 
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
         while (result.next()) {
