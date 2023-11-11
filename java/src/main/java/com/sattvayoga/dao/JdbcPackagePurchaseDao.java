@@ -176,13 +176,13 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 amountPaid = currentPackage.getTotal_amount_paid().doubleValue() + currentPackage.getDiscount().doubleValue();
             }
 
-            packagesBeingBoughtForEmail += getPackageDescriptionByPackageId(currentPackage.getPackage_id()) + " - $" + amountPaid + " - " + "Expires on: " + currentPackage.getExpiration_date().toString() + "\n";
+            packagesBeingBoughtForEmail += getPackageDescriptionByPackageId(currentPackage.getPackage_id()) + " - $" + amountPaid + " - " + "Expires on: " + currentPackage.getExpiration_date().toString() + "<br>";
         }
 
-        packagesBeingBoughtForEmail += "\n";
+        packagesBeingBoughtForEmail += "<br>";
 
         if (runningDiscount > 0) {
-            packagesBeingBoughtForEmail += "Discount: $" + runningDiscount + "\n";
+            packagesBeingBoughtForEmail += "Discount: $" + runningDiscount + "<br>";
         }
 
 
@@ -198,25 +198,25 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     public void sendEmailReceipt(ClientCheckoutDTO clientCheckoutDTO, String packagesBeingBoughtForEmail, int saleId, String saleDate, String firstName, String subject, String subTotal, String tax, String total, String usedPaymentTypes) {
         if (clientCheckoutDTO.getEmailForReceipt().length()>0 && clientCheckoutDTO.isSendEmail()) {
 
-            String paymentDetails = "<Payment Method>" + "\t" + "<Amount>" + "\n" +
-                    usedPaymentTypes + "\n" + "\n" + "\t" + "Customer Copy" + "\n";
-            String body = "Dear, " + firstName + "\n" +
-                    "Thank you for shopping at our store. Below is your purchase receipt; please keep a copy for your records." + "\n" +
-                    "Sale Date:" + "\t" + saleDate + "\n" +
-                    "Sale ID:" + "\t" + saleId + "\n" + "\n" +
-                    packagesBeingBoughtForEmail + "\n" +
-                    "Subtotal: " + subTotal + "\n" +
-                    "Tax: " + tax + "\n" +
-                    "Total: " + total + "\n" + "\n" +
-                    paymentDetails + "\n" +
-                    "We appreciate your business! When you in come in for a class, please bring a yoga mat and arrive on time." + "\n" +
-                    "Please retain this receipt for your records. Thank you!" + "\n" +
-                    "If you have any additional questions, then please feel free to contact us using the email or phone number listed below." + "\n" + "\n" +
-                    "Thank you!" + "\n" +
-                    "Sattva Yoga Center LLC" + "\n" +
-                    "Web: http://www.sattva-yoga-center.com" + "\n" +
-                    "Phone: (313)-274-3995" + "\n" + "\n" +
-                    "835 Mason Street, Suite B120, Dearborn, MI 48124" + "\n" +
+            String paymentDetails = "<b>Payment Method</b> -     " + "<b>Amount</b>" + "<br>" +
+                    usedPaymentTypes + "<br>" + "<br>" + "      " + "Customer Copy" + "<br>";
+            String body = "Dear, " + firstName + "<br>" +
+                    "Thank you for shopping at our store. Below is your purchase receipt; please keep a copy for your records." + "<br>" +
+                    "Sale Date:      " + saleDate + "<br>" +
+                    "Sale ID:      " + saleId + "<br>" + "<br>" +
+                    packagesBeingBoughtForEmail + "<br>" +
+                    "Subtotal:      " + subTotal + "<br>" +
+                    "Tax:      " + tax + "<br>" +
+                    "Total:      " + total + "<br>" + "<br>" +
+                    paymentDetails + "<br>" +
+                    "We appreciate your business! When you in come in for a class, please bring a yoga mat and arrive on time." + "<br>" +
+                    "Please retain this receipt for your records. Thank you!" + "<br>" +
+                    "If you have any additional questions, then please feel free to contact us using the email or phone number listed below." + "<br>" + "<br>" +
+                    "Thank you!" + "<br>" +
+                    "Sattva Yoga Center LLC" + "<br>" +
+                    "Web: http://www.sattva-yoga-center.com" + "<br>" +
+                    "Phone: (313)-274-3995" + "<br>" + "<br>" +
+                    "835 Mason Street, Suite B120, Dearborn, MI 48124" + "<br>" +
                     "info@sattva-yoga-center.com";
 
             // send email
@@ -265,26 +265,26 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         }
 
         if (compFree) {
-            usedPaymentTypes += "Comp/Free" + "\t" + "$" + runningTotal + "\n";
+            usedPaymentTypes += "Comp/Free" + "      " + "$" + runningTotal + "<br>";
         }
 
         if (cash > 0) {
-            usedPaymentTypes += "Cash" + "\t" + "$" + cash + "\n";
+            usedPaymentTypes += "Cash" + "      " + "$" + cash + "<br>";
         }
         if (check > 0) {
-            usedPaymentTypes += "Check" + "\t" + "$" + check + "\n";
+            usedPaymentTypes += "Check" + "      " + "$" + check + "<br>";
         }
         if (giftAmountUsed > 0) {
-            usedPaymentTypes += "Gift Card Code" + "\t" + "$" + giftAmountUsed + "\n";
+            usedPaymentTypes += "Gift Card Code" + "      " + "$" + giftAmountUsed + "<br>";
         }
         if (creditCardSwiped > 0) {
-            usedPaymentTypes += "Credit Card Swiped" + "\t" + "$" + creditCardSwiped + "\n";
+            usedPaymentTypes += "Credit Card Swiped" + "      " + "$" + creditCardSwiped + "<br>";
         }
         if (creditCardKeyedStored > 0) {
-            usedPaymentTypes += "Credit Card Keyed/Stored" + "\t" + "$" + creditCardKeyedStored + "\n";
+            usedPaymentTypes += "Credit Card Keyed/Stored" + "      " + "$" + creditCardKeyedStored + "<br>";
         }
         if (onlinePayment > 0) {
-            usedPaymentTypes += "Online Payment" + "\t" + "$" + onlinePayment + "\n";
+            usedPaymentTypes += "Online Payment" + "      " + "$" + onlinePayment + "<br>";
         }
         return usedPaymentTypes;
     }

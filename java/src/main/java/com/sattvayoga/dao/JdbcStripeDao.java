@@ -165,7 +165,7 @@ public class JdbcStripeDao implements StripeDao {
 
                     int packagePurchaseId = packagePurchaseDao.createAdminPackagePurchase(packagePurchase);
                     PackagePurchase packagePurchase1 = packagePurchaseDao.getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseId);
-                    packagesBeingBoughtForEmail += currentPackage.getDescription() + " - $0.00 - " + "Expires on: " + packagePurchase1.getExpiration_date().toString() + "\n";
+                    packagesBeingBoughtForEmail += currentPackage.getDescription() + " - $0.00 - " + "Expires on: " + packagePurchase1.getExpiration_date().toString() + "<br>";
                     packagePurchaseIDs.add(packagePurchaseId);
 
                 }
@@ -198,7 +198,7 @@ public class JdbcStripeDao implements StripeDao {
             String subTotal = "$0.00";
             String tax = "$0.00";
             String total = "$0.00";
-            String usedPaymentTypes = paymentType + "\t" + "$" + runningTotal + "\n";
+            String usedPaymentTypes = paymentType + "       " + "$0.00" + "         ";
             sendEmailReceipt(clientCheckoutDTO, packagesBeingBoughtForEmail, saleId, saleDate, firstName, subject, subTotal, tax, total, usedPaymentTypes);
 
             // Just return
@@ -289,7 +289,7 @@ public class JdbcStripeDao implements StripeDao {
                     packagePurchaseIDs.add(packagePurchaseId);
 
                     PackagePurchase packagePurchase1 = packagePurchaseDao.getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseId);
-                    packagesBeingBoughtForEmail += currentPackage.getDescription() + " - $" + currentPackage.getPackage_cost() + " - " + "Expires on: " + packagePurchase1.getExpiration_date().toString()  + "\n";
+                    packagesBeingBoughtForEmail += currentPackage.getDescription() + " - $" + currentPackage.getPackage_cost() + " - " + "Expires on: " + packagePurchase1.getExpiration_date().toString()  + "<br>";
 
 
                     try {
@@ -348,7 +348,7 @@ public class JdbcStripeDao implements StripeDao {
                     packagePurchaseIDs.add(packagePurchaseId);
 
                     PackagePurchase packagePurchase1 = packagePurchaseDao.getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseId);
-                    packagesBeingBoughtForEmail += currentPackage.getDescription() + " - $" + currentPackage.getPackage_cost() + " - " + "Expires on: " + packagePurchase1.getExpiration_date().toString() + "\n";
+                    packagesBeingBoughtForEmail += currentPackage.getDescription() + " - $" + currentPackage.getPackage_cost() + " - " + "Expires on: " + packagePurchase1.getExpiration_date().toString() + "<br>";
 
                 }
 
@@ -390,10 +390,10 @@ public class JdbcStripeDao implements StripeDao {
                 transactionDao.createTransaction(transaction);
             }
 
-            packagesBeingBoughtForEmail += "\n";
+            packagesBeingBoughtForEmail += "<br>";
 
             if (clientCheckoutDTO.getDiscount() > 0) {
-                packagesBeingBoughtForEmail += "Discount: $" + clientCheckoutDTO.getDiscount() + "\n";
+                packagesBeingBoughtForEmail += "Discount: $" + clientCheckoutDTO.getDiscount() + "<br>";
             }
 
             String saleDate = LocalDate.now().toString();
@@ -404,13 +404,13 @@ public class JdbcStripeDao implements StripeDao {
             String total = "$" + (clientCheckoutDTO.getCash() + clientCheckoutDTO.getCheck() + giftAmountUsed);
             String usedPaymentTypes = "";
             if (clientCheckoutDTO.getCash() > 0) {
-                usedPaymentTypes += "Cash" + "\t" + "$" + clientCheckoutDTO.getCash() + "\n";
+                usedPaymentTypes += "Cash" + "      " + "$" + clientCheckoutDTO.getCash() + "<br>";
             }
             if (clientCheckoutDTO.getCheck() > 0) {
-                usedPaymentTypes += "Check" + "\t" + "$" + clientCheckoutDTO.getCheck() + "\n";
+                usedPaymentTypes += "Check" + "      " + "$" + clientCheckoutDTO.getCheck() + "<br>";
             }
             if (isGiftCardUsed) {
-                usedPaymentTypes += "Gift Card Code" + "\t" + "$" + giftAmountUsed + "\n";
+                usedPaymentTypes += "Gift Card Code" + "      " + "$" + giftAmountUsed + "<br>";
             }
             //paymentType + "\t" + "$" + runningTotal + "\n";
             sendEmailReceipt(clientCheckoutDTO, packagesBeingBoughtForEmail, saleId, saleDate, firstName, subject, subTotal, tax, total, usedPaymentTypes);
@@ -725,25 +725,25 @@ public class JdbcStripeDao implements StripeDao {
     public void sendEmailReceipt(ClientCheckoutDTO clientCheckoutDTO, String packagesBeingBoughtForEmail, int saleId, String saleDate, String firstName, String subject, String subTotal, String tax, String total, String usedPaymentTypes) {
         if (clientCheckoutDTO.getEmailForReceipt().length()>0 && clientCheckoutDTO.isSendEmail()) {
 
-            String paymentDetails = "<Payment Method>" + "\t" + "<Amount>" + "\n" +
-                    usedPaymentTypes + "\n" + "\n" + "\t" + "Customer Copy" + "\n";
-            String body = "Dear, " + firstName + "\n" +
-                    "Thank you for shopping at our store. Below is your purchase receipt; please keep a copy for your records." + "\n" +
-                    "Sale Date:" + "\t" + saleDate + "\n" +
-                    "Sale ID:" + "\t" + saleId + "\n" + "\n" +
-                    packagesBeingBoughtForEmail + "\n" +
-                    "Subtotal: " + subTotal + "\n" +
-                    "Tax: " + tax + "\n" +
-                    "Total: " + total + "\n" + "\n" +
-                    paymentDetails + "\n" +
-                    "We appreciate your business! When you in come in for a class, please bring a yoga mat and arrive on time." + "\n" +
-                    "Please retain this receipt for your records. Thank you!" + "\n" +
-                    "If you have any additional questions, then please feel free to contact us using the email or phone number listed below." + "\n" + "\n" +
-                    "Thank you!" + "\n" +
-                    "Sattva Yoga Center LLC" + "\n" +
-                    "Web: http://www.sattva-yoga-center.com" + "\n" +
-                    "Phone: (313)-274-3995" + "\n" + "\n" +
-                    "835 Mason Street, Suite B120, Dearborn, MI 48124" + "\n" +
+            String paymentDetails = "<b>Payment Method -      </b>" + "<b>Amount</b>" + "<br>" +
+                    usedPaymentTypes + "<br>" + "<br>" + "      Customer Copy" + "<br>";
+            String body = "Dear, " + firstName + "<br>" +
+                    "Thank you for shopping at our store. Below is your purchase receipt; please keep a copy for your records." + "<br>" +
+                    "Sale Date:     " + saleDate + "<br>" +
+                    "Sale ID:       " + saleId + "<br>" + "<br>" +
+                    packagesBeingBoughtForEmail + "<br>" +
+                    "Subtotal: " + subTotal + "<br>" +
+                    "Tax:      " + tax + "<br>" +
+                    "Total:     " + total + "<br>" + "<br>" +
+                    paymentDetails + "<br>" +
+                    "We appreciate your business! When you in come in for a class, please bring a yoga mat and arrive on time." + "<br>" +
+                    "Please retain this receipt for your records. Thank you!" + "<br>" +
+                    "If you have any additional questions, then please feel free to contact us using the email or phone number listed below." + "<br>" + "<br>" +
+                    "Thank you!" + "<br>" +
+                    "Sattva Yoga Center LLC" + "<br>" +
+                    "Web: http://www.sattva-yoga-center.com" + "<br>" +
+                    "Phone: (313)-274-3995" + "<br>" + "<br>" +
+                    "835 Mason Street, Suite B120, Dearborn, MI 48124" + "<br>" +
                     "info@sattva-yoga-center.com";
 
             // send email

@@ -83,9 +83,9 @@ public class AuthenticationController {
 //         String website = "http://sattva-yoga.netlify.app/resetLink?token=";
         String website = "http://localhost:8080/resetLink?token=";
         String resetLink = website + jwt;
-        senderService.sendEmail(email,"Sattva Yoga Center Email Reset Link For Account - Expires Soon","Your Reset Link is: " +resetLink +  "\n" + "Note: Reset Link expires in 2 days" + "\n" +
-                "The online services on the website will not function correctly without the use of cookies. By continuing to use our website and to able to provide you with online services, we will need to use your cookies." + "\n" +
-                "PLEASE DO NOT REPLY BACK TO THIS EMAIL" + "\n" + "- Sattva Yoga Center");
+        senderService.sendEmail(email,"Sattva Yoga Center Email Reset Link For Account - Expires Soon","Your Reset Link is: " +resetLink +  "<br>" + "Note: Reset Link expires in 2 days" + "<br>" +
+                "The online services on the website will not function correctly without the use of cookies. By continuing to use our website and to able to provide you with online services, we will need to use your cookies." + "<br>" +
+                "PLEASE DO NOT REPLY BACK TO THIS EMAIL" + "<br>" + "- Sattva Yoga Center");
     }
 
     @RequestMapping(value = "/resetUsernameAndPassword", method = RequestMethod.PUT)
