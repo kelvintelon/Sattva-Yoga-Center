@@ -447,7 +447,7 @@ export default {
       color: "#3388FF",
       timed: true,
       is_visible_online: true,
-      is_paid: false,
+      is_paid: true,
     },
     editedEvent: {
       class_id: 0,

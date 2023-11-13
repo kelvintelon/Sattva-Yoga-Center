@@ -289,8 +289,8 @@ public class EventController {
             // current clientEvent object
             ClientEvent clientEvent = clientEventObjects.get(i);
 
-            // if the event is free or not
-            if (!classEvent.isIs_paid()) {
+            // if the event has to be paid or not
+            if (classEvent.isIs_paid()) {
 
                 // client details
                 ClientDetails clientDetailsObj = clientDetailsDao.findClientByClientId(clientEvent.getClient_id());
@@ -332,8 +332,8 @@ public class EventController {
             // current clientEvent object
             ClientEvent clientEvent = clientEventObjects.get(i);
 
-            // if the event is free or not
-            if (!classEvent.isIs_paid()) {
+            // if the event has to be paid or not
+            if (classEvent.isIs_paid()) {
                 // client details
                 ClientDetails clientDetails = clientDetailsDao.findClientByClientId(clientEvent.getClient_id());
                 // user Id
