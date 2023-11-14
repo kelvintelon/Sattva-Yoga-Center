@@ -1,18 +1,22 @@
 <template>
-  <v-footer padless light min-height="220px" color="rgba(252, 142, 1, 0.22)">
+  <v-footer padless light min-height="230px" color="rgba(252, 142, 1, 0.22)">
+    
     <v-row justify="center" align="center">
 
       <v-col justify="center" align="center">
         <div>
+          <privacy-policy v-if="(this.$store.state.user) && (Object.keys(this.$store.state.user).length>0) && (this.$route.name != 'home')"></privacy-policy>
           <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2950.62814395723!2d-83.24889262415292!3d42.30779937119786!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x883b3587b1d77a51%3A0x6df4f82a074dd6ae!2sSattva%20Yoga%20Center!5e0!3m2!1sen!2sus!4v1689775920839!5m2!1sen!2sus"
             width="400" height="200" style="border:0;" allowfullscreen="" loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"></iframe>
+            referrerpolicy="no-referrer-when-downgrade"
+            class="mt-4"></iframe>
         </div>
       </v-col>
     </v-row>
     <v-row justify="center" align="center">
       <v-col justify="center" align="center">
+        
         <h5> Contact Us</h5>
         <div class="contactUs" style="font-size: 18px ">
           <p>835 Mason St, Suite B120 Dearborn, MI 48124, USA (Parking lot entrance on Garrison Street between Mason and
@@ -37,9 +41,13 @@
 
 <script>
 // import awsService from "../services/AWSService"
+import PrivacyPolicy from "../components/PrivacyPolicy.vue";
 
 export default {
   name: "AppFooter",
+  components: {
+    PrivacyPolicy
+  },
   data() {
     return {
       map: null,
