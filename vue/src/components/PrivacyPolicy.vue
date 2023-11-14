@@ -26,7 +26,7 @@
         <p>
             This Privacy Policy outlines how we collect, use, and protect your personal information in compliance with
              the ePrivacy Directive 2002/58/EC and other applicable data protection laws. By engaging in the following 
-             actions on our website, including registering as a user, booking a class, or purchasing a class or package, 
+             actions on our website: A. Registering as a user, B. Booking a class, or C. Purchasing a class or package, 
              you explicitly consent to the practices described in this policy.
         </p>
     </section>

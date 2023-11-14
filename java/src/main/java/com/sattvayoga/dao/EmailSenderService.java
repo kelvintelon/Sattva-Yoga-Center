@@ -41,7 +41,7 @@ public class EmailSenderService {
         helper.setSubject(subject);
 
         // Set the HTML content with the image embedded
-        String htmlBody = "<html><body><img src='https://i.imgur.com/YFxtS94.jpg' style='width:15%;'><br>" + body + "</body></html>";
+        String htmlBody = "<html><body><img src='https://storage.cloud.google.com/sattva_logo/Sattva-Logo-Final-HighResLg.jpg' style='width:15%;'><br>" + body + "</body></html>";
         helper.setText(htmlBody, true);
 
         mailSender.send(message);
