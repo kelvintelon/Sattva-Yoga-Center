@@ -22,8 +22,16 @@
               dark
             >Privacy Policy</v-toolbar>
             <v-card-text>
+                <section class="mt-3">
+        <p>
+            This Privacy Policy outlines how we collect, use, and protect your personal information in compliance with
+             the ePrivacy Directive 2002/58/EC and other applicable data protection laws. By engaging in the following 
+             actions on our website, including registering as a user, booking a class, or purchasing a class or package, 
+             you explicitly consent to the practices described in this policy.
+        </p>
+    </section>
                 <section>
-        <h2 class="mt-3">1. Data Collection:</h2>
+        <h2 >1. Data Collection:</h2>
         <p>
             When you register as a user, book a class, or make a purchase, we collect the necessary information
             to provide you with the requested services. This may include personal details such as your name, email
