@@ -358,7 +358,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             if (saleId > 0) {
                 SqlRowSet result3 = jdbcTemplate.queryForRowSet(sql3, saleId);
                 while (result3.next()) {
-                    paymentDescriptions += result3.getString("payment_Type") + "/";
+                    paymentDescriptions += result3.getString("payment_Type") + " /";
                 }
             }
             if (paymentDescriptions.length() > 0) {
@@ -674,7 +674,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             char randomChar = characters.charAt(index);
             coupon.append(randomChar);
         }
-        return coupon.toString();
+        return coupon.toString().toUpperCase();
     }
 
     public int createStripePackagePurchase(CheckoutItemDTO checkoutItemDTO) {

@@ -405,7 +405,7 @@ export default {
 
     if (this.$store.state.user.username == "admin") {
       this.headers.push({ text: "Actions", value: "actions", sortable: false });
-       this.headers.unshift({ text: "Package ID", value: "package_purchase_id", sortable: true });
+       this.headers.unshift({ text: "Purchase ID", value: "package_purchase_id", sortable: true });
         this.headers.splice(-5, 0, { text: "Discount", value: "discount", sortable: false });
     }
     

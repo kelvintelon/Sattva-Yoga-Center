@@ -920,7 +920,7 @@ export default {
 
     if (this.$store.state.user.username == "admin") {
       this.headers.unshift({
-        text: "Package ID",
+        text: "Purchase ID",
         value: "package_purchase_id",
         sortable: true,
       });

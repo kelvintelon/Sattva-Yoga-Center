@@ -514,7 +514,7 @@ export default {
           sortable: true,
         },
         {
-          text: "Package ID",
+          text: "Purchase ID",
           value: "package_purchase_id",
           sortable: true,
         }
