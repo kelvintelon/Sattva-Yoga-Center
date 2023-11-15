@@ -1055,7 +1055,7 @@ export default {
       this.showPaymentMethodOptions = true;
       // Call a method that retrieves 
       // a list of payment methods by this client's ID
-      this.retrievePaymentMethodsFromStripe(this.$route.params.clientId);
+      this.retrievePaymentMethodsFromStripe(parseInt(this.$route.params.clientId));
       
       // 
     },
@@ -1074,7 +1074,7 @@ export default {
 
     },
     processSetupIntentThroughReader() {
-      stripeService.addPaymentMethodThroughReader(this.$route.params.clientId).then((response) => {
+      stripeService.addPaymentMethodThroughReader(parseInt(this.$route.params.clientId)).then((response) => {
         if (response.status == 201) {
           alert("Tap card and refresh payment methods.")
           this.addPaymentMethodDialog = false;
@@ -1091,11 +1091,11 @@ export default {
       if (this.newCardObject.cardNumber.length == 0 || this.newCardObject.expirationMonth == 0 || this.newCardObject.expYear == 0 || this.newCardObject.cvc == 0) {
         alert ("Please fill in the card form")
       } else {
-        stripeService.addPaymentMethodManually(this.$route.params.clientId, this.newCardObject).then((response) => {
+        stripeService.addPaymentMethodManually(parseInt(this.$route.params.clientId), this.newCardObject).then((response) => {
           if (response.status == 201) {
             this.showCardForm = false;
             this.addPaymentMethodDialog = false;
-            this.retrievePaymentMethodsFromStripe(this.$route.params.clientId)
+            this.retrievePaymentMethodsFromStripe(parseInt(this.$route.params.clientId))
           }
         })
       }

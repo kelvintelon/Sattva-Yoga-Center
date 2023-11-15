@@ -201,7 +201,7 @@ export default {
       this.loading2 = true;
       this.overlay = !this.overlay;
       eventService
-        .getAllClientEventsByClientId(this.$route.params.clientId)
+        .getAllClientEventsByClientId(parseInt(this.$route.params.clientId))
         .then((response) => {
           if (response.status == 200) {
             this.loading = false;
@@ -250,7 +250,7 @@ export default {
     },
     get100Events() {
       eventService
-        .get100EventsForClient(this.$route.params.clientId)
+        .get100EventsForClient(parseInt(this.$route.params.clientId))
         .then((response) => {
           if (response.status == 200) {
             this.availableClasses = response.data;
@@ -382,7 +382,7 @@ export default {
       this.eventClientSignUp.date = item.dateRef;
       // retrieve the package_purchase id correctly
       this.eventClientSignUp.package_purchase_id = item.package_purchase_id;
-      this.eventClientSignUp.client_id = this.$route.params.clientId;
+      this.eventClientSignUp.client_id = parseInt(this.$route.params.clientId);
 
       // retrieve the package_purchase id correctly
 
@@ -458,7 +458,7 @@ export default {
           eventService
             .removeEventForClientByClientId(
               this.eventClientSignUp.event_id,
-              this.$route.params.clientId
+              parseInt(this.$route.params.clientId)
             )
             .then((response) => {
               if (response.status == 200) {

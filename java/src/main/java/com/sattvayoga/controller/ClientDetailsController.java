@@ -271,6 +271,15 @@ public class ClientDetailsController {
         clientDetailsDao.deleteClient(clientId);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value = "/getStripeCustomerPageByClientId/{clientId}", method = RequestMethod.GET)
+    public String getStripeCustomerPageByClientId(@PathVariable int clientId) {
+        String customerId = stripeDao.getCustomerIdString(clientId);
+
+        //TODO: Replace the following URL when you go live
+        return "https://dashboard.stripe.com/test/customers/" + customerId;
+    }
+
     @RequestMapping(path = "/getClientDetails", method = RequestMethod.GET)
     public ClientDetails getClientDetails(Principal principal) {
         ClientDetails clientDetails =

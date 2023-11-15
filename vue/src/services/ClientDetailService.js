@@ -27,7 +27,9 @@ export default {
     getClientDetailsByClientId(clientId) {
         return axios.get(`/getClientDetailsByClientId/${clientId}`)
     },
-
+    getCustomerPageByClientId(clientId) {
+        return axios.get(`/getStripeCustomerPageByClientId/${clientId}`)
+    },
     updateClientDetails(clientDetails) {
         return axios.put(`/updateClientDetails`, clientDetails )
     },

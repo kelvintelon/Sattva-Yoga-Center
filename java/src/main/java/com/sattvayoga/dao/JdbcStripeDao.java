@@ -1121,7 +1121,8 @@ public class JdbcStripeDao implements StripeDao {
                 ).build();
     }
 
-    private String getCustomerIdString(int retrievedClientId) throws StripeException {
+    @Override
+    public String getCustomerIdString(int retrievedClientId) {
         ClientDetails clientDetails = clientDetailsDao.findClientByClientId(retrievedClientId);
 
         String customer_id = "";
@@ -1131,7 +1132,12 @@ public class JdbcStripeDao implements StripeDao {
         } else {
             Map<String, Object> params = new HashMap<>();
             params.put("name", clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
-            Customer customer = Customer.create(params);
+            Customer customer = null;
+            try {
+                customer = Customer.create(params);
+            } catch (StripeException e) {
+                System.out.println("Error retrieving customer ID.. " + e.getMessage());
+            }
 
 
             customer_id = customer.getId();

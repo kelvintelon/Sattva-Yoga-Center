@@ -470,7 +470,7 @@ export default {
   },
   created() {
     if (this.$store.state.user.username == "admin") {
-      clientDetailService.getClientDetailsByClientId(this.$route.params.clientId).then((response) => {
+      clientDetailService.getClientDetailsByClientId(parseInt(this.$route.params.clientId)).then((response) => {
          if (response.status == 200) {
            this.clientDetails = response.data;
          } else {

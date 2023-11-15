@@ -62,7 +62,19 @@
             title="Email"
             outlined
           >Email
-            <v-icon>mdi-email</v-icon></v-btn></v-card
+            <v-icon>mdi-email</v-icon></v-btn>
+            <v-btn
+            color="#5633FF"
+            dark
+            class="mx-2"
+            v-bind="attrs"
+            v-on="on"
+            @click.prevent="stripeCustomerPage"
+            title="Email"
+            outlined
+          >Stripe
+            <v-icon>mdi-account-star</v-icon></v-btn>
+            </v-card
           ></v-col
         >
       </v-row>
@@ -126,8 +138,18 @@ export default {
       }
       
     },
+    stripeCustomerPage() {
+      clientDetailService.getCustomerPageByClientId(parseInt(this.$route.params.clientId)).then((response) => {
+        if (response.status == 200) {
+          if (confirm("Open client's Stripe Customer Page? Popups needs to be enabled")) {
+            window.open(response.data, '_blank');
+          }
+          
+        }
+      })
+    },
     getClientDetails() {
-      clientDetailService.getClientDetailsByClientId(this.$route.params.clientId).then((response) => {
+      clientDetailService.getClientDetailsByClientId(parseInt(this.$route.params.clientId)).then((response) => {
         if (response.data.client_id != 0) {
           this.clientDetails = response.data;
           this.$store.commit("SET_CLIENT_DETAILS", response.data);
@@ -168,7 +190,7 @@ export default {
   },
   created() {
     if (this.$store.state.user.username == 'admin') {
-    clientDetailService.getClientDetailsByClientId(this.$route.params.clientId).then((response) => {
+    clientDetailService.getClientDetailsByClientId(parseInt(this.$route.params.clientId)).then((response) => {
         if (response.data.client_id != 0) {
           this.clientDetails = response.data;
           this.$store.commit("SET_CLIENT_DETAILS", response.data);
