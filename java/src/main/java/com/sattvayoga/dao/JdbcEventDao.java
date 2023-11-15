@@ -1492,7 +1492,7 @@ public class JdbcEventDao implements EventDao {
 
                         // Delete it only if we cant switch it to another day and there's no attendance
                         // Find out if this event has an attendance
-                        if (!foundEmptySlot && classEvent.getAttendanceList().size() == 0) {
+                        if (!foundEmptySlot && (classEvent.getAttendanceList() == null || classEvent.getAttendanceList().size() == 0)) {
                             deleteEvent(classEvent.getEvent_id());
                         } else if (foundEmptySlot && !(assignedDay.equals("") && updatedClassDateRangeMap.get(assignedDay).equals(currentDay))) {
 

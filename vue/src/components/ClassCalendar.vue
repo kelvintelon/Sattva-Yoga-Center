@@ -908,7 +908,8 @@ export default {
         }
 
         let endTime = `${hours2}:${minutes2}`;
-
+        
+        let successful = true;
         for (let index = 0; index < this.dates.length; index++) {
           let chosenDate = this.dates[index];
           let newStartDate = new Date(chosenDate + " " + startTime).toJSON();
@@ -928,7 +929,7 @@ export default {
                 alert("Double Book Error. Failed to Create. Change event name")
                 this.closeSelectedCard();
               } else {
-                alert("Event created")
+                successful = true;
                 this.closeSelectedCard();
                 this.getAllEvents();
               }
@@ -938,11 +939,14 @@ export default {
               //     alert(index+=1)
               // }
             } else {
-              alert("Failed to create event");
+              alert("Failed to create event: " + this.event.start_time);
             }
           });
 
           //end of loop block
+        }
+        if (successful) {
+          alert("Event created")
         }
         // closes create event dialog
         this.close();
