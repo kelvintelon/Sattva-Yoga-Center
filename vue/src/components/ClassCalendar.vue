@@ -928,6 +928,7 @@ export default {
                 alert("Double Book Error. Failed to Create. Change event name")
                 this.closeSelectedCard();
               } else {
+                alert("Event created")
                 this.closeSelectedCard();
                 this.getAllEvents();
               }

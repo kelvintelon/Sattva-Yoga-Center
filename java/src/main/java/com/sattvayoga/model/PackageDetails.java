@@ -18,6 +18,8 @@ public class PackageDetails {
 
     private int package_order;
 
+    private int quantity;
+
     public PackageDetails(int package_id, String description, BigDecimal package_cost, int classes_amount, int package_duration, boolean unlimited, boolean is_visible_online, boolean is_recurring) {
         this.package_id = package_id;
         this.description = description;
@@ -30,6 +32,14 @@ public class PackageDetails {
     }
 
     public PackageDetails() {
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
     }
 
     public int getPackage_order() {
