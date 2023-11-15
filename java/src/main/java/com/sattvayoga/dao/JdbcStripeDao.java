@@ -143,7 +143,8 @@ public class JdbcStripeDao implements StripeDao {
                     String code = packagePurchaseDao.generateGiftCardCode();
                     packagePurchaseDao.createGiftCard(code, currentPackage.getPackage_cost().doubleValue());
                     int packagePurchaseId = packagePurchaseDao.createGiftCardPurchase(checkoutItemDTO);
-
+                    PackagePurchase packagePurchase1 = packagePurchaseDao.getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseId);
+                    packagesBeingBoughtForEmail += currentPackage.getDescription() + " - $0.00 - " + "Expires on: " + packagePurchase1.getExpiration_date().toString() + "<br>";
                     packagePurchaseIDs.add(packagePurchaseId);
 
                     try {
