@@ -1141,6 +1141,9 @@ public class JdbcStripeDao implements StripeDao {
 
     @Override
     public String getCustomerIdString(int retrievedClientId) {
+
+        SetStripeKey();
+
         ClientDetails clientDetails = clientDetailsDao.findClientByClientId(retrievedClientId);
 
         String customer_id = "";
