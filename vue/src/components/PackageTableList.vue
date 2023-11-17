@@ -66,7 +66,7 @@
                           @change="onPackageDurationChange"
                         ></v-select>
                         <v-text-field
-                          v-model="packageDetails.package_cost"
+                          v-model.number="packageDetails.package_cost"
                           class="mt-0 pt-0"
                           type="number"
                           style="width: 60px"
@@ -74,7 +74,7 @@
                           min="10"
                         ></v-text-field>
                         <v-text-field
-                          v-model="packageDetails.package_order"
+                          v-model.number="packageDetails.package_order"
                           class="mt-0 pt-0"
                           type="number"
                           style="width: 60px"
@@ -176,7 +176,7 @@
                         ></v-select>
                         
                         <v-text-field
-                          v-model="editedItem.package_cost"
+                          v-model.number="editedItem.package_cost"
                           class="mt-0 pt-0"
                           type="number"
                           style="width: 60px"
@@ -184,7 +184,7 @@
                           min="10"
                         ></v-text-field>
                         <v-text-field
-                          v-model="editedItem.package_order"
+                          v-model.number="editedItem.package_order"
                           class="mt-0 pt-0"
                           type="number"
                           style="width: 60px"

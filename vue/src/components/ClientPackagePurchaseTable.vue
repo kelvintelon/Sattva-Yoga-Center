@@ -76,7 +76,7 @@
                       align="center"
                     >
                       <v-text-field
-                        v-model="giftCardCost"
+                        v-model.number="giftCardCost"
                         class="mt-0 pt-0"
                         type="number"
                         style="width: 300px"

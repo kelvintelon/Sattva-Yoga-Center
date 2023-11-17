@@ -109,6 +109,23 @@ public class JdbcStripeDao implements StripeDao {
 
 //        PackageDetails firstPackageDetails = clientCheckoutDTO.getListOfPackages().get(0);
 
+        List<PackageDetails> selectedPackages = new ArrayList<>(clientCheckoutDTO.getSelectedCheckoutPackages());
+
+        for (int i = 0; i < selectedPackages.size(); i++) {
+            PackageDetails currentPackage = selectedPackages.get(i);
+            int quantity = currentPackage.getQuantity();
+
+            if (quantity >= 2) {
+                // Duplicate the current package based on quantity
+                for (int j = 1; j < quantity; j++) {
+                    // Create a copy of the package (you might need to implement a copy constructor or similar)
+                    PackageDetails copyPackage = currentPackage;
+                    clientCheckoutDTO.getSelectedCheckoutPackages().add(copyPackage);
+                }
+            }
+        }
+
+
         // if it's comp/Free then return immediately
         if (clientCheckoutDTO.isCompFree()) {
             // just process everything here and return at the end;

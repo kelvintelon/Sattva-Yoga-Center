@@ -95,7 +95,7 @@
                   <v-row>
                     <v-col>
                       <v-select
-                        label="Choose"
+                        label="Choose a package or several"
                         :items="availablePackages"
                         v-model="selectedPackages"
                         item-text="description"
@@ -169,62 +169,26 @@
                               ></v-text-field>
                         </v-col>
                       </v-row>
-                      <v-row>
-                        <!-- Gift Card Code -->
-                        
-                        <v-col v-if="!showGiftCodeInput && !showGiftCardResponse">
-                          <v-btn
-                            class=""
-                            outlined
-                            color="indigo"
-                            @click="showGiftCodeInput = true"
-                          >
-                            GiftCard Code
-                          </v-btn>
-                        </v-col>
-                        <v-col  v-if="showGiftCodeInput" sm="8" lg="6" md="6">
-                          <div>
+          
+                      
+                      <div v-for="(element, index) in selectedPackages" :key="index" class="truncate-text" >
+                        <v-row>
+                          <v-col sm="9" md="9" lg="9">
+                            <div style="color: rgba(245, 104, 71, 0.95)" class="">-{{ element.description }}</div>
+                          </v-col>
+                          <v-col>
                             <v-text-field
-                              v-model="giftCardCodeObject.code"
-                              label="Gift Code"
-                              outlined
-                            >
+                              v-model.number="element.quantity"
+                              label="Quantity"
+                              type="number"
+                              min="1"
+                              @input="updateQuantity(index, element)"
+                              class="mb-n4">
                             </v-text-field>
-                          </div>
-                        </v-col>
-                        <v-col v-if="showGiftCardResponse" sm="6" md="6" lg="6">
-                            <div>
-                              {{ giftCardResponse.message }}
-                            </div>
-                        </v-col>
-                        <v-col v-if="showGiftCodeInput">
-                          <v-btn depress color="primary" @click="checkGiftCard">
-                            Check
-                          </v-btn>
-                        </v-col>
-                        <v-col v-if="showGiftCardResponse">
-                          <v-text-field
-                            v-model.number="giftCardRedeemObject.amount"
-                            class="pt-0"
-                            type="number"
-                            label="Amount"
-                            min="0"
-                            prefix="$"
-                          ></v-text-field>
-                        </v-col>
-                        <v-col v-if="showGiftCodeInput || showGiftCardResponse">
-                          <v-btn
-                            class=""
-                            fab
-                            outlined
-                            small
-                            @click="function() { showGiftCodeInput = false; showGiftCardResponse = false; giftCardResponse = {} }"
-                          >
-                            <v-icon dark> mdi-close </v-icon>
-                          </v-btn>
-                        </v-col>
-                      </v-row>
-                      <v-row>
+                          </v-col>
+                        </v-row>
+                        </div>
+                        <v-row class="mt-1">
                         <v-col>
                           <v-text-field
                             v-if="!showPercentDiscount"
@@ -270,7 +234,7 @@
                           <v-col sm="4" v-if="showCashInput">
                           <v-text-field
                             v-model.number="balanceCash"
-                            class="mt-6 pt-0"
+                            class="mt-6 pt-0 mb-n8"
                             type="number"
                             label="Cash: $"
                             min="0"
@@ -280,7 +244,7 @@
                         <v-col sm="4" v-if="showCheckInput">
                           <v-text-field
                             v-model.number="balanceCheck"
-                            class="mt-6 pt-0"
+                            class="mt-6 pt-0 mb-n8"
                             type="number"
                             label="Check: $"
                             min="0"
@@ -291,7 +255,7 @@
                         
                           <v-text-field
                             v-model.number="totalCost"
-                            class="mt-6 pt-0"
+                            class="mt-6 pt-0 mb-n8"
                             type="number"
                             label="Balance: $"
                             min="0"
@@ -300,9 +264,64 @@
                         <v-spacer></v-spacer>
                         <v-spacer></v-spacer>
                       </v-row>
+                      <v-row>
+                        <!-- Gift Card Code -->
+                        <v-col v-if="!showGiftCodeInput && !showGiftCardResponse">
+                          <v-btn
+                            class=""
+                            outlined
+                            color="indigo"
+                            @click="showGiftCodeInput = true"
+                          >
+                            GiftCard Code
+                          </v-btn>
+                        </v-col>
+                        <v-col  v-if="showGiftCodeInput" sm="8" lg="6" md="6">
+                          <div>
+                            <v-text-field
+                              v-model="giftCardCodeObject.code"
+                              label="Gift Code"
+                              outlined
+                              class="mb-n8"
+                            >
+                            </v-text-field>
+                          </div>
+                        </v-col>
+                        <v-col v-if="showGiftCardResponse" sm="6" md="6" lg="6">
+                            <div>
+                              {{ giftCardResponse.message }}
+                            </div>
+                        </v-col>
+                        <v-col v-if="showGiftCodeInput">
+                          <v-btn depress color="primary" @click="checkGiftCard">
+                            Check
+                          </v-btn>
+                        </v-col>
+                        <v-col v-if="showGiftCardResponse">
+                          <v-text-field
+                            v-model.number="giftCardRedeemObject.amount"
+                            class="pt-0"
+                            type="number"
+                            label="Amount"
+                            min="0"
+                            prefix="$"
+                          ></v-text-field>
+                        </v-col>
+                        <v-col v-if="showGiftCodeInput || showGiftCardResponse">
+                          <v-btn
+                            class=""
+                            fab
+                            outlined
+                            small
+                            @click="function() { showGiftCodeInput = false; showGiftCardResponse = false; giftCardResponse = {} }"
+                          >
+                            <v-icon dark> mdi-close </v-icon>
+                          </v-btn>
+                        </v-col>
+                      </v-row>
                        <v-btn
                           v-if="!showPaymentMethodOptions"
-                          class="mb-3"
+                          class="mb-3 mt-3"
                           outlined
                           color="red"
                           @click="preparePaymentMethods"
@@ -790,28 +809,34 @@ export default {
     },
     giftCardRedeemObject: {
       handler: function() {
-        let runningbalance = 0;
-        // My attempt at capping the balance cash
+        let runningTotal = 0;
+        // My attempt at capping the balance cashrunningTotal
         for (let index = 0; index < this.selectedPackages.length; index++) {
-            let element = this.selectedPackages[index];
-            runningbalance += element.package_cost;
+        let element = this.selectedPackages[index];
+        let cost = 0;
+        if (element.quantity == 0) {
+          cost += element.package_cost;
+        } else {
+          cost += (element.package_cost * element.quantity)
+        }
+        runningTotal += cost;
         }
         if (this.showCashInput) {
-          runningbalance -= this.balanceCash;
+          runningTotal -= this.balanceCash;
           }
           if (this.showCheckInput) {
-          runningbalance -= this.balanceCheck;
+          runningTotal -= this.balanceCheck;
           }
           if (this.returnDiscount > 0) {
-        runningbalance -= this.returnDiscount
+        runningTotal -= this.returnDiscount
       }
 
         if (this.giftCardRedeemObject.amount > this.giftCardResponse.amountAvailable) {
           this.giftCardRedeemObject.amount = this.giftCardResponse.amountAvailable
         }
 
-        if (this.giftCardRedeemObject.amount > runningbalance) {
-          this.giftCardRedeemObject.amount = runningbalance;
+        if (this.giftCardRedeemObject.amount > runningTotal) {
+          this.giftCardRedeemObject.amount = runningTotal;
         }
       },
       deep: true,
@@ -852,7 +877,13 @@ export default {
       let foundSubscription = false;
       for (let index = 0; index < this.selectedPackages.length; index++) {
         let element = this.selectedPackages[index];
-        runningTotal += element.package_cost;
+        let cost = 0;
+        if (element.quantity == 0) {
+          cost += element.package_cost;
+        } else {
+          cost += (element.package_cost * element.quantity)
+        }
+        runningTotal += cost;
         if (element.description.includes("Gift")) {
           this.showGiftCardForm = true;
           this.clientCheckout.emailForGift = this.$store.state.clientDetails.email;
@@ -959,6 +990,9 @@ export default {
 
   },
   methods: {
+    updateQuantity(index, element) {
+      this.selectedPackages[index].quantity = element.quantity;
+    },
     toggleCashForm() {
       
       this.showCashInput = false;
@@ -1031,8 +1065,8 @@ export default {
         if (response.status == 200) {
           // adjust this commit in the future perhaps
           this.$store.commit("SET_PACKAGE_LIST", response.data);
-
-          this.availablePackages = response.data;
+            
+          this.availablePackages = response.data.map(item => ({ ...item, quantity: 1 }));
         } else {
           alert("Error retrieving package information");
         }
@@ -1555,47 +1589,59 @@ export default {
 
   computed: {
     returnCash() {
-      let runningbalance = 0;
+      let runningTotal = 0;
       for (let index = 0; index < this.selectedPackages.length; index++) {
-        runningbalance += this.selectedPackages[index].package_cost;
+        let cost = 0;
+        if (this.selectedPackages[index].quantity == 0) {
+          cost += this.selectedPackages[index].package_cost;
+        } else {
+          cost += (this.selectedPackages[index].package_cost * this.selectedPackages[index].quantity)
+        }
+        runningTotal += cost;
       }
       if (this.showGiftCardResponse) {
-        runningbalance -= this.giftCardRedeemObject.amount;
+        runningTotal -= this.giftCardRedeemObject.amount;
       }
       if (this.showCheckInput) {
-        runningbalance -= this.balanceCheck;
+        runningTotal -= this.balanceCheck;
       }
       if (this.returnDiscount > 0) {
-        runningbalance -= this.returnDiscount
+        runningTotal -= this.returnDiscount
       }
-      if (this.showCashInput && runningbalance >= 0) {
-        if (this.balanceCash < runningbalance) {
+      if (this.showCashInput && runningTotal >= 0) {
+        if (this.balanceCash < runningTotal) {
           return this.balanceCash;
         } else {
-          return runningbalance;
+          return runningTotal;
         }
       }  
         return 0;
     },
     returnCheck() {
-      let runningbalance = 0;
+      let runningTotal = 0;
       for (let index = 0; index < this.selectedPackages.length; index++) {
-        runningbalance += this.selectedPackages[index].package_cost;
+        let cost = 0;
+        if (this.selectedPackages[index].quantity == 0) {
+          cost += this.selectedPackages[index].package_cost;
+        } else {
+          cost += (this.selectedPackages[index].package_cost * this.selectedPackages[index].quantity)
+        }
+        runningTotal += cost;
       }
       if (this.showGiftCardResponse) {
-        runningbalance -= this.giftCardRedeemObject.amount;
+        runningTotal -= this.giftCardRedeemObject.amount;
       }
       if (this.showCashInput) {
-        runningbalance -= this.balanceCash;
+        runningTotal -= this.balanceCash;
       }
       if (this.returnDiscount > 0) {
-        runningbalance -= this.returnDiscount
+        runningTotal -= this.returnDiscount
       }
-      if (this.showCheckInput && runningbalance >= 0) {
-        if (this.balanceCheck < runningbalance) {
+      if (this.showCheckInput && runningTotal >= 0) {
+        if (this.balanceCheck < runningTotal) {
           return this.balanceCheck;
         } else {
-          return runningbalance;
+          return runningTotal;
         }
       }  
         return 0;
@@ -1603,7 +1649,14 @@ export default {
     returnDiscount() {
       let runningTotal = 0;
       for (let index = 0; index < this.selectedPackages.length; index++) {
-        runningTotal += this.selectedPackages[index].package_cost;
+        let cost = 0;
+        if (this.selectedPackages[index].quantity == 0) {
+          cost += this.selectedPackages[index].package_cost;
+        } else {
+          cost += (this.selectedPackages[index].package_cost * this.selectedPackages[index].quantity)
+        }
+        runningTotal += cost;
+        
       }
       if (this.showGiftCardResponse) {
           runningTotal -= this.giftCardRedeemObject.amount;
@@ -1636,7 +1689,13 @@ export default {
     returnTotal() {
       let runningTotal = 0;
       for (let index = 0; index < this.selectedPackages.length; index++) {
-        runningTotal = runningTotal + this.selectedPackages[index].package_cost;
+        let cost = 0;
+        if (this.selectedPackages[index].quantity == 0) {
+          cost += this.selectedPackages[index].package_cost;
+        } else {
+          cost += (this.selectedPackages[index].package_cost * this.selectedPackages[index].quantity)
+        }
+        runningTotal += cost;
       }
       if (this.showGiftCardResponse) {
         runningTotal -= this.giftCardRedeemObject.amount;
@@ -1671,4 +1730,8 @@ export default {
 </script>
 
 <style>
+.truncate-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 </style>
