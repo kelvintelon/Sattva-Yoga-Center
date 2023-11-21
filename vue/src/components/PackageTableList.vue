@@ -447,7 +447,16 @@ export default {
         } else {
           alert("Error retrieving package information");
         }
-      });
+      })
+      .catch((error) => {
+          const response = error.response;
+          if (response.status === 401) {
+            this.$router.push("/login");
+          }
+          if (response.status == 403) {
+            this.$router.push("/logout")
+          }
+        });
     },
     editItem(item) {
       this.editedIndex = this.packages.indexOf(item);

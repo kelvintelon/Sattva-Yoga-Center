@@ -49,6 +49,7 @@
 <script>
 
 import VideoComponent from "../components/VideoComponent.vue"
+import clientDetailService from "../services/ClientDetailService";
 // import VideoService from "../services/VideoService";
 
 export default {
@@ -67,10 +68,50 @@ data() {
 created() {
   if (this.$store.state.token == '') {
     this.$router.push({ name: "login" });
-      }
-      if (this.$store.state.user.username != "admin" && !this.$store.state.clientDetails.is_allowed_video) {
-        alert("Please contact the owner to get permissions for videos")
-        this.$router.push({ name: "home" });
+  }
+      if (this.$store.state.user.username != "admin") {
+
+        clientDetailService
+            .getClientDetailsOfLoggedInUser()
+            .then((response) => {
+              if (response.data.client_id != 0) {
+                this.$store.commit("SET_CLIENT_DETAILS", response.data);
+                if (response.data.is_allowed_video == false) {
+                  this.$store.state.clientDetails.is_allowed_video
+
+                  alert("Please contact the owner to get permissions for videos")
+                  this.$router.push({ name: "home" });
+                }
+              }});
+      } else {
+        clientDetailService
+            .getClientDetailsOfAdminUser()
+            .then((response) => {
+              response;
+              this.checkLinks();
+            })
+            .catch((error) => {
+              const response = error.response;
+              if (response.status === 401) {
+                this.$store.state.token = "";
+                this.links = [];
+                this.links.push(
+                  { text: "Login", route: "/login" },
+                  { text: "Register", route: "/register" }
+                );
+                if (
+                  this.$router.currentRoute.name != "home" &&
+                  this.$router.currentRoute.name != "login" &&
+                  this.$router.currentRoute.name != "register"
+                ) {
+                  this.$router.push({ name: "login" });
+                }
+                this.checkLinks();
+              }
+              if (response.status == 403) {
+                this.$router.push({name: "logout"});
+              }
+            });
       }
   // VideoService.getVideoFilenames().then((response) => {
   //   if (response.status == 200) {

@@ -677,6 +677,9 @@ export default {
           if (response.status === 401) {
             this.$router.push("/login");
           }
+          if (response.status == 403) {
+            this.$router.push("/logout")
+          }
         });
     },
     endSecondIntersect(entries, observer, isIntersecting) {
@@ -749,6 +752,9 @@ export default {
           const response = error.response;
           if (response.status === 401) {
             this.$router.push("/login");
+          }
+          if (response.status == 403) {
+            this.$router.push("/logout")
           }
         });
     },
@@ -997,6 +1003,9 @@ export default {
           const response = error.response;
           if (response.status === 401) {
             this.$router.push("/login");
+          }
+          if (response.status == 403) {
+            this.$router.push("/logout")
           }
         });
     },

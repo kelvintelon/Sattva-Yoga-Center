@@ -24,6 +24,9 @@ export default {
     getClientDetailsOfLoggedInUser() {
         return axios.get('/getClientDetails')
     },
+    getClientDetailsOfAdminUser() {
+        return axios.get('/getClientDetailsOfAdminUser')
+    },
     getClientDetailsByClientId(clientId) {
         return axios.get(`/getClientDetailsByClientId/${clientId}`)
     },

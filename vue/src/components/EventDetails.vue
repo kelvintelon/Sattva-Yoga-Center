@@ -597,7 +597,6 @@ export default {
             this.overlay = false;
             alert("Successfully added clients to roster");
             this.getEventDetailsCall();
-            this.getAutoCompletedFirstClientTable();
             this.selectedClients = [];
             this.clientDetails.first_name = "";
             this.clientDetails.last_name = "";
@@ -626,7 +625,6 @@ export default {
           if (response.status == 201) {
             alert("Successfully added clients to roster");
             this.getEventDetailsCall();
-            this.getAutoCompletedFirstClientTable();
             this.selectedClients = [];
             this.clientDetails.first_name = "";
             this.clientDetails.last_name = "";

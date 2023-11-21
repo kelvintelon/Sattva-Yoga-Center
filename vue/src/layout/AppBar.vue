@@ -230,7 +230,7 @@ export default {
       if (this.$store.state.token != "") {
         if (this.$store.state.user.username == "admin") {
           clientDetailService
-            .getClientDetailsOfLoggedInUser()
+            .getClientDetailsOfAdminUser()
             .then((response) => {
               response;
               this.checkLinks();
@@ -252,6 +252,9 @@ export default {
                   this.$router.push({ name: "login" });
                 }
                 this.checkLinks();
+              }
+              if (response.status == 403) {
+                this.$router.push({name: "logout"});
               }
             });
         } else {
