@@ -822,7 +822,7 @@ public class JdbcStripeDao implements StripeDao {
     private String modifyMap(ClientCheckoutDTO clientCheckoutDTO, Map<String, String> metaDataMap, Boolean keyedStoredOrSwiped) {
         List<PackageDetails> listOfPackagesBeingPurchased = clientCheckoutDTO.getListOfPackages();
 
-
+        HashMap<String, Integer> packageNamesAndQuantity = new HashMap<>();
         int runningDiscountAmount = clientCheckoutDTO.getDiscount();
 
         Map<String, String> mapForDescription = new HashMap<>();
@@ -835,9 +835,14 @@ public class JdbcStripeDao implements StripeDao {
 //            metaDataMap.put("saveGiftCardEmail", String.valueOf(clientCheckoutDTO.isSaveEmailGiftCardPurchase()));
         }
 
-//        if (clientCheckoutDTO.isSaveEmailReceiptPurchase()) {
-//            metaDataMap.put("saveReceiptEmail", clientCheckoutDTO.getEmailForReceipt());
-//        }
+        // Logic to give the package a unique name in metadata.
+        if (packageNamesAndQuantity.containsKey(currentPackageName)) {
+            int quantity = packageNamesAndQuantity.get(currentPackageName) + 1;
+            currentPackageName = currentPackageName + " -" + quantity;
+            packageNamesAndQuantity.put(currentPackageName, quantity);
+        } else {
+            packageNamesAndQuantity.put(currentPackageName, 1);
+        }
 
         int packagePrice = listOfPackagesBeingPurchased.get(i).getPackage_cost().intValue();
 

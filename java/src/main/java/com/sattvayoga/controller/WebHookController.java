@@ -20,10 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 public class WebHookController {
@@ -180,14 +177,22 @@ public class WebHookController {
                         metaDataMap.remove("saveReceiptEmail");
                     }
 
+
+
                     // By this point the map should only have packages
                     for (Map.Entry<String,String> mapElement : metaDataMap.entrySet()) {
+
                         String keyDescription = mapElement.getKey();
                         String value = mapElement.getValue();
 
                         String[] valueArray = value.split(",");
                         int totalPaid = Integer.valueOf(valueArray[0]);
                         int discount = Integer.valueOf(valueArray[1]);
+
+                        // TODO: Check for multiple quantities here
+                        if (keyDescription.contains("-")) {
+                            keyDescription = keyDescription.substring(0,keyDescription.length()-3);
+                        }
 
                         // Find original package details
                         PackageDetails currentPackageDetails = packageDetailsDao.findPackageByPackageName(keyDescription);
