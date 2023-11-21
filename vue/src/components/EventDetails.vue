@@ -190,8 +190,8 @@
                         label="Email (Optional)"
                      
                       ></v-text-field>
-                      <v-checkbox v-model="clientDetails.is_on_email_list" label="Join Email List? (Optional)"></v-checkbox>
-                  <v-checkbox v-model="clientDetails.is_allowed_video" label="Allowed Video? (Optional)"></v-checkbox>
+                      <v-checkbox v-if="showNewClientForm" v-model="clientDetails.is_on_email_list" label="Join Email List? (Optional)"></v-checkbox>
+                  <v-checkbox v-if="showNewClientForm" v-model="clientDetails.is_allowed_video" label="Allowed Video? (Optional)"></v-checkbox>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -597,6 +597,7 @@ export default {
             this.overlay = false;
             alert("Successfully added clients to roster");
             this.getEventDetailsCall();
+            this.getAutoCompletedFirstClientTable();
             this.selectedClients = [];
             this.clientDetails.first_name = "";
             this.clientDetails.last_name = "";
@@ -625,6 +626,7 @@ export default {
           if (response.status == 201) {
             alert("Successfully added clients to roster");
             this.getEventDetailsCall();
+            this.getAutoCompletedFirstClientTable();
             this.selectedClients = [];
             this.clientDetails.first_name = "";
             this.clientDetails.last_name = "";
@@ -801,7 +803,7 @@ export default {
         setTimeout(
           () =>
            
-            ( this.setFirstAutcompleteSearch(event.target.value) 
+            ( this.setFirstAutocompleteSearch(event.target.value) 
             ),
             
           250
@@ -809,7 +811,7 @@ export default {
          
       }
     },
-    setFirstAutcompleteSearch(search) {
+    setFirstAutocompleteSearch(search) {
       if (search != undefined && search.length > 0) {
         this.firstAutocompleteSearch = search;
         this.firstAutocompletePage = 1;
