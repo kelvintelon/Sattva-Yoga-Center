@@ -12,8 +12,8 @@
       fade-img-on-scroll
       height="150px"
       contain
-      src="..\\assets\\pexels-neosiam-4498792.png"
-      color="rgba(245, 104, 71, 0.95)"
+      
+      color="rgba(220, 3, .46, 255)"
     >
       <template v-slot:img="{ props }">
         <v-img v-bind="props"></v-img>

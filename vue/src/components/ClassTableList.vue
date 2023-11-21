@@ -754,9 +754,16 @@ export default {
       
     },
     reset() {
-      this.$refs.form.reset();
+      this.classDetails = {
+        class_description: "",
+        teacher_id: "",
+        class_duration: 60,
+        start_time: "",
+        is_paid: true,
+        is_repeating: false,
+        date_range: [],
+      }
     },
-
     submit() {
       this.dialog=false;
       this.loading = true;
