@@ -139,7 +139,7 @@ public class JdbcStripeDao implements StripeDao {
 //                PackageDetails currentPackage = clientCheckoutDTO.getSelectedCheckoutPackages().get(i);
 //                packagesBeingBoughtForEmail += currentPackage.getDescription() + "\n";
 //            }
-
+            int count = 1;
             // Insert everything that was in the list into package purchase
             //  1. grab package purchase IDs and package description
             for (int i = 0; i < listOfPackagesBeingPurchased.size(); i++) {
@@ -161,7 +161,8 @@ public class JdbcStripeDao implements StripeDao {
                     packagePurchaseDao.createGiftCard(code, currentPackage.getPackage_cost().doubleValue());
                     int packagePurchaseId = packagePurchaseDao.createGiftCardPurchase(checkoutItemDTO);
                     PackagePurchase packagePurchase1 = packagePurchaseDao.getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseId);
-                    packagesBeingBoughtForEmail += currentPackage.getDescription() + " - $0.00 - " + "Expires on: " + packagePurchase1.getExpiration_date().toString() + "<br>";
+                    packagesBeingBoughtForEmail += count + ". " + currentPackage.getDescription() + " - $0.00 - " + "Expires on: " + packagePurchase1.getExpiration_date().toString() + "<br>";
+                    count++;
                     packagePurchaseIDs.add(packagePurchaseId);
 
                     try {
@@ -183,7 +184,8 @@ public class JdbcStripeDao implements StripeDao {
 
                     int packagePurchaseId = packagePurchaseDao.createAdminPackagePurchase(packagePurchase);
                     PackagePurchase packagePurchase1 = packagePurchaseDao.getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseId);
-                    packagesBeingBoughtForEmail += currentPackage.getDescription() + " - $0.00 - " + "Expires on: " + packagePurchase1.getExpiration_date().toString() + "<br>";
+                    packagesBeingBoughtForEmail += count + ". " + currentPackage.getDescription() + " - $0.00 - " + "Expires on: " + packagePurchase1.getExpiration_date().toString() + "<br>";
+                    count++;
                     packagePurchaseIDs.add(packagePurchaseId);
 
                 }
@@ -247,7 +249,7 @@ public class JdbcStripeDao implements StripeDao {
 //                PackageDetails currentPackage = clientCheckoutDTO.getSelectedCheckoutPackages().get(i);
 //                packagesBeingBoughtForEmail += currentPackage.getDescription() + "\n";
 //            }
-
+            int count = 1;
 
             // Insert everything that was in the list into package purchase
             //  1. grab package purchase IDs and package description
@@ -307,8 +309,8 @@ public class JdbcStripeDao implements StripeDao {
                     packagePurchaseIDs.add(packagePurchaseId);
 
                     PackagePurchase packagePurchase1 = packagePurchaseDao.getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseId);
-                    packagesBeingBoughtForEmail += currentPackage.getDescription() + " - $" + currentPackage.getPackage_cost() + " - " + "Expires on: " + packagePurchase1.getExpiration_date().toString()  + "<br>";
-
+                    packagesBeingBoughtForEmail += count + ". " +  currentPackage.getDescription() + " - $" + currentPackage.getPackage_cost() + " - " + "Expires on: " + packagePurchase1.getExpiration_date().toString()  + "<br>";
+                    count++;
 
                     try {
                         senderService.sendEmail(giftEmail,"Sattva Yoga Center Gift Card Code", "Your Gift Card code is: " + code + " . Please note: The Gift Card Code can only be redeemed in person. Once redeemed, it cannot be used by anyone else.");
@@ -366,8 +368,8 @@ public class JdbcStripeDao implements StripeDao {
                     packagePurchaseIDs.add(packagePurchaseId);
 
                     PackagePurchase packagePurchase1 = packagePurchaseDao.getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseId);
-                    packagesBeingBoughtForEmail += currentPackage.getDescription() + " - $" + currentPackage.getPackage_cost() + " - " + "Expires on: " + packagePurchase1.getExpiration_date().toString() + "<br>";
-
+                    packagesBeingBoughtForEmail += count + ". " +  currentPackage.getDescription() + " - $" + currentPackage.getPackage_cost() + " - " + "Expires on: " + packagePurchase1.getExpiration_date().toString() + "<br>";
+                    count++;
                 }
 
             }

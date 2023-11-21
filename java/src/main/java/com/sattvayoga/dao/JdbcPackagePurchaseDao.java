@@ -166,7 +166,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         String usedPaymentTypes = setUsedPaymentTypes(usedPaymentTypesPrototype, compFree, runningTotal, saleId);
 
         String packagesBeingBoughtForEmail = "";
-
+        int count = 1;
         for (int i = 0; i < listOfPackagesPurchased.size(); i++) {
             PackagePurchase currentPackage = listOfPackagesPurchased.get(i);
 
@@ -176,7 +176,8 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 amountPaid = currentPackage.getTotal_amount_paid().doubleValue() + currentPackage.getDiscount().doubleValue();
             }
 
-            packagesBeingBoughtForEmail += getPackageDescriptionByPackageId(currentPackage.getPackage_id()) + " - $" + amountPaid + " - " + "Expires on: " + currentPackage.getExpiration_date().toString() + "<br>";
+            packagesBeingBoughtForEmail += count + ". " +  getPackageDescriptionByPackageId(currentPackage.getPackage_id()) + " - $" + amountPaid + " - " + "Expires on: " + currentPackage.getExpiration_date().toString() + "<br>";
+            count++;
         }
 
         packagesBeingBoughtForEmail += "<br>";
@@ -190,8 +191,11 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         ClientCheckoutDTO clientCheckoutDTO = new ClientCheckoutDTO();
         clientCheckoutDTO.setSendEmail(true);
         clientCheckoutDTO.setEmailForReceipt(resendEmailDTO.getEmail());
-        sendEmailReceipt(clientCheckoutDTO, packagesBeingBoughtForEmail, saleId, saleDate, firstName, subject, subTotal, tax, total, usedPaymentTypes);
-
+        try {
+            sendEmailReceipt(clientCheckoutDTO, packagesBeingBoughtForEmail, saleId, saleDate, firstName, subject, subTotal, tax, total, usedPaymentTypes);
+        } catch (Throwable e) {
+            System.out.println("Error sending gift card email to client id: " + clientCheckoutDTO.getClient_id());
+        }
         // You need all the payment methods that were used, plug in the sale id into the transaction table to find that out.
     }
 
