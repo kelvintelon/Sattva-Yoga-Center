@@ -61,7 +61,7 @@ public class DatabaseUploadController {
     @PostMapping("/uploadPackages")
     public void uploadPackages(@RequestParam("file")MultipartFile multipartFile) {
 
-
+        packageDetailsDao.uploadPackageCsv(multipartFile);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

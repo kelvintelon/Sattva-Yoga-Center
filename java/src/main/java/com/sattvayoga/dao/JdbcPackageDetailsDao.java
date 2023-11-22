@@ -1,12 +1,21 @@
 package com.sattvayoga.dao;
 
+import com.sattvayoga.model.ClassEvent;
+import com.sattvayoga.model.ClientDetails;
 import com.sattvayoga.model.PackageDetails;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.mail.search.SearchTerm;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.Timestamp;
+import java.util.*;
 
 @Component
 public class JdbcPackageDetailsDao implements PackageDetailsDao {
@@ -129,7 +138,155 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
         return packageDetails;
     }
 
-   @Override
+    @Override
+    public void uploadPackageCsv(MultipartFile multipartFile) {
+
+        int count = 0;
+
+        long startTimeForEntireUpload = System.nanoTime();
+
+        List<String> listOfStringsFromBufferedReader = new ArrayList<>();
+
+        HashSet<PackageDetails> setOfPackageDetailsFromFile = new HashSet<>();
+
+        try (BufferedReader fileReader = new BufferedReader(new
+                InputStreamReader(multipartFile.getInputStream(), "UTF-8"))) {
+
+            String line;
+            while ((line = fileReader.readLine()) != null) {
+
+                if (count > 0) {
+
+                    listOfStringsFromBufferedReader.add(line);
+
+                }
+                count++;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        readLinesFromListAndPopulateSets(listOfStringsFromBufferedReader, setOfPackageDetailsFromFile);
+
+        // We turn it into a list in order to modify as we iterate
+        List<PackageDetails> packageDetailsList = new ArrayList<>(setOfPackageDetailsFromFile);
+
+        Set<String> packageNamesSet = new HashSet<>();
+        List<PackageDetails> getAllPackages = getAllPackages();
+
+
+        for (PackageDetails packageObj:
+             getAllPackages) {
+            packageNamesSet.add(packageObj.getDescription());
+        }
+
+        //TODO: Check duplicates with A Set<String> of existing package names,  then remove that packageDetails from setOfPackageDetails
+        // Loop through the packageDetailsList
+        for (int i = 0; i < packageDetailsList.size(); i++) {
+            PackageDetails currentPackage = packageDetailsList.get(i);
+            if (packageNamesSet.contains(currentPackage.getDescription())) {
+                setOfPackageDetailsFromFile.remove(currentPackage);
+            }
+        }
+
+        if (!setOfPackageDetailsFromFile.isEmpty()) {
+            batchCreatePackages(setOfPackageDetailsFromFile);
+        }
+
+    }
+
+    private void readLinesFromListAndPopulateSets(List<String> listOfStringsFromBufferedReader, HashSet<PackageDetails> setOfPackageDetailsFromFile) {
+        for(int i = 0; i < listOfStringsFromBufferedReader.size(); i++) {
+            PackageDetails packageDetails = new PackageDetails();
+
+            String thisLine = listOfStringsFromBufferedReader.get(i);
+            String[] splitLine = thisLine.split(",");
+            int packageId = 0;
+            if (!splitLine[0].isEmpty()) {
+                packageId = Integer.valueOf(splitLine[0]);
+            }
+
+            packageDetails.setPackage_id(packageId);
+
+            String description = splitLine[1];
+
+            packageDetails.setDescription(description);
+
+            String packageCostString = splitLine[2];
+
+            BigDecimal packageCost = new BigDecimal(packageCostString);
+
+            packageDetails.setPackage_cost(packageCost);
+
+            String classAmountString = splitLine[3];
+
+            int classAmount = Integer.valueOf(classAmountString);
+
+            packageDetails.setClasses_amount(classAmount);
+
+            String packageDurationString = splitLine[4];
+
+            int packageDuration = Integer.valueOf(packageDurationString);
+
+            packageDetails.setPackage_duration(packageDuration);
+
+            String unlimitedString = splitLine[5];
+
+            boolean unlimited = Boolean.valueOf(unlimitedString.toLowerCase());
+
+            packageDetails.setUnlimited(unlimited);
+
+            String visibleOnlineString = splitLine[6];
+
+            boolean isVisibleOnline = Boolean.valueOf(visibleOnlineString.toLowerCase());
+
+            packageDetails.setIs_visible_online(isVisibleOnline);
+
+            String isRecurringString = splitLine[7];
+
+            boolean isRecurring = Boolean.valueOf(isRecurringString.toLowerCase());
+
+            packageDetails.setIs_recurring(isRecurring);
+
+            String isActiveString = splitLine[8];
+
+            boolean isActive = Boolean.valueOf(isActiveString.toLowerCase());
+
+            packageDetails.setActive(isActive);
+
+            String orderString = splitLine[9];
+
+            int order = Integer.valueOf(orderString);
+
+            packageDetails.setPackage_order(order);
+
+            // Set the packageDetails object into the set
+            setOfPackageDetailsFromFile.add(packageDetails);
+        }
+    }
+
+    public void batchCreatePackages(final Collection<PackageDetails> packages) {
+        jdbcTemplate.batchUpdate(
+                "INSERT INTO package_details (package_id, description, package_cost, " +
+                        "classes_amount, package_duration, unlimited, is_visible_online, " +
+                        "is_recurring, active, package_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                packages,
+                100,
+                (PreparedStatement ps, PackageDetails packageDetails) -> {
+                    ps.setInt(1, packageDetails.getPackage_id());
+                    ps.setString(2, packageDetails.getDescription());
+                    ps.setBigDecimal(3, packageDetails.getPackage_cost());
+                    ps.setInt(4, packageDetails.getClasses_amount());
+                    ps.setInt(5, packageDetails.getPackage_duration());
+                    ps.setBoolean(6, packageDetails.isUnlimited());
+                    ps.setBoolean(7, packageDetails.isIs_visible_online());
+                    ps.setBoolean(8, packageDetails.isIs_recurring());
+                    ps.setBoolean(9, packageDetails.isActive());
+                    ps.setInt(10, packageDetails.getPackage_order());
+                });
+    }
+
+    @Override
    public void updateSinglePackage(PackageDetails packageDetails) {
         String sql = "UPDATE package_details SET package_id = ? , " +
                 "description = ? , " +

@@ -1,6 +1,7 @@
 package com.sattvayoga.dao;
 
 import com.sattvayoga.model.PackageDetails;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -21,4 +22,7 @@ public interface PackageDetailsDao {
     PackageDetails findPackageByPackageName(String packageName);
 
     PackageDetails findPackageBySubscriptionDuration(int subscriptionDuration);
+
+    void uploadPackageCsv(MultipartFile multipartFile);
+
 }
