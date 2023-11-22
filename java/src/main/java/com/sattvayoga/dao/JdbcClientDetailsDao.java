@@ -112,6 +112,86 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
     }
 
     @Override
+    public PaginatedListOfClients getPaginatedClientsForEvent(int page, int pageSize, String search, String sortBy, boolean sortDesc, int eventId) {
+        int offset = 0;
+        String sortDirection = (sortDesc ? "DESC" : "ASC");
+
+        String offsetString = "";
+        if (page == 1) {
+            offset = pageSize * (page);
+            offsetString = " LIMIT ?";
+        } else {
+            offset = pageSize * (page-1);
+            offsetString = " OFFSET ? LIMIT " + pageSize;
+        }
+
+        List<ClientDetails> allClients = new ArrayList<>();
+        String searchString = "";
+        if (!search.isEmpty()) {
+            search = "%" + search + "%";
+            searchString = " WHERE client_id NOT IN (SELECT client_id from client_event WHERE event_id = ?) AND (first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ?)";
+
+            // TODO: Here is where you filter for clients that are already tied to this specific event's attendance
+
+            String sql = "SELECT * FROM client_details" + searchString + " ORDER BY " + sortBy + " " + sortDirection + offsetString;
+
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, eventId, search, search, search, offset);
+
+            while (result.next()) {
+                ClientDetails clientDetails = mapRowToClient(result);
+
+                clientDetails.setFull_address(clientDetails.getStreet_address() + " "
+                        + clientDetails.getCity() + " " + clientDetails.getState_abbreviation() + " " + clientDetails.getZip_code());
+
+                clientDetails.setQuick_details("(" + clientDetails.getClient_id() + ")" + " " + clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
+
+                String familyName = getFamilyNameByClientId(clientDetails.getClient_id());
+                clientDetails.setFamily_name(familyName);
+                allClients.add(clientDetails);
+            }
+
+            PaginatedListOfClients paginatedListOfClients = new PaginatedListOfClients();
+            paginatedListOfClients.setListOfClients(allClients);
+
+            String countSql = "Select COUNT(*) from client_details" + searchString;
+
+            int count = jdbcTemplate.queryForObject(countSql, Integer.class,  search, search, search);
+
+            paginatedListOfClients.setTotalRows(count);
+            return paginatedListOfClients;
+
+        } else {
+
+            String sql = "SELECT * FROM client_details ORDER BY " + sortBy + " " + sortDirection + offsetString;
+
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, offset);
+
+            while (result.next()) {
+                ClientDetails clientDetails = mapRowToClient(result);
+
+                clientDetails.setFull_address(clientDetails.getStreet_address() + " "
+                        + clientDetails.getCity() + " " + clientDetails.getState_abbreviation() + " " + clientDetails.getZip_code());
+
+                clientDetails.setQuick_details("(" + clientDetails.getClient_id() + ")" + " " + clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
+
+                String familyName = getFamilyNameByClientId(clientDetails.getClient_id());
+                clientDetails.setFamily_name(familyName);
+                allClients.add(clientDetails);
+            }
+
+            PaginatedListOfClients paginatedListOfClients = new PaginatedListOfClients();
+            paginatedListOfClients.setListOfClients(allClients);
+
+            String countSql = "Select COUNT(*) from client_details";
+
+            int count = jdbcTemplate.queryForObject(countSql, Integer.class);
+
+            paginatedListOfClients.setTotalRows(count);
+            return paginatedListOfClients;
+        }
+    }
+
+    @Override
     public PaginatedListOfClients getAllPaginatedDuplicateClients(int page, int pageSize, String search) {
 
         int offset = 0;

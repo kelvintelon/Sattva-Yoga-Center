@@ -597,6 +597,7 @@ export default {
             this.overlay = false;
             alert("Successfully added clients to roster");
             this.getEventDetailsCall();
+            this.getAutoCompletedFirstClientTable();
             this.selectedClients = [];
             this.clientDetails.first_name = "";
             this.clientDetails.last_name = "";
@@ -823,7 +824,7 @@ export default {
     getAutoCompletedFirstClientTable() {
       
       clientDetailService
-        .getPaginatedClients(this.firstAutocompletePage, this.pageSize, this.firstAutocompleteSearch)
+        .getPaginatedClientsForEvent(parseInt(this.$route.params.eventId), this.firstAutocompletePage, this.pageSize, this.firstAutocompleteSearch)
         .then((response) => {
           if (response.status == 200) {
             this.paginatedObject = response.data;
