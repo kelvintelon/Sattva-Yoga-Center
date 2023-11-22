@@ -13,7 +13,7 @@
       height="150px"
       contain
       
-      color="rgba(220, 3, .46, 255)"
+      color="rgba(245, 104, 71, 0.95)"
     >
       <template v-slot:img="{ props }">
         <v-img v-bind="props"></v-img>
