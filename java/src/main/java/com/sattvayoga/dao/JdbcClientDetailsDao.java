@@ -162,9 +162,9 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
         } else {
 
-            String sql = "SELECT * FROM client_details ORDER BY " + sortBy + " " + sortDirection + offsetString;
+            String sql = "SELECT * FROM client_details WHERE client_id NOT IN (SELECT client_id from client_event WHERE event_id = ?) ORDER BY " + sortBy + " " + sortDirection + offsetString;
 
-            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, offset);
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, eventId, offset);
 
             while (result.next()) {
                 ClientDetails clientDetails = mapRowToClient(result);

@@ -158,7 +158,6 @@
                     item-text="quick_details"
                     return-object
                     multiple
-                    cache-items="true"
                     @keypress="getSearchedFirstClientTableForAutocomplete"         
                   >
                   <template v-slot:append-item>
@@ -597,7 +596,6 @@ export default {
             this.overlay = false;
             alert("Successfully added clients to roster");
             this.getEventDetailsCall();
-            this.getAutoCompletedFirstClientTable();
             this.selectedClients = [];
             this.clientDetails.first_name = "";
             this.clientDetails.last_name = "";
@@ -942,20 +940,21 @@ export default {
       }
     },
     returnCorrectClientListToChoose() {
-      let finalizedList = [];
-      for (let index = 0; index < this.autocompleteFirstClientList.length; index++) {
-        let foundMatch = false;
-        this.listOfSignedUpClients.forEach((element) => {
-          if (element.client_id == this.autocompleteFirstClientList[index].client_id) {
-            foundMatch = true;
-          }
-        });
-        if (foundMatch == false) {
-          finalizedList.push(this.autocompleteFirstClientList[index]);
-        }
-      }
-      // returns a list of users excluding the ones who are already signed up
-      return finalizedList;
+      // let finalizedList = [];
+      // for (let index = 0; index < this.autocompleteFirstClientList.length; index++) {
+      //   let foundMatch = false;
+      //   this.listOfSignedUpClients.forEach((element) => {
+      //     if (element.client_id == this.autocompleteFirstClientList[index].client_id) {
+      //       foundMatch = true;
+      //     }
+      //   });
+      //   if (foundMatch == false) {
+      //     finalizedList.push(this.autocompleteFirstClientList[index]);
+      //   }
+      // }
+      // // returns a list of users excluding the ones who are already signed up
+      // return finalizedList;
+      return this.autocompleteFirstClientList
     },
     formTitle() {
       return this.editedIndex === -1 ? "New Item" : "Edit Item";
