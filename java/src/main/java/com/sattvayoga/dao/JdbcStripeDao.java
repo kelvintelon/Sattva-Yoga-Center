@@ -840,7 +840,7 @@ public class JdbcStripeDao implements StripeDao {
         // Logic to give the package a unique name in metadata.
         if (packageNamesAndQuantity.containsKey(currentPackageName)) {
             int quantity = packageNamesAndQuantity.get(currentPackageName) + 1;
-            currentPackageName = currentPackageName + " -" + quantity;
+            currentPackageName = currentPackageName + " #" + quantity;
             packageNamesAndQuantity.put(currentPackageName, quantity);
         } else {
             packageNamesAndQuantity.put(currentPackageName, 1);

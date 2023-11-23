@@ -174,7 +174,7 @@
                       <div v-for="(element, index) in selectedPackages" :key="index" class="truncate-text" >
                         <v-row>
                           <v-col sm="9" md="9" lg="9">
-                            <div style="color: rgba(245, 104, 71, 0.95)" class="">-{{ element.description }}</div>
+                            <div style="color: rgba(245, 104, 71, 0.95)" class="">{{ element.description }}</div>
                           </v-col>
                           <v-col>
                             <v-text-field

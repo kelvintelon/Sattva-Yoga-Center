@@ -190,7 +190,7 @@ public class WebHookController {
                         int discount = Integer.valueOf(valueArray[1]);
 
                         // TODO: Check for multiple quantities here
-                        if (keyDescription.contains("-")) {
+                        if (keyDescription.contains("#")) {
                             keyDescription = keyDescription.substring(0,keyDescription.length()-3);
                         }
 
