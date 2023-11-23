@@ -3,6 +3,7 @@ package com.sattvayoga.dao;
 import com.sattvayoga.model.ClassEvent;
 import com.sattvayoga.model.ClientDetails;
 import com.sattvayoga.model.PackageDetails;
+import org.springframework.data.relational.core.sql.In;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
@@ -172,19 +173,35 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
         List<PackageDetails> packageDetailsList = new ArrayList<>(setOfPackageDetailsFromFile);
 
         Set<String> packageNamesSet = new HashSet<>();
+        Set<Integer> packageIdSet = new HashSet<>();
         List<PackageDetails> getAllPackages = getAllPackages();
 
 
         for (PackageDetails packageObj:
              getAllPackages) {
             packageNamesSet.add(packageObj.getDescription());
+            packageIdSet.add(packageObj.getPackage_id());
         }
 
         //TODO: Check duplicates with A Set<String> of existing package names,  then remove that packageDetails from setOfPackageDetails
         // Loop through the packageDetailsList
         for (int i = 0; i < packageDetailsList.size(); i++) {
             PackageDetails currentPackage = packageDetailsList.get(i);
+            boolean foundExistingName = false;
+            boolean foundExistingId = false;
             if (packageNamesSet.contains(currentPackage.getDescription())) {
+                foundExistingName = true;
+            }
+            if (packageIdSet.contains(currentPackage.getPackage_id())) {
+                foundExistingId = true;
+            }
+
+            if (!foundExistingName && !foundExistingId) {
+                packageNamesSet.add(currentPackage.getDescription());
+                packageIdSet.add(currentPackage.getPackage_id());
+            }
+
+            if (foundExistingName || foundExistingId) {
                 setOfPackageDetailsFromFile.remove(currentPackage);
             }
         }
