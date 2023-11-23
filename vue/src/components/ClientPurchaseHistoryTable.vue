@@ -184,7 +184,7 @@
       max-width="400"
     >
       <v-card>
-        <v-card-title class="text-h5">
+        <v-card-title class="text-h5" style="color: rgba(245, 104, 71, 0.95)">
           Resend Email
         </v-card-title>
         <v-text-field class="ml-4 mr-4"
