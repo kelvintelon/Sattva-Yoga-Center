@@ -684,7 +684,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     public int createStripePackagePurchase(CheckoutItemDTO checkoutItemDTO) {
         LocalDate activationDate = LocalDate.now();
 
-        if (checkoutItemDTO.getPackageDuration() > 0) {
+        if (checkoutItemDTO.getPackageDuration() > 0 && checkoutItemDTO.isUnlimited()) {
             String sql = "SELECT expiration_date FROM package_purchase JOIN package_details ON package_details.package_id = package_purchase.package_id WHERE package_details.unlimited = true AND client_id = ? AND expiration_date > NOW() ORDER BY expiration_date DESC LIMIT 1;";
             SqlRowSet results = jdbcTemplate.queryForRowSet(sql, checkoutItemDTO.getClient_id());
             if (results.next()) {

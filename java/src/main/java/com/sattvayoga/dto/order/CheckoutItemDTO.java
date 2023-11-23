@@ -21,7 +21,17 @@ public class CheckoutItemDTO {
     private boolean saveReceiptEmail = false;
     private int packageDuration;
 
+    private boolean unlimited;
+
     public CheckoutItemDTO(){
+    }
+
+    public boolean isUnlimited() {
+        return unlimited;
+    }
+
+    public void setUnlimited(boolean unlimited) {
+        this.unlimited = unlimited;
     }
 
     public String getReceiptEmail() {

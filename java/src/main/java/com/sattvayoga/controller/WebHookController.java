@@ -218,6 +218,7 @@ public class WebHookController {
                         checkoutItemDTO.setIs_monthly_renew(false);
                         checkoutItemDTO.setDiscount(discount);
                         checkoutItemDTO.setPaymentId(paymentIntentId);
+                        checkoutItemDTO.setUnlimited(currentPackageDetails.isUnlimited());
                         checkoutItemDTO.setPackageDuration(currentPackageDetails.getPackage_duration());
                         listOfItemsToCheckout.add(checkoutItemDTO);
 
