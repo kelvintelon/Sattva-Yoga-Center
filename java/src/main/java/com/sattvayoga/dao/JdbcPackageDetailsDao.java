@@ -118,6 +118,7 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
         return packageDetails;
     }
 
+    @Override
     public PackageDetails findPackageByPackageId(int packageId) {
         String sql = "SELECT * FROM package_details WHERE package_id = ?;";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, packageId);

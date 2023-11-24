@@ -3,12 +3,13 @@ package com.sattvayoga.dao;
 import com.sattvayoga.dto.order.CheckoutItemDTO;
 import com.sattvayoga.dto.order.ResendEmailDTO;
 import com.sattvayoga.model.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface PackagePurchaseDao {
 
-    void createPackagePurchase(PackagePurchase packagePurchase);
+    int createPackagePurchase(PackagePurchase packagePurchase);
 
     List<PackagePurchase> getAllUserPackagePurchases(int userId);
 
@@ -53,4 +54,6 @@ public interface PackagePurchaseDao {
     boolean updateGiftCard(GiftCard originalGiftCard, int clientId, double amountUsed);
 
     void resendEmail(ResendEmailDTO resendEmailDTO);
+
+    void uploadSalesCsv(MultipartFile multipartFile);
 }

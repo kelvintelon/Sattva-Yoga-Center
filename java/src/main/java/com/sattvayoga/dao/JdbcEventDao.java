@@ -831,6 +831,7 @@ public class JdbcEventDao implements EventDao {
     }
 
     public void batchCreateEvents(final Collection<ClassEvent> events) {
+
         jdbcTemplate.batchUpdate(
                 "INSERT INTO events (class_id, event_name, start_time, " +
                         "end_time, color, timed, is_visible_online, is_paid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",

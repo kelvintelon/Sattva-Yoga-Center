@@ -25,4 +25,5 @@ public interface PackageDetailsDao {
 
     void uploadPackageCsv(MultipartFile multipartFile);
 
+    PackageDetails findPackageByPackageId(int packageId);
 }

@@ -555,7 +555,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
         long endTimeForReading = System.nanoTime();
         long totalTimeForReading = endTimeForReading - startTimeForReading;
-        System.out.println("Total Time for reading file : " + getReadableTime(totalTimeForReading) + " / " + totalTimeForReading  + " ns");
+//        System.out.println("Total Time for reading file : " + getReadableTime(totalTimeForReading) + " / " + totalTimeForReading  + " ns");
 
         long startTimeForDoesClientExists = System.nanoTime();
 
@@ -568,7 +568,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
         long endTimeForDoesClientExists = System.nanoTime();
         long totalTimeForDoesClientExists = endTimeForDoesClientExists - startTimeForDoesClientExists;
-        System.out.println("Total time to check if client ID exists already : "  + getReadableTime(totalTimeForDoesClientExists)+ " / " + totalTimeForDoesClientExists  + " ns");
+//        System.out.println("Total time to check if client ID exists already : "  + getReadableTime(totalTimeForDoesClientExists)+ " / " + totalTimeForDoesClientExists  + " ns");
 
         long startTimeForCreateCheckClients = System.nanoTime();
 
@@ -599,7 +599,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
         long endTimeForCreateCheckClients = System.nanoTime();
         long totalTimeForCreateCheckClients = endTimeForCreateCheckClients - startTimeForCreateCheckClients;
-        System.out.println("Total time for creating a batch of users + check existing emails: " + getReadableTime(totalTimeForCreateCheckClients) + " / " + totalTimeForCreateCheckClients  + " ns");
+//        System.out.println("Total time for creating a batch of users + check existing emails: " + getReadableTime(totalTimeForCreateCheckClients) + " / " + totalTimeForCreateCheckClients  + " ns");
 
         long startTimeForBatchUpload = System.nanoTime();
 
@@ -607,7 +607,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
         long endTimeForBatchUpload = System.nanoTime();
         long totalTimeForBatchUpload = endTimeForBatchUpload - startTimeForBatchUpload;
-        System.out.println("Total time for batch upload in : " + getReadableTime(totalTimeForBatchUpload) + " / " + totalTimeForBatchUpload + " ns");
+//        System.out.println("Total time for batch upload in : " + getReadableTime(totalTimeForBatchUpload) + " / " + totalTimeForBatchUpload + " ns");
 
         long startTimeForBatchUploadNoClientId = System.nanoTime();
 
@@ -615,11 +615,11 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
         long endTimeForBatchUploadNoClientId = System.nanoTime();
         long totalTimeForBatchUploadNoClientId = endTimeForBatchUploadNoClientId - startTimeForBatchUploadNoClientId;
-        System.out.println("Total time for batch upload with no Client Id in : " + getReadableTime(totalTimeForBatchUploadNoClientId) + " / " + totalTimeForBatchUploadNoClientId + " ns");
+//        System.out.println("Total time for batch upload with no Client Id in : " + getReadableTime(totalTimeForBatchUploadNoClientId) + " / " + totalTimeForBatchUploadNoClientId + " ns");
 
         long endTimeForEntireUpload = System.nanoTime();
         long totalTimeForEntireUpload = endTimeForEntireUpload - startTimeForEntireUpload;
-        System.out.println("Total time for entire upload in : " + getReadableTime(totalTimeForEntireUpload) + " / " + totalTimeForEntireUpload + " ns");
+//        System.out.println("Total time for entire upload in : " + getReadableTime(totalTimeForEntireUpload) + " / " + totalTimeForEntireUpload + " ns");
     }
 
     private void checkIfClientEmailIsDuplicateOrInvalid(Map<String, ClientDetails> newMapOfClientObjects, Set<String> setOfExistingEmails) {

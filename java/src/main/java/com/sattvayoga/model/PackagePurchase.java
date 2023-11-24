@@ -20,7 +20,7 @@ public class PackagePurchase {
     private String payment_description;
     private boolean unlimited;
     private int package_duration;
-    private String paymentId;
+    private String paymentId = "";
 
     public PackagePurchase(int package_purchase_id, int client_id, Timestamp date_purchased, int package_id,
                            int classes_remaining, Date activation_date,

@@ -1,13 +1,26 @@
 package com.sattvayoga.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Sale {
 
     private int sale_id;
     private int[] packages_purchased_array;
+
+    private List<Integer> packages_purchased_list = new ArrayList<>();
     private int batch_number;
     private int client_id;
 
     public Sale() {
+    }
+
+    public List<Integer> getPackages_purchased_list() {
+        return packages_purchased_list;
+    }
+
+    public void setPackages_purchased_list(List<Integer> packages_purchased_list) {
+        this.packages_purchased_list = packages_purchased_list;
     }
 
     public int getClient_id() {

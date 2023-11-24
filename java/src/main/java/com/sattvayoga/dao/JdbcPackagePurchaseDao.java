@@ -5,54 +5,59 @@ import com.sattvayoga.dto.order.ClientCheckoutDTO;
 import com.sattvayoga.dto.order.ResendEmailDTO;
 import com.sattvayoga.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.sql.Array;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.sql.*;
+import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Component
 public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
     private final JdbcTemplate jdbcTemplate;
-
-    public JdbcPackagePurchaseDao(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
     @Autowired
     UserDao userDao;
-
     @Autowired
     ClientDetailsDao clientDetailsDao;
 
     @Autowired
+    PackageDetailsDao packageDetailsDao;
+    @Autowired
     StripeDao stripeDao;
-
+    @Autowired
+    SaleDao saleDao;
+    @Autowired
+    TransactionDao transactionDao;
     @Autowired
     private EmailSenderService senderService;
 
-    @Autowired
-    SaleDao saleDao;
-
-    @Autowired
-    TransactionDao transactionDao;
+    public JdbcPackagePurchaseDao(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @Override
     public List<PackagePurchase> getAllUserPackagePurchases(int userId) {
         List<PackagePurchase> allUserPackagePurchase = new ArrayList<>();
         String sql = "SELECT * FROM package_purchase " +
                 "JOIN client_details on client_details.client_id = package_purchase.client_id " +
-                "WHERE client_details.user_id = ?" ;
+                "WHERE client_details.user_id = ?";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId);
         while (result.next()) {
             PackagePurchase packagePurchase = mapRowToPackagePurchase(result);
@@ -76,7 +81,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             offset = pageSize * (page);
             offsetString = " LIMIT ?";
         } else {
-            offset = pageSize * (page-1);
+            offset = pageSize * (page - 1);
             offsetString = " OFFSET ? LIMIT " + pageSize;
         }
 
@@ -111,7 +116,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 }
             }
             if (paymentDescriptions.length() > 0) {
-                paymentDescriptions = paymentDescriptions.substring(0,paymentDescriptions.length()-1);
+                paymentDescriptions = paymentDescriptions.substring(0, paymentDescriptions.length() - 1);
             }
             packagePurchase.setPayment_description(paymentDescriptions);
             packagePurchase.setPackage_description(description);
@@ -121,11 +126,11 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
         String countSql = "SELECT COUNT(*) FROM package_purchase " +
                 "JOIN client_details on client_details.client_id = package_purchase.client_id " +
-                "WHERE client_details.user_id = ?" ;
+                "WHERE client_details.user_id = ?";
 
         int count = jdbcTemplate.queryForObject(countSql, Integer.class, userId);
 
-        PaginatedListOfPurchasedPackages paginatedListOfPurchasedPackages = new PaginatedListOfPurchasedPackages(allUserPackagePurchase,count);
+        PaginatedListOfPurchasedPackages paginatedListOfPurchasedPackages = new PaginatedListOfPurchasedPackages(allUserPackagePurchase, count);
 
         return paginatedListOfPurchasedPackages;
     }
@@ -176,7 +181,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 amountPaid = currentPackage.getTotal_amount_paid().doubleValue() + currentPackage.getDiscount().doubleValue();
             }
 
-            packagesBeingBoughtForEmail += count + ". " +  getPackageDescriptionByPackageId(currentPackage.getPackage_id()) + " - $" + amountPaid + " - " + "Expires on: " + currentPackage.getExpiration_date().toString() + "<br>";
+            packagesBeingBoughtForEmail += count + ". " + getPackageDescriptionByPackageId(currentPackage.getPackage_id()) + " - $" + amountPaid + " - " + "Expires on: " + currentPackage.getExpiration_date().toString() + "<br>";
             count++;
         }
 
@@ -199,8 +204,258 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         // You need all the payment methods that were used, plug in the sale id into the transaction table to find that out.
     }
 
+    @Override
+    public void uploadSalesCsv(MultipartFile multipartFile) {
+        int count = 0;
+
+        long startTimeForEntireUpload = System.nanoTime();
+
+        List<String> listOfStringsFromBufferedReader = new ArrayList<>();
+
+        Set<PackagePurchase> packagePurchaseSet = new HashSet<>();
+        HashMap<Integer, Sale> setOfSalesFromFile = new HashMap<>();
+        Set<Transaction> setOfTransactionsFromFile = new HashSet<>();
+
+        try (BufferedReader fileReader = new BufferedReader(new
+                InputStreamReader(multipartFile.getInputStream(), "UTF-8"))) {
+
+            String line;
+            while ((line = fileReader.readLine()) != null) {
+
+                if (count > 0) {
+
+                    listOfStringsFromBufferedReader.add(line);
+
+                }
+                count++;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        readLinesFromListAndPopulateSet(listOfStringsFromBufferedReader, packagePurchaseSet, setOfSalesFromFile, setOfTransactionsFromFile);
+
+        // TODO: Loop through all sale objects
+        //  and convert the list to an array in each object
+        //  before batchCreating them
+        System.out.println("Made it");
+        batchCreatePackagePurchases(packagePurchaseSet);
+    }
+
+    public void batchCreatePackagePurchases(final Collection<PackagePurchase> packagePurchases) {
+        jdbcTemplate.batchUpdate(
+                "INSERT INTO package_purchase (package_purchase_id, client_id,package_id,date_purchased, " +
+                        "classes_remaining, activation_date, " +
+                        "expiration_date, is_monthly_renew, " +
+                        "total_amount_paid, discount, paymentid) " +
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                packagePurchases,100,
+                (PreparedStatement ps, PackagePurchase packagePurchase) -> {
+                    ps.setInt(1, packagePurchase.getPackage_purchase_id());
+                    ps.setInt(2, packagePurchase.getClient_id());
+                    ps.setInt(3, packagePurchase.getPackage_id());
+                    ps.setTimestamp(4, packagePurchase.getDate_purchased());
+                    ps.setInt(5, packagePurchase.getClasses_remaining());
+                    ps.setDate(6, packagePurchase.getActivation_date());
+                    ps.setDate(7, packagePurchase.getExpiration_date());
+                    ps.setBoolean(8, packagePurchase.isIs_monthly_renew());
+                    ps.setBigDecimal(9, packagePurchase.getTotal_amount_paid());
+                    ps.setBigDecimal(10, packagePurchase.getDiscount());
+                    ps.setString(11, packagePurchase.getPaymentId());
+                }
+        );
+    }
+
+    public void batchCreateSales(final Collection<Sale> sales) {
+        jdbcTemplate.batchUpdate(
+                "INSERT INTO sales (sale_id, " +
+                        "packages_purchased_array, batch_number, client_id) " +
+                        "VALUES (?,?,?,?)",
+                sales,100,
+                (PreparedStatement ps, Sale sale) -> {
+                    ps.setInt(1, sale.getSale_id());
+//                    ps.setArray(2, Array.class ;
+                    ps.setInt(3, sale.getBatch_number());
+                    ps.setInt(4, sale.getClient_id());
+
+                }
+        );
+    }
+
+
+    public void batchCreateTransactions(final Collection<PackagePurchase> packagePurchases) {
+        jdbcTemplate.batchUpdate(
+                "INSERT INTO package_purchase (package_purchase_id, client_id,package_id,date_purchased, " +
+                        "classes_remaining, activation_date, " +
+                        "expiration_date, is_monthly_renew, " +
+                        "total_amount_paid, discount, paymentid) " +
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                packagePurchases,100,
+                (PreparedStatement ps, PackagePurchase packagePurchase) -> {
+                    ps.setInt(1, packagePurchase.getPackage_purchase_id());
+                    ps.setInt(2, packagePurchase.getClient_id());
+                    ps.setInt(3, packagePurchase.getPackage_id());
+                    ps.setTimestamp(4, packagePurchase.getDate_purchased());
+                    ps.setInt(5, packagePurchase.getClasses_remaining());
+                    ps.setDate(6, packagePurchase.getActivation_date());
+                    ps.setDate(7, packagePurchase.getExpiration_date());
+                    ps.setBoolean(8, packagePurchase.isIs_monthly_renew());
+                    ps.setBigDecimal(9, packagePurchase.getTotal_amount_paid());
+                    ps.setBigDecimal(10, packagePurchase.getDiscount());
+                    ps.setString(11, packagePurchase.getPaymentId());
+                }
+        );
+    }
+
+    private void readLinesFromListAndPopulateSet(List<String> listOfStringsFromBufferedReader,
+                                                 Set<PackagePurchase> packagePurchaseSet,
+                                                 HashMap<Integer, Sale> mapOfSale,
+                                                 Set<Transaction> setOfTransactions) {
+        int maxId = findHighestPackagePurchaseId();
+        maxId += 100001;
+
+        List<PackageDetails> listOfAllPackages = packageDetailsDao.getAllPackages();
+
+        Map<Integer,PackageDetails> mapOfPackages = new HashMap<>();
+
+        for (int i = 0; i < listOfAllPackages.size(); i++) {
+            PackageDetails currentPackage = listOfAllPackages.get(i);
+            mapOfPackages.put(currentPackage.getPackage_id(), currentPackage);
+        }
+
+        for (int i = 0; i < listOfStringsFromBufferedReader.size(); i++) {
+            String thisLine = listOfStringsFromBufferedReader.get(i);
+            String[] splitLine = thisLine.split(",");
+
+
+            PackagePurchase packagePurchase = new PackagePurchase();
+
+            int clientId = Integer.valueOf(splitLine[1]);
+            packagePurchase.setClient_id(clientId);
+
+            Timestamp datePurchased = convertDateStringToTimestamp(splitLine[0]);
+            packagePurchase.setDate_purchased(datePurchased);
+
+            Date activationDate = convertDateStringToDate(splitLine[3]);
+            packagePurchase.setActivation_date(activationDate);
+
+            Date expirationDate = convertDateStringToDate(splitLine[4]);
+            packagePurchase.setExpiration_date(expirationDate);
+
+            int packageId = Integer.valueOf(splitLine[5]);
+            packagePurchase.setPackage_id(packageId);
+
+            PackageDetails currentPackage = mapOfPackages.get(packageId);
+            packagePurchase.setClasses_remaining(currentPackage.getClasses_amount());
+            packagePurchase.setIs_monthly_renew(currentPackage.isIs_recurring());
+
+            String discountString = splitLine[11].replaceAll("[^\\d.]", "");
+            discountString = discountString.replaceAll("\\.{2,}", ".");
+            BigDecimal discount = new BigDecimal(discountString);
+            packagePurchase.setDiscount(discount);
+
+            String totalAmountPaidString = splitLine[12].replaceAll("[^\\d.]", "");
+            totalAmountPaidString = totalAmountPaidString.replaceAll("\\.{2,}", ".");
+            BigDecimal totalAmountPaid = new BigDecimal(totalAmountPaidString);
+            packagePurchase.setTotal_amount_paid(totalAmountPaid);
+
+            String paymentType = formatCardType(splitLine[14]);
+            packagePurchase.setPaymentId(paymentType);
+
+            packagePurchase.setPackage_purchase_id(maxId);
+
+            packagePurchaseSet.add(packagePurchase);
+
+            Sale sale = new Sale();
+            int saleId = Integer.valueOf(splitLine[2]);
+
+            if (splitLine[6].length()>0 && !splitLine[6].contains("-")) {
+                int batchNumber = Integer.valueOf(splitLine[6]);
+                sale.setBatch_number(batchNumber);
+            }
+
+            List<Integer> tempList = new ArrayList<>();
+            // Plug in Sale ID Here and build
+            if (mapOfSale.containsKey(saleId)) {
+                sale = mapOfSale.get(saleId);
+                tempList = new ArrayList<>(sale.getPackages_purchased_list());
+
+                // ADD In the new package purchase and update the sale object
+                tempList.add(packagePurchase.getPackage_purchase_id());
+                sale.setPackages_purchased_list(tempList);
+            } else {
+                sale.setSale_id(saleId);
+                sale.setClient_id(clientId);
+                tempList.add(packagePurchase.getPackage_id());
+                sale.setPackages_purchased_list(tempList);
+
+
+            }
+
+            // Replace sale in Map
+            mapOfSale.put(saleId, sale);
+
+            // TODO: Build transaction
+            Transaction transaction = new Transaction();
+            transaction.setClient_id(clientId);
+            transaction.setSale_id(saleId);
+
+            String paymentAmountString = splitLine[13].replaceAll("[^\\d.]", "");
+            paymentAmountString = paymentAmountString.replaceAll("\\.{2,}", ".");
+            BigDecimal payment_amount = new BigDecimal(paymentAmountString);
+            transaction.setPayment_amount(payment_amount.doubleValue());
+            transaction.setPayment_type(paymentType);
+
+            setOfTransactions.add(transaction);
+
+            maxId++;
+        }
+    }
+
+    public static String formatCardType(String inputString) {
+        if (inputString.matches("(?i).*\\bCredit card\\b.*\\bSwiped\\b.*")) {
+            return "Credit Card Swiped";
+        } else if (inputString.matches("(?i).*\\bCredit card\\b.*\\bKeyed\\b.*")) {
+            return "Credit Card Keyed/Stored";
+        } else {
+            return inputString;
+        }
+    }
+
+    public static Timestamp convertDateStringToTimestamp(String dateString) {
+        // Define the date format
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yy");
+
+        // Parse the input date string
+        java.util.Date date = null;
+        try {
+            date = dateFormat.parse(dateString);
+        } catch (ParseException e) {
+            System.out.println("Error parsing date in CSV");
+        }
+
+        // Convert java.util.Date to java.sql.Timestamp
+        return new Timestamp(date.getTime());
+    }
+
+    public static java.sql.Date convertDateStringToDate(String dateString) {
+        // Define the date format
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yy");
+
+        // Parse the input date string
+        java.util.Date utilDate = null;
+        try {
+            utilDate = dateFormat.parse(dateString);
+        } catch (ParseException e) {
+            System.out.println("Error parsing date in CSV");
+        }
+
+        // Convert java.util.Date to java.sql.Date
+        return new java.sql.Date(utilDate.getTime());
+    }
+
     public void sendEmailReceipt(ClientCheckoutDTO clientCheckoutDTO, String packagesBeingBoughtForEmail, int saleId, String saleDate, String firstName, String subject, String subTotal, String tax, String total, String usedPaymentTypes) {
-        if (clientCheckoutDTO.getEmailForReceipt().length()>0 && clientCheckoutDTO.isSendEmail()) {
+        if (clientCheckoutDTO.getEmailForReceipt().length() > 0 && clientCheckoutDTO.isSendEmail()) {
 
             String paymentDetails = "<b>Payment Method</b> -     " + "<b>Amount</b>" + "<br>" +
                     usedPaymentTypes + "<br>" + "<br>" + "      " + "Customer Copy" + "<br>";
@@ -332,7 +587,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             offset = pageSize * (page);
             offsetString = " LIMIT ?";
         } else {
-            offset = pageSize * (page-1);
+            offset = pageSize * (page - 1);
             offsetString = " OFFSET ? LIMIT " + pageSize;
         }
 
@@ -366,7 +621,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 }
             }
             if (paymentDescriptions.length() > 0) {
-                paymentDescriptions = paymentDescriptions.substring(0,paymentDescriptions.length()-1);
+                paymentDescriptions = paymentDescriptions.substring(0, paymentDescriptions.length() - 1);
             }
             packagePurchase.setPayment_description(paymentDescriptions);
 
@@ -386,7 +641,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
         int count = jdbcTemplate.queryForObject(countSql, Integer.class, userId);
 
-        PaginatedListOfPurchasedPackages paginatedListOfPurchasedPackages = new PaginatedListOfPurchasedPackages(allUserPackagePurchase,count);
+        PaginatedListOfPurchasedPackages paginatedListOfPurchasedPackages = new PaginatedListOfPurchasedPackages(allUserPackagePurchase, count);
 
         return paginatedListOfPurchasedPackages;
 
@@ -421,22 +676,22 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
 
     @Override
-    public void createPackagePurchase(PackagePurchase packagePurchase) {
+    public int createPackagePurchase(PackagePurchase packagePurchase) {
         String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, " +
                 "classes_remaining, activation_date, expiration_date, " +
-                "total_amount_paid, is_monthly_renew,  discount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        jdbcTemplate.update(sql, packagePurchase.getClient_id(), packagePurchase.getDate_purchased(),
+                "total_amount_paid, is_monthly_renew,  discount, paymentId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING package_purchase_id";
+        return jdbcTemplate.queryForObject(sql, Integer.class, packagePurchase.getClient_id(), packagePurchase.getDate_purchased(),
                 packagePurchase.getPackage_id(), packagePurchase.getClasses_remaining(),
                 packagePurchase.getActivation_date(), packagePurchase.getExpiration_date(),
                 packagePurchase.getTotal_amount_paid(),
-                packagePurchase.isIs_monthly_renew(), packagePurchase.getDiscount());
+                packagePurchase.isIs_monthly_renew(), packagePurchase.getDiscount(), packagePurchase.getPaymentId());
     }
 
     @Override
     public PackagePurchase getPackagePurchaseObjectByPackagePurchaseId(int packagePurchaseId) {
         PackagePurchase packagePurchase = null;
         String sql = "SELECT * FROM package_purchase " +
-                "WHERE package_purchase_id = ?" ;
+                "WHERE package_purchase_id = ?";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, packagePurchaseId);
         if (result.next()) {
             packagePurchase = mapRowToPackagePurchase(result);
@@ -449,11 +704,11 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         return packagePurchase;
     }
 
-    public boolean IsSubscriptionOrNot(int packageId){
+    public boolean IsSubscriptionOrNot(int packageId) {
         boolean isSubscription = false;
         String sql = "SELECT unlimited from package_details WHERE package_id = ?";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, packageId);
-        if(result.next()){
+        if (result.next()) {
             return result.getBoolean("unlimited");
         }
         return isSubscription;
@@ -467,35 +722,34 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             sql = "UPDATE package_purchase SET expiration_date = current_date - INTEGER '1', activation_date = current_date - INTEGER '1' " +
                     "WHERE package_purchase_id = ?;";
         }
-        return jdbcTemplate.update(sql, packagePurchase.getPackage_purchase_id())==1;
+        return jdbcTemplate.update(sql, packagePurchase.getPackage_purchase_id()) == 1;
     }
 
     @Override
     public boolean updatePackage(PackagePurchase packagePurchase) {
         String sql = "UPDATE package_purchase SET date_purchased = ?, classes_remaining = ?, " +
                 "activation_date = ?, expiration_date = ?, is_monthly_renew = ? , discount = ? WHERE package_purchase_id = ?;";
-    return jdbcTemplate.update(sql, packagePurchase.getDate_purchased(), packagePurchase.getClasses_remaining(), packagePurchase.getActivation_date(), packagePurchase.getExpiration_date(), packagePurchase.isIs_monthly_renew(), packagePurchase.getDiscount(), packagePurchase.getPackage_purchase_id() )==1;
+        return jdbcTemplate.update(sql, packagePurchase.getDate_purchased(), packagePurchase.getClasses_remaining(), packagePurchase.getActivation_date(), packagePurchase.getExpiration_date(), packagePurchase.isIs_monthly_renew(), packagePurchase.getDiscount(), packagePurchase.getPackage_purchase_id()) == 1;
     }
 
     @Override
     public boolean decrementByOne(int packagePurchaseId) {
-        String sql= "UPDATE package_purchase SET classes_remaining = classes_remaining - 1 WHERE package_purchase_id = ?";
-        return jdbcTemplate.update(sql, packagePurchaseId)==1;
+        String sql = "UPDATE package_purchase SET classes_remaining = classes_remaining - 1 WHERE package_purchase_id = ?";
+        return jdbcTemplate.update(sql, packagePurchaseId) == 1;
     }
 
     @Override
     public boolean incrementByOne(int packagePurchaseId) {
-        String sql= "UPDATE package_purchase SET classes_remaining = classes_remaining + 1 WHERE package_purchase_id = ?";
-        return jdbcTemplate.update(sql, packagePurchaseId)==1;
+        String sql = "UPDATE package_purchase SET classes_remaining = classes_remaining + 1 WHERE package_purchase_id = ?";
+        return jdbcTemplate.update(sql, packagePurchaseId) == 1;
     }
 
     @Override
     public boolean updateGiftCard(GiftCard originalGiftCard, int clientId, double amountUsed) {
         int newAmount = (int) (originalGiftCard.getAmount() - amountUsed);
         String sql = "UPDATE gift_card SET amount = ? , client_id = ? WHERE code ILIKE ?";
-        return jdbcTemplate.update(sql, newAmount, clientId, originalGiftCard.getCode())==1;
+        return jdbcTemplate.update(sql, newAmount, clientId, originalGiftCard.getCode()) == 1;
     }
-
 
 
     //helper
@@ -531,8 +785,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                     return packagePurchaseSubscription;
                 }
 
-            }
-            else if (!currentPackage.isUnlimited() && currentPackage.getClasses_remaining() > 0) {
+            } else if (!currentPackage.isUnlimited() && currentPackage.getClasses_remaining() > 0) {
                 // compare the expiration date to the starting time of the event
                 Timestamp eventTime = classEvent.getStart_time();
                 Date expirationDate = currentPackage.getExpiration_date();
@@ -573,8 +826,8 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 "AND client_family.client_id != ?\n" +
                 "AND classes_remaining > 0 \n" +
                 "ORDER BY expiration_date;";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, client_id,client_id);
-        while(result.next()){
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, client_id, client_id);
+        while (result.next()) {
             packages.add(mapRowToPackagePurchase(result));
         }
         return packages;
@@ -650,7 +903,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         return giftCard;
     }
 
-    public void createGiftCard(String code, double amount){
+    public void createGiftCard(String code, double amount) {
         String sql = "INSERT INTO gift_card (code, amount) VALUES (?,?)";
         jdbcTemplate.update(sql, code, amount);
 
@@ -728,14 +981,27 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
     private LocalDate findActivationDateForClient(PackagePurchase packagePurchase) {
         if (packagePurchase.getPackage_duration() > 0 && packagePurchase.isUnlimited()) {
-        String sql = "SELECT expiration_date FROM package_purchase JOIN package_details ON package_details.package_id = package_purchase.package_id WHERE package_details.unlimited = true AND client_id = ? ORDER BY expiration_date DESC LIMIT 1;";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, packagePurchase.getClient_id());
+            String sql = "SELECT expiration_date FROM package_purchase JOIN package_details ON package_details.package_id = package_purchase.package_id WHERE package_details.unlimited = true AND client_id = ? ORDER BY expiration_date DESC LIMIT 1;";
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, packagePurchase.getClient_id());
             if (results.next()) {
                 LocalDate localDate = results.getDate("expiration_date").toLocalDate();
                 return localDate.plusDays(1);
             }
         }
         return LocalDate.now();
+    }
+
+    private int findHighestPackagePurchaseId() {
+        String sql = "SELECT MAX(package_purchase_id) FROM package_purchase";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+        if (result.next()) {
+            int maxId = result.getInt("max");
+            if (maxId > 0) {
+                return maxId;
+            }
+
+        }
+        return 0;
     }
 
     private LocalDate returnCorrectPackageExpirationDateForPackagePurchase(PackagePurchase packagePurchase, LocalDate activationDate) {
@@ -747,7 +1013,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         return LocalDate.now().plusYears(1).plusDays(1);
     }
 
-    public int createOneMonthAutoRenewPurchase(CheckoutItemDTO checkoutItemDTO){
+    public int createOneMonthAutoRenewPurchase(CheckoutItemDTO checkoutItemDTO) {
         LocalDate activationDate;
         String sql = "SELECT expiration_date FROM package_purchase JOIN package_details ON package_details.package_id = package_purchase.package_id WHERE package_details.unlimited = true AND client_id = ? AND expiration_date > NOW() ORDER BY expiration_date DESC LIMIT 1;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, checkoutItemDTO.getClient_id());
@@ -765,7 +1031,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 checkoutItemDTO.getTotal_amount_paid(), checkoutItemDTO.getDiscount(), checkoutItemDTO.getPaymentId());
     }
 
-    public int createSixMonthAutoRenewPurchase(CheckoutItemDTO checkoutItemDTO){
+    public int createSixMonthAutoRenewPurchase(CheckoutItemDTO checkoutItemDTO) {
         LocalDate activationDate;
         String sql = "SELECT expiration_date FROM package_purchase JOIN package_details ON package_details.package_id = package_purchase.package_id WHERE package_details.unlimited = true AND client_id = ? AND expiration_date > NOW() ORDER BY expiration_date DESC LIMIT 1;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, checkoutItemDTO.getClient_id());
@@ -859,14 +1125,13 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         sale.setClient_id(itemList.get(0).getClient_id());
         int saleId = saleDao.createSaleNoBatch(sale);
 
-        for(Transaction transaction : transactions){
+        for (Transaction transaction : transactions) {
             transaction.setSale_id(saleId);
 
             transactionDao.createTransaction(transaction);
         }
 
     }
-
 
 
 }
