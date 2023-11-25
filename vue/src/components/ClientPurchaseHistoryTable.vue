@@ -257,7 +257,7 @@ export default {
       ],
       page: 1,
       pageSize: 10,
-      sortBy: 'package_purchase_id',
+      sortBy: 'date_purchased',
       sortDesc: true,
       totalPackagesPurchased: 0,
       paginatedObject: {},

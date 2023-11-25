@@ -28,6 +28,8 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import static java.sql.DriverManager.getConnection;
+
 @Component
 public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
@@ -213,7 +215,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         List<String> listOfStringsFromBufferedReader = new ArrayList<>();
 
         Set<PackagePurchase> packagePurchaseSet = new HashSet<>();
-        HashMap<Integer, Sale> setOfSalesFromFile = new HashMap<>();
+        HashMap<Integer, Sale> mapOfSalesFromFile = new HashMap<>();
         Set<Transaction> setOfTransactionsFromFile = new HashSet<>();
 
         try (BufferedReader fileReader = new BufferedReader(new
@@ -233,13 +235,16 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             e.printStackTrace();
         }
 
-        readLinesFromListAndPopulateSet(listOfStringsFromBufferedReader, packagePurchaseSet, setOfSalesFromFile, setOfTransactionsFromFile);
+        readLinesFromListAndPopulateSet(listOfStringsFromBufferedReader, packagePurchaseSet, mapOfSalesFromFile, setOfTransactionsFromFile);
 
         // TODO: Loop through all sale objects
         //  and convert the list to an array in each object
         //  before batchCreating them
         System.out.println("Made it");
         batchCreatePackagePurchases(packagePurchaseSet);
+        Set<Sale> setOfSales = new HashSet<>(mapOfSalesFromFile.values());
+        batchCreateSales(setOfSales);
+        batchCreateTransactions(setOfTransactionsFromFile);
     }
 
     public void batchCreatePackagePurchases(final Collection<PackagePurchase> packagePurchases) {
@@ -267,6 +272,15 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     }
 
     public void batchCreateSales(final Collection<Sale> sales) {
+        Connection finalConn =null;
+        try {
+            finalConn = jdbcTemplate.getDataSource().getConnection("postgres","postgres1");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        Connection finalConn1 = finalConn;
         jdbcTemplate.batchUpdate(
                 "INSERT INTO sales (sale_id, " +
                         "packages_purchased_array, batch_number, client_id) " +
@@ -274,7 +288,14 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 sales,100,
                 (PreparedStatement ps, Sale sale) -> {
                     ps.setInt(1, sale.getSale_id());
-//                    ps.setArray(2, Array.class ;
+//                    Integer[] idArray = sale.getPackages_purchased_list().toArray(new Integer[0]);
+//                    Integer[] idArray = sale.getPackages_purchased_list().stream().mapToInt(Integer::intValue).toArray();
+//                    Array idSqlArray = jdbcTemplate.execute(
+//                            (Connection c) -> c.createArrayOf(JDBCType.INTEGER.getName(), idArray)
+//                    );
+                    Array sqlArray = finalConn1.createArrayOf("INTEGER", sale.getPackages_purchased_list().toArray());
+                    ps.setObject(2, (sqlArray),Types.ARRAY);
+//                    ps.setArray(2,idSqlArray);
                     ps.setInt(3, sale.getBatch_number());
                     ps.setInt(4, sale.getClient_id());
 
@@ -282,27 +303,17 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         );
     }
 
-
-    public void batchCreateTransactions(final Collection<PackagePurchase> packagePurchases) {
+    public void batchCreateTransactions(final Collection<Transaction> transactions) {
         jdbcTemplate.batchUpdate(
-                "INSERT INTO package_purchase (package_purchase_id, client_id,package_id,date_purchased, " +
-                        "classes_remaining, activation_date, " +
-                        "expiration_date, is_monthly_renew, " +
-                        "total_amount_paid, discount, paymentid) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-                packagePurchases,100,
-                (PreparedStatement ps, PackagePurchase packagePurchase) -> {
-                    ps.setInt(1, packagePurchase.getPackage_purchase_id());
-                    ps.setInt(2, packagePurchase.getClient_id());
-                    ps.setInt(3, packagePurchase.getPackage_id());
-                    ps.setTimestamp(4, packagePurchase.getDate_purchased());
-                    ps.setInt(5, packagePurchase.getClasses_remaining());
-                    ps.setDate(6, packagePurchase.getActivation_date());
-                    ps.setDate(7, packagePurchase.getExpiration_date());
-                    ps.setBoolean(8, packagePurchase.isIs_monthly_renew());
-                    ps.setBigDecimal(9, packagePurchase.getTotal_amount_paid());
-                    ps.setBigDecimal(10, packagePurchase.getDiscount());
-                    ps.setString(11, packagePurchase.getPaymentId());
+                "INSERT INTO transactions (sale_id, client_id,payment_type, " +
+                        "payment_amount) " +
+                        "VALUES (?,?,?,?)",
+                transactions,100,
+                (PreparedStatement ps, Transaction transaction) -> {
+                    ps.setInt(1, transaction.getSale_id());
+                    ps.setInt(2, transaction.getClient_id());
+                    ps.setString(3, transaction.getPayment_type());
+                    ps.setDouble(4, transaction.getPayment_amount());
                 }
         );
     }
@@ -311,8 +322,8 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                                                  Set<PackagePurchase> packagePurchaseSet,
                                                  HashMap<Integer, Sale> mapOfSale,
                                                  Set<Transaction> setOfTransactions) {
-        int maxId = findHighestPackagePurchaseId();
-        maxId += 100001;
+
+
 
         List<PackageDetails> listOfAllPackages = packageDetailsDao.getAllPackages();
 
@@ -322,6 +333,9 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             PackageDetails currentPackage = listOfAllPackages.get(i);
             mapOfPackages.put(currentPackage.getPackage_id(), currentPackage);
         }
+
+        int maxId = findHighestPackagePurchaseId();
+        maxId += 100001;
 
         for (int i = 0; i < listOfStringsFromBufferedReader.size(); i++) {
             String thisLine = listOfStringsFromBufferedReader.get(i);
@@ -366,36 +380,46 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
             packagePurchaseSet.add(packagePurchase);
 
-            Sale sale = new Sale();
+
             int saleId = Integer.valueOf(splitLine[2]);
 
-            if (splitLine[6].length()>0 && !splitLine[6].contains("-")) {
-                int batchNumber = Integer.valueOf(splitLine[6]);
-                sale.setBatch_number(batchNumber);
-            }
-
-            List<Integer> tempList = new ArrayList<>();
             // Plug in Sale ID Here and build
             if (mapOfSale.containsKey(saleId)) {
+                Sale sale = mapOfSale.get(saleId);
+                if (splitLine[6].length()>0 && !splitLine[6].contains("-")) {
+                    int batchNumber = Integer.valueOf(splitLine[6]);
+                    sale.setBatch_number(batchNumber);
+                }
+
                 sale = mapOfSale.get(saleId);
-                tempList = new ArrayList<>(sale.getPackages_purchased_list());
+                List<Integer> tempList = new ArrayList<>(sale.getPackages_purchased_list());
 
                 // ADD In the new package purchase and update the sale object
                 tempList.add(packagePurchase.getPackage_purchase_id());
                 sale.setPackages_purchased_list(tempList);
+
+                // Replace sale in Map
+                mapOfSale.put(saleId, sale);
             } else {
+                Sale sale =  new Sale();
+                if (splitLine[6].length()>0 && !splitLine[6].contains("-")) {
+                    int batchNumber = Integer.valueOf(splitLine[6]);
+                    sale.setBatch_number(batchNumber);
+                }
+
+                List<Integer> tempList = new ArrayList<>();
                 sale.setSale_id(saleId);
                 sale.setClient_id(clientId);
-                tempList.add(packagePurchase.getPackage_id());
+                tempList.add(packagePurchase.getPackage_purchase_id());
                 sale.setPackages_purchased_list(tempList);
 
-
+                // Replace sale in Map
+                mapOfSale.put(saleId, sale);
             }
 
-            // Replace sale in Map
-            mapOfSale.put(saleId, sale);
 
-            // TODO: Build transaction
+
+            // Build transaction
             Transaction transaction = new Transaction();
             transaction.setClient_id(clientId);
             transaction.setSale_id(saleId);
