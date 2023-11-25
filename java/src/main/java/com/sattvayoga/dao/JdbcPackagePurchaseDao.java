@@ -237,14 +237,21 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
         readLinesFromListAndPopulateSet(listOfStringsFromBufferedReader, packagePurchaseSet, mapOfSalesFromFile, setOfTransactionsFromFile);
 
-        // TODO: Loop through all sale objects
-        //  and convert the list to an array in each object
-        //  before batchCreating them
-        System.out.println("Made it");
-        batchCreatePackagePurchases(packagePurchaseSet);
+
+        if (!packagePurchaseSet.isEmpty()) {
+            batchCreatePackagePurchases(packagePurchaseSet);
+        }
+
         Set<Sale> setOfSales = new HashSet<>(mapOfSalesFromFile.values());
-        batchCreateSales(setOfSales);
-        batchCreateTransactions(setOfTransactionsFromFile);
+
+        if (!setOfSales.isEmpty()) {
+            batchCreateSales(setOfSales);
+        }
+
+        if (!setOfTransactionsFromFile.isEmpty()) {
+            batchCreateTransactions(setOfTransactionsFromFile);
+        }
+
     }
 
     public void batchCreatePackagePurchases(final Collection<PackagePurchase> packagePurchases) {
@@ -337,6 +344,9 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         int maxId = findHighestPackagePurchaseId();
         maxId += 100001;
 
+        //retrieve a set of integer sale_id's already present in the database
+        Set<Integer> setOfSaleIds = saleDao.getAllSaleIds();
+
         for (int i = 0; i < listOfStringsFromBufferedReader.size(); i++) {
             String thisLine = listOfStringsFromBufferedReader.get(i);
             String[] splitLine = thisLine.split(",");
@@ -346,6 +356,14 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
             int clientId = Integer.valueOf(splitLine[1]);
             packagePurchase.setClient_id(clientId);
+
+            int saleId = Integer.valueOf(splitLine[2]);
+
+            // Handle duplicates here (look for if we already have the sale ID)
+            if (!setOfSaleIds.isEmpty() && setOfSaleIds.contains(saleId)) {
+                continue;
+            }
+
 
             Timestamp datePurchased = convertDateStringToTimestamp(splitLine[0]);
             packagePurchase.setDate_purchased(datePurchased);
@@ -381,7 +399,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             packagePurchaseSet.add(packagePurchase);
 
 
-            int saleId = Integer.valueOf(splitLine[2]);
+
 
             // Plug in Sale ID Here and build
             if (mapOfSale.containsKey(saleId)) {
