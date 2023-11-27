@@ -177,7 +177,7 @@ CREATE TABLE website_descriptions (
 );
 
 CREATE TABLE gift_card (
-	code VARCHAR(7) NOT NULL,
+	code VARCHAR(12) NOT NULL,
 	amount decimal(13, 2),
 	client_id int,
 	CONSTRAINT PK_gift_card PRIMARY KEY (code)

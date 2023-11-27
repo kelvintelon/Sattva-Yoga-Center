@@ -560,7 +560,10 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
             boolean isTransaction = parseAmount(stringAmount);
 
-            double amount = Double.valueOf(stringAmount);
+            // Remove dollar sign and parentheses, if present
+            String parsedString = stringAmount.replaceAll("[\\$()]", "");
+
+            double amount = Double.valueOf(parsedString);
 
             // If it's a transaction
             if (isTransaction) {
@@ -678,12 +681,6 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     public static boolean parseAmount(String amount) {
         // Check if the amount is wrapped in parentheses
         boolean isWrapped = amount.startsWith("(") && amount.endsWith(")");
-
-        // Remove dollar sign and parentheses, if present
-        String numericValue = amount.replaceAll("[\\$()]", "");
-
-        // Output the transformed value
-        System.out.println("Transformed value: " + numericValue);
 
         return isWrapped;
     }
