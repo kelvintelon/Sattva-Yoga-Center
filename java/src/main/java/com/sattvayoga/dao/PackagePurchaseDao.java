@@ -56,4 +56,8 @@ public interface PackagePurchaseDao {
     void resendEmail(ResendEmailDTO resendEmailDTO);
 
     void uploadSalesCsv(MultipartFile multipartFile);
+
+    void uploadGiftCardReport(MultipartFile multipartFile);
+
+    List<GiftCard> retrieveAllGiftCards();
 }

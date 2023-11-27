@@ -75,7 +75,7 @@ public class DatabaseUploadController {
     @PostMapping("/uploadGiftCardReport")
     public void uploadGiftCardReport(@RequestParam("file")MultipartFile multipartFile) {
 
-
+        packagePurchaseDao.uploadGiftCardReport(multipartFile);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

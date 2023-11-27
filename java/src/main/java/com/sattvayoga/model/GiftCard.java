@@ -4,7 +4,7 @@ public class GiftCard {
 
     private String code;
     private double amount;
-    private double client_id;
+    private int client_id;
 
     public GiftCard() {
     }
@@ -31,11 +31,11 @@ public class GiftCard {
         this.amount = amount;
     }
 
-    public double getClient_id() {
+    public int getClient_id() {
         return client_id;
     }
 
-    public void setClient_id(double client_id) {
+    public void setClient_id(int client_id) {
         this.client_id = client_id;
     }
 }

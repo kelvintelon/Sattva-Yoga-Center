@@ -5,10 +5,7 @@ import com.sattvayoga.dto.order.ClientCheckoutDTO;
 import com.sattvayoga.dto.order.ResendEmailDTO;
 import com.sattvayoga.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
@@ -24,8 +21,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static java.sql.DriverManager.getConnection;
@@ -235,7 +230,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             e.printStackTrace();
         }
 
-        readLinesFromListAndPopulateSet(listOfStringsFromBufferedReader, packagePurchaseSet, mapOfSalesFromFile, setOfTransactionsFromFile);
+        readLinesFromListAndPopulatePackagesSalesTransactions(listOfStringsFromBufferedReader, packagePurchaseSet, mapOfSalesFromFile, setOfTransactionsFromFile);
 
 
         if (!packagePurchaseSet.isEmpty()) {
@@ -254,81 +249,10 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
     }
 
-    public void batchCreatePackagePurchases(final Collection<PackagePurchase> packagePurchases) {
-        jdbcTemplate.batchUpdate(
-                "INSERT INTO package_purchase (package_purchase_id, client_id,package_id,date_purchased, " +
-                        "classes_remaining, activation_date, " +
-                        "expiration_date, is_monthly_renew, " +
-                        "total_amount_paid, discount, paymentid) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-                packagePurchases,100,
-                (PreparedStatement ps, PackagePurchase packagePurchase) -> {
-                    ps.setInt(1, packagePurchase.getPackage_purchase_id());
-                    ps.setInt(2, packagePurchase.getClient_id());
-                    ps.setInt(3, packagePurchase.getPackage_id());
-                    ps.setTimestamp(4, packagePurchase.getDate_purchased());
-                    ps.setInt(5, packagePurchase.getClasses_remaining());
-                    ps.setDate(6, packagePurchase.getActivation_date());
-                    ps.setDate(7, packagePurchase.getExpiration_date());
-                    ps.setBoolean(8, packagePurchase.isIs_monthly_renew());
-                    ps.setBigDecimal(9, packagePurchase.getTotal_amount_paid());
-                    ps.setBigDecimal(10, packagePurchase.getDiscount());
-                    ps.setString(11, packagePurchase.getPaymentId());
-                }
-        );
-    }
-
-    public void batchCreateSales(final Collection<Sale> sales) {
-        Connection finalConn =null;
-        try {
-            finalConn = jdbcTemplate.getDataSource().getConnection("postgres","postgres1");
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-
-        Connection finalConn1 = finalConn;
-        jdbcTemplate.batchUpdate(
-                "INSERT INTO sales (sale_id, " +
-                        "packages_purchased_array, batch_number, client_id) " +
-                        "VALUES (?,?,?,?)",
-                sales,100,
-                (PreparedStatement ps, Sale sale) -> {
-                    ps.setInt(1, sale.getSale_id());
-//                    Integer[] idArray = sale.getPackages_purchased_list().toArray(new Integer[0]);
-//                    Integer[] idArray = sale.getPackages_purchased_list().stream().mapToInt(Integer::intValue).toArray();
-//                    Array idSqlArray = jdbcTemplate.execute(
-//                            (Connection c) -> c.createArrayOf(JDBCType.INTEGER.getName(), idArray)
-//                    );
-                    Array sqlArray = finalConn1.createArrayOf("INTEGER", sale.getPackages_purchased_list().toArray());
-                    ps.setObject(2, (sqlArray),Types.ARRAY);
-//                    ps.setArray(2,idSqlArray);
-                    ps.setInt(3, sale.getBatch_number());
-                    ps.setInt(4, sale.getClient_id());
-
-                }
-        );
-    }
-
-    public void batchCreateTransactions(final Collection<Transaction> transactions) {
-        jdbcTemplate.batchUpdate(
-                "INSERT INTO transactions (sale_id, client_id,payment_type, " +
-                        "payment_amount) " +
-                        "VALUES (?,?,?,?)",
-                transactions,100,
-                (PreparedStatement ps, Transaction transaction) -> {
-                    ps.setInt(1, transaction.getSale_id());
-                    ps.setInt(2, transaction.getClient_id());
-                    ps.setString(3, transaction.getPayment_type());
-                    ps.setDouble(4, transaction.getPayment_amount());
-                }
-        );
-    }
-
-    private void readLinesFromListAndPopulateSet(List<String> listOfStringsFromBufferedReader,
-                                                 Set<PackagePurchase> packagePurchaseSet,
-                                                 HashMap<Integer, Sale> mapOfSale,
-                                                 Set<Transaction> setOfTransactions) {
+    private void readLinesFromListAndPopulatePackagesSalesTransactions(List<String> listOfStringsFromBufferedReader,
+                                                                       Set<PackagePurchase> packagePurchaseSet,
+                                                                       HashMap<Integer, Sale> mapOfSale,
+                                                                       Set<Transaction> setOfTransactions) {
 
 
 
@@ -452,6 +376,316 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
             maxId++;
         }
+    }
+
+
+
+    public void batchCreatePackagePurchases(final Collection<PackagePurchase> packagePurchases) {
+        jdbcTemplate.batchUpdate(
+                "INSERT INTO package_purchase (package_purchase_id, client_id,package_id,date_purchased, " +
+                        "classes_remaining, activation_date, " +
+                        "expiration_date, is_monthly_renew, " +
+                        "total_amount_paid, discount, paymentid) " +
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                packagePurchases,100,
+                (PreparedStatement ps, PackagePurchase packagePurchase) -> {
+                    ps.setInt(1, packagePurchase.getPackage_purchase_id());
+                    ps.setInt(2, packagePurchase.getClient_id());
+                    ps.setInt(3, packagePurchase.getPackage_id());
+                    ps.setTimestamp(4, packagePurchase.getDate_purchased());
+                    ps.setInt(5, packagePurchase.getClasses_remaining());
+                    ps.setDate(6, packagePurchase.getActivation_date());
+                    ps.setDate(7, packagePurchase.getExpiration_date());
+                    ps.setBoolean(8, packagePurchase.isIs_monthly_renew());
+                    ps.setBigDecimal(9, packagePurchase.getTotal_amount_paid());
+                    ps.setBigDecimal(10, packagePurchase.getDiscount());
+                    ps.setString(11, packagePurchase.getPaymentId());
+                }
+        );
+    }
+
+    public void batchCreateSales(final Collection<Sale> sales) {
+        Connection finalConn =null;
+        try {
+            finalConn = jdbcTemplate.getDataSource().getConnection("postgres","postgres1");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        Connection finalConn1 = finalConn;
+        jdbcTemplate.batchUpdate(
+                "INSERT INTO sales (sale_id, " +
+                        "packages_purchased_array, batch_number, client_id) " +
+                        "VALUES (?,?,?,?)",
+                sales,100,
+                (PreparedStatement ps, Sale sale) -> {
+                    ps.setInt(1, sale.getSale_id());
+//                    Integer[] idArray = sale.getPackages_purchased_list().toArray(new Integer[0]);
+//                    Integer[] idArray = sale.getPackages_purchased_list().stream().mapToInt(Integer::intValue).toArray();
+//                    Array idSqlArray = jdbcTemplate.execute(
+//                            (Connection c) -> c.createArrayOf(JDBCType.INTEGER.getName(), idArray)
+//                    );
+                    Array sqlArray = finalConn1.createArrayOf("INTEGER", sale.getPackages_purchased_list().toArray());
+                    ps.setObject(2, (sqlArray),Types.ARRAY);
+//                    ps.setArray(2,idSqlArray);
+                    ps.setInt(3, sale.getBatch_number());
+                    ps.setInt(4, sale.getClient_id());
+
+                }
+        );
+    }
+
+    public void batchCreateTransactions(final Collection<Transaction> transactions) {
+        jdbcTemplate.batchUpdate(
+                "INSERT INTO transactions (sale_id, client_id,payment_type, " +
+                        "payment_amount) " +
+                        "VALUES (?,?,?,?)",
+                transactions,100,
+                (PreparedStatement ps, Transaction transaction) -> {
+                    ps.setInt(1, transaction.getSale_id());
+                    ps.setInt(2, transaction.getClient_id());
+                    ps.setString(3, transaction.getPayment_type());
+                    ps.setDouble(4, transaction.getPayment_amount());
+                }
+        );
+    }
+
+    @Override
+    public void uploadGiftCardReport(MultipartFile multipartFile) {
+        int count = 0;
+
+        long startTimeForEntireUpload = System.nanoTime();
+
+        List<String> listOfStringsFromBufferedReader = new ArrayList<>();
+
+
+        try (BufferedReader fileReader = new BufferedReader(new
+                InputStreamReader(multipartFile.getInputStream(), "UTF-8"))) {
+
+            String line;
+            while ((line = fileReader.readLine()) != null) {
+
+                if (count > 0) {
+
+                    listOfStringsFromBufferedReader.add(line);
+
+                }
+                count++;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        HashMap<String, GiftCard> mapOfGiftCardsFromFile = new HashMap<>();
+        Set<Transaction> setOfTransactionsFromFile = new HashSet<>();
+
+        HashMap<String,GiftCard> giftCardsToUpdateInDb = readLinesFromListAndPopulateTransactionsGiftCards(listOfStringsFromBufferedReader,mapOfGiftCardsFromFile,setOfTransactionsFromFile);
+
+        if (!mapOfGiftCardsFromFile.isEmpty()) {
+            // batch create gift cards no client ID yet
+            Set<GiftCard> setOfGiftCardsFromFile = new HashSet<>(mapOfGiftCardsFromFile.values());
+            batchCreateGiftCards(setOfGiftCardsFromFile);
+
+        }
+        if (!setOfTransactionsFromFile.isEmpty()) {
+            // batch create transactions
+            batchCreateTransactions(setOfTransactionsFromFile);
+        }
+        if (!giftCardsToUpdateInDb.isEmpty()) {
+            // batch update gift cards in DB with client ID
+             Set<GiftCard> setOfGiftCardsFromDB = new HashSet<>(giftCardsToUpdateInDb.values());
+            batchUpdateGiftCards(setOfGiftCardsFromDB);
+        }
+
+
+    }
+
+    public void batchUpdateGiftCards(final Collection<GiftCard> giftCards) {
+        jdbcTemplate.batchUpdate("UPDATE gift_card SET client_id = ?, amount = ? WHERE code = ?",
+                giftCards, 100,
+                (PreparedStatement ps, GiftCard giftCard) -> {
+                    ps.setInt(1, (int) giftCard.getClient_id());
+                    ps.setDouble(2,giftCard.getAmount());
+                    ps.setString(3, giftCard.getCode());
+                });
+    }
+
+    public void batchCreateGiftCards(final Collection<GiftCard> giftCards) {
+        jdbcTemplate.batchUpdate("INSERT INTO gift_card (code, amount) VALUES (?,?)",
+                giftCards, 100,
+                (PreparedStatement ps, GiftCard giftCard) -> {
+                    ps.setString(1,giftCard.getCode());
+                    ps.setDouble(2,giftCard.getAmount());
+                });
+    }
+
+
+
+    private HashMap<String,GiftCard> readLinesFromListAndPopulateTransactionsGiftCards(List<String> listOfStringsFromBufferedReader,
+                                                                   HashMap<String,GiftCard> giftCardMapFromFile,
+                                                                   Set<Transaction> setOfTransactions) {
+
+        // A list of gift card IDs that already exist in the database
+        // if its a brand new gift card ID add it into the database
+
+        List<GiftCard> listOfGiftCards = retrieveAllGiftCards();
+
+        //logic for duplicates
+        HashMap<String,GiftCard> mapOfExistingGiftCards = new HashMap<>();
+
+        for (int i = 0; i < listOfGiftCards.size(); i++) {
+            GiftCard currentGiftCard = listOfGiftCards.get(i);
+            mapOfExistingGiftCards.put(currentGiftCard.getCode(),currentGiftCard);
+        }
+
+        Set<String> giftCardCodesToUpdate = new HashSet<>();
+
+        // Is there a way to find duplicate transactions vs new ones?
+        // If the amount being subtracted makes the gift card amount go less than zero than it probably shouldn't go through?
+
+        for (int i = 0; i < listOfStringsFromBufferedReader.size(); i++) {
+            String thisLine = listOfStringsFromBufferedReader.get(i);
+            String[] splitLine = thisLine.split(",");
+
+
+
+            int saleId = Integer.valueOf(splitLine[1]);
+
+            int clientId = Integer.valueOf(splitLine[2]);
+
+            String giftCardCode = splitLine[6];
+
+            String stringAmount = splitLine[7];
+
+            boolean isTransaction = parseAmount(stringAmount);
+
+            double amount = Double.valueOf(stringAmount);
+
+            // If it's a transaction
+            if (isTransaction) {
+
+                // Check if gift card ID exists in our database:
+                if (mapOfExistingGiftCards.containsKey(giftCardCode)) {
+                    GiftCard currentGiftCard = mapOfExistingGiftCards.get(giftCardCode);
+
+                    // If exists: Check if subtraction goes below zero:
+                    // If it goes below zero: don't follow through.
+                    // Else follow through and add transaction to set
+                    if (currentGiftCard.getAmount() - amount >= 0) {
+
+                        Transaction transaction = new Transaction();
+
+                        transaction.setSale_id(saleId);
+                        transaction.setClient_id(clientId);
+                        transaction.setPayment_amount(amount);
+                        transaction.setPayment_type("Gift Card Code");
+
+                        setOfTransactions.add(transaction);
+
+                        double amountToSetTo = currentGiftCard.getAmount() - amount;
+                        currentGiftCard.setAmount(amountToSetTo);
+
+                        // update object in map of existing dbs
+                        mapOfExistingGiftCards.put(giftCardCode,currentGiftCard);
+
+                        // this will help us filter which gift cards to update that exist in our db
+                        giftCardCodesToUpdate.add(currentGiftCard.getCode());
+                    }
+                } else if (giftCardMapFromFile.containsKey(giftCardCode)) {
+                    // Check if gift card ID exists in our map of new Gift cards:
+                    // If exists: Check if subtraction goes below zero:
+                    // If it goes below zero: don't follow through.
+                    // Else follow through and add Transaction to set
+                    GiftCard currentGiftCard = giftCardMapFromFile.get(giftCardCode);
+
+                    Transaction transaction = new Transaction();
+
+                    transaction.setSale_id(saleId);
+                    transaction.setClient_id(clientId);
+                    transaction.setPayment_amount(amount);
+                    transaction.setPayment_type("Gift Card Code");
+
+                    setOfTransactions.add(transaction);
+
+                    double amountToSetTo = currentGiftCard.getAmount() - amount;
+
+                    currentGiftCard.setAmount(amountToSetTo);
+                    currentGiftCard.setClient_id(clientId);
+
+                    giftCardMapFromFile.put(giftCardCode,currentGiftCard);
+
+                } else {
+                    // If it doesn't exist at all in our DB or new gift cards it has no history:
+                    // Create a Gift Card with amount set to zero and a Transaction with amount used
+                    // add Gift Card to map, and transaction to set
+
+                    GiftCard giftCard = new GiftCard();
+
+                    giftCard.setCode(giftCardCode);
+                    giftCard.setAmount(0.0);
+                    giftCard.setClient_id(clientId);
+
+                    giftCardMapFromFile.put(giftCardCode,giftCard);
+
+                    Transaction transaction = new Transaction();
+
+                    transaction.setSale_id(saleId);
+                    transaction.setClient_id(clientId);
+                    transaction.setPayment_amount(amount);
+                    transaction.setPayment_type("Gift Card Code");
+
+                    setOfTransactions.add(transaction);
+
+                }
+
+            } else {
+                // Else If it's a gift card purchase
+                // Check if the gift card ID is already in our database or in our map of new Gift cards:
+                // If exists: don't follow through.
+                // If it doesn't exist: Store into gift card object in our new map of Gift Cards
+                if (!giftCardMapFromFile.containsKey(giftCardCode) && !mapOfExistingGiftCards.containsKey(giftCardCode)) {
+
+                    GiftCard giftCard = new GiftCard();
+
+                    giftCard.setCode(giftCardCode);
+                    giftCard.setAmount(amount);
+
+                    giftCardMapFromFile.put(giftCardCode,giftCard);
+                }
+            }
+        }
+
+        // Returns a separate collection of existing gift cards whose amount we need to update in our DB
+        return filterGiftCards(mapOfExistingGiftCards,giftCardCodesToUpdate);
+    }
+
+    public static HashMap<String, GiftCard> filterGiftCards(
+            HashMap<String, GiftCard> mapOfExistingGiftCards,
+            Set<String> giftCardCodesToUpdate) {
+
+        HashMap<String, GiftCard> filteredGiftCards = new HashMap<>();
+
+        for (String code : giftCardCodesToUpdate) {
+            if (mapOfExistingGiftCards.containsKey(code)) {
+                filteredGiftCards.put(code, mapOfExistingGiftCards.get(code));
+            }
+        }
+
+        return filteredGiftCards;
+    }
+
+    public static boolean parseAmount(String amount) {
+        // Check if the amount is wrapped in parentheses
+        boolean isWrapped = amount.startsWith("(") && amount.endsWith(")");
+
+        // Remove dollar sign and parentheses, if present
+        String numericValue = amount.replaceAll("[\\$()]", "");
+
+        // Output the transformed value
+        System.out.println("Transformed value: " + numericValue);
+
+        return isWrapped;
     }
 
     public static String formatCardType(String inputString) {
@@ -960,6 +1194,22 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             giftCard = mapRowToGiftCard(result);
         }
         return giftCard;
+    }
+
+    @Override
+    public List<GiftCard> retrieveAllGiftCards() {
+        List<GiftCard> listOfGiftCards = new ArrayList<>();
+
+        String sql = "SELECT * FROM gift_card";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+
+        while (result.next()) {
+            GiftCard giftCard = mapRowToGiftCard(result);
+            listOfGiftCards.add(giftCard);
+
+        }
+
+        return  listOfGiftCards;
     }
 
     public String generateGiftCardCode() {
