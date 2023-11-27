@@ -1073,7 +1073,7 @@ export default {
       });
     },
     checkGiftCard() {
-      if (this.giftCardCodeObject.code.length == 7) {
+      if (this.giftCardCodeObject.code.length >= 7) {
         giftCardService.retrieveGiftCard(this.giftCardCodeObject).then((response => {
           if (response.status == 200) {
             this.giftCardResponse = response.data;
