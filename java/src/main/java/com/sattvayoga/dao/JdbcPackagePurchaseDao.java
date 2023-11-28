@@ -887,10 +887,15 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
             String paymentDescriptions = "";
             String sql3 = "SELECT payment_type FROM transactions WHERE sale_id = ?";
+            Set<String> capturePaymentTypes = new HashSet<>();
             if (saleId > 0) {
                 SqlRowSet result3 = jdbcTemplate.queryForRowSet(sql3, saleId);
                 while (result3.next()) {
-                    paymentDescriptions += result3.getString("payment_Type") + " /";
+                    if (!capturePaymentTypes.contains(result3.getString("payment_Type"))) {
+                        paymentDescriptions += result3.getString("payment_Type") + " /";
+                        capturePaymentTypes.add(result3.getString("payment_Type"));
+                    }
+
                 }
             }
             if (paymentDescriptions.length() > 0) {
