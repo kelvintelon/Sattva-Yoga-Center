@@ -288,7 +288,6 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 continue;
             }
 
-
             Timestamp datePurchased = convertDateStringToTimestamp(splitLine[0]);
             packagePurchase.setDate_purchased(datePurchased);
 
@@ -321,8 +320,6 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             packagePurchase.setPackage_purchase_id(maxId);
 
             packagePurchaseSet.add(packagePurchase);
-
-
 
 
             // Plug in Sale ID Here and build
@@ -695,6 +692,233 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         }
     }
 
+    @Override
+    public void uploadGiftCardSalesReport(MultipartFile multipartFile) {
+        int count = 0;
+
+        long startTimeForEntireUpload = System.nanoTime();
+
+        List<String> listOfStringsFromBufferedReader = new ArrayList<>();
+
+
+        try (BufferedReader fileReader = new BufferedReader(new
+                InputStreamReader(multipartFile.getInputStream(), "UTF-8"))) {
+
+            String line;
+            while ((line = fileReader.readLine()) != null) {
+
+                if (count > 0) {
+
+                    listOfStringsFromBufferedReader.add(line);
+
+                }
+                count++;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Set<PackagePurchase> packagePurchaseSet = new HashSet<>();
+        HashMap<Integer, Sale> mapOfSalesFromFile = new HashMap<>();
+
+        readLinesFromListForGiftCardSalesReport(listOfStringsFromBufferedReader,packagePurchaseSet,mapOfSalesFromFile);
+
+        if (!packagePurchaseSet.isEmpty()) {
+            batchCreatePackagePurchases(packagePurchaseSet);
+        }
+
+        Set<Sale> setOfSales = new HashSet<>(mapOfSalesFromFile.values());
+
+        if (!setOfSales.isEmpty()) {
+            batchCreateSales(setOfSales);
+        }
+    }
+
+    private void readLinesFromListForGiftCardSalesReport(List<String> listOfStringsFromBufferedReader,
+                                                                       Set<PackagePurchase> packagePurchaseSet,
+                                                                       HashMap<Integer, Sale> mapOfSale) {
+
+        List<PackageDetails> listOfAllPackages = packageDetailsDao.getAllPackages();
+
+        Map<Integer,PackageDetails> mapOfPackages = new HashMap<>();
+
+        for (int i = 0; i < listOfAllPackages.size(); i++) {
+            PackageDetails currentPackage = listOfAllPackages.get(i);
+            mapOfPackages.put(currentPackage.getPackage_id(), currentPackage);
+        }
+
+        int maxId = findHighestPackagePurchaseId();
+        maxId += 100001;
+
+        //retrieve a set of integer sale_id's already present in the database
+        Set<Integer> setOfSaleIds = saleDao.getAllSaleIds();
+
+        for (int i = 0; i < listOfStringsFromBufferedReader.size(); i++) {
+            String thisLine = listOfStringsFromBufferedReader.get(i);
+            String[] splitLine = thisLine.split(",");
+
+
+            PackagePurchase packagePurchase = new PackagePurchase();
+
+            int clientId = Integer.valueOf(splitLine[1]);
+            packagePurchase.setClient_id(clientId);
+
+            int saleId = Integer.valueOf(splitLine[4]);
+
+            // Handle duplicates here (look for if we already have the sale ID)
+            if (!setOfSaleIds.isEmpty() && setOfSaleIds.contains(saleId)) {
+                continue;
+            }
+
+
+            try {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("M/d/yyyy");
+                java.util.Date parsedDate = dateFormat.parse(splitLine[0]);
+                Timestamp datePurchased = new Timestamp(parsedDate.getTime());
+                packagePurchase.setDate_purchased(datePurchased);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            SimpleDateFormat dateFormatForSql = new SimpleDateFormat("M/d/yyyy");
+
+            try {
+                if (splitLine[5].length() > 0) {
+                    java.util.Date parsedActivationDateSql = dateFormatForSql.parse((splitLine[5]));
+                    Date activationDateSql = new Date(parsedActivationDateSql.getTime());
+
+                    packagePurchase.setActivation_date(activationDateSql);
+                } else {
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("M/d/yyyy");
+                    java.util.Date parsedDate = dateFormat.parse(splitLine[0]);
+                    Date activationDateSql = new Date(parsedDate.getTime());
+
+                    packagePurchase.setActivation_date(activationDateSql);
+                }
+
+            } catch (ParseException e) {
+                System.out.println("Error parsing activation date for sale id: " + saleId);
+            }
+
+
+
+            try {
+                if (splitLine[6].length() > 0) {
+                    java.util.Date parsedExpirationDateSql = dateFormatForSql.parse((splitLine[6]));
+                    Date expirationDateSql = new Date(parsedExpirationDateSql.getTime());
+
+                    packagePurchase.setExpiration_date(expirationDateSql);
+                } else {
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("M/d/yyyy");
+                    java.util.Date parsedDate = dateFormat.parse(splitLine[0]);
+                    Date expirationDateSql = new Date(parsedDate.getTime());
+
+                    packagePurchase.setExpiration_date(expirationDateSql);
+
+                }
+
+            } catch (ParseException e) {
+                System.out.println("Error parsing expiration date for sale id: " + saleId);
+            }
+
+
+            int packageId = Integer.valueOf(splitLine[7]);
+            packagePurchase.setPackage_id(packageId);
+
+            PackageDetails currentPackage = mapOfPackages.get(packageId);
+            packagePurchase.setClasses_remaining(currentPackage.getClasses_amount());
+            packagePurchase.setIs_monthly_renew(currentPackage.isIs_recurring());
+
+            String discountString = splitLine[14].replaceAll("[^\\d.]", "");
+            discountString = discountString.replaceAll("\\.{2,}", ".");
+            BigDecimal discount = new BigDecimal(discountString);
+            packagePurchase.setDiscount(discount);
+
+            String totalAmountPaidString = splitLine[15].replaceAll("[^\\d.]", "");
+            totalAmountPaidString = totalAmountPaidString.replaceAll("\\.{2,}", ".");
+            BigDecimal totalAmountPaid = new BigDecimal(totalAmountPaidString);
+            packagePurchase.setTotal_amount_paid(totalAmountPaid);
+
+            packagePurchase.setPaymentId("Gift Card Code");
+
+            Set<Integer> packagePurchaseIds = new HashSet<>();
+            packagePurchaseIds.add(maxId);
+            packagePurchase.setPackage_purchase_id(maxId);
+
+            packagePurchaseSet.add(packagePurchase);
+
+            int quantity = Integer.valueOf(splitLine[11]);
+
+            if (quantity > 1) {
+
+                for (int j = 1; j < quantity; j++) {
+                    maxId++;
+
+                    PackagePurchase newPurchase = new PackagePurchase();
+                    newPurchase.setPackage_purchase_id(maxId);
+                    newPurchase.setClient_id(clientId);
+                    newPurchase.setDate_purchased(packagePurchase.getDate_purchased());
+                    newPurchase.setActivation_date(packagePurchase.getActivation_date());
+                    newPurchase.setExpiration_date(packagePurchase.getExpiration_date());
+                    newPurchase.setPackage_id(packageId);
+                    newPurchase.setClasses_remaining(packagePurchase.getClasses_remaining());
+                    newPurchase.setIs_monthly_renew(packagePurchase.isIs_monthly_renew());
+                    newPurchase.setDiscount(packagePurchase.getDiscount());
+                    newPurchase.setTotal_amount_paid(packagePurchase.getTotal_amount_paid());
+                    newPurchase.setPaymentId("Gift Card Code");
+
+                    packagePurchaseSet.add(newPurchase);
+                    packagePurchaseIds.add(maxId);
+                }
+
+            }
+
+
+            // Plug in Sale ID Here and build
+            if (mapOfSale.containsKey(saleId)) {
+                Sale sale = mapOfSale.get(saleId);
+                if (splitLine[9].length()>0 && !splitLine[9].contains("-")) {
+                    int batchNumber = Integer.valueOf(splitLine[9]);
+                    sale.setBatch_number(batchNumber);
+                }
+
+                sale = mapOfSale.get(saleId);
+                List<Integer> tempList = new ArrayList<>(sale.getPackages_purchased_list());
+
+                // ADD In the new package purchase and update the sale object
+                for (Integer id : packagePurchaseIds) {
+                    tempList.add(id);
+                    sale.setPackages_purchased_list(tempList);
+                }
+
+                // Replace sale in Map
+                mapOfSale.put(saleId, sale);
+            } else {
+                Sale sale =  new Sale();
+                if (splitLine[9].length()>0 && !splitLine[9].contains("-")) {
+                    int batchNumber = Integer.valueOf(splitLine[9]);
+                    sale.setBatch_number(batchNumber);
+                }
+
+                List<Integer> tempList = new ArrayList<>();
+                sale.setSale_id(saleId);
+                sale.setClient_id(clientId);
+
+                for (Integer id : packagePurchaseIds) {
+                    tempList.add(id);
+                    sale.setPackages_purchased_list(tempList);
+                }
+
+                // Replace sale in Map
+                mapOfSale.put(saleId, sale);
+            }
+
+
+            maxId++;
+        }
+
+    }
+
     public static Timestamp convertDateStringToTimestamp(String dateString) {
         // Define the date format
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yy");
@@ -720,7 +944,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         try {
             utilDate = dateFormat.parse(dateString);
         } catch (ParseException e) {
-            System.out.println("Error parsing date in CSV");
+            System.out.println("Error parsing date in for Sales");
         }
 
         // Convert java.util.Date to java.sql.Date

@@ -20,6 +20,9 @@ export default {
     uploadSales(salesCSV) {
         return axios.post(`/uploadSales`, salesCSV, {headers: {Accept: 'application/json', 'Content-Type': 'multipart/form-data'} })
     },
+    uploadGiftCardSales(giftCardCSV) {
+        return axios.post(`/uploadGiftCardSales`, giftCardCSV, {headers: {Accept: 'application/json', 'Content-Type': 'multipart/form-data'} })
+    },
     uploadGiftReport(giftCardCSV) {
         return axios.post(`/uploadGiftCardReport`, giftCardCSV, {headers: {Accept: 'application/json', 'Content-Type': 'multipart/form-data'} })
     },

@@ -5,6 +5,7 @@
     <upload-event-component></upload-event-component>
     <upload-packages-component></upload-packages-component>
     <upload-sales-component></upload-sales-component>
+    <upload-gift-card-sales-component></upload-gift-card-sales-component>
     <upload-gift-report-component></upload-gift-report-component>
     <upload-attendance-component></upload-attendance-component>
   </div>
@@ -16,6 +17,7 @@ import uploadTeacherComponent from "../components/uploadTeacherComponent.vue";
 import uploadEventComponent from "../components/uploadEventComponent.vue";
 import uploadPackagesComponent from '../components/uploadPackagesComponent.vue';
 import uploadSalesComponent from '../components/uploadSalesComponent.vue';
+import uploadGiftCardSalesComponent from "../components/uploadGiftCardSalesComponent.vue";
 import uploadGiftReportComponent from "../components/uploadGiftReportComponent.vue";
 import uploadAttendanceComponent from "../components/uploadAttendanceComponent.vue";
 import clientDetailService from "../services/ClientDetailService";
@@ -28,6 +30,7 @@ export default {
     uploadEventComponent, 
     uploadPackagesComponent,
     uploadSalesComponent,
+    uploadGiftCardSalesComponent,
     uploadGiftReportComponent,
     uploadAttendanceComponent
    },

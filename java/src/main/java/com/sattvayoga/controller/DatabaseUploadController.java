@@ -72,6 +72,13 @@ public class DatabaseUploadController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/uploadGiftCardSales")
+    public void uploadGiftCardSales(@RequestParam("file")MultipartFile multipartFile) {
+
+        packagePurchaseDao.uploadGiftCardSalesReport(multipartFile);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/uploadGiftCardReport")
     public void uploadGiftCardReport(@RequestParam("file")MultipartFile multipartFile) {
 
