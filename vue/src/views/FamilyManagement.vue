@@ -1,47 +1,35 @@
 <template>
   <div>
-    <v-container>
+    <v-container
+      :key="align"
+    >
+   
       <v-row>
-        <v-col> <teacher-table-list></teacher-table-list></v-col>
-        <!-- <v-col cols="6"> <create-teacher-form></create-teacher-form></v-col> -->
+        <v-col cols="14">
+           <family-table-list></family-table-list>
+      </v-col>
       </v-row>
-      <!--
-      <v-simple-table>
-        <template v-slot:default>
-          <thead>
-            <tr>
-              <th class="text-left">Name</th>
-              <th class="text-left">Is Active</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="item in desserts" :key="item.name">
-              <td>{{ item.name }}</td>
-              <td>{{ item.calories }}</td>
-            </tr>
-          </tbody>
-        </template>
-      </v-simple-table>
-      -->
     </v-container>
   </div>
 </template>
+  
+  <script>
 
-<script>
-// import CreateTeacherForm from "../components/CreateTeacherForm.vue";
-import TeacherTableList from "../components/TeacherTableList.vue"
 import clientDetailService from "../services/ClientDetailService";
-
+import FamilyTableList from "../components/FamilyTableList.vue"
 
 export default {
-  name: "teacher-management",
-  components: {
-    // CreateTeacherForm,
-    TeacherTableList
+  name: "family-management",
+  components: { 
+    FamilyTableList
+   },
+  data() {
+    return {
+    };
   },
   created() {
-    if (this.$store.state.user.username != 'admin') {
-      this.$router.push({name: 'home'})
+    if (this.$store.state.user.username != "admin") {
+      this.$router.push({ name: "home" });
     } else {
       clientDetailService
             .getClientDetailsOfAdminUser()
@@ -71,10 +59,11 @@ export default {
                 this.$router.push({name: "logout"});
               }
             });
-          }
+    }
   },
+  methods: {},
 };
 </script>
-
-<style>
+  
+  <style>
 </style>

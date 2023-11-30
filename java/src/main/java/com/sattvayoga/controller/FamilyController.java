@@ -27,6 +27,7 @@ public class FamilyController {
         return familyDao.getAllFamilies();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/addMultipleClientsForFamily", method = RequestMethod.POST)
     public void addMultipleClientsForFamily(@RequestBody List<ClientFamily> clientFamilyObjects) {
@@ -36,7 +37,7 @@ public class FamilyController {
         }
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/addMultipleClientsToNewFamily", method = RequestMethod.POST)
     public void addMultipleClientsTlNewFamily(@RequestBody List<ClientFamily> clientFamilyObjects) {

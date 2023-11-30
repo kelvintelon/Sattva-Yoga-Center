@@ -29,6 +29,7 @@ import VideoPage from '../views/VideoPage.vue'
 import ResetPasswordLoggedIn from '../views/ResetPasswordLoggedIn.vue'
 
 import DatabaseUpload from '../views/DatabaseUpload.vue'
+import FamilyManagement from '../views/FamilyManagement.vue'
 
 Vue.use(Router)
 
@@ -262,6 +263,14 @@ const router = new Router({
         requiresAuth: true
       }
     },
+    {
+      path: "/familyManagement",
+      name: "family-management",
+      component: FamilyManagement,
+      meta: {
+        requiresAuth: true
+      }
+    }
   ]
 })
 
