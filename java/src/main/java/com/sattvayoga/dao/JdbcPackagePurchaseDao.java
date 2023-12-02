@@ -513,11 +513,12 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     }
 
     public void batchCreateGiftCards(final Collection<GiftCard> giftCards) {
-        jdbcTemplate.batchUpdate("INSERT INTO gift_card (code, amount) VALUES (?,?)",
+        jdbcTemplate.batchUpdate("INSERT INTO gift_card (code, amount, client_id) VALUES (?, ?, ?)",
                 giftCards, 100,
                 (PreparedStatement ps, GiftCard giftCard) -> {
                     ps.setString(1,giftCard.getCode());
                     ps.setDouble(2,giftCard.getAmount());
+                    ps.setInt(3, giftCard.getClient_id());
                 });
     }
 
@@ -589,7 +590,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
                         double amountToSetTo = currentGiftCard.getAmount() - amount;
                         currentGiftCard.setAmount(amountToSetTo);
-
+                        currentGiftCard.setClient_id(clientId);
                         // update object in map of existing dbs
                         mapOfExistingGiftCards.put(giftCardCode,currentGiftCard);
 
@@ -602,7 +603,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                     // If it goes below zero: don't follow through.
                     // Else follow through and add Transaction to set
                     GiftCard currentGiftCard = giftCardMapFromFile.get(giftCardCode);
-
+                    currentGiftCard.setClient_id(clientId);
                     Transaction transaction = new Transaction();
 
                     transaction.setSale_id(saleId);
@@ -654,7 +655,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
                     giftCard.setCode(giftCardCode);
                     giftCard.setAmount(amount);
-
+                    giftCard.setClient_id(0);
                     giftCardMapFromFile.put(giftCardCode,giftCard);
                 }
             }
