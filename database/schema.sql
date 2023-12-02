@@ -103,7 +103,7 @@ CREATE TABLE package_purchase
 	is_monthly_renew	boolean,					
 	total_amount_paid	decimal(13, 2),
 	discount			decimal(13, 2),
-	paymentId			varchar(30),
+	paymentId			text,
 	CONSTRAINT PK_package_purchase PRIMARY KEY (package_purchase_id)
 );
 
@@ -127,6 +127,7 @@ CREATE TABLE transactions
 	sale_id						int NOT NULL,
 	payment_type				varchar(50) NOT NULL,
 	payment_amount				decimal(13,2) NOT NULL,
+	gift_code					varchar(13),
 	CONSTRAINT PK_transaction_id PRIMARY KEY (transaction_id),
 	CONSTRAINT FK_transaction_sale_id FOREIGN KEY (sale_id) REFERENCES sales(sale_id)
 );

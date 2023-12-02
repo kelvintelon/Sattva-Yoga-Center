@@ -7,8 +7,17 @@ public class Transaction {
     private int client_id;
     private String payment_type;
     private double payment_amount;
+    private String gift_code = "";
 
     public Transaction() {
+    }
+
+    public String getGift_code() {
+        return gift_code;
+    }
+
+    public void setGift_code(String gift_code) {
+        this.gift_code = gift_code;
     }
 
     public int getTransaction_id() {

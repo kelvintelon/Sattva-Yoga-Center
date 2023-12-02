@@ -97,6 +97,7 @@ public class WebHookController {
 
                         transaction.setPayment_amount(doubleGiftAmountUsed);
                         transaction.setPayment_type("Gift Card Code");
+                        transaction.setGift_code(giftCodeUsed);
 
                         metaDataMap.remove("giftCodeUsed");
                         metaDataMap.remove("giftAmountUsed");

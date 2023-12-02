@@ -5,6 +5,7 @@ import com.sattvayoga.dto.order.ClientCheckoutDTO;
 import com.sattvayoga.dto.order.ResendEmailDTO;
 import com.sattvayoga.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.annotation.Id;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.security.core.parameters.P;
@@ -42,6 +43,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     SaleDao saleDao;
     @Autowired
     TransactionDao transactionDao;
+
     @Autowired
     private EmailSenderService senderService;
 
@@ -289,6 +291,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
             // Handle duplicates here (look for if we already have the sale ID)
             if (!setOfSaleIds.isEmpty() && setOfSaleIds.contains(saleId)) {
+
                 continue;
             }
 
@@ -440,14 +443,15 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     public void batchCreateTransactions(final Collection<Transaction> transactions) {
         jdbcTemplate.batchUpdate(
                 "INSERT INTO transactions (sale_id, client_id,payment_type, " +
-                        "payment_amount) " +
-                        "VALUES (?,?,?,?)",
+                        "payment_amount, gift_code) " +
+                        "VALUES (?,?,?,?,?)",
                 transactions,100,
                 (PreparedStatement ps, Transaction transaction) -> {
                     ps.setInt(1, transaction.getSale_id());
                     ps.setInt(2, transaction.getClient_id());
                     ps.setString(3, transaction.getPayment_type());
                     ps.setDouble(4, transaction.getPayment_amount());
+                    ps.setString(5, transaction.getGift_code());
                 }
         );
     }
@@ -553,7 +557,12 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
 
             int saleId = Integer.valueOf(splitLine[1]);
+            Sale getSaleObject = saleDao.getSaleBySaleId(saleId);
 
+            for (int j = 0; getSaleObject.getPackages_purchased_array() != null && j < getSaleObject.getPackages_purchased_array().length; j++) {
+                int[] packagePurchaseArray = getSaleObject.getPackages_purchased_array();
+                    updatePaymentIdForGiftCardPurchase(packagePurchaseArray[j]);
+            }
             int clientId = Integer.valueOf(splitLine[2]);
 
             String giftCardCode = splitLine[6];
@@ -567,7 +576,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
             double amount = Double.valueOf(parsedString);
 
-            // If it's a transaction
+            // If it's the gift card code is used in a transaction
             if (isTransaction) {
 
                 // Check if gift card ID exists in our database:
@@ -582,10 +591,11 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                         Transaction transaction = new Transaction();
 
                         transaction.setSale_id(saleId);
+
                         transaction.setClient_id(clientId);
                         transaction.setPayment_amount(amount);
                         transaction.setPayment_type("Gift Card Code");
-
+                        transaction.setGift_code(giftCardCode);
                         setOfTransactions.add(transaction);
 
                         double amountToSetTo = currentGiftCard.getAmount() - amount;
@@ -610,7 +620,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                     transaction.setClient_id(clientId);
                     transaction.setPayment_amount(amount);
                     transaction.setPayment_type("Gift Card Code");
-
+                    transaction.setGift_code(giftCardCode);
                     setOfTransactions.add(transaction);
 
                     double amountToSetTo = currentGiftCard.getAmount() - amount;
@@ -639,6 +649,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                     transaction.setClient_id(clientId);
                     transaction.setPayment_amount(amount);
                     transaction.setPayment_type("Gift Card Code");
+                    transaction.setGift_code(giftCardCode);
 
                     setOfTransactions.add(transaction);
 
@@ -911,6 +922,8 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
                 for (Integer id : packagePurchaseIds) {
                     tempList.add(id);
+                    // use id and Update the the Payment Id to include " 'Gift Card Code' at the end"
+                    updatePaymentIdForGiftCardPurchase(id);
                     sale.setPackages_purchased_list(tempList);
                 }
 
@@ -922,6 +935,13 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             maxId++;
         }
 
+    }
+
+    @Override
+    public void updatePaymentIdForGiftCardPurchase(int packagePurchaseId) {
+        // Update PaymentId to have 'Gift Card Code' using the packagePurchaseId to locate it.
+        String sql = "UPDATE package_purchase SET paymentId = paymentId || ' /Gift Card Code' WHERE package_purchase_id = ?";
+        jdbcTemplate.update(sql, packagePurchaseId);
     }
 
     public static Timestamp convertDateStringToTimestamp(String dateString) {

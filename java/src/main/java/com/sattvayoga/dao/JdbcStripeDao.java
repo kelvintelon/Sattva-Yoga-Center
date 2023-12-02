@@ -125,7 +125,7 @@ public class JdbcStripeDao implements StripeDao {
             }
         }
 
-
+        String giftCode = "";
         // if it's comp/Free then return immediately
         if (clientCheckoutDTO.isCompFree()) {
             // just process everything here and return at the end;
@@ -140,6 +140,8 @@ public class JdbcStripeDao implements StripeDao {
 //                packagesBeingBoughtForEmail += currentPackage.getDescription() + "\n";
 //            }
             int count = 1;
+
+
             // Insert everything that was in the list into package purchase
             //  1. grab package purchase IDs and package description
             for (int i = 0; i < listOfPackagesBeingPurchased.size(); i++) {
@@ -158,6 +160,7 @@ public class JdbcStripeDao implements StripeDao {
                     checkoutItemDTO.setPaymentId("comp/free");
 
                     String code = packagePurchaseDao.generateGiftCardCode();
+                    giftCode = code;
                     packagePurchaseDao.createGiftCard(code, currentPackage.getPackage_cost().doubleValue());
                     int packagePurchaseId = packagePurchaseDao.createGiftCardPurchase(checkoutItemDTO);
                     PackagePurchase packagePurchase1 = packagePurchaseDao.getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseId);
@@ -236,10 +239,10 @@ public class JdbcStripeDao implements StripeDao {
             if (clientCheckoutDTO.getGiftCard() != null && clientCheckoutDTO.getGiftCard().getCode() != null && clientCheckoutDTO.getGiftCard().getAmount() > 0) {
                 isGiftCardUsed = true;
                 GiftCard giftCardUsed = clientCheckoutDTO.getGiftCard();
-                String giftCode = giftCardUsed.getCode();
+                String code = giftCardUsed.getCode();
                 giftAmountUsed = giftCardUsed.getAmount();
 
-                GiftCard originalGiftCard = packagePurchaseDao.retrieveGiftCard(giftCode);
+                GiftCard originalGiftCard = packagePurchaseDao.retrieveGiftCard(code);
 
                 packagePurchaseDao.updateGiftCard(originalGiftCard, clientCheckoutDTO.getClient_id(), giftAmountUsed);
             }
@@ -303,6 +306,7 @@ public class JdbcStripeDao implements StripeDao {
                     checkoutItemDTO.setPaymentId(paymentIdString);
 
                     String code = packagePurchaseDao.generateGiftCardCode();
+                    giftCode = code;
                     packagePurchaseDao.createGiftCard(code, currentPackage.getPackage_cost().doubleValue());
                     int packagePurchaseId = packagePurchaseDao.createGiftCardPurchase(checkoutItemDTO);
 
@@ -405,6 +409,7 @@ public class JdbcStripeDao implements StripeDao {
                 transaction.setSale_id(saleId);
                 transaction.setPayment_type("Gift Card Code");
                 transaction.setPayment_amount(giftAmountUsed);
+                transaction.setGift_code(giftCode);
                 transaction.setClient_id(clientCheckoutDTO.getClient_id());
 
                 transactionDao.createTransaction(transaction);
@@ -550,9 +555,7 @@ public class JdbcStripeDao implements StripeDao {
                             return e.getStripeError().toJson();
                     }
                 }
-//              finally {
-//                   return "";
-//               }
+
             }
         }
 //        if (firstPackageDetails.isIs_recurring() && firstPackageDetails.isUnlimited()) {
@@ -741,6 +744,7 @@ public class JdbcStripeDao implements StripeDao {
 //        }
     }
 
+    // HELPER
     @Override
     public void sendEmailReceipt(ClientCheckoutDTO clientCheckoutDTO, String packagesBeingBoughtForEmail, int saleId, String saleDate, String firstName, String subject, String subTotal, String tax, String total, String usedPaymentTypes) {
         if (clientCheckoutDTO.getEmailForReceipt().length()>0 && clientCheckoutDTO.isSendEmail()) {
@@ -775,6 +779,7 @@ public class JdbcStripeDao implements StripeDao {
         }
     }
 
+    //HELPER
     private void createCancelAtTimestampFromIterations(ClientCheckoutDTO clientCheckoutDTO, PackageDetails firstPackageDetails, Map<String, Object> subscriptionParams) {
         long cancelAtUnixTimestamp = 0;
 
@@ -803,6 +808,7 @@ public class JdbcStripeDao implements StripeDao {
         }
     }
 
+    //HELPER
     private boolean determineDiscountNeeded(ClientCheckoutDTO clientCheckoutDTO) {
         int originalRunningTotal = 0;
 
@@ -821,6 +827,7 @@ public class JdbcStripeDao implements StripeDao {
         return false;
     }
 
+    //HELPER
     private String modifyMap(ClientCheckoutDTO clientCheckoutDTO, Map<String, String> metaDataMap, Boolean keyedStoredOrSwiped) {
         List<PackageDetails> listOfPackagesBeingPurchased = clientCheckoutDTO.getListOfPackages();
 
@@ -912,6 +919,7 @@ public class JdbcStripeDao implements StripeDao {
         return descriptionToReturn;
     }
 
+    //HELPER
     private void usedGiftCardInMetaData(ClientCheckoutDTO clientCheckoutDTO, Map<String, String> metaDataMap) {
         String giftCode = "";
         String giftAmountUsed = "";
@@ -925,6 +933,7 @@ public class JdbcStripeDao implements StripeDao {
         }
     }
 
+    //HELPER
     private PaymentIntentCreateParams getPaymentIntentCreateParams(ClientCheckoutDTO clientCheckoutDTO, String customer_id, Map<String, String> metaDataMap, String description) {
         PaymentIntentCreateParams paymentIntentCreateParams = null;
 
@@ -956,6 +965,7 @@ public class JdbcStripeDao implements StripeDao {
         return paymentIntentCreateParams;
     }
 
+    //HELPER
     @Override
     public List<PaymentMethodOptions> retrievePaymentMethodOptions(int clientId) throws StripeException {
 
@@ -990,6 +1000,7 @@ public class JdbcStripeDao implements StripeDao {
         return listOfPaymentMethodOptions;
     }
 
+    //HELPER
     @Override
     public void addPaymentMethodThroughReader(int clientId) throws StripeException {
         SetStripeKey();
@@ -1024,6 +1035,7 @@ public class JdbcStripeDao implements StripeDao {
 
     }
 
+    //HELPER
     private Reader getReader() throws StripeException {
         //TODO:
         // 1. Replace this simulated reader ID ("tmr_FPKgUQOJ7fdmwi") with physical reader ID
@@ -1031,6 +1043,7 @@ public class JdbcStripeDao implements StripeDao {
 //        return Reader.retrieve("tmr_FP6wARXsBdbits");
     }
 
+    //HELPER
     @Override
     public void addPaymentMethodManually(int clientId, PaymentMethodOptions paymentMethodOption) throws StripeException {
 
@@ -1086,6 +1099,7 @@ public class JdbcStripeDao implements StripeDao {
 
     }
 
+    //HELPER
     private void SetStripeKey() {
         Stripe.apiKey = apiKey;
 
@@ -1102,6 +1116,7 @@ public class JdbcStripeDao implements StripeDao {
     }
 
 
+    //HELPER
     private PaymentMethodOptions mapPaymentDataToObject(PaymentMethod paymentMethod) {
         PaymentMethodOptions paymentMethodOptions = new PaymentMethodOptions();
 
@@ -1121,6 +1136,7 @@ public class JdbcStripeDao implements StripeDao {
         return paymentMethodOptions;
     }
 
+    //HELPER
     private SessionCreateParams.LineItem createSessionLineItem(CheckoutItemDTO checkoutItemDTO) {
         return SessionCreateParams.LineItem.builder()
                 .setPriceData(createPriceData(checkoutItemDTO))
@@ -1128,6 +1144,7 @@ public class JdbcStripeDao implements StripeDao {
                 .build();
     }
 
+    //HELPER
     private SessionCreateParams.LineItem createSubscriptionLineItem(CheckoutItemDTO checkoutItemDTO) {
         return SessionCreateParams.LineItem.builder()
                 .setPrice((checkoutItemDTO.getProductName().equals("One Month Subscription")) ? "price_1NieCWBV0tnIJdW6WqIm2dti" : "price_1NkWmnBV0tnIJdW6ZGHtezqw")
@@ -1135,6 +1152,7 @@ public class JdbcStripeDao implements StripeDao {
                 .build();
     }
 
+    //HELPER
     private SessionCreateParams.LineItem.PriceData createPriceData(CheckoutItemDTO checkoutItemDTO) {
         return SessionCreateParams.LineItem.PriceData.builder()
                 .setCurrency("usd")
@@ -1146,6 +1164,7 @@ public class JdbcStripeDao implements StripeDao {
                 ).build();
     }
 
+    //HELPER
     @Override
     public String getCustomerIdString(int retrievedClientId) {
 

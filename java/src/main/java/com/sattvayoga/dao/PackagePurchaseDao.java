@@ -61,5 +61,7 @@ public interface PackagePurchaseDao {
 
     void uploadGiftCardSalesReport(MultipartFile multipartFile);
 
+    void updatePaymentIdForGiftCardPurchase(int packagePurchaseId);
+
     List<GiftCard> retrieveAllGiftCards();
 }
