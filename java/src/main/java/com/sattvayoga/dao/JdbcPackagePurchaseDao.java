@@ -324,10 +324,37 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             String paymentType = formatCardType(splitLine[14]);
             packagePurchase.setPaymentId(paymentType);
 
+            Set<Integer> packagePurchaseIds = new HashSet<>();
+            packagePurchaseIds.add(maxId);
             packagePurchase.setPackage_purchase_id(maxId);
 
             packagePurchaseSet.add(packagePurchase);
 
+            int quantity = Integer.valueOf(splitLine[8]);
+
+            if (quantity > 1) {
+
+                for (int j = 1; j < quantity; j++) {
+                    maxId++;
+
+                    PackagePurchase newPurchase = new PackagePurchase();
+                    newPurchase.setPackage_purchase_id(maxId);
+                    newPurchase.setClient_id(clientId);
+                    newPurchase.setDate_purchased(packagePurchase.getDate_purchased());
+                    newPurchase.setActivation_date(packagePurchase.getActivation_date());
+                    newPurchase.setExpiration_date(packagePurchase.getExpiration_date());
+                    newPurchase.setPackage_id(packageId);
+                    newPurchase.setClasses_remaining(packagePurchase.getClasses_remaining());
+                    newPurchase.setIs_monthly_renew(packagePurchase.isIs_monthly_renew());
+                    newPurchase.setDiscount(packagePurchase.getDiscount());
+                    newPurchase.setTotal_amount_paid(packagePurchase.getTotal_amount_paid());
+                    newPurchase.setPaymentId("Gift Card Code");
+
+                    packagePurchaseSet.add(newPurchase);
+                    packagePurchaseIds.add(maxId);
+                }
+
+            }
 
             // Plug in Sale ID Here and build
             if (mapOfSale.containsKey(saleId)) {
@@ -341,8 +368,10 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 List<Integer> tempList = new ArrayList<>(sale.getPackages_purchased_list());
 
                 // ADD In the new package purchase and update the sale object
-                tempList.add(packagePurchase.getPackage_purchase_id());
-                sale.setPackages_purchased_list(tempList);
+                for (Integer id : packagePurchaseIds) {
+                    tempList.add(id);
+                    sale.setPackages_purchased_list(tempList);
+                }
 
                 // Replace sale in Map
                 mapOfSale.put(saleId, sale);
@@ -356,8 +385,11 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 List<Integer> tempList = new ArrayList<>();
                 sale.setSale_id(saleId);
                 sale.setClient_id(clientId);
-                tempList.add(packagePurchase.getPackage_purchase_id());
-                sale.setPackages_purchased_list(tempList);
+
+                for (Integer id : packagePurchaseIds) {
+                    tempList.add(id);
+                    sale.setPackages_purchased_list(tempList);
+                }
 
                 // Replace sale in Map
                 mapOfSale.put(saleId, sale);
@@ -922,7 +954,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
                 for (Integer id : packagePurchaseIds) {
                     tempList.add(id);
-                    // use id and Update the the Payment Id to include " 'Gift Card Code' at the end"
+                    // use id and Update the Payment Id to include " 'Gift Card Code' at the end"
                     updatePaymentIdForGiftCardPurchase(id);
                     sale.setPackages_purchased_list(tempList);
                 }
