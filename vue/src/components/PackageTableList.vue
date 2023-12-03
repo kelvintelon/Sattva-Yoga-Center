@@ -512,6 +512,7 @@ export default {
         this.createFormIncomplete = false;
       }
     },
+    
     checkEditForm() {
       
       if (this.editedItem.description == "") {

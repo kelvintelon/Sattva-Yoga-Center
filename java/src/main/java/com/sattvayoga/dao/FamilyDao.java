@@ -12,4 +12,5 @@ public interface FamilyDao {
     void addClientToFamily(int client_id, int family_id);
 
     int createNewFamily(int client_id, String family_name);
+
 }

@@ -48,4 +48,12 @@ public class FamilyController {
             familyDao.addClientToFamily(clientFamily.getClient_id(),newFamilyId);
         }
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/createFamily")
+    public void createFamily(@RequestBody Family newFamily) {
+        familyDao.createNewFamily(0,newFamily.getFamily_name());
+    }
+
 }

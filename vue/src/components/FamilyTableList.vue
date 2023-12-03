@@ -28,11 +28,11 @@
               </template>
               <v-card justify="center">
                 <v-card-title>
-                  <span class="text-h5">{{ formTitle }}</span>
+                  <span class="text-h5"  style="color: rgba(245, 104, 71, 0.95)">Create A Family</span>
                 </v-card-title>
 
                 <!-- START OF CREATE Family FORM -->
-                <!-- <v-container>
+                 <v-container>
                   <v-row justify="center" style="min-height: 160px">
                     <v-col cols="7">
                       <v-form
@@ -46,68 +46,20 @@
                         justify="center"
                         align="center"
                       >
-                        <v-text-field
-                          v-model="packageDetails.description"
-                          :rules="descriptionRules"
-                          label="Description"
+                       <v-text-field
+                          v-model="newFamilyObj.family_name"
+                          label="Family Name"
                           required
                         ></v-text-field>
-                        <v-select
-                          v-model.number="packageDetails.classes_amount"
-                          :items="classesAmountOptions"
-                          label="Amount of Classes"
-                          required
-                        ></v-select>
-                        <v-select
-                          v-model.number="packageDetails.package_duration"
-                          :items="durationOptions"
-                          label="Duration in months"
-                          required
-                          @change="onPackageDurationChange"
-                        ></v-select>
-                        <v-text-field
-                          v-model.number="packageDetails.package_cost"
-                          class="mt-0 pt-0"
-                          type="number"
-                          style="width: 60px"
-                          label="Cost: $"
-                          min="10"
-                        ></v-text-field>
-                        <v-text-field
-                          v-model.number="packageDetails.package_order"
-                          class="mt-0 pt-0"
-                          type="number"
-                          style="width: 60px"
-                          label="Order: "
-                          min="1"
-                        ></v-text-field>
-                        <v-checkbox
-                          v-model="packageDetails.unlimited"
-                          label="Unlimited?"
-                          required
-                          @change="onSubscriptionBooleanChange"
-                        ></v-checkbox>
-                        <v-checkbox
-                          v-model="packageDetails.active"
-                          label="Active?"
-                          required
-                        ></v-checkbox>
-                        <v-checkbox
-                          v-model="packageDetails.is_visible_online"
-                          label="Should this be Visible Online?"
-                          required
-                        ></v-checkbox>
+                      
                         <v-row justify="center" align="center"
-                          ><v-col cols="10">
-                            <v-btn color="error" class="mr-4" @click="reset">
-                              Reset Form
-                            </v-btn>
-                          </v-col>
+                          >
                           <v-col>
                             <v-btn
                               class="mr-4"
                               type="submit"
                               :disabled="invalid"
+                              style="color: rgba(245, 104, 71, 0.95)"
                             >
                               submit
                             </v-btn></v-col
@@ -116,11 +68,11 @@
                       </v-form>
                     </v-col>
                   </v-row>
-                </v-container> -->
+                </v-container> 
 
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <v-btn color="blue darken-1" text @click="close">
+                  <v-btn color="blue darken-1" text @click="dialog = false">
                     Cancel
                   </v-btn>
                 </v-card-actions>
@@ -299,7 +251,10 @@ export default {
       ],
       familyList: [],
       dialogDelete: false,
+      dialog: false,
       editedItem: {},
+      newFamilyObj: {},
+      createFormComplete: false,
     };
   },
   created() {
@@ -314,6 +269,51 @@ export default {
           alert("Error retrieving family information");
         }
       });
+    },
+    
+    submit() {
+      this.checkCreateForm();
+      "Submitted"
+      if (this.createFormComplete) {
+        // after completing the object do the POST REQUEST
+        FamilyService.createFamily(this.newFamilyObj)
+        .then((response) =>{
+          if (response.status == 201) {
+            this.getFamilyTable();
+            alert("Family Created")
+            this.dialog = false;
+            this.newFamilyObj.family_name = "";
+          }
+        });
+        // packageDetailService
+        //   .createPackage(this.packageDetails)
+        //   .then((response) => {
+        //     if (response.status == 201) {
+        //       alert("You have created a package!");
+        //       this.getPackageTable();
+        //       this.reset();
+        //       this.close();
+        //     } else {
+        //       alert("Error creating a package!");
+        //     }
+        //   });
+      }
+    },
+    checkCreateForm() {
+      let foundDuplicateName = false
+      for (let index = 0; index < this.familyList.length; index++) {
+        let element = this.familyList[index];
+        if (element.family_name == this.newFamilyObj.family_name) {
+          foundDuplicateName = true;
+        }
+      }
+      if (this.newFamilyObj.family_name == "") {
+        alert("Please fill out your form");
+      } else if (foundDuplicateName) {
+        alert("Family name already taken")
+      } else {
+        this.createFormComplete = true;
+      }
     },
     deleteItem(item) {
         this.editedItem = Object.assign({}, item);

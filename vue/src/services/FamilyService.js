@@ -12,8 +12,10 @@ export default {
 
   addMultipleClientsToNewFamily(listOfClients){
     return axios.post('addMultipleClientsToNewFamily', listOfClients);
-  }
-
+  },
+  createFamily(newFamilyObj) {
+    return axios.post('createFamily', newFamilyObj);
+  },
 
 
 }
