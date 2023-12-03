@@ -50,10 +50,11 @@ public class FamilyController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/createFamily")
-    public void createFamily(@RequestBody Family newFamily) {
-        familyDao.createNewFamily(0,newFamily.getFamily_name());
+    @PutMapping("/updateFamilyName")
+    public void updateFamilyName(@RequestBody Family updateFamily) {
+        familyDao.updateFamilyName(updateFamily);
     }
+
+
 
 }

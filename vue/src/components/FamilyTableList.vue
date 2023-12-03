@@ -81,10 +81,10 @@
             <!-- END OF CREATE PACKAGE FORM -->
 
             <!-- START OF EDIT FORM -->
-            <!-- <v-dialog v-model="dialog2" max-width="500px" persistent>
+             <v-dialog v-model="dialog2" max-width="500px" persistent>
               <v-card justify="center">
                 <v-card-title>
-                  <span class="text-h5">{{ formTitle }}</span>
+                  <span class="text-h5" style="color: rgba(245, 104, 71, 0.95)">Update a Family Name</span>
                 </v-card-title>
 
                 <v-container>
@@ -101,69 +101,18 @@
                         justify="center"
                         align="center"
                       >
-                        <v-text-field
-                          v-model="editedItem.description"
-                          :rules="descriptionRules"
-                          label="Description"
+                       <v-text-field
+                          v-model="editedItem.family_name"
+                          label="Family Name"
                           required
                         ></v-text-field>
-                        <v-select
-                          v-model.number="editedItem.classes_amount"
-                          :items="classesAmountOptions"
-                          label="Amount of Classes"
-                          required
-                        ></v-select>
-                        <v-select
-                          v-model.number="editedItem.package_duration"
-                          :items="durationOptions"
-                          label="Duration in months"
-                          required
-                          @change="onPackageDurationChange"
-                        ></v-select>
-                        
-                        <v-text-field
-                          v-model.number="editedItem.package_cost"
-                          class="mt-0 pt-0"
-                          type="number"
-                          style="width: 60px"
-                          label="Cost: $"
-                          min="10"
-                        ></v-text-field>
-                        <v-text-field
-                          v-model.number="editedItem.package_order"
-                          class="mt-0 pt-0"
-                          type="number"
-                          style="width: 60px"
-                          label="Order: "
-                          min="1"
-                        ></v-text-field>
-                        <v-checkbox
-                          v-model="editedItem.unlimited"
-                          label="Unlimited?"
-                          required
-                          @change="onSubscriptionBooleanChange"
-                        ></v-checkbox>
-                        <v-checkbox
-                          v-model="editedItem.active"
-                          label="Active?"
-                          required
-                        ></v-checkbox>
-                        <v-checkbox
-                          v-model="editedItem.is_visible_online"
-                          label="Visible Online?"
-                          required
-                        ></v-checkbox>
                         <v-row justify="center" align="center"
-                          ><v-col cols="10">
-                            <v-btn color="error" class="mr-4" @click="reset">
-                              Reset Form
-                            </v-btn>
-                          </v-col>
-                          <v-col>
+                          ><v-col>
                             <v-btn
                               class="mr-4"
                               type="submit"
                               :disabled="invalid"
+                              style="color: rgba(245, 104, 71, 0.95)"
                             >
                               update
                             </v-btn></v-col
@@ -176,12 +125,12 @@
 
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <v-btn color="blue darken-1" text @click="close2">
+                  <v-btn color="blue darken-1" text @click="dialog2=false">
                     Cancel
                   </v-btn>
                 </v-card-actions>
               </v-card>
-            </v-dialog> -->
+            </v-dialog> 
             <!-- END OF EDIT FORM -->
 
             <!-- DELETE ? -->
@@ -252,9 +201,11 @@ export default {
       familyList: [],
       dialogDelete: false,
       dialog: false,
+      dialog2: false,
       editedItem: {},
       newFamilyObj: {},
       createFormComplete: false,
+      updateFormComplete: false,
     };
   },
   created() {
@@ -285,18 +236,6 @@ export default {
             this.newFamilyObj.family_name = "";
           }
         });
-        // packageDetailService
-        //   .createPackage(this.packageDetails)
-        //   .then((response) => {
-        //     if (response.status == 201) {
-        //       alert("You have created a package!");
-        //       this.getPackageTable();
-        //       this.reset();
-        //       this.close();
-        //     } else {
-        //       alert("Error creating a package!");
-        //     }
-        //   });
       }
     },
     checkCreateForm() {
@@ -321,6 +260,41 @@ export default {
     },
     closeDelete() {
       this.dialogDelete = false;
+    },
+    update() {
+      this.checkForm2();
+      if (this.updateFormComplete) {
+        FamilyService.updateFamilyName(this.editedItem).then((response) => {
+          
+           if (response.status == 200) {
+            alert("You have updated a family name");
+            this.getFamilyTable();
+            this.dialog2=false;
+          } else {
+            alert("Error updating a family server side!");
+          }
+          if (response.status == 403) {
+              alert("Failed. Check axios")
+            }
+        }).catch((error) => {
+            const response = error.response;
+            if (response.status == 403) {
+              alert("Failed. Check axios")
+            }
+          });
+      }
+    },
+    editItem(item) {
+      this.editedIndex = this.familyList.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.dialog2 = true;
+    },
+    checkForm2() {
+      if (this.editedItem.family_name == "") {
+        alert("Please fill out your form");
+      } else {
+        this.updateFormComplete = true;
+      }
     },
   },
 };

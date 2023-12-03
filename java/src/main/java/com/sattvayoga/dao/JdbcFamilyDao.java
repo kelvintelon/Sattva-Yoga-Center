@@ -48,6 +48,12 @@ public class JdbcFamilyDao implements FamilyDao{
         return newFamilyId;
     }
 
+    @Override
+    public void updateFamilyName(Family newFamilyName) {
+        String sql = "UPDATE family SET family_name = ? WHERE family_id =?;";
+        jdbcTemplate.update(sql,newFamilyName.getFamily_name(),newFamilyName.getFamily_id());
+    }
+
     public Family mapRowToFamily(SqlRowSet rs){
         Family family = new Family();
         family.setFamily_id(rs.getInt("family_id"));
