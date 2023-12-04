@@ -17,7 +17,7 @@ export default {
     return axios.post('createFamily', newFamilyObj);
   },
   updateFamilyName(updateFamilyObj) {
-    return axios.post('updateFamilyName', updateFamilyObj);
+    return axios.put('updateFamilyName', updateFamilyObj);
   },
 
 }

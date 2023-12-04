@@ -265,7 +265,7 @@ export default {
       this.checkForm2();
       if (this.updateFormComplete) {
         FamilyService.updateFamilyName(this.editedItem).then((response) => {
-          
+        
            if (response.status == 200) {
             alert("You have updated a family name");
             this.getFamilyTable();
@@ -273,14 +273,10 @@ export default {
           } else {
             alert("Error updating a family server side!");
           }
-          if (response.status == 403) {
-              alert("Failed. Check axios")
-            }
+          
         }).catch((error) => {
             const response = error.response;
-            if (response.status == 403) {
-              alert("Failed. Check axios")
-            }
+            alert("Error status: " + response.status)
           });
       }
     },

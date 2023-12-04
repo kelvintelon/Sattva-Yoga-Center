@@ -50,7 +50,7 @@ public class FamilyController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/updateFamilyName")
+    @RequestMapping(value = "/updateFamilyName", method = RequestMethod.PUT)
     public void updateFamilyName(@RequestBody Family updateFamily) {
         familyDao.updateFamilyName(updateFamily);
     }

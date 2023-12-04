@@ -50,7 +50,7 @@ public class JdbcFamilyDao implements FamilyDao{
 
     @Override
     public void updateFamilyName(Family newFamilyName) {
-        String sql = "UPDATE family SET family_name = ? WHERE family_id =?;";
+        String sql = "UPDATE families SET family_name = ? WHERE family_id =?;";
         jdbcTemplate.update(sql,newFamilyName.getFamily_name(),newFamilyName.getFamily_id());
     }
 
