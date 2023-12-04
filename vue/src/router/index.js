@@ -30,6 +30,8 @@ import ResetPasswordLoggedIn from '../views/ResetPasswordLoggedIn.vue'
 
 import DatabaseUpload from '../views/DatabaseUpload.vue'
 import FamilyManagement from '../views/FamilyManagement.vue'
+import FamilyDetails from '../views/FamilyDetails.vue'
+
 
 Vue.use(Router)
 
@@ -270,7 +272,15 @@ const router = new Router({
       meta: {
         requiresAuth: true
       }
-    }
+    },
+    {
+      path: "/familyDetails/:familyId",
+      name: "family-details",
+      component: FamilyDetails,
+      meta: {
+        requiresAuth: true
+      }
+    },
   ]
 })
 

@@ -159,6 +159,7 @@
 
         <!-- ACTIONS / ICONS  -->
         <template v-slot:[`item.actions`]="{ item }">
+          <v-icon @click="sendToFamilyDetailsPage(item)">mdi-account-multiple</v-icon>
           <v-icon small class="mr-2" @click="editItem(item)">
             mdi-pencil
           </v-icon>
@@ -192,8 +193,8 @@ export default {
           value: "family_name",
         },
         {
-          text: "Active",
-          value: "active",
+          text: "Member Count",
+          value: "listOfFamilyMembers.length",
           sortable: false,
         },
         { text: "Actions", value: "actions", sortable: false },
@@ -221,7 +222,12 @@ export default {
         }
       });
     },
-    
+    sendToFamilyDetailsPage(item) {
+      this.$router.push({
+        name: "family-details",
+        params: { familyId: item.family_id },
+      });
+    },
     submit() {
       this.checkCreateForm();
       "Submitted"

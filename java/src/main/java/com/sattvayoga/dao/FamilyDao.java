@@ -16,4 +16,6 @@ public interface FamilyDao {
     void updateFamilyName(Family newFamilyName);
 
     void deleteFamily(Family familyToDelete);
+
+    Family getFamilyDetailsByFamilyId(int familyId);
 }

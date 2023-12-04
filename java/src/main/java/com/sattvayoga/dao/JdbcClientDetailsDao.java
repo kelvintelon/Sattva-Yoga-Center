@@ -494,7 +494,6 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
     }
 
 
-
     private ClientDetails mapRowToClient(SqlRowSet rs) {
         ClientDetails clientDetails = new ClientDetails();
         clientDetails.setClient_id(rs.getInt("client_id"));

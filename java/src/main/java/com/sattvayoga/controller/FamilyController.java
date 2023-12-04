@@ -1,6 +1,7 @@
 package com.sattvayoga.controller;
 
 import com.sattvayoga.dao.FamilyDao;
+import com.sattvayoga.model.ClassEvent;
 import com.sattvayoga.model.ClientFamily;
 import com.sattvayoga.model.Family;
 import org.springframework.http.HttpStatus;
@@ -69,5 +70,15 @@ public class FamilyController {
         familyToDelete.setFamily_id(familyId);
         familyDao.deleteFamily(familyToDelete);
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value = "/getFamilyDetailsByFamilyId/{familyId}", method = RequestMethod.GET)
+    public Family getFamilyDetailsByFamilyId (@PathVariable int familyId ) {
+
+        return familyDao.getFamilyDetailsByFamilyId(familyId);
+
+    }
+
+
 
 }

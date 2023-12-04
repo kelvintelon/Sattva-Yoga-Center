@@ -1,10 +1,17 @@
 package com.sattvayoga.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Family {
     private int family_id;
     private String family_name;
+
     //helper
     private String quick_details;
+
+    //helper
+    private List<ClientDetails> listOfFamilyMembers = new ArrayList<>();
 
     public Family(){};
 
@@ -17,6 +24,14 @@ public class Family {
         this.family_id = family_id;
         this.family_name = family_name;
         this.quick_details = quick_details;
+    }
+
+    public List<ClientDetails> getListOfFamilyMembers() {
+        return listOfFamilyMembers;
+    }
+
+    public void setListOfFamilyMembers(List<ClientDetails> listOfFamilyMembers) {
+        this.listOfFamilyMembers = listOfFamilyMembers;
     }
 
     public int getFamily_id() {

@@ -22,5 +22,7 @@ export default {
   deleteFamily(familyObjId) {
     return axios.delete(`deleteFamily/${familyObjId}`);
   },
-
+  getFamilyDetailsByFamilyId(familyObjId) {
+    return axios.get(`getFamilyDetailsByFamilyId/${familyObjId}`)
+  },
 }
