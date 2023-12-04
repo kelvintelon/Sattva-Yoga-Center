@@ -14,4 +14,6 @@ public interface FamilyDao {
     int createNewFamily(int client_id, String family_name);
 
     void updateFamilyName(Family newFamilyName);
+
+    void deleteFamily(Family familyToDelete);
 }

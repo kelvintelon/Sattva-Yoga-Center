@@ -261,6 +261,21 @@ export default {
     closeDelete() {
       this.dialogDelete = false;
     },
+    deleteItemConfirm() {
+        FamilyService
+          .deleteFamily(this.editedItem.family_id)
+          .then((response) => {
+            if (response.status == 200) {
+              alert("Family successfully removed!");
+              this.getFamilyTable();
+            } else {
+              // error alert not showing if server gets error
+              alert("Error removing teacher!");
+            }
+          });
+        this.closeDelete();
+       
+    },
     update() {
       this.checkForm2();
       if (this.updateFormComplete) {

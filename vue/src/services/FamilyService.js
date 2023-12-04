@@ -14,10 +14,13 @@ export default {
     return axios.post('addMultipleClientsToNewFamily', listOfClients);
   },
   createFamily(newFamilyObj) {
-    return axios.post('createFamily', newFamilyObj);
+    return axios.post(`createFamily`, newFamilyObj);
   },
   updateFamilyName(updateFamilyObj) {
     return axios.put('updateFamilyName', updateFamilyObj);
+  },
+  deleteFamily(familyObjId) {
+    return axios.delete(`deleteFamily/${familyObjId}`);
   },
 
 }

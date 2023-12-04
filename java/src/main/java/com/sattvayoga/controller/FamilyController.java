@@ -50,11 +50,24 @@ public class FamilyController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @ResponseStatus(HttpStatus.CREATED)
+    @RequestMapping(value = "/createFamily", method = RequestMethod.POST)
+    public void createFamily(@RequestBody Family familyObj) {
+        familyDao.createNewFamily(0,familyObj.getFamily_name());
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/updateFamilyName", method = RequestMethod.PUT)
     public void updateFamilyName(@RequestBody Family updateFamily) {
         familyDao.updateFamilyName(updateFamily);
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value = "/deleteFamily/{familyId}", method = RequestMethod.DELETE)
+    public void deleteFamily(@PathVariable int familyId) {
+        Family familyToDelete = new Family();
+        familyToDelete.setFamily_id(familyId);
+        familyDao.deleteFamily(familyToDelete);
+    }
 
 }

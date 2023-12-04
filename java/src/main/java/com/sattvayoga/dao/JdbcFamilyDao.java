@@ -54,6 +54,14 @@ public class JdbcFamilyDao implements FamilyDao{
         jdbcTemplate.update(sql,newFamilyName.getFamily_name(),newFamilyName.getFamily_id());
     }
 
+    @Override
+    public void deleteFamily(Family familyToDelete) {
+        String sql = "DELETE FROM client_family WHERE family_id = ?";
+        jdbcTemplate.update(sql, familyToDelete.getFamily_id());
+        sql = "DELETE FROM families WHERE family_id = ?";
+        jdbcTemplate.update(sql, familyToDelete.getFamily_id());
+    }
+
     public Family mapRowToFamily(SqlRowSet rs){
         Family family = new Family();
         family.setFamily_id(rs.getInt("family_id"));
