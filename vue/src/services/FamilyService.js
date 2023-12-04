@@ -25,4 +25,10 @@ export default {
   getFamilyDetailsByFamilyId(familyObjId) {
     return axios.get(`getFamilyDetailsByFamilyId/${familyObjId}`)
   },
+  removeFamilyMembersFromSelectedClients(listOfClients) {
+    return axios.put('removeFamilyMembersFromSelectedClients', listOfClients)
+  },
+  registerMultipleClientsForFamily(listOfClients) {
+    return axios.post('registerMultipleClientsForFamily', listOfClients)
+},
 }

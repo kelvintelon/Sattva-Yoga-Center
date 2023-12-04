@@ -29,6 +29,7 @@ public class ClientDetails {
 
     //helper
     private String family_name;
+    private int family_id;
 
     //HELPER
     private String username;
@@ -86,6 +87,14 @@ public class ClientDetails {
         this.client_id = client_id;
         this.last_name = last_name;
         this.first_name = first_name;
+    }
+
+    public int getFamily_id() {
+        return family_id;
+    }
+
+    public void setFamily_id(int family_id) {
+        this.family_id = family_id;
     }
 
     public boolean isIs_allowed_video() {

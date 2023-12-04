@@ -1,5 +1,7 @@
 package com.sattvayoga.dao;
 
+import com.sattvayoga.model.ClassDetails;
+import com.sattvayoga.model.ClientDetails;
 import com.sattvayoga.model.Family;
 
 import java.sql.SQLException;
@@ -18,4 +20,6 @@ public interface FamilyDao {
     void deleteFamily(Family familyToDelete);
 
     Family getFamilyDetailsByFamilyId(int familyId);
+
+    void removeFamilyMembersFromSelectedClients(List<ClientDetails> clientDetailsList);
 }

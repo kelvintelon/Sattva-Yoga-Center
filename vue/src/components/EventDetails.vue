@@ -588,25 +588,25 @@ export default {
 
         // END OF LOOP BLOCK
       }
-    if (this.selectedClients.length > 0) {
-      eventService
-        .registerMultipleClientsForEvent(this.selectedClients)
-        .then((response) => {
-          if (response.status == 201) {
-            this.overlay = false;
-            alert("Successfully added clients to roster");
-            this.getEventDetailsCall();
-            this.selectedClients = [];
-            this.clientDetails.first_name = "";
-            this.clientDetails.last_name = "";
-          } else {
-            alert("Error adding clients to roster");
-          }
-        });
-        this.close();
-    } else {
-      alert("Please select at least one client")
-    }
+      if (this.selectedClients.length > 0) {
+        eventService
+          .registerMultipleClientsForEvent(this.selectedClients)
+          .then((response) => {
+            if (response.status == 201) {
+              this.overlay = false;
+              alert("Successfully added clients to roster");
+              this.getEventDetailsCall();
+              this.selectedClients = [];
+              this.clientDetails.first_name = "";
+              this.clientDetails.last_name = "";
+            } else {
+              alert("Error adding clients to roster");
+            }
+          });
+          this.close();
+      } else {
+        alert("Please select at least one client")
+      }
     },
     saveNewClient() {
       let newClient = {

@@ -63,6 +63,19 @@ public class ClientDetailsController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value = "/getPaginatedClientsForFamily", method = RequestMethod.GET)
+    public PaginatedListOfClients getPaginatedClientsForFamily(
+            @RequestParam int familyId,
+            @RequestParam(defaultValue = "1")  int page,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "") String search,
+            @RequestParam(defaultValue = "client_id") String sortBy,
+            @RequestParam(defaultValue = "false") boolean sortDesc) {
+        // sort by is just another string concatenation
+        return clientDetailsDao.getPaginatedClientsForFamily(page,pageSize,search, sortBy, sortDesc, familyId);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(path = "/clientList", method = RequestMethod.GET)
     public List<ClientDetails> getAllClients() {
 

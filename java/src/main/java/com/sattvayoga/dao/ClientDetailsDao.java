@@ -32,6 +32,8 @@ public interface ClientDetailsDao {
 
     PaginatedListOfClients getPaginatedClientsForEvent(int page, int pageSize, String search, String sortBy, boolean sortDesc, int eventId);
 
+    PaginatedListOfClients getPaginatedClientsForFamily(int page, int pageSize, String search, String sortBy, boolean sortDesc, int familyId);
+
     PaginatedListOfClients getAllPaginatedDuplicateClients(int page, int pageSize, String search);
 
     void removeDuplicateClients(int clientIdToKeep, int clientIdToRemove);
@@ -45,4 +47,6 @@ public interface ClientDetailsDao {
     void uploadClientCsv(MultipartFile multipartFile);
 
     boolean isClientTableEmpty();
+
+
 }

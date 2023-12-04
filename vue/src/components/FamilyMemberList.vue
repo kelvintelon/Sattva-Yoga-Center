@@ -4,7 +4,7 @@
       v-model="selectedClientsFromList"
       :headers="headers"
       :items="returnListOfFamilyMembers"
-      item-key="family_id"
+      item-key="client_id"
       sort-by="family_name"
       show-select
       class="elevation-1"
@@ -24,32 +24,7 @@
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-toolbar-title>{{ family.family_name }}</v-toolbar-title>
           <v-divider class="mx-4" inset vertical></v-divider>
-          <v-btn
-            color="primary"
-            dark
-            class="mb-2 mr-3"
-            v-bind="attrs"
-            v-on="on"
-            @click.prevent="emailRecipients"
-            title="Email Selected Client(s)"
-          >
-            <v-icon>mdi-order-bool-ascending-variant</v-icon>
-            <v-icon>mdi-email</v-icon>
-          </v-btn>
-          
-          <v-btn
-            color="#9948B6ED"
-            dark
-            class="mb-2"
-            v-bind="attrs"
-            v-on="on"
-            @click.prevent="emailRecipientsFromEmailList"
-            title="Email List"
-          >
-            <v-icon>mdi-email-plus</v-icon>
-          </v-btn>
-          <v-divider class="mx-4" inset vertical></v-divider>
-          Member Count: {{ family.listOfFamilyMembers.length }}
+                   Member Count: {{ family.listOfFamilyMembers.length }}
           <v-spacer></v-spacer>
           <v-dialog v-model="dialog" max-width="500px" persistent>
             <template v-slot:activator="{ on, attrs }">
@@ -68,7 +43,7 @@
                 <v-container>
                   <v-row>
                     <v-col>
-                      <!-- <v-autocomplete
+                      <v-autocomplete
                     v-model="selectedClients"
                     :disabled="isUpdating"
                     :items="returnCorrectClientListToChoose"
@@ -84,7 +59,7 @@
                   <template v-slot:append-item>
                       <div v-intersect="endFirstIntersect" />
                     </template>
-                  </v-autocomplete> -->
+                  </v-autocomplete>
                       
      
                     </v-col>
@@ -121,27 +96,6 @@
           </v-dialog>
         </v-toolbar>
       </template>
-      <!-- <template v-slot:[`item.client_id`]="{ item }">
-        <v-chip :color="getColor(item)" dark>
-          {{ item.client_id }}
-        </v-chip>
-      </template>
-      <template v-slot:[`item.first_name`]="{ item }">
-        <v-chip :color="getColor(item)" dark>
-          {{ item.first_name }}
-        </v-chip>
-      </template>
-      <template v-slot:[`item.last_name`]="{ item }">
-        <v-chip :color="getColor(item)" dark>
-          {{ item.last_name }}
-        </v-chip>
-      </template> -->
-      <!-- <template v-slot:[`item.is_on_email_list`]="{ item }">
-        <v-simple-checkbox
-          v-model="item.is_on_email_list"
-          disabled
-        ></v-simple-checkbox>
-      </template> -->
       <template v-slot:[`item.is_on_email_list`]="{ item }">
         <v-simple-checkbox
           v-model="item.is_on_email_list"
@@ -156,7 +110,7 @@
         >
           mdi-account-search
         </v-icon>
-        <v-icon small @click.prevent="RemoveClassForClient(item)" color="#933">
+        <v-icon small @click.prevent="RemoveClientForFamily(item)" color="#933">
           mdi-close-thick
         </v-icon>
       </template>
@@ -172,6 +126,7 @@
 
 <script>
 import FamilyService from '../services/FamilyService';
+import clientDetailService from "../services/ClientDetailService";
 
 export default {
     name: "family-member-list",
@@ -191,6 +146,14 @@ export default {
       ],
             listOfFamilyMembers: [],
             selectedClientsFromList: [],
+            autocompleteFirstClientList: [],
+            firstAutocompletePage: 1,
+            pageSize: 20,
+            firstAutocompleteSearch: "",
+            paginatedObject: {},
+            selectedClients: [],
+            loadingFirstClientList: false,
+            dialog: false,
             dialogDelete: false,
             family: {},
         }
@@ -205,19 +168,163 @@ export default {
                 if (response.status == 200) {
                     this.family = response.data;
                     this.listOfFamilyMembers = this.family.listOfFamilyMembers;
-
+                    this.getAutoCompletedFirstClientTable();
                 }
             })
         },
         sendToFamilyPage() {
-      this.$router.push("/familyManagement");
-    },
-    },
+            this.$router.push("/familyManagement");
+        },
+        sendToUserPageAdminView(object) {
+            this.$store.commit("SET_CLIENT_DETAILS", object);
+            this.$router.push({
+                name: "client-details-admin-view",
+                params: { clientId: object.client_id },
+            });
+        },
+        RemoveClientForFamily(client) {
+            let foundClientObject = false;
+            // see if the client object is already selected
+            for (let j = 0; j < this.selectedClientsFromList.length; j++) {
+                this.selectedClientsFromList[j].family_id = this.$route.params.familyId;
+                if (this.selectedClientsFromList[j].client_id == client.client_id) {
+                foundClientObject = true;
+                }
+            }
+            // if it's not selected already then add the client object to the list of selected clients
+            if (!foundClientObject) {
+                client.family_id = this.$route.params.familyId;
+                this.selectedClientsFromList.push(client);
+            }
+            // create a temp array to hold the list of clients selected, not necessary
+            let temporaryList = this.selectedClientsFromList;
+           
+            FamilyService
+                .removeFamilyMembersFromSelectedClients(temporaryList)
+                .then((response) => {
+                if (response.status === 200) {
+                    this.overlay = false;
+                    alert("Successfully deleted clients from family");
+                    this.getFamilyDetails();
+                    this.selectedClientsFromList = [];
+                } else {
+                    alert("Error deleting clients from roster");
+                }
+                }); // END OF REMOVING CLIENT FROM LIST
+        },
+        getAutoCompletedFirstClientTable() {
+            clientDetailService
+                .getPaginatedClientsForFamily(parseInt(this.$route.params.familyId),
+                 this.firstAutocompletePage, this.pageSize, this.firstAutocompleteSearch)
+                .then((response) => {
+                if (response.status == 200) {
+                    this.paginatedObject = response.data;
+
+                    this.autocompleteFirstClientList = this.paginatedObject.listOfClients;
+                    this.loadingFirstClientList = false;
+                    
+                } else {
+                    alert("Error retrieving client information");
+                }
+                })
+                .catch((error) => {
+                const response = error.response;
+                if (response.status === 401) {
+                    this.$router.push("/login");
+                }
+                });
+        },
+        getSearchedFirstClientTableForAutocomplete(event){
+            this.firstAutocompletePage = 1;
+            var charTyped = String.fromCharCode(event.which);
+            if (/[a-z\d]/i.test(charTyped)) {
+            
+            
+                setTimeout(
+                () =>
+                
+                    ( this.setFirstAutocompleteSearch(event.target.value) 
+                    ),
+                    
+                250
+                );
+                
+            }
+        },
+        setFirstAutocompleteSearch(search) {
+            if (search != undefined && search.length > 0) {
+                this.firstAutocompleteSearch = search;
+                this.firstAutocompletePage = 1;
+                // alert(this.firstAutocompleteSearch)
+            } else {
+                this.firstAutocompleteSearch = "";
+            }
+            this.loadingFirstClientList = true;
+            this.getAutoCompletedFirstClientTable();
+        },
+        endFirstIntersect(entries, observer, isIntersecting) {
+            if (isIntersecting && this.firstAutocompleteSearch == "") {
+                // alert("intersected")
+
+            
+                this.firstAutocompletePage++;
+
+                setTimeout(
+                () =>
+                    // alert(this.search)
+                    ( this.getAutoCompletedFirstClientTable()
+                    ),
+                    // this.getPaginatedClientTable(),
+
+                    // logic goes in here
+                250
+                );
+                
+            }
+        },
+        close() {
+            this.dialog = false;
+        },
+        save() {
+            
+            for (let index = 0; index < this.selectedClients.length; index++) {
+                this.selectedClients[index].family_id = this.$route.params.familyId;
+                // END OF LOOP BLOCK
+            }
+            if (this.selectedClients.length > 0) {
+                FamilyService
+                .registerMultipleClientsForFamily(this.selectedClients)
+                .then((response) => {
+                    if (response.status == 201) {
+                    alert("Successfully added clients to family");
+                    this.getFamilyDetails();
+                    this.selectedClients = [];
+                    } else {
+                    alert("Error adding clients to family");
+                    }
+                });
+                this.close();
+            } else {
+                alert("Please select at least one client")
+            }
+        },
+    },  
     computed: {
         returnListOfFamilyMembers() {
             return this.listOfFamilyMembers;
-        }
-    }
+        },
+        returnCorrectClientListToChoose() {
+            return this.autocompleteFirstClientList
+        },
+    },
+    watch: {
+    dialog(val) {
+      val || this.close();
+    },
+    dialogDelete(val) {
+      val || this.closeDelete();
+    },
+  },
 }
 </script>
 

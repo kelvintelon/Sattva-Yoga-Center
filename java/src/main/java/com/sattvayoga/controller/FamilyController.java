@@ -1,9 +1,7 @@
 package com.sattvayoga.controller;
 
 import com.sattvayoga.dao.FamilyDao;
-import com.sattvayoga.model.ClassEvent;
-import com.sattvayoga.model.ClientFamily;
-import com.sattvayoga.model.Family;
+import com.sattvayoga.model.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -79,6 +77,29 @@ public class FamilyController {
 
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value = "/removeFamilyMembersFromSelectedClients", method = RequestMethod.PUT)
+    public void removeFamilyMembersFromSelectedClients(@RequestBody List<ClientDetails> clientDetailsList) {
+        familyDao.removeFamilyMembersFromSelectedClients(clientDetailsList);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @ResponseStatus(HttpStatus.CREATED)
+    @RequestMapping(value = "/registerMultipleClientsForFamily", method = RequestMethod.POST)
+    public void registerMultipleClientsForFamily(@RequestBody List<ClientDetails> clientDetailsList) {
+
+        // retrieve the event object once
+        Family family = familyDao.getFamilyDetailsByFamilyId(clientDetailsList.get(0).getFamily_id());
+
+
+        for (int i = 0; i < clientDetailsList.size(); i++) {
+            // current clientEvent object
+            ClientDetails client = clientDetailsList.get(i);
+
+            familyDao.addClientToFamily(client.getClient_id(), family.getFamily_id());
+        }
+
+    }
 
 
 }

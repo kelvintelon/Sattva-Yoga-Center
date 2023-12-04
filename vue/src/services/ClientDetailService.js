@@ -13,6 +13,10 @@ export default {
         // , {params: {page: 1, pageSize: 20} }
         return axios.get('/getPaginatedClientsForEvent', {params: {eventId: eventId, page: thisPage, pageSize: thisPageSize, search: thisSearch, sortBy: thisSortBy, sortDesc: thisSortDesc} })
     },
+    getPaginatedClientsForFamily(familyId, thisPage, thisPageSize, thisSearch, thisSortBy, thisSortDesc) {
+        // , {params: {page: 1, pageSize: 20} }
+        return axios.get('/getPaginatedClientsForFamily', {params: {familyId: familyId, page: thisPage, pageSize: thisPageSize, search: thisSearch, sortBy: thisSortBy, sortDesc: thisSortDesc} })
+      },
     getPaginatedDuplicateClients(thisPage, thisPageSize, thisSearch) {
         // , {params: {page: 1, pageSize: 20} }
         return axios.get('/getPaginatedDuplicateClients', {params: {page: thisPage, pageSize: thisPageSize, search: thisSearch} })

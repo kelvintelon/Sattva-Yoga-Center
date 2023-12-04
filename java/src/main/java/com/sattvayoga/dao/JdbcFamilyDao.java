@@ -86,6 +86,17 @@ public class JdbcFamilyDao implements FamilyDao{
         return family;
     }
 
+    @Override
+    public void removeFamilyMembersFromSelectedClients(List<ClientDetails> clientDetailsList) {
+        for (int i = 0; i < clientDetailsList.size(); i++) {
+            int currentClientId = clientDetailsList.get(i).getClient_id();
+            int familyId = clientDetailsList.get(i).getFamily_id();
+
+            String sql = "DELETE FROM client_family WHERE client_id = ? AND family_id = ?";
+            jdbcTemplate.update(sql, currentClientId, familyId);
+        }
+    }
+
     public List<ClientDetails> getFamilyMemberListByFamilyId(int familyId) {
         List<ClientDetails> familyMemberList = new ArrayList<>();
 
@@ -95,6 +106,7 @@ public class JdbcFamilyDao implements FamilyDao{
 
         while(result.next()) {
             ClientDetails familyMember = mapRowToClient(result);
+            familyMember.setQuick_details("(" + familyMember.getClient_id() + ")" + " " + familyMember.getFirst_name() + " " + familyMember.getLast_name());
             familyMemberList.add(familyMember);
         }
 
