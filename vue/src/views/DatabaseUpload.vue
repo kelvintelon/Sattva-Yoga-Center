@@ -7,7 +7,9 @@
     <upload-sales-component></upload-sales-component>
     <upload-gift-card-sales-component></upload-gift-card-sales-component>
     <upload-gift-report-component></upload-gift-report-component>
+    <upload-family-component></upload-family-component>
     <upload-attendance-component></upload-attendance-component>
+    
   </div>
 </template>
   
@@ -21,6 +23,7 @@ import uploadGiftCardSalesComponent from "../components/uploadGiftCardSalesCompo
 import uploadGiftReportComponent from "../components/uploadGiftReportComponent.vue";
 import uploadAttendanceComponent from "../components/uploadAttendanceComponent.vue";
 import clientDetailService from "../services/ClientDetailService";
+import uploadFamilyComponent from "../components/uploadFamilyComponent.vue";
 
 
 export default {
@@ -32,7 +35,8 @@ export default {
     uploadSalesComponent,
     uploadGiftCardSalesComponent,
     uploadGiftReportComponent,
-    uploadAttendanceComponent
+    uploadAttendanceComponent,
+    uploadFamilyComponent
    },
   data() {
     return {

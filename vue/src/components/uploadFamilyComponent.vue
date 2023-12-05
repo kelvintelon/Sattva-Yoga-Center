@@ -3,14 +3,14 @@
       <form ref="uploadForm" @submit.prevent="submit">
           <v-row>
               <v-col>
-                  <v-btn @click="uploadTeacherCSV" v-if="!attemptedUpload">
-                      Upload Teachers
+                  <v-btn @click="uploadFamilyCSV" v-if="!attemptedUpload">
+                      Upload Family
                   </v-btn>
-                  <v-btn @click="uploadTeacherCSV" v-if="attemptedUpload && successfulTeacherUpload" color="green">
-                      Upload Teachers
+                  <v-btn @click="uploadFamilyCSV" v-if="attemptedUpload && successfulFamilyUpload" color="green">
+                      Upload Family
                   </v-btn>
-                  <v-btn @click="uploadTeacherCSV" v-if="attemptedUpload && !successfulTeacherUpload" color="red">
-                      Upload Teachers
+                  <v-btn @click="uploadFamilyCSV" v-if="attemptedUpload && !successfulFamilyUpload" color="red">
+                      Upload Family
                   </v-btn>
               </v-col>
               <v-col>
@@ -26,13 +26,13 @@
 <script>
   import databaseUploadService from "../services/DatabaseUploadService";
   export default {
-    name: "upload-Teacher-Component",
+    name: "upload-Family-Component",
     components: {},
     data() {
       return {
-          teacherFormData: null,
+          familyFormData: null,
           attemptedUpload: false,
-          successfulTeacherUpload: false,
+          successfulFamilyUpload: false,
           overlay: false
       };
     },
@@ -41,19 +41,19 @@
     methods: {
       onCSVUpload() {
           let file = this.$refs.uploadCSV.files[0];
-          this.teacherFormData = new FormData();
-          this.teacherFormData.append("file", file)
+          this.familyFormData = new FormData();
+          this.familyFormData.append("file", file)
       },
-      uploadTeacherCSV() {
+      uploadFamilyCSV() {
           
-          if (this.teacherFormData != null) {
+          if (this.familyFormData != null) {
               this.attemptedUpload = true;
               this.overlay = true;
-              databaseUploadService.uploadTeachers(this.teacherFormData).then((response) => {
+              databaseUploadService.uploadFamily(this.familyFormData).then((response) => {
                   if (response.status == 200) {
                       this.overlay = false;
-                      alert("Successfully uploaded teachers to database")
-                      this.successfulTeacherUpload = true;
+                      alert("Successfully uploaded families to database")
+                      this.successfulFamilyUpload = true;
                   } 
               }).catch((error) => {
             const response = error.response;

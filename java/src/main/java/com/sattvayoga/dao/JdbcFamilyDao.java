@@ -1,6 +1,7 @@
 package com.sattvayoga.dao;
 
 import com.sattvayoga.model.*;
+import org.springframework.data.relational.core.sql.In;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -9,10 +10,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Component
 public class JdbcFamilyDao implements FamilyDao{
@@ -45,7 +49,7 @@ public class JdbcFamilyDao implements FamilyDao{
     }
 
     @Override
-    public int createNewFamily(int client_id, String family_name) {
+    public int createNewFamily(String family_name) {
         String sql = "INSERT into families (family_name) VALUES (?) RETURNING family_id;";
         int newFamilyId = jdbcTemplate.queryForObject(sql,Integer.class, family_name);
         return newFamilyId;
@@ -95,6 +99,114 @@ public class JdbcFamilyDao implements FamilyDao{
             String sql = "DELETE FROM client_family WHERE client_id = ? AND family_id = ?";
             jdbcTemplate.update(sql, currentClientId, familyId);
         }
+    }
+
+    @Override
+    public void uploadFamily(MultipartFile multipartFile) {
+        int count = 0;
+
+        List<String> listOfStringsFromBufferedReader = new ArrayList<>();
+
+        Set<Family> familySetFromFile = new HashSet<>();
+
+        HashMap<String,Integer> findClientColumns = new HashMap<>();
+        try (BufferedReader fileReader = new BufferedReader(new
+                InputStreamReader(multipartFile.getInputStream(), "UTF-8"))) {
+
+            String line;
+            while ((line = fileReader.readLine()) != null) {
+                if (count > 0) {
+
+                    listOfStringsFromBufferedReader.add(line);
+
+                } else {
+                    findClientColumns = findClientIDs(line.split(","));
+                }
+
+                count++;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        readLinesFromListAndPopulateSet(listOfStringsFromBufferedReader, familySetFromFile, findClientColumns);
+
+        // HashMap of Name and Newly created Family ID
+        HashMap<String, Integer> mapOfNewFamilies = new HashMap<>();
+
+        // Creates the new Families in DB.
+        updateMapOfNewFamilies(mapOfNewFamilies, familySetFromFile);
+
+        if (!familySetFromFile.isEmpty()) {
+            for (Family family : familySetFromFile) {
+                int familyId = family.getFamily_id();
+                for (Integer clientId : family.getListOfFamilyMembersClientIds()) {
+                    addClientToFamily(clientId, familyId);
+                }
+            }
+        }
+    }
+
+    public void updateMapOfNewFamilies(HashMap<String, Integer> mapOfNewFamilies, Set<Family> familySetFromFile) {
+
+        for(Family family : familySetFromFile) {
+            String familyName = family.getFamily_name();
+
+            int newFamilyId = createNewFamily(familyName);
+            family.setFamily_id(newFamilyId);
+            familySetFromFile.add(family);
+            mapOfNewFamilies.put(familyName, newFamilyId);
+        }
+    }
+
+
+    public void readLinesFromListAndPopulateSet(List<String> listOfStrings, Set<Family> familySetFromFile, HashMap<String,Integer> findClientColumns ) {
+        for (int i = 0; i < listOfStrings.size(); i++) {
+
+            Family family = new Family();
+
+            int leftLimit = 48; // numeral '0'
+            int rightLimit = 122; // letter 'z'
+            int targetStringLength = 10;
+            Random random = new Random();
+
+            String generatedFamilyName = "F " + random.ints(leftLimit, rightLimit + 1)
+                    .filter(z -> (z <= 57 || z >= 65) && (z <= 90 || z >= 97))
+                    .limit(targetStringLength)
+                    .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                    .toString();
+
+            family.setFamily_name(generatedFamilyName);
+
+            String thisLine = listOfStrings.get(i);
+            String[] splitLine = thisLine.split(",");
+
+            List<Integer> listOfIndexes = new ArrayList<>(findClientColumns.values());
+
+            for (int j = 0; j < listOfIndexes.size(); j++) {
+                int clientIndex = listOfIndexes.get(j);
+                String clientIdString = splitLine[clientIndex].replaceAll("[^\\d]", "");
+                int clientId = Integer.valueOf(clientIdString);
+                family.getListOfFamilyMembersClientIds().add(clientId);
+            }
+
+            familySetFromFile.add(family);
+        }
+    }
+
+    public static HashMap<String, Integer> findClientIDs(String[] array) {
+        HashMap<String, Integer> clientIdMap = new HashMap<>();
+        int clientIdCounter = 1;
+
+        for (int i = 0; i < array.length; i++) {
+            if (array[i].contains("ClientID")) {
+                String clientIdKey = "ClientID" + clientIdCounter;
+                clientIdMap.put(clientIdKey, i);
+                clientIdCounter++;
+            }
+        }
+
+        return clientIdMap;
     }
 
     public List<ClientDetails> getFamilyMemberListByFamilyId(int familyId) {

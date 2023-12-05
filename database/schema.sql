@@ -158,7 +158,7 @@ CREATE TABLE client_event (
 
 CREATE TABLE families (
 	family_id serial NOT NULL,
-	family_name varchar(30) NOT NULL,
+	family_name varchar(30) NOT NULL UNIQUE,
 	CONSTRAINT PK_family PRIMARY KEY (family_id)
 );
 

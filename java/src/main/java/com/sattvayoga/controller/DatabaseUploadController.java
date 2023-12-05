@@ -36,6 +36,9 @@ public class DatabaseUploadController {
     @Autowired
     PackagePurchaseDao packagePurchaseDao;
 
+    @Autowired
+    FamilyDao familyDao;
+
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/uploadClients")
     public void uploadClients(@RequestParam("file")MultipartFile multipartFile) {
@@ -83,6 +86,13 @@ public class DatabaseUploadController {
     public void uploadGiftCardReport(@RequestParam("file")MultipartFile multipartFile) {
 
         packagePurchaseDao.uploadGiftCardReport(multipartFile);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/uploadFamily")
+    public void uploadFamily(@RequestParam("file")MultipartFile multipartFile) {
+
+        familyDao.uploadFamily(multipartFile);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

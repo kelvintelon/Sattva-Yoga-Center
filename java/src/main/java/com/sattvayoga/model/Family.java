@@ -12,6 +12,7 @@ public class Family {
 
     //helper
     private List<ClientDetails> listOfFamilyMembers = new ArrayList<>();
+    private List<Integer> listOfFamilyMembersClientIds = new ArrayList<>();
 
     public Family(){};
 
@@ -24,6 +25,14 @@ public class Family {
         this.family_id = family_id;
         this.family_name = family_name;
         this.quick_details = quick_details;
+    }
+
+    public List<Integer> getListOfFamilyMembersClientIds() {
+        return listOfFamilyMembersClientIds;
+    }
+
+    public void setListOfFamilyMembersClientIds(List<Integer> listOfFamilyMembersClientIds) {
+        this.listOfFamilyMembersClientIds = listOfFamilyMembersClientIds;
     }
 
     public List<ClientDetails> getListOfFamilyMembers() {

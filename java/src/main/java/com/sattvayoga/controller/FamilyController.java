@@ -41,7 +41,7 @@ public class FamilyController {
     @RequestMapping(value = "/addMultipleClientsToNewFamily", method = RequestMethod.POST)
     public void addMultipleClientsTlNewFamily(@RequestBody List<ClientFamily> clientFamilyObjects) {
         ClientFamily clientFamily = clientFamilyObjects.get(0);
-        int newFamilyId = familyDao.createNewFamily(clientFamily.getClient_id(),clientFamily.getFamily_name());
+        int newFamilyId = familyDao.createNewFamily(clientFamily.getFamily_name());
         for (int i = 0; i < clientFamilyObjects.size(); i++) {
             clientFamily = clientFamilyObjects.get(i);
             familyDao.addClientToFamily(clientFamily.getClient_id(),newFamilyId);
@@ -52,7 +52,7 @@ public class FamilyController {
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/createFamily", method = RequestMethod.POST)
     public void createFamily(@RequestBody Family familyObj) {
-        familyDao.createNewFamily(0,familyObj.getFamily_name());
+        familyDao.createNewFamily(familyObj.getFamily_name());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
