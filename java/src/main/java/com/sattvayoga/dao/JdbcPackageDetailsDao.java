@@ -151,6 +151,8 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
 
         HashSet<PackageDetails> setOfPackageDetailsFromFile = new HashSet<>();
 
+        HashMap<String,Integer> mapColumns = new HashMap<>();
+
         try (BufferedReader fileReader = new BufferedReader(new
                 InputStreamReader(multipartFile.getInputStream(), "UTF-8"))) {
 
@@ -161,6 +163,9 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
 
                     listOfStringsFromBufferedReader.add(line);
 
+                } else {
+                    String[] firstLine =  line.split(",");
+                    mapColumns = populateColumnsForMap(firstLine);
                 }
                 count++;
             }
@@ -168,7 +173,7 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
             e.printStackTrace();
         }
 
-        readLinesFromListAndPopulateSets(listOfStringsFromBufferedReader, setOfPackageDetailsFromFile);
+        readLinesFromListAndPopulateSets(listOfStringsFromBufferedReader, setOfPackageDetailsFromFile, mapColumns);
 
         // We turn it into a list in order to modify as we iterate
         List<PackageDetails> packageDetailsList = new ArrayList<>(setOfPackageDetailsFromFile);
@@ -213,66 +218,98 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
 
     }
 
-    private void readLinesFromListAndPopulateSets(List<String> listOfStringsFromBufferedReader, HashSet<PackageDetails> setOfPackageDetailsFromFile) {
+    public static HashMap<String, Integer> populateColumnsForMap(String[] array) {
+        HashMap<String, Integer> columnMap = new HashMap<>();
+
+        for (int i = 0; i < array.length; i++) {
+            String currentString = array[i];
+            if (currentString.contains("package_id")) {
+                columnMap.put("package_id", i);
+            } else if (currentString.contains("description")) {
+                columnMap.put("description", i);
+            } else if (currentString.contains("package_cost")) {
+                columnMap.put("package_cost", i);
+            } else if (currentString.contains("classes_amount")) {
+                columnMap.put("classes_amount", i);
+            } else if (currentString.contains("package_duration")) {
+                columnMap.put("package_duration", i);
+            } else if (currentString.contains("unlimited")) {
+                columnMap.put("unlimited", i);
+            } else if (currentString.contains("is_visible_online")) {
+                columnMap.put("is_visible_online", i);
+            } else if (currentString.contains("is_recurring")) {
+                columnMap.put("is_recurring", i);
+            } else if (currentString.contains("active")) {
+                columnMap.put("active", i);
+            } else if (currentString.contains("order")) {
+                columnMap.put("order", i);
+            }
+
+        }
+
+        return columnMap;
+    }
+
+    private void readLinesFromListAndPopulateSets(List<String> listOfStringsFromBufferedReader, HashSet<PackageDetails> setOfPackageDetailsFromFile, HashMap<String, Integer> columnMap) {
         for(int i = 0; i < listOfStringsFromBufferedReader.size(); i++) {
             PackageDetails packageDetails = new PackageDetails();
 
             String thisLine = listOfStringsFromBufferedReader.get(i);
             String[] splitLine = thisLine.split(",");
             int packageId = 0;
-            if (!splitLine[0].isEmpty()) {
-                packageId = Integer.valueOf(splitLine[0]);
+            if (!splitLine[columnMap.get("package_id")].isEmpty()) {
+                packageId = Integer.valueOf(splitLine[columnMap.get("package_id")]);
             }
 
             packageDetails.setPackage_id(packageId);
 
-            String description = splitLine[1];
+            String description = splitLine[columnMap.get("description")];
 
             packageDetails.setDescription(description);
 
-            String packageCostString = splitLine[2];
+            String packageCostString = splitLine[columnMap.get("package_cost")];
 
             BigDecimal packageCost = new BigDecimal(packageCostString);
 
             packageDetails.setPackage_cost(packageCost);
 
-            String classAmountString = splitLine[3];
+            String classAmountString = splitLine[columnMap.get("classes_amount")];
 
             int classAmount = Integer.valueOf(classAmountString);
 
             packageDetails.setClasses_amount(classAmount);
 
-            String packageDurationString = splitLine[4];
+            String packageDurationString = splitLine[columnMap.get("package_duration")];
 
             int packageDuration = Integer.valueOf(packageDurationString);
 
             packageDetails.setPackage_duration(packageDuration);
 
-            String unlimitedString = splitLine[5];
+            String unlimitedString = splitLine[columnMap.get("unlimited")];
 
             boolean unlimited = Boolean.valueOf(unlimitedString.toLowerCase());
 
             packageDetails.setUnlimited(unlimited);
 
-            String visibleOnlineString = splitLine[6];
+            String visibleOnlineString = splitLine[columnMap.get("is_visible_online")];
 
             boolean isVisibleOnline = Boolean.valueOf(visibleOnlineString.toLowerCase());
 
             packageDetails.setIs_visible_online(isVisibleOnline);
 
-            String isRecurringString = splitLine[7];
+            String isRecurringString = splitLine[columnMap.get("is_recurring")];
 
             boolean isRecurring = Boolean.valueOf(isRecurringString.toLowerCase());
 
             packageDetails.setIs_recurring(isRecurring);
 
-            String isActiveString = splitLine[8];
+            String isActiveString = splitLine[columnMap.get("active")];
 
             boolean isActive = Boolean.valueOf(isActiveString.toLowerCase());
 
             packageDetails.setActive(isActive);
 
-            String orderString = splitLine[9];
+            String orderString = splitLine[columnMap.get("order")];
 
             int order = Integer.valueOf(orderString);
 

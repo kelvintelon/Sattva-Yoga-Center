@@ -5,10 +5,8 @@ import com.sattvayoga.dto.order.ClientCheckoutDTO;
 import com.sattvayoga.dto.order.ResendEmailDTO;
 import com.sattvayoga.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.annotation.Id;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -219,6 +217,9 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         HashMap<Integer, Sale> mapOfSalesFromFile = new HashMap<>();
         Set<Transaction> setOfTransactionsFromFile = new HashSet<>();
 
+        HashMap<String,Integer> mapColumns = new HashMap<>();
+
+
         try (BufferedReader fileReader = new BufferedReader(new
                 InputStreamReader(multipartFile.getInputStream(), "UTF-8"))) {
 
@@ -229,6 +230,9 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
                     listOfStringsFromBufferedReader.add(line);
 
+                } else {
+                    String[] firstLine =  line.split(",");
+                    mapColumns = populateColumnsForSalesMap(firstLine);
                 }
                 count++;
             }
@@ -236,7 +240,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             e.printStackTrace();
         }
 
-        readLinesFromListAndPopulatePackagesSalesTransactions(listOfStringsFromBufferedReader, packagePurchaseSet, mapOfSalesFromFile, setOfTransactionsFromFile);
+        readLinesFromListAndPopulatePackagesSalesTransactions(listOfStringsFromBufferedReader, packagePurchaseSet, mapOfSalesFromFile, setOfTransactionsFromFile, mapColumns);
 
 
         if (!packagePurchaseSet.isEmpty()) {
@@ -255,10 +259,47 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
     }
 
+    public static HashMap<String, Integer> populateColumnsForSalesMap(String[] array) {
+        HashMap<String, Integer> columnMap = new HashMap<>();
+
+        for (int i = 0; i < array.length; i++) {
+            String currentString = array[i];
+            if (currentString.contains("SaleDate")) {
+                columnMap.put("SaleDate", i);
+            } else if (currentString.contains("Client ID")) {
+                columnMap.put("Client ID", i);
+            } else if (currentString.contains("Sale ID")) {
+                columnMap.put("Sale ID", i);
+            } else if (currentString.contains("Activation")) {
+                columnMap.put("Activation", i);
+            } else if (currentString.contains("Expiration")) {
+                columnMap.put("Expiration", i);
+            } else if (currentString.contains("package_id")) {
+                columnMap.put("package_id", i);
+            } else if (currentString.contains("Batch #")) {
+                columnMap.put("Batch #", i);
+            } else if (currentString.contains("Quantity")) {
+                columnMap.put("Quantity", i);
+            } else if (currentString.contains("Discount amount")) {
+                columnMap.put("Discount amount", i);
+            } else if (currentString.contains("Item Total")) {
+                columnMap.put("Item Total", i);
+            } else if (currentString.contains("Total Paid w/ Payment Method")) {
+                columnMap.put("Total Paid w/ Payment Method", i);
+            } else if (currentString.contains("Payment Method")) {
+                columnMap.put("Payment Method", i);
+            }
+
+        }
+
+        return columnMap;
+    }
+
     private void readLinesFromListAndPopulatePackagesSalesTransactions(List<String> listOfStringsFromBufferedReader,
                                                                        Set<PackagePurchase> packagePurchaseSet,
                                                                        HashMap<Integer, Sale> mapOfSale,
-                                                                       Set<Transaction> setOfTransactions) {
+                                                                       Set<Transaction> setOfTransactions,
+                                                                       HashMap<String, Integer> columnMap) {
 
 
 
@@ -284,10 +325,10 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
             PackagePurchase packagePurchase = new PackagePurchase();
 
-            int clientId = Integer.valueOf(splitLine[1]);
+            int clientId = Integer.valueOf(splitLine[columnMap.get("Client ID")]);
             packagePurchase.setClient_id(clientId);
 
-            int saleId = Integer.valueOf(splitLine[2]);
+            int saleId = Integer.valueOf(splitLine[columnMap.get("Sale ID")]);
 
             // Handle duplicates here (look for if we already have the sale ID)
             if (!setOfSaleIds.isEmpty() && setOfSaleIds.contains(saleId)) {
@@ -295,33 +336,33 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 continue;
             }
 
-            Timestamp datePurchased = convertDateStringToTimestamp(splitLine[0]);
+            Timestamp datePurchased = convertDateStringToTimestamp(splitLine[columnMap.get("SaleDate")]);
             packagePurchase.setDate_purchased(datePurchased);
 
-            Date activationDate = convertDateStringToDate(splitLine[3]);
+            Date activationDate = convertDateStringToDate(splitLine[columnMap.get("Activation")]);
             packagePurchase.setActivation_date(activationDate);
 
-            Date expirationDate = convertDateStringToDate(splitLine[4]);
+            Date expirationDate = convertDateStringToDate(splitLine[columnMap.get("Expiration")]);
             packagePurchase.setExpiration_date(expirationDate);
 
-            int packageId = Integer.valueOf(splitLine[5]);
+            int packageId = Integer.valueOf(splitLine[columnMap.get("package_id")]);
             packagePurchase.setPackage_id(packageId);
 
             PackageDetails currentPackage = mapOfPackages.get(packageId);
             packagePurchase.setClasses_remaining(currentPackage.getClasses_amount());
             packagePurchase.setIs_monthly_renew(currentPackage.isIs_recurring());
 
-            String discountString = splitLine[11].replaceAll("[^\\d.]", "");
+            String discountString = splitLine[columnMap.get("Discount amount")].replaceAll("[^\\d.]", "");
             discountString = discountString.replaceAll("\\.{2,}", ".");
             BigDecimal discount = new BigDecimal(discountString);
             packagePurchase.setDiscount(discount);
 
-            String totalAmountPaidString = splitLine[12].replaceAll("[^\\d.]", "");
+            String totalAmountPaidString = splitLine[columnMap.get("Item Total")].replaceAll("[^\\d.]", "");
             totalAmountPaidString = totalAmountPaidString.replaceAll("\\.{2,}", ".");
             BigDecimal totalAmountPaid = new BigDecimal(totalAmountPaidString);
             packagePurchase.setTotal_amount_paid(totalAmountPaid);
 
-            String paymentType = formatCardType(splitLine[14]);
+            String paymentType = formatCardType(splitLine[columnMap.get("Payment Method")]);
             packagePurchase.setPaymentId(paymentType);
 
             Set<Integer> packagePurchaseIds = new HashSet<>();
@@ -330,7 +371,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
             packagePurchaseSet.add(packagePurchase);
 
-            int quantity = Integer.valueOf(splitLine[8]);
+            int quantity = Integer.valueOf(splitLine[columnMap.get("Quantity")]);
 
             if (quantity > 1) {
 
@@ -359,8 +400,8 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             // Plug in Sale ID Here and build
             if (mapOfSale.containsKey(saleId)) {
                 Sale sale = mapOfSale.get(saleId);
-                if (splitLine[6].length()>0 && !splitLine[6].contains("-")) {
-                    int batchNumber = Integer.valueOf(splitLine[6]);
+                if (splitLine[columnMap.get("Batch #")].length()>0 && !splitLine[columnMap.get("Batch #")].contains("-")) {
+                    int batchNumber = Integer.valueOf(splitLine[columnMap.get("Batch #")]);
                     sale.setBatch_number(batchNumber);
                 }
 
@@ -377,8 +418,8 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 mapOfSale.put(saleId, sale);
             } else {
                 Sale sale =  new Sale();
-                if (splitLine[6].length()>0 && !splitLine[6].contains("-")) {
-                    int batchNumber = Integer.valueOf(splitLine[6]);
+                if (splitLine[columnMap.get("Batch #")].length()>0 && !splitLine[columnMap.get("Batch #")].contains("-")) {
+                    int batchNumber = Integer.valueOf(splitLine[columnMap.get("Batch #")]);
                     sale.setBatch_number(batchNumber);
                 }
 
@@ -402,7 +443,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             transaction.setClient_id(clientId);
             transaction.setSale_id(saleId);
 
-            String paymentAmountString = splitLine[13].replaceAll("[^\\d.]", "");
+            String paymentAmountString = splitLine[columnMap.get("Total Paid w/ Payment Method")].replaceAll("[^\\d.]", "");
             paymentAmountString = paymentAmountString.replaceAll("\\.{2,}", ".");
             BigDecimal payment_amount = new BigDecimal(paymentAmountString);
             transaction.setPayment_amount(payment_amount.doubleValue());
@@ -496,6 +537,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
         List<String> listOfStringsFromBufferedReader = new ArrayList<>();
 
+        HashMap<String, Integer> mapColumns = new HashMap<>();
 
         try (BufferedReader fileReader = new BufferedReader(new
                 InputStreamReader(multipartFile.getInputStream(), "UTF-8"))) {
@@ -507,6 +549,9 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
                     listOfStringsFromBufferedReader.add(line);
 
+                } else {
+                    String[] firstLine =  line.split(",");
+                    mapColumns = populateColumnsForGiftCardMap(firstLine);
                 }
                 count++;
             }
@@ -517,7 +562,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         HashMap<String, GiftCard> mapOfGiftCardsFromFile = new HashMap<>();
         Set<Transaction> setOfTransactionsFromFile = new HashSet<>();
 
-        HashMap<String,GiftCard> giftCardsToUpdateInDb = readLinesFromListAndPopulateTransactionsGiftCards(listOfStringsFromBufferedReader,mapOfGiftCardsFromFile,setOfTransactionsFromFile);
+        HashMap<String,GiftCard> giftCardsToUpdateInDb = readLinesFromListAndPopulateTransactionsGiftCards(listOfStringsFromBufferedReader,mapOfGiftCardsFromFile,setOfTransactionsFromFile, mapColumns);
 
         if (!mapOfGiftCardsFromFile.isEmpty()) {
             // batch create gift cards no client ID yet
@@ -536,6 +581,42 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         }
 
 
+    }
+
+    public static HashMap<String, Integer> populateColumnsForGiftCardMap(String[] array) {
+        HashMap<String, Integer> columnMap = new HashMap<>();
+
+        for (int i = 0; i < array.length; i++) {
+            String currentString = array[i];
+            if (currentString.contains("SaleDate")) {
+                columnMap.put("SaleDate", i);
+            } else if (currentString.contains("ClientID")) {
+                columnMap.put("ClientID", i);
+            } else if (currentString.contains("Sale ID")) {
+                columnMap.put("Sale ID", i);
+            } else if (currentString.contains("Gift Card ID")) {
+                columnMap.put("Gift Card ID", i);
+            } else if (currentString.contains("Amount")) {
+                columnMap.put("Amount", i);
+            } else if (currentString.contains("Package_id")) {
+                columnMap.put("Package_id", i);
+            } else if (currentString.contains("Batch #")) {
+                columnMap.put("Batch #", i);
+            } else if (currentString.contains("Quantity")) {
+                columnMap.put("Quantity", i);
+            } else if (currentString.contains("Discount amount")) {
+                columnMap.put("Discount amount", i);
+            } else if (currentString.contains("Item Total")) {
+                columnMap.put("Item Total", i);
+            } else if (currentString.contains("Total Paid w/ Payment Method")) {
+                columnMap.put("Total Paid w/ Payment Method", i);
+            } else if (currentString.contains("Payment Method")) {
+                columnMap.put("Payment Method", i);
+            }
+
+        }
+
+        return columnMap;
     }
 
     public void batchUpdateGiftCards(final Collection<GiftCard> giftCards) {
@@ -562,7 +643,8 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
     private HashMap<String,GiftCard> readLinesFromListAndPopulateTransactionsGiftCards(List<String> listOfStringsFromBufferedReader,
                                                                    HashMap<String,GiftCard> giftCardMapFromFile,
-                                                                   Set<Transaction> setOfTransactions) {
+                                                                   Set<Transaction> setOfTransactions,
+                                                                   HashMap<String, Integer> columnMap) {
 
         // A list of gift card IDs that already exist in the database
         // if its a brand new gift card ID add it into the database
@@ -588,18 +670,18 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
 
 
-            int saleId = Integer.valueOf(splitLine[1]);
+            int saleId = Integer.valueOf(splitLine[columnMap.get("Sale ID")]);
             Sale getSaleObject = saleDao.getSaleBySaleId(saleId);
 
             for (int j = 0; getSaleObject.getPackages_purchased_array() != null && j < getSaleObject.getPackages_purchased_array().length; j++) {
                 int[] packagePurchaseArray = getSaleObject.getPackages_purchased_array();
                     updatePaymentIdForGiftCardPurchase(packagePurchaseArray[j]);
             }
-            int clientId = Integer.valueOf(splitLine[2]);
+            int clientId = Integer.valueOf(splitLine[columnMap.get("ClientID")]);
 
-            String giftCardCode = splitLine[6];
+            String giftCardCode = splitLine[columnMap.get("Gift Card ID")];
 
-            String stringAmount = splitLine[7];
+            String stringAmount = splitLine[columnMap.get("Amount")];
 
             boolean isTransaction = parseAmount(stringAmount);
 
@@ -748,6 +830,8 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
         List<String> listOfStringsFromBufferedReader = new ArrayList<>();
 
+        HashMap<String,Integer> mapColumns = new HashMap<>();
+
 
         try (BufferedReader fileReader = new BufferedReader(new
                 InputStreamReader(multipartFile.getInputStream(), "UTF-8"))) {
@@ -759,6 +843,9 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
                     listOfStringsFromBufferedReader.add(line);
 
+                } else {
+                    String[] firstLine =  line.split(",");
+                    mapColumns = populateColumnsForGiftCardSalesMap(firstLine);
                 }
                 count++;
             }
@@ -769,7 +856,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         Set<PackagePurchase> packagePurchaseSet = new HashSet<>();
         HashMap<Integer, Sale> mapOfSalesFromFile = new HashMap<>();
 
-        readLinesFromListForGiftCardSalesReport(listOfStringsFromBufferedReader,packagePurchaseSet,mapOfSalesFromFile);
+        readLinesFromListForGiftCardSalesReport(listOfStringsFromBufferedReader,packagePurchaseSet,mapOfSalesFromFile, mapColumns);
 
         if (!packagePurchaseSet.isEmpty()) {
             batchCreatePackagePurchases(packagePurchaseSet);
@@ -782,9 +869,46 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         }
     }
 
+    public static HashMap<String, Integer> populateColumnsForGiftCardSalesMap(String[] array) {
+        HashMap<String, Integer> columnMap = new HashMap<>();
+
+        for (int i = 0; i < array.length; i++) {
+            String currentString = array[i];
+            if (currentString.contains("SaleDate")) {
+                columnMap.put("SaleDate", i);
+            } else if (currentString.contains("Client ID")) {
+                columnMap.put("Client ID", i);
+            } else if (currentString.contains("Sale ID")) {
+                columnMap.put("Sale ID", i);
+            } else if (currentString.contains("ActivationDate")) {
+                columnMap.put("ActivationDate", i);
+            } else if (currentString.contains("ExpDate")) {
+                columnMap.put("ExpDate", i);
+            } else if (currentString.contains("Package_id")) {
+                columnMap.put("Package_id", i);
+            } else if (currentString.contains("Batch #")) {
+                columnMap.put("Batch #", i);
+            } else if (currentString.contains("Quantity")) {
+                columnMap.put("Quantity", i);
+            } else if (currentString.contains("Discount amount")) {
+                columnMap.put("Discount amount", i);
+            } else if (currentString.contains("Item Total")) {
+                columnMap.put("Item Total", i);
+            } else if (currentString.contains("Total Paid w/ Payment Method")) {
+                columnMap.put("Total Paid w/ Payment Method", i);
+            } else if (currentString.contains("Payment Method")) {
+                columnMap.put("Payment Method", i);
+            }
+
+        }
+
+        return columnMap;
+    }
+
     private void readLinesFromListForGiftCardSalesReport(List<String> listOfStringsFromBufferedReader,
                                                                        Set<PackagePurchase> packagePurchaseSet,
-                                                                       HashMap<Integer, Sale> mapOfSale) {
+                                                                       HashMap<Integer, Sale> mapOfSale,
+                                                                        HashMap<String,Integer> columnMap) {
 
         List<PackageDetails> listOfAllPackages = packageDetailsDao.getAllPackages();
 
@@ -808,10 +932,10 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
             PackagePurchase packagePurchase = new PackagePurchase();
 
-            int clientId = Integer.valueOf(splitLine[1]);
+            int clientId = Integer.valueOf(splitLine[columnMap.get("Client ID")]);
             packagePurchase.setClient_id(clientId);
 
-            int saleId = Integer.valueOf(splitLine[4]);
+            int saleId = Integer.valueOf(splitLine[columnMap.get("Sale ID")]);
 
             // Handle duplicates here (look for if we already have the sale ID)
             if (!setOfSaleIds.isEmpty() && setOfSaleIds.contains(saleId)) {
@@ -821,7 +945,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
             try {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("M/d/yyyy");
-                java.util.Date parsedDate = dateFormat.parse(splitLine[0]);
+                java.util.Date parsedDate = dateFormat.parse(splitLine[columnMap.get("SaleDate")]);
                 Timestamp datePurchased = new Timestamp(parsedDate.getTime());
                 packagePurchase.setDate_purchased(datePurchased);
             } catch (ParseException e) {
@@ -831,14 +955,14 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             SimpleDateFormat dateFormatForSql = new SimpleDateFormat("M/d/yyyy");
 
             try {
-                if (splitLine[5].length() > 0) {
-                    java.util.Date parsedActivationDateSql = dateFormatForSql.parse((splitLine[5]));
+                if (splitLine[columnMap.get("ActivationDate")].length() > 0) {
+                    java.util.Date parsedActivationDateSql = dateFormatForSql.parse((splitLine[columnMap.get("ActivationDate")]));
                     Date activationDateSql = new Date(parsedActivationDateSql.getTime());
 
                     packagePurchase.setActivation_date(activationDateSql);
                 } else {
                     SimpleDateFormat dateFormat = new SimpleDateFormat("M/d/yyyy");
-                    java.util.Date parsedDate = dateFormat.parse(splitLine[0]);
+                    java.util.Date parsedDate = dateFormat.parse(splitLine[columnMap.get("SaleDate")]);
                     Date activationDateSql = new Date(parsedDate.getTime());
 
                     packagePurchase.setActivation_date(activationDateSql);
@@ -851,14 +975,14 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
 
             try {
-                if (splitLine[6].length() > 0) {
-                    java.util.Date parsedExpirationDateSql = dateFormatForSql.parse((splitLine[6]));
+                if (splitLine[columnMap.get("ExpDate")].length() > 0) {
+                    java.util.Date parsedExpirationDateSql = dateFormatForSql.parse((splitLine[columnMap.get("ExpDate")]));
                     Date expirationDateSql = new Date(parsedExpirationDateSql.getTime());
 
                     packagePurchase.setExpiration_date(expirationDateSql);
                 } else {
                     SimpleDateFormat dateFormat = new SimpleDateFormat("M/d/yyyy");
-                    java.util.Date parsedDate = dateFormat.parse(splitLine[0]);
+                    java.util.Date parsedDate = dateFormat.parse(splitLine[columnMap.get("SaleDate")]);
                     Date expirationDateSql = new Date(parsedDate.getTime());
 
                     packagePurchase.setExpiration_date(expirationDateSql);
@@ -870,19 +994,19 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             }
 
 
-            int packageId = Integer.valueOf(splitLine[7]);
+            int packageId = Integer.valueOf(splitLine[columnMap.get("Package_id")]);
             packagePurchase.setPackage_id(packageId);
 
             PackageDetails currentPackage = mapOfPackages.get(packageId);
             packagePurchase.setClasses_remaining(currentPackage.getClasses_amount());
             packagePurchase.setIs_monthly_renew(currentPackage.isIs_recurring());
 
-            String discountString = splitLine[14].replaceAll("[^\\d.]", "");
+            String discountString = splitLine[columnMap.get("Discount amount")].replaceAll("[^\\d.]", "");
             discountString = discountString.replaceAll("\\.{2,}", ".");
             BigDecimal discount = new BigDecimal(discountString);
             packagePurchase.setDiscount(discount);
 
-            String totalAmountPaidString = splitLine[15].replaceAll("[^\\d.]", "");
+            String totalAmountPaidString = splitLine[columnMap.get("Item Total")].replaceAll("[^\\d.]", "");
             totalAmountPaidString = totalAmountPaidString.replaceAll("\\.{2,}", ".");
             BigDecimal totalAmountPaid = new BigDecimal(totalAmountPaidString);
             packagePurchase.setTotal_amount_paid(totalAmountPaid);
@@ -895,7 +1019,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
             packagePurchaseSet.add(packagePurchase);
 
-            int quantity = Integer.valueOf(splitLine[11]);
+            int quantity = Integer.valueOf(splitLine[columnMap.get("Quantity")]);
 
             if (quantity > 1) {
 
@@ -925,8 +1049,8 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             // Plug in Sale ID Here and build
             if (mapOfSale.containsKey(saleId)) {
                 Sale sale = mapOfSale.get(saleId);
-                if (splitLine[9].length()>0 && !splitLine[9].contains("-")) {
-                    int batchNumber = Integer.valueOf(splitLine[9]);
+                if (splitLine[columnMap.get("Batch #")].length()>0 && !splitLine[columnMap.get("Batch #")].contains("-")) {
+                    int batchNumber = Integer.valueOf(splitLine[columnMap.get("Batch #")]);
                     sale.setBatch_number(batchNumber);
                 }
 
@@ -943,8 +1067,8 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 mapOfSale.put(saleId, sale);
             } else {
                 Sale sale =  new Sale();
-                if (splitLine[9].length()>0 && !splitLine[9].contains("-")) {
-                    int batchNumber = Integer.valueOf(splitLine[9]);
+                if (splitLine[columnMap.get("Batch #")].length()>0 && !splitLine[columnMap.get("Batch #")].contains("-")) {
+                    int batchNumber = Integer.valueOf(splitLine[columnMap.get("Batch #")]);
                     sale.setBatch_number(batchNumber);
                 }
 

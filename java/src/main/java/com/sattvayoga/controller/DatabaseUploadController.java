@@ -60,28 +60,24 @@ public class DatabaseUploadController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/uploadPackages")
     public void uploadPackages(@RequestParam("file")MultipartFile multipartFile) {
-        //TODO: Don't hardcode columns
         packageDetailsDao.uploadPackageCsv(multipartFile);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/uploadSales")
     public void uploadSales(@RequestParam("file")MultipartFile multipartFile) {
-        //TODO: Don't hardcode columns
         packagePurchaseDao.uploadSalesCsv(multipartFile);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/uploadGiftCardSales")
     public void uploadGiftCardSales(@RequestParam("file")MultipartFile multipartFile) {
-        //TODO: Don't hardcode columns
         packagePurchaseDao.uploadGiftCardSalesReport(multipartFile);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/uploadGiftCardReport")
     public void uploadGiftCardReport(@RequestParam("file")MultipartFile multipartFile) {
-        //TODO: Don't hardcode columns
         packagePurchaseDao.uploadGiftCardReport(multipartFile);
     }
 
