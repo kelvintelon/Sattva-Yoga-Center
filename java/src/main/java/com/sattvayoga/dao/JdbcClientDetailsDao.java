@@ -612,6 +612,9 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
         long startTimeForReading = System.nanoTime();
 
+        HashMap<String,Integer> mapColumns = new HashMap<>();
+
+
         try (BufferedReader fileReader = new BufferedReader(new
                 InputStreamReader(multipartFile.getInputStream(), "UTF-8"))) {
 
@@ -622,6 +625,9 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
                     listOfStringsFromBufferedReader.add(line);
 
+                } else {
+                    String[] firstLine =  line.split(",");
+                    mapColumns = populateColumnsForMap(firstLine);
                 }
                 count++;
             }
@@ -629,8 +635,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
             e.printStackTrace();
         }
 
-
-        readLinesFromListAndPopulateSets(listOfStringsFromBufferedReader, setOfClientDetailsFromFile);
+        readLinesFromListAndPopulateSets(listOfStringsFromBufferedReader, setOfClientDetailsFromFile, mapColumns);
 
         long endTimeForReading = System.nanoTime();
         long totalTimeForReading = endTimeForReading - startTimeForReading;
@@ -699,6 +704,38 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         long endTimeForEntireUpload = System.nanoTime();
         long totalTimeForEntireUpload = endTimeForEntireUpload - startTimeForEntireUpload;
 //        System.out.println("Total time for entire upload in : " + getReadableTime(totalTimeForEntireUpload) + " / " + totalTimeForEntireUpload + " ns");
+    }
+
+    public static HashMap<String, Integer> populateColumnsForMap(String[] array) {
+        HashMap<String, Integer> columnMap = new HashMap<>();
+
+        for (int i = 0; i < array.length; i++) {
+            String currentString = array[i];
+            if (currentString.contains("ID")) {
+                columnMap.put("ID", i);
+            } else if (currentString.contains("Last name")) {
+                columnMap.put("Last name", i);
+            } else if (currentString.contains("First name")) {
+                columnMap.put("First name", i);
+            } else if (currentString.contains("Address")) {
+                columnMap.put("Address", i);
+            } else if (currentString.contains("City")) {
+                columnMap.put("City", i);
+            } else if (currentString.contains("State")) {
+                columnMap.put("State", i);
+            }  else if (currentString.contains("Postal code")) {
+                columnMap.put("Postal code", i);
+            } else if (currentString.contains("Country")) {
+                columnMap.put("Country", i);
+            } else if (currentString.contains("Phone")) {
+                columnMap.put("Phone", i);
+            } else if (currentString.contains("Email")) {
+                columnMap.put("Email", i);
+            }
+
+        }
+
+        return columnMap;
     }
 
     private void checkIfClientEmailIsDuplicateOrInvalid(Map<String, ClientDetails> newMapOfClientObjects, Set<String> setOfExistingEmails) {
@@ -1208,7 +1245,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
     }
 
-    private void readLinesFromListAndPopulateSets(List<String> listOfStringsFromBufferedReader, HashSet<ClientDetails> setOfClientDetailsFromFile) {
+    private void readLinesFromListAndPopulateSets(List<String> listOfStringsFromBufferedReader, HashSet<ClientDetails> setOfClientDetailsFromFile, HashMap<String,Integer> columnMap) {
         for(int i = 0; i < listOfStringsFromBufferedReader.size(); i++) {
             ClientDetails clientDetails = new ClientDetails();
             clientDetails.setIs_client_active(true);
@@ -1219,12 +1256,12 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
             String[] splitLine = thisLine.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
             int clientId = 0;
             if (!splitLine[0].isEmpty()) {
-                clientId = Integer.valueOf(splitLine[0]);
+                clientId = Integer.valueOf(splitLine[columnMap.get("ID")]);
             }
 
             clientDetails.setClient_id(clientId);
 
-            String lastName = splitLine[1];
+            String lastName = splitLine[columnMap.get("Last name")];
             if (lastName.startsWith("(")) {
                 lastName = lastName.substring(1, lastName.length() - 1);
             }
@@ -1235,7 +1272,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
             clientDetails.setLast_name(lastName);
 
-            String firstName = splitLine[2];
+            String firstName = splitLine[columnMap.get("First name")];
 
             if (firstName.startsWith("(")) {
                 firstName = firstName.substring(1, firstName.length() - 1);
@@ -1247,7 +1284,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
             clientDetails.setFirst_name(firstName);
 
-            String address = splitLine[3];
+            String address = splitLine[columnMap.get("Address")];
 
             if (address.startsWith("\"") && address.length() > 1) {
                 address = address.substring(1, address.length() - 1);
@@ -1255,31 +1292,31 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
             clientDetails.setStreet_address(address);
 
-            String city = splitLine[4];
+            String city = splitLine[columnMap.get("City")];
 
             clientDetails.setCity(city);
 
-            String state = splitLine[5];
+            String state = splitLine[columnMap.get("State")];
 
             setStateAbbreviationWithMap(clientDetails, state);
 
-            String zipCode = splitLine[6];
+            String zipCode = splitLine[columnMap.get("Postal Code")];
 
             clientDetails.setZip_code(zipCode);
 
-            String country = splitLine[7];
+            String country = splitLine[columnMap.get("Country")];
 
             setCountry(clientDetails, country);
 
             if (splitLine.length >= 9) {
-                String phoneNumber = splitLine[8];
+                String phoneNumber = splitLine[columnMap.get("Phone")];
 
                 clientDetails.setPhone_number(phoneNumber);
             }
 
 
             if (splitLine.length == 10) {
-                String email = splitLine[9];
+                String email = splitLine[columnMap.get("Email")];
 
                 clientDetails.setEmail(email);
 

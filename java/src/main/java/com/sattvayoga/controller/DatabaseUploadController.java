@@ -42,63 +42,59 @@ public class DatabaseUploadController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/uploadClients")
     public void uploadClients(@RequestParam("file")MultipartFile multipartFile) {
-
         clientDetailsDao.uploadClientCsv(multipartFile);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/uploadTeachers")
     public void uploadTeachers(@RequestParam("file")MultipartFile multipartFile) {
-
         teacherDetailsDao.uploadTeacherCsv(multipartFile);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/uploadEvents")
     public void uploadEvents(@RequestParam("file")MultipartFile multipartFile) {
-
         eventDao.uploadEventCsv(multipartFile);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/uploadPackages")
     public void uploadPackages(@RequestParam("file")MultipartFile multipartFile) {
-
+        //TODO: Don't hardcode columns
         packageDetailsDao.uploadPackageCsv(multipartFile);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/uploadSales")
     public void uploadSales(@RequestParam("file")MultipartFile multipartFile) {
-
+        //TODO: Don't hardcode columns
         packagePurchaseDao.uploadSalesCsv(multipartFile);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/uploadGiftCardSales")
     public void uploadGiftCardSales(@RequestParam("file")MultipartFile multipartFile) {
-
+        //TODO: Don't hardcode columns
         packagePurchaseDao.uploadGiftCardSalesReport(multipartFile);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/uploadGiftCardReport")
     public void uploadGiftCardReport(@RequestParam("file")MultipartFile multipartFile) {
-
+        //TODO: Don't hardcode columns
         packagePurchaseDao.uploadGiftCardReport(multipartFile);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/uploadFamily")
     public void uploadFamily(@RequestParam("file")MultipartFile multipartFile) {
-
         familyDao.uploadFamily(multipartFile);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/uploadAttendance")
     public void uploadAttendance(@RequestParam("file")MultipartFile multipartFile) {
-
+        //TODO: Don't hardcode columns
 
     }
 }

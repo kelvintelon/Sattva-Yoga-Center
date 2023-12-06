@@ -11,10 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Component
 public class JdbcTeacherDetailsDao implements TeacherDetailsDao {
@@ -67,6 +64,8 @@ public class JdbcTeacherDetailsDao implements TeacherDetailsDao {
 
         Set<TeacherDetails> teacherDetailsSetFromFile = new HashSet<>();
 
+        HashMap<String,Integer> mapColumns = new HashMap<>();
+
         try (BufferedReader fileReader = new BufferedReader(new
                 InputStreamReader(multipartFile.getInputStream(), "UTF-8"))) {
 
@@ -77,6 +76,9 @@ public class JdbcTeacherDetailsDao implements TeacherDetailsDao {
 
                     listOfStringsFromBufferedReader.add(line);
 
+                } else {
+                    String[] firstLine =  line.split(",");
+                    mapColumns = populateColumnsForMap(firstLine);
                 }
                 count++;
             }
@@ -84,7 +86,7 @@ public class JdbcTeacherDetailsDao implements TeacherDetailsDao {
             e.printStackTrace();
         }
 
-        readLinesFromListAndPopulateSet(listOfStringsFromBufferedReader, teacherDetailsSetFromFile);
+        readLinesFromListAndPopulateSet(listOfStringsFromBufferedReader, teacherDetailsSetFromFile, mapColumns);
 
         checkForDuplicateTeachers(teacherDetailsSetFromFile);
 
@@ -95,6 +97,22 @@ public class JdbcTeacherDetailsDao implements TeacherDetailsDao {
             }
         }
 
+    }
+
+    public static HashMap<String, Integer> populateColumnsForMap(String[] array) {
+        HashMap<String, Integer> columnMap = new HashMap<>();
+
+        for (int i = 0; i < array.length; i++) {
+            String currentString = array[i];
+            if (currentString.contains("TeacherID")) {
+                columnMap.put("ID", i);
+            } else if (currentString.contains("Teacher Name")) {
+                columnMap.put("Teacher Name", i);
+            }
+
+        }
+
+        return columnMap;
     }
 
     private void checkForDuplicateTeachers(Set<TeacherDetails> teacherDetailsSetFromFile) {
@@ -121,7 +139,7 @@ public class JdbcTeacherDetailsDao implements TeacherDetailsDao {
         }
     }
 
-    public void readLinesFromListAndPopulateSet(List<String> listFromFile, Set<TeacherDetails> setToPopulate) {
+    public void readLinesFromListAndPopulateSet(List<String> listFromFile, Set<TeacherDetails> setToPopulate, HashMap<String, Integer> columnMap) {
         for (int i = 0; i < listFromFile.size(); i++) {
             TeacherDetails teacherDetails = new TeacherDetails();
 
@@ -130,14 +148,14 @@ public class JdbcTeacherDetailsDao implements TeacherDetailsDao {
             String thisLine = listFromFile.get(i);
             String[] splitLine = thisLine.split(",");
 
-            teacherId = Integer.valueOf(splitLine[0]);
+            teacherId = Integer.valueOf(splitLine[columnMap.get("TeacherId")]);
 
             teacherDetails.setTeacher_id(teacherId);
 
-            if (splitLine[1].contains("Self")) {
-                teacherDetails.setFirst_name(splitLine[1]);
+            if (splitLine[columnMap.get("Teacher Name")].contains("Self")) {
+                teacherDetails.setFirst_name(splitLine[columnMap.get("Teacher Name")]);
             } else {
-                String[] nameArray = splitLine[1].split(" ");
+                String[] nameArray = splitLine[columnMap.get("Teacher Name")].split(" ");
 
                 if (nameArray.length==1) {
                     teacherDetails.setFirst_name(nameArray[0]);

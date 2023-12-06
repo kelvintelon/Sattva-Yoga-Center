@@ -3,6 +3,7 @@ package com.sattvayoga.dao;
 import com.sattvayoga.model.*;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.sql.In;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.security.core.parameters.P;
@@ -734,6 +735,8 @@ public class JdbcEventDao implements EventDao {
 
         Set<ClassEvent> setOfEventsFromFile = new HashSet<>();
 
+        HashMap<String,Integer> mapColumns = new HashMap<>();
+
         try (BufferedReader fileReader = new BufferedReader(new
                 InputStreamReader(multipartFile.getInputStream(), "UTF-8"))) {
 
@@ -744,6 +747,9 @@ public class JdbcEventDao implements EventDao {
 
                     listOfStringsFromBufferedReader.add(line);
 
+                } else {
+                    String[] firstLine =  line.split(",");
+                    mapColumns = populateColumnsForMap(firstLine);
                 }
                 count++;
             }
@@ -751,7 +757,7 @@ public class JdbcEventDao implements EventDao {
             e.printStackTrace();
         }
 
-        readLinesFromListAndPopulateSet(listOfStringsFromBufferedReader,setOfEventsFromFile);
+        readLinesFromListAndPopulateSet(listOfStringsFromBufferedReader,setOfEventsFromFile, mapColumns);
 
         //TODO: Check for duplicates
         Map<Timestamp, Timestamp> mapOfExistingEvents = getMapOfExistingEvents();
@@ -777,24 +783,44 @@ public class JdbcEventDao implements EventDao {
 
     }
 
-    private void readLinesFromListAndPopulateSet(List<String> listOfStringsFromBufferedReader, Set<ClassEvent> setOfEventsToPopulate) {
+    public static HashMap<String, Integer> populateColumnsForMap(String[] array) {
+        HashMap<String, Integer> columnMap = new HashMap<>();
+
+        for (int i = 0; i < array.length; i++) {
+            String currentString = array[i];
+            if (currentString.contains("Date")) {
+                columnMap.put("Date", i);
+            } else if (currentString.contains("Start time")) {
+                columnMap.put("Start time", i);
+            } else if (currentString.contains("End time")) {
+                columnMap.put("End time", i);
+            } else if (currentString.contains("Description")) {
+                columnMap.put("Description", i);
+            }
+
+        }
+
+        return columnMap;
+    }
+
+    private void readLinesFromListAndPopulateSet(List<String> listOfStringsFromBufferedReader, Set<ClassEvent> setOfEventsToPopulate, HashMap<String, Integer> columnMap) {
         for (int i = 0; i < listOfStringsFromBufferedReader.size(); i++) {
             ClassEvent classEvent = new ClassEvent();
 
             String thisLine = listOfStringsFromBufferedReader.get(i);
             String[] splitLine = thisLine.split(",");
 
-            String dateMMDDYYYY = splitLine[0];
-            String startTimeHHmm = splitLine[1];
+            String dateMMDDYYYY = splitLine[columnMap.get("Date")];
+            String startTimeHHmm = splitLine[columnMap.get("Start time")];
             if (startTimeHHmm.length()==7) {
                 startTimeHHmm = "0" + startTimeHHmm;
             }
 
-            String endTimeHHmm = splitLine[2];
+            String endTimeHHmm = splitLine[columnMap.get("End time")];
             if (endTimeHHmm.length()==7) {
                 endTimeHHmm = "0" + endTimeHHmm;
             }
-            String eventName = splitLine[3];
+            String eventName = splitLine[columnMap.get("Description")];
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy");
             LocalDate localDate = LocalDate.parse(dateMMDDYYYY, formatter);
