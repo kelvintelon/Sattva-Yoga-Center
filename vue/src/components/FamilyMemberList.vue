@@ -52,6 +52,8 @@
                     color="blue-grey lighten-2"
                     label="Choose one or more"
                     item-text="quick_details"
+                    ref="autocompleteFamily"
+                    cache-items  
                     return-object
                     multiple
                     @keypress="getSearchedFirstClientTableForAutocomplete"         
@@ -296,11 +298,15 @@ export default {
                 .registerMultipleClientsForFamily(this.selectedClients)
                 .then((response) => {
                     if (response.status == 201) {
-                    alert("Successfully added clients to family");
-                    this.getFamilyDetails();
-                    this.selectedClients = [];
+                      
+                      this.autocompleteFirstClientList = [];
+                      this.firstAutocompletePage = 1;
+                      this.$refs.autocompleteFamily.cachedItems = [];
+                      alert("Successfully added clients to family");
+                      this.getFamilyDetails();
+                      this.selectedClients = [];
                     } else {
-                    alert("Error adding clients to family");
+                      alert("Error adding clients to family");
                     }
                 });
                 this.close();

@@ -157,6 +157,8 @@
                     label="Choose one or more"
                     item-text="quick_details"
                     return-object
+                    ref="autocompleteEventDetails"
+                    cache-items
                     multiple
                     @keypress="getSearchedFirstClientTableForAutocomplete"         
                   >
@@ -594,6 +596,10 @@ export default {
           .then((response) => {
             if (response.status == 201) {
               this.overlay = false;
+              this.autocompleteFirstClientList = [];
+            this.individualClientFromLoop = {};
+            this.firstAutocompletePage = 1;
+            this.$refs.autocompleteEventDetails.cachedItems = [];
               alert("Successfully added clients to roster");
               this.getEventDetailsCall();
               this.selectedClients = [];
@@ -623,6 +629,10 @@ export default {
         .then((response) => {
           if (response.status == 201) {
             alert("Successfully added clients to roster");
+            this.autocompleteFirstClientList = [];
+            this.individualClientFromLoop = {};
+            this.firstAutocompletePage = 1;
+            this.$refs.autocompleteEventDetails.cachedItems = [];
             this.getEventDetailsCall();
             this.selectedClients = [];
             this.clientDetails.first_name = "";

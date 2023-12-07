@@ -564,11 +564,11 @@ export default {
         // after completing the object do the PUT REQUEST
         packageDetailService.updatePackage(this.editedItem).then((response) => {
           if (response.status == 200) {
-            alert("You have updated a class!");
+            alert("You have updated a package!");
             this.getPackageTable();
             this.close2();
           } else {
-            alert("Error updating a class!");
+            alert("Error updating a package!");
           }
         });
       }

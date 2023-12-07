@@ -1300,7 +1300,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
             setStateAbbreviationWithMap(clientDetails, state);
 
-            String zipCode = splitLine[columnMap.get("Postal Code")];
+            String zipCode = splitLine[columnMap.get("Postal code")];
 
             clientDetails.setZip_code(zipCode);
 

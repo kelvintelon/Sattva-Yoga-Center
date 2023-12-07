@@ -105,7 +105,7 @@ public class JdbcTeacherDetailsDao implements TeacherDetailsDao {
         for (int i = 0; i < array.length; i++) {
             String currentString = array[i];
             if (currentString.contains("TeacherID")) {
-                columnMap.put("ID", i);
+                columnMap.put("TeacherID", i);
             } else if (currentString.contains("Teacher Name")) {
                 columnMap.put("Teacher Name", i);
             }
@@ -148,7 +148,7 @@ public class JdbcTeacherDetailsDao implements TeacherDetailsDao {
             String thisLine = listFromFile.get(i);
             String[] splitLine = thisLine.split(",");
 
-            teacherId = Integer.valueOf(splitLine[columnMap.get("TeacherId")]);
+            teacherId = Integer.valueOf(splitLine[columnMap.get("TeacherID")]);
 
             teacherDetails.setTeacher_id(teacherId);
 

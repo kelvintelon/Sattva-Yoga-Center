@@ -91,6 +91,10 @@ CREATE TABLE package_details
 	CONSTRAINT PK_package_details PRIMARY KEY (package_id)
 );
 
+CREATE SEQUENCE package_details_id_seq START 1001 OWNED BY package_details.package_id;
+
+ALTER TABLE package_details ALTER COLUMN package_id SET DEFAULT nextval('package_details_id_seq');
+
 CREATE TABLE package_purchase
 (
 	package_purchase_id serial	  		NOT NULL,

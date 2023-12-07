@@ -39,15 +39,26 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
                 packageDetails.isUnlimited(), packageDetails.isIs_visible_online(), packageDetails.isIs_recurring(), packageDetails.isActive());
         int desiredPackageOrder = packageDetails.getPackage_order();
         packageDetails.setPackage_id(packageId);
-
-        setPackageOrderInCreation(packageDetails, packageId, desiredPackageOrder);
+        int nextHighestPackageOrder = findHighestPackageOrder()+1;
+        setPackageOrderInCreation(packageDetails, packageId, nextHighestPackageOrder, desiredPackageOrder);
 
     }
 
-    private void setPackageOrderInCreation(PackageDetails packageDetails, int packageId, int desiredPackageOrder) {
-        if (packageId == desiredPackageOrder || desiredPackageOrder > packageId) {
+    private int findHighestPackageOrder() {
+        String sql = "SELECT MAX(package_order) FROM package_details";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+        if (result.next()) {
+            int max = result.getInt("max");
+            return max;
+        }
+        return 0;
+    }
+
+    private void setPackageOrderInCreation(PackageDetails packageDetails, int packageId, int nextHighestPackageOrder, int desiredPackageOrder) {
+
+        if (nextHighestPackageOrder == desiredPackageOrder || desiredPackageOrder > nextHighestPackageOrder) {
             String sql2 = "UPDATE package_details SET package_order = ? WHERE package_id = ?";
-            jdbcTemplate.update(sql2, packageId, packageId);
+            jdbcTemplate.update(sql2, nextHighestPackageOrder, packageId);
         } else {
 
             List<PackageDetails> allPackages = getAllPackages();
