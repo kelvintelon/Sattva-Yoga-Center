@@ -460,6 +460,7 @@ export default {
       }
     },
     submit() {
+      alert("Received Client Registration")
       this.checkForm();
       if (this.formComplete) {
         this.clientDetails.user_id = this.$store.state.user.id;
