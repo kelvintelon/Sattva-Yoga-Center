@@ -39,7 +39,7 @@
                    <!-- Client to Keep starts here -->
                    <v-autocomplete v-model="clientToMergeInto" :disabled="isUpdating" :items="autocompleteSecondClientList"
                     :loading="loadingSecondClientList" filled chips color="blue-grey lighten-2" label="Clients to Keep"
-                    item-text="quick_details" return-object cache-items="true"
+                    item-text="quick_details" return-object cache-items="true" ref="secondAutocomplete"
                     @keypress="getSearchedSecondClientTableForAutocomplete">
                     <template v-slot:append-item>
                       <div v-intersect="endSecondIntersect" />
@@ -67,7 +67,7 @@
                   <v-autocomplete v-model="selectedClients" :disabled="isUpdating"
                     :items="autocompleteDuplicateClientList" :loading="loadingDuplicateClientList" filled chips
                     color="blue-grey lighten-2" label="Possible Duplicates" item-text="quick_details" return-object
-                    multiple cache-items="true" @keypress="getSearchedDuplicateClientTableForAutocomplete">
+                    multiple cache-items="true" @keypress="getSearchedDuplicateClientTableForAutocomplete" ref="duplicateAutocomplete">
                     <template v-slot:append-item>
                       <div v-intersect="endDuplicateIntersect" />
                     </template>
@@ -92,7 +92,7 @@
                   <!-- First Client List of Selected clients -->
                   <v-autocomplete v-model="selectedClients" :disabled="isUpdating" :items="autocompleteFirstClientList"
                     :loading="loadingFirstClientList" filled chips color="blue-grey lighten-2" label="Clients to Remove"
-                    item-text="quick_details" return-object multiple cache-items="true"
+                    item-text="quick_details" return-object multiple cache-items="true" ref="firstAutocomplete"
                     @keypress="getSearchedFirstClientTableForAutocomplete">
                     <template v-slot:append-item>
                       <div v-intersect="endFirstIntersect" />
@@ -710,7 +710,7 @@ export default {
         setTimeout(
           () =>
 
-          (this.setSecondAutcompleteSearch(event.target.value)
+          (this.setSecondAutocompleteSearch(event.target.value)
           ),
 
           250
@@ -718,7 +718,7 @@ export default {
 
       }
     },
-    setSecondAutcompleteSearch(search) {
+    setSecondAutocompleteSearch(search) {
       if (search != undefined && search.length > 0) {
         this.secondAutocompleteSearch = search;
         this.secondAutocompletePage = 1;
@@ -727,7 +727,7 @@ export default {
         this.secondAutocompleteSearch = "";
       }
       this.loadingSecondClientList = true;
-      this.getAutoCompletedsecondClientTable();
+      this.getAutoCompletedSecondClientTable();
     },
     getAutoCompletedSecondClientTable() {
       clientDetailService
@@ -829,6 +829,15 @@ export default {
         .then((response) => {
           if (response.status === 200) {
             this.overlay = false;
+            this.secondAutocompletePage = 1;
+            this.autocompleteFirstClientList = [];
+            this.autocompleteSecondClientList = [];
+            this.autocompleteDuplicateClientList = [];
+            this.firstAutocompletePage = 1;
+            this.$refs.secondAutocomplete.cachedItems = [];
+            this.$refs.duplicateAutocomplete.cachedItems = [];
+            this.$refs.firstAutocomplete.cachedItems = [];
+
             this.closeMergeAccountsDialog();
             this.profileChoiceDialog = false;
             this.getClientTable();
