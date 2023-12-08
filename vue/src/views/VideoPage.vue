@@ -33,8 +33,8 @@
           v-for="item in listOfFileNames"
           :key="item"
         >
-          <td>{{ item }}</td>
-          <td> <v-btn fab elevation="3" color="orange" @click="chosenVideo(item)"><v-icon>mdi-play-circle</v-icon></v-btn></td>
+          <td>{{ item.name }}</td>
+          <td> <v-btn fab elevation="3" color="orange" @click="chosenVideo(item.videoLinks)"><v-icon>mdi-play-circle</v-icon></v-btn></td>
         </tr>
       </tbody>
     </template>
@@ -60,8 +60,35 @@ components: {
 },
 data() {
   return {
-    listOfFileNames: [],
-    showVideo: true,
+    listOfFileNames: [{
+    videoLinks: "https://storage.cloud.google.com/sattva_yoga_center_videos/09.01.20%20-%20Tuesday-All%20Levels.mp4",
+    name: "09.01.20 - Tuesday - All Levels Class"
+  },
+  {
+    videoLinks: "https://storage.cloud.google.com/sattva_yoga_center_videos/09.02.20%20-%20Wednesday-All%20Levels.mp4",
+    name: "09.02.20 - Wednesday - All Levels Class"
+  },
+  {
+    videoLinks: "https://storage.cloud.google.com/sattva_yoga_center_videos/09.03.20%20-%20Thursday-All%20Levels.mp4",
+    name: "09.03.20 - Thursday - All Levels Class"
+  },
+  {
+    videoLinks: "https://storage.cloud.google.com/sattva_yoga_center_videos/09.04.20%20-%20Friday-All%20Levels.mp4",
+    name: "09.04.20 - Friday - All Levels Class"
+  },
+  {
+    videoLinks: "https://storage.cloud.google.com/sattva_yoga_center_videos/09.05.20%20-%20Saturday-All%20Levels.mp4",
+    name: "09.05.20 - Saturday - All Levels Class"
+  },
+  {
+    videoLinks: "https://storage.cloud.google.com/sattva_yoga_center_videos/09.06.20%20-%20Sunday-All%20Levels.mp4",
+    name: "09.06.20 - Sunday - All Levels Class"
+  },
+  {
+    videoLinks: "https://storage.cloud.google.com/sattva_yoga_center_videos/09.07.20%20-%20Monday-All%20Levels.mp4",
+    name: "09.07.20 - Monday - All Levels Class"
+  }],
+    showVideo: false,
     chosenFileName: "",
   }
 },
