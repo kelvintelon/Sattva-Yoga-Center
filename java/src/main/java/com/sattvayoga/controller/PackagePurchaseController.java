@@ -99,6 +99,7 @@ public class PackagePurchaseController {
     public List<PackagePurchase> getAllSharedActiveQuantityPackages(Principal principal){
         int userId = userDao.findIdByUsername(principal.getName());
         int clientId = clientDetailsDao.findClientByUserId(userId).getClient_id();
+        //TODO: Account for consolidation
         return packagePurchaseDao.getAllSharedActiveQuantityPackages(clientId);
     }
 

@@ -338,7 +338,7 @@ export default {
           sortable: false,
         },
         {
-          text: "Unlimited Duration (months)",
+          text: "Duration (months)",
           value: "package_duration",
           sortable: false,
         },

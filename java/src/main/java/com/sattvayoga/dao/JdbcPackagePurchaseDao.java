@@ -1276,7 +1276,8 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 "JOIN client_details on client_details.client_id = pp.client_id " +
                 "WHERE client_details.user_id = ? " +
                 "AND ( ( pp.classes_remaining > 0 AND pp.expiration_date > NOW()) " +
-                "OR (package_details.unlimited = true AND pp.expiration_date > NOW()) ) " +
+                "OR (package_details.unlimited = true AND pp.expiration_date > NOW()) " +
+                "OR (package_details.package_id = 22 AND pp.expiration_date > NOW()) ) " +
                 "ORDER BY " + sortBy + " " + sortDirection + offsetString;
 
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId, offset);
@@ -1320,7 +1321,8 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 "JOIN client_details on client_details.client_id = pp.client_id " +
                 "WHERE client_details.user_id = ? " +
                 "AND ( ( pp.classes_remaining > 0 AND pp.expiration_date > NOW()) " +
-                "OR (package_details.unlimited = true AND pp.expiration_date > NOW()) ) ";
+                "OR (package_details.unlimited = true AND pp.expiration_date > NOW()) " +
+                "OR (package_details.package_id = 22 AND pp.expiration_date > NOW()) ) ";
 
         int count = jdbcTemplate.queryForObject(countSql, Integer.class, userId);
 
@@ -1340,7 +1342,8 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 "JOIN client_details on client_details.client_id = pp.client_id " +
                 "WHERE client_details.user_id = ? " +
                 "AND ( ( pp.classes_remaining > 0 AND pp.expiration_date > NOW()) " +
-                "OR (package_details.unlimited = true AND pp.expiration_date > NOW()) ) ";
+                "OR (package_details.unlimited = true AND pp.expiration_date > NOW()) " +
+                "OR (package_details.package_id = 22 AND pp.expiration_date > NOW()) ) ";
 
 
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId);
@@ -1441,8 +1444,10 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         // set up the one packagePurchase Object to return
         PackagePurchase packagePurchaseQuantity = new PackagePurchase();
         PackagePurchase packagePurchaseSubscription = new PackagePurchase();
+        PackagePurchase packagePurchaseConsolidation = new PackagePurchase();
         int classAmount = 100;
         boolean hasQuantity = false;
+        boolean hasConsolidation = false;
         for (int i = 0; i < packagePurchaseList.size(); i++) {
             PackagePurchase currentPackage = packagePurchaseList.get(i);
 
@@ -1485,6 +1490,9 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
                 }
 
+            } else  if (currentPackage.getPackage_id() == 22) {
+                hasConsolidation = true;
+                packagePurchaseConsolidation = currentPackage;
             }
         }
         if (hasQuantity) {
@@ -1493,6 +1501,10 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
         if (packagePurchaseQuantity.getPackage_purchase_id() > 0) {
             return packagePurchaseQuantity;
+        }
+
+        if (hasConsolidation) {
+            return packagePurchaseConsolidation;
         }
         packagePurchaseSubscription.setPackage_purchase_id(0);
         return packagePurchaseSubscription;
@@ -1507,7 +1519,7 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 "WHERE client_family.family_id = \n" +
                 "(select family_id from client_family where client_family.client_id = ?) \n" +
                 "AND client_family.client_id != ?\n" +
-                "AND classes_remaining > 0 \n" +
+                "AND ( (classes_remaining > 0 AND package_purchase.expiration_date > NOW()) ) \n" +
                 "ORDER BY expiration_date;";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, client_id, client_id);
         while (result.next()) {

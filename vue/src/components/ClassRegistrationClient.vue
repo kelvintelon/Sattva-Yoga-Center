@@ -116,7 +116,7 @@ import packagePurchaseService from "../services/PackagePurchaseService";
 import clientDetailService from "../services/ClientDetailService";
 
 export default {
-  name: "class-registration",
+  name: "class-registration-client",
   components: {},
   data() {
     return {
@@ -167,7 +167,7 @@ export default {
       packages: [],
       sharedPackages: [],
       allHistoricalPackages: [],
-      hasSubscriptionPackage: false,
+      isUnlimitedPackage: false,
       subscriptionPackages: [],
       quantityPackages: [],
       quantityPackageIdToDecrement: 0,
@@ -183,7 +183,7 @@ export default {
       this.eventClientSignUp.date = item.dateRef;
       this.eventClientSignUp.client_id =
         this.$store.state.clientDetails.client_id;
-      this.freeClass = item.is_paid;
+      this.freeClass = !item.is_paid;
       this.allowSignUp = false;
 
       // object to hold item passed in just in case
@@ -260,7 +260,7 @@ export default {
           if (item.classes_remaining > 0 || todaysDate < expirationDate) {
             this.allowSignUp = true;
             if (item.unlimited) {
-              this.hasSubscriptionPackage = true;
+              this.isUnlimitedPackage = true;
               this.subscriptionPackages =
                 this.$store.state.activePackageList.filter((item) => {
                   return item.unlimited;
@@ -297,7 +297,7 @@ export default {
             }
           }
           // final package_id is always the subscription package with the earliest exp date.
-          if (this.hasSubscriptionPackage) {
+          if (this.isUnlimitedPackage) {
             this.eventClientSignUp.package_purchase_id =
               this.initial1.package_purchase_id;
           }
@@ -310,7 +310,10 @@ export default {
       } else if (this.$store.state.sharedPackages.length > 0) {
         if (this.$store.state.sharedPackages[0].classes_remaining > 0) {
           this.allowSignUp = true;
-        }
+        } 
+        // else if (this.$store.state.sharedPackages[0].package_id == 22) {
+        //   this.allowSignUp = true;
+        // }
         this.eventClientSignUp.package_purchase_id =
           this.$store.state.sharedPackages[0].package_purchase_id;
         this.quantityPackageIdToDecrement =
@@ -326,7 +329,7 @@ export default {
         // console.log(this.eventClientSignUp.date)
         // console.log(this.initial1.expiration_date)
         // console.log(this.eventClientSignUp.date > this.initial1.expiration_date)
-        // console.log(this.hasSubscriptionPackage)
+        // console.log(this.isUnlimitedPackage)
         // console.log(this.eventClientSignUp)
         this.clientEvents.forEach((item) => {
           if (item.event_id == this.eventClientSignUp.event_id) {
@@ -334,7 +337,7 @@ export default {
             this.validSignUp = false;
           }
           if (
-            this.hasSubscriptionPackage &&
+            this.isUnlimitedPackage &&
             this.eventClientSignUp.date > this.initial1.expiration_date && this.freeClass == false
           ) {
             alert("Error! Your unlimited package will be expired by then.");
@@ -355,7 +358,7 @@ export default {
             .registerForEvent(this.eventClientSignUp)
             .then((response) => {
               if (response.status == 201) {
-                if (this.hasSubscriptionPackage == false && this.freeClass == false) {
+                if (this.isUnlimitedPackage == false && this.freeClass == false) {
                   packagePurchaseService.decrementByOne(
                     this.quantityPackageIdToDecrement
                   );
@@ -445,7 +448,7 @@ export default {
           //console.log(refundPackage);
           if (refundPackage.length > 0) {
             if (refundPackage[0].unlimited == true) {
-              this.hasSubscriptionPackage = true;
+              this.isUnlimitedPackage = true;
             }
           }
           this.allowSignUp = true;
@@ -457,7 +460,7 @@ export default {
     },
     cancelCheck() {
       if (this.allowSignUp || this.eventClientSignUp.package_purchase_id <= 0) {
-        //console.log(this.hasSubscriptionPackage);
+        //console.log(this.isUnlimitedPackage);
         if (
           this.validSignUp == true ||
           this.eventClientSignUp.package_purchase_id <= 0
@@ -469,7 +472,7 @@ export default {
                 // call method that updates the client_class_table
                 alert("Removed the class from your list");
                 if (
-                  !this.hasSubscriptionPackage &&
+                  !this.isUnlimitedPackage &&
                   this.eventClientSignUp.package_purchase_id > 0
                 ) {
                   packagePurchaseService
@@ -479,7 +482,7 @@ export default {
                         alert("Package Incremented +1");
                     });
                 }
-                this.hasSubscriptionPackage = false;
+                this.isUnlimitedPackage = false;
                 this.getClientEventTable();
                 this.getEventTable();
               }
