@@ -33,8 +33,8 @@
           v-for="item in listOfFileNames"
           :key="item"
         >
-          <td>{{ item }}</td>
-          <td> <v-btn fab elevation="3" color="orange" @click="chosenVideo(item)"><v-icon>mdi-play-circle</v-icon></v-btn></td>
+          <td>{{ item.name }}</td>
+          <td> <v-btn fab elevation="3" color="orange" @click="chosenVideo(item.videoLinks)"><v-icon>mdi-play-circle</v-icon></v-btn></td>
         </tr>
       </tbody>
     </template>
@@ -61,7 +61,7 @@ components: {
 data() {
   return {
     listOfFileNames: [],
-    showVideo: true,
+    showVideo: false,
     chosenFileName: "",
   }
 },

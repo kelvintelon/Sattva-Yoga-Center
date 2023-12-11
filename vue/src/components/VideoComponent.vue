@@ -36,7 +36,8 @@ export default {
         sources: [
           {
             src:
-            this.exactFileLocation,
+            this.chosenFileName,
+            // this.exactFileLocation,
             // 'https://storage.googleapis.com/sattva-yoga/earth.mp4',
             // this.localUrl+this.chosenFileName,
             // 'https://storage.googleapis.com/sattva_yoga_center_videos/09.28.20%20-%20Monday.mp4',
