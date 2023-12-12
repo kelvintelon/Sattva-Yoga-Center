@@ -11,7 +11,7 @@
 import VideoPlayer from '@/components/VideoPlayer.vue';
 
 export default {
-    name: 'VideoComponent',
+    name: 'video-component',
   components: {
     VideoPlayer
   },
