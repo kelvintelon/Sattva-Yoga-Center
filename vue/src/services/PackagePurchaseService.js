@@ -25,6 +25,9 @@ export default {
     createPackagePurchase(packagePurchase) {
         return axios.post('/createPackagePurchase', packagePurchase)
     },
+    swapPackages(packageDTO) {
+        return axios.post('/swapPackages', packageDTO)
+    },
     resendEmail(resendEmailObj) {
         return axios.post('/resendEmail', resendEmailObj)
     },

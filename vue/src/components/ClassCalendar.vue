@@ -87,7 +87,7 @@
               </template>
               <v-card justify="center">
                 <v-card-title>
-                  <span class="text-h5"> Create Event </span>
+                  <span class="text-h5" style="color: rgba(245, 104, 71, 0.95)"> Create Event </span>
                   <v-spacer></v-spacer>
                   <v-btn icon>
                     <v-icon @click="close" alt="close">mdi-window-close</v-icon>
@@ -146,7 +146,7 @@
                             </v-btn>
                           </v-col>
                           <v-col>
-                            <v-btn class="mr-4" type="submit" :disabled="invalid">
+                            <v-btn class="mr-4" type="submit" color="blue" outlined :disabled="invalid">
                               submit
                             </v-btn></v-col></v-row>
                       </v-form>
@@ -154,6 +154,12 @@
                     </v-col>
                   </v-row>
                 </v-container>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="red" text @click="dialog = false">
+                    Cancel
+                  </v-btn>
+                </v-card-actions>
               </v-card>
             </v-dialog>
             <v-spacer></v-spacer>
@@ -286,15 +292,16 @@
                 </v-form>
               </v-card-text>
               <v-card-actions>
-                <v-btn text color="secondary" @click="closeSelectedCard">
-                  Cancel
-                </v-btn>
-                <v-btn icon>
-                  <v-icon @click="confirmDelete">mdi-delete</v-icon>
+              
+                <v-btn color="green" icon>
+                  <v-icon @click="sendToEventDetailsPage">mdi-account-multiple</v-icon>
                 </v-btn>
                 <v-spacer></v-spacer>
-                <v-btn icon>
-                  <v-icon @click="sendToEventDetailsPage">mdi-account-multiple</v-icon>
+                <v-btn color="black" icon>
+                  <v-icon @click="confirmDelete">mdi-delete</v-icon>
+                </v-btn>
+                <v-btn text color="red" @click="closeSelectedCard">
+                  Cancel
                 </v-btn>
               </v-card-actions>
             </v-card>

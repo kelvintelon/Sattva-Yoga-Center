@@ -30,7 +30,7 @@
               </template>
               <v-card justify="center">
                 <v-card-title>
-                  <span class="text-h5">{{ formTitle }}</span>
+                  <span class="text-h5" style="color: rgba(245, 104, 71, 0.95)">{{ formTitle }}</span>
                 </v-card-title>
 
                 <!-- START OF CREATE CLASS FORM from CreateClassForm.vue-->
@@ -179,6 +179,8 @@
                               class="mr-4"
                               type="submit"
                               :disabled="invalid"
+                              color="blue"
+                              outlined
                             >
                               submit
                             </v-btn></v-col
@@ -191,7 +193,7 @@
 
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <v-btn color="blue darken-1" text @click="close">
+                  <v-btn color="red" text @click="close">
                     Cancel
                   </v-btn>
                   <!-- <v-btn color="blue darken-1" text @click="save"> Save </v-btn> -->
@@ -204,7 +206,7 @@
             <v-dialog v-model="dialog2" max-width="500px" persistent>
               <v-card justify="center">
                 <v-card-title>
-                  <span class="text-h5">{{ formTitle }}</span>
+                  <span class="text-h5" style="color: rgba(245, 104, 71, 0.95)">{{ formTitle }}</span>
                 </v-card-title>
 
                 <v-container>
@@ -348,6 +350,8 @@
                               class="mr-4"
                               type="submit"
                               :disabled="invalid"
+                              color="blue"
+                              outlined
                             >
                               update
                             </v-btn></v-col
@@ -360,7 +364,7 @@
 
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <v-btn color="blue darken-1" text @click="close2">
+                  <v-btn color="red" text @click="close2">
                     Cancel
                   </v-btn>
                   <!-- <v-btn color="blue darken-1" text @click="save"> Save </v-btn> -->

@@ -28,7 +28,7 @@
               </template>
               <v-card justify="center">
                 <v-card-title>
-                  <span class="text-h5">{{ formTitle }}</span>
+                  <span class="text-h5" style="color: rgba(245, 104, 71, 0.95)">{{ formTitle }}</span>
                 </v-card-title>
 
                 <!-- START OF CREATE PACKAGE FORM -->
@@ -113,6 +113,8 @@
                             <v-btn
                               class="mr-4"
                               type="submit"
+                              color="blue"
+                              outlined
                               :disabled="invalid"
                             >
                               submit
@@ -126,7 +128,7 @@
 
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <v-btn color="blue darken-1" text @click="close">
+                  <v-btn color="red" text @click="close">
                     Cancel
                   </v-btn>
                 </v-card-actions>

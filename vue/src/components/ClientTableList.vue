@@ -28,7 +28,7 @@
         <v-card>
           <!-- Merging Clients starts here -->
           <v-card-title>
-            <span class="text-h5">Merge Clients</span>
+            <span class="text-h5" style="color: rgba(245, 104, 71, 0.95)">Merge Clients</span>
             <v-spacer></v-spacer>
           </v-card-title>
 
@@ -123,11 +123,12 @@
 
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="blue darken-1" text @click="closeMergeAccountsDialog">
-              Cancel
-            </v-btn>
+            
             <v-btn color="blue darken-1" text @click="confirmMerge">
               Start Merge</v-btn>
+              <v-btn color="red" text @click="closeMergeAccountsDialog">
+              Cancel
+            </v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -135,7 +136,7 @@
       <v-dialog v-model="profileChoiceDialog" max-width="500px" persistent>
         <v-card justify="center">
           <v-card-title>
-            <span class="text-h5">Store Client Info</span>
+            <span class="text-h5" style="color: rgba(245, 104, 71, 0.95)">Store Client Info</span>
           </v-card-title>
           <v-carousel hide-delimiters height="900"><v-carousel-item v-for="(item, i) in listOfClientForms" :key="i">
               <v-row justify="center">
@@ -185,7 +186,7 @@
             </v-carousel-item></v-carousel>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="blue darken-1" text @click="closeProfileChoice">
+            <v-btn color="red" text @click="closeProfileChoice">
               Cancel
             </v-btn>
             <!-- <v-btn color="blue darken-1" text @click="save"> Save </v-btn> -->
@@ -203,7 +204,7 @@
         <v-card>
           <!-- Add a Client Form starts here -->
           <v-card-title>
-            <span class="text-h5">Add Client To Roster</span>
+            <span class="text-h5" style="color: rgba(245, 104, 71, 0.95)">Add Client To Roster</span>
           </v-card-title>
 
           <v-card-text>
@@ -228,9 +229,10 @@
                             {{ emailRegistrationErrorMsg }}
                           </div>
             <v-spacer></v-spacer>
-            <v-btn color="blue darken-1" text @click="closeNewClient"> Cancel </v-btn>
+            
             <v-btn color="blue darken-1" text @click="saveNewClientRegistration">
               Save New Client</v-btn>
+              <v-btn color="red" text @click="closeNewClient"> Cancel </v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -244,7 +246,7 @@
         <v-card>
           <!-- Add a Client Form starts here -->
           <v-card-title>
-            <span class="text-h5">Add Client To Shared Group</span>
+            <span class="text-h5" style="color: rgba(245, 104, 71, 0.95)">Add Client To Group</span>
             <v-spacer></v-spacer>
             <v-btn class="mx-2" fab dark color="primary" @click="showNewClientForm = !showNewClientForm"
               v-if="!showNewClientForm"><v-icon large>mdi-new-box</v-icon></v-btn>
@@ -266,12 +268,13 @@
           </v-card-text>
 
           <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="blue darken-1" text @click="close1"> Cancel </v-btn>
-            <v-btn color="blue darken-1" text @click="save" v-if="!showNewClientForm">
+            <v-spacer></v-spacer><v-btn color="blue darken-1" text @click="save" v-if="!showNewClientForm">
               Add to selected family</v-btn>
-            <v-btn color="blue darken-1" text @click="saveNewClient" v-if="showNewClientForm">
+            <v-btn color="red" text @click="close1"> Cancel </v-btn>
+           
+            <v-btn color="red" text @click="saveNewClient" v-if="showNewClientForm">
               Create New Family</v-btn>
+              
           </v-card-actions>
         </v-card>
       </v-dialog>

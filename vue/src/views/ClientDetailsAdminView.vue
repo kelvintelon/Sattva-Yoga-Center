@@ -89,7 +89,7 @@
             min-height="100%"
           >
             <edit-profile-form></edit-profile-form>
-            <v-btn @click="showEditForm = !showEditForm">Close</v-btn>
+            <v-btn color="red" @click="showEditForm = !showEditForm">Close</v-btn>
           </v-card>
         </v-col>
        

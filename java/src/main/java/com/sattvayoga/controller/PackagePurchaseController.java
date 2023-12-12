@@ -160,6 +160,16 @@ public class PackagePurchaseController {
         return packagePurchaseDao.incrementByOne(packagePurchaseId);
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
+    @RequestMapping(value = "/swapPackages", method = RequestMethod.POST)
+    public void swapPackages(@RequestBody SwapPackagesDTO packageDTO) {
+
+        int oldId = packageDTO.getOld_package_purchase_id();
+        int newId = packageDTO.getNew_package_purchase_id();
+        int eventId = packageDTO.getEvent_id();
+        packagePurchaseDao.swapPackages(oldId,newId, eventId);
+    }
+
     static class GiftCardResponse {
         private double amountAvailable;
         private String message;
@@ -184,5 +194,34 @@ public class PackagePurchaseController {
         }
     }
 
+    static class SwapPackagesDTO {
+        private int new_package_purchase_id;
+        private int old_package_purchase_id;
+        private int event_id;
+
+        public int getEvent_id() {
+            return event_id;
+        }
+
+        public void setEvent_id(int event_id) {
+            this.event_id = event_id;
+        }
+
+        public int getNew_package_purchase_id() {
+            return new_package_purchase_id;
+        }
+
+        public void setNew_package_purchase_id(int new_package_purchase_id) {
+            this.new_package_purchase_id = new_package_purchase_id;
+        }
+
+        public int getOld_package_purchase_id() {
+            return old_package_purchase_id;
+        }
+
+        public void setOld_package_purchase_id(int old_package_purchase_id) {
+            this.old_package_purchase_id = old_package_purchase_id;
+        }
+    }
 
 }

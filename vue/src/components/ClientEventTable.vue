@@ -168,7 +168,7 @@
           <v-btn
             color="primary"
             text
-            @click.stop="resendEmailToClient"
+            @click.stop="swapPackages"
           >
             Send
           </v-btn>
@@ -260,6 +260,33 @@ export default {
           // If they match then have the selected one show up in the object: this.selectedPackageToSwap.
         }
       })
+    },
+    swapPackages() {
+         
+        if (this.selectedEventToEditPackageUsed.package_purchase_id == this.selectedPackageToSwap.package_purchase_id) {
+              
+           alert("Choose a different package")
+        } else if (this.selectedEventToEditPackageUsed.package_purchase_id == -1) {
+          alert("This is a free class, can't change package used")
+        } else {
+          alert("Received Change Request")
+          let packageDTO = {};
+          packageDTO.old_package_purchase_id = this.selectedEventToEditPackageUsed.package_purchase_id;
+          packageDTO.new_package_purchase_id = this.selectedPackageToSwap.package_purchase_id;
+          packageDTO.event_id = this.selectedEventToEditPackageUsed.event_id;
+          packagePurchaseService.swapPackages(packageDTO).then((response) => {
+            if (response.status == 201) {
+              alert("Successfully swapped packages")
+              this.getClientEventTable();
+              this.$root.$refs.A.getActivePurchaseServerRequest();
+              this.$root.$refs.B.getPackageHistoryTable();
+              this.$root.$refs.C.getClientDetails();
+
+              this.showActivePackages = false;
+            }
+          })
+        }
+         
     },
     getPackagePurchaseColor(item) {
       if (item.package_purchase_id == 0) {

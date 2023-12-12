@@ -58,7 +58,7 @@
                       Reset Form
                     </v-btn>
 
-                    <v-btn class="mr-4" type="submit" :disabled="invalid">
+                    <v-btn class="mr-4 mt-4" outlined color="blue" type="submit" :disabled="invalid">
                       submit
                     </v-btn>
                   </v-form>
@@ -69,7 +69,7 @@
       
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="close"> Cancel </v-btn>
+              <v-btn color="red" text @click="close"> Cancel </v-btn>
             
             </v-card-actions>
           </v-card>

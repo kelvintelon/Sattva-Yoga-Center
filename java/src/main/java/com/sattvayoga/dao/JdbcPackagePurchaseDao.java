@@ -1100,6 +1100,31 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         jdbcTemplate.update(sql, packagePurchaseId);
     }
 
+    @Override
+    public void swapPackages(int oldId, int newId, int eventId) {
+        PackagePurchase oldPackage = getPackagePurchaseObjectByPackagePurchaseId(oldId);
+        PackagePurchase newPackage = getPackagePurchaseObjectByPackagePurchaseId(newId);
+
+        //For Old Package, check:
+        // If it's 0 -> Continue
+        // If it's ID is 22 -> Continue
+        // If it's unlimited -> Continue
+        if (oldId != 22 && oldId != 0 && !oldPackage.isUnlimited()) {
+            // Else -> Increment
+            incrementByOne(oldId);
+        }
+
+        if (newId != 22 & !newPackage.isUnlimited()) {
+                // Decrement new package
+            decrementByOne(newId);
+        }
+
+        // Lastly, swap the package.
+        String sql = "UPDATE client_event SET package_purchase_id = ? WHERE event_id = ?";
+        jdbcTemplate.update(sql, newId, eventId);
+
+    }
+
     public static Timestamp convertDateStringToTimestamp(String dateString) {
         // Define the date format
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yy");

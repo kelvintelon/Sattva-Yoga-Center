@@ -65,5 +65,7 @@ public interface PackagePurchaseDao {
 
     void updatePaymentIdForGiftCardPurchase(int packagePurchaseId);
 
+    void swapPackages(int oldId, int newId, int eventId);
+
     List<GiftCard> retrieveAllGiftCards();
 }
