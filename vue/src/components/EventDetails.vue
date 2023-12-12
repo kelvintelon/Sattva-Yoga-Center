@@ -251,13 +251,13 @@
       </template>
       <template v-slot:[`item.actions`]="{ item }">
         <v-icon
-          small
+          large
           class="mr-2"
           @click.prevent="sendToUserPageAdminView(item)"
         >
           mdi-account-search
         </v-icon>
-        <v-icon small @click.prevent="RemoveClassForClient(item)" color="#933">
+        <v-icon large @click.prevent="RemoveClassForClient(item)" color="#933">
           mdi-close-thick
         </v-icon>
       </template>

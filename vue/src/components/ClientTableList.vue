@@ -380,11 +380,11 @@
       <template v-slot:[`item.has_record_of_liability`]="{ item }">
         <v-simple-checkbox v-model="item.has_record_of_liability" disabled></v-simple-checkbox> </template><template
         v-slot:[`item.actions`]="{ item }">
-        <v-icon small class="mr-2" @click.prevent="sendToUserPageAdminView(item)">
+        <v-icon large class="mr-2" @click.prevent="sendToUserPageAdminView(item)">
           mdi-account-search
         </v-icon>
-        <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
-        <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
+        <v-icon large class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
+        <v-icon large @click="deleteItem(item)"> mdi-delete </v-icon>
       </template>
       <template v-slot:no-data>
         <v-btn color="primary" @click="initialize"> Reset </v-btn>
@@ -429,17 +429,17 @@ export default {
         },
         { text: "Last Name", value: "last_name", sortable: true },
         { text: "Active", value: "is_client_active", sortable: false },
-        { text: "New Client", value: "is_new_client", sortable: false },
+        // { text: "New Client", value: "is_new_client", sortable: false },
         { text: "Address", value: "full_address", sortable: false },
         { text: "Phone Number", value: "phone_number", sortable: false },
-        { text: "Email List", value: "is_on_email_list", sortable: false },
+        // { text: "Email List", value: "is_on_email_list", sortable: false },
         { text: "Email", value: "email", sortable: false },
         { text: "Shared Group", value: "family_name", sortable: false },
-        {
-          text: "Record of Liability",
-          value: "has_record_of_liability",
-          sortable: false,
-        },
+        // {
+        //   text: "Record of Liability",
+        //   value: "has_record_of_liability",
+        //   sortable: false,
+        // },
         { text: "Date of Entry", value: "date_of_entry", sortable: false },
         { text: "Actions", value: "actions", sortable: false },
       ],

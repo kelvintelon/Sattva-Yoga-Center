@@ -1528,6 +1528,44 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         return packages;
     }
 
+    @Override
+    public List<PackagePurchase> getAllActivatePackagesToSwap(int client_id) {
+        List<PackagePurchase> activePackages = new ArrayList<>();
+
+
+        ClientDetails clientDetails = clientDetailsDao.findClientByClientId(client_id);
+        activePackages = getAllActiveUserPackagePurchases(clientDetails.getUser_id());
+        for (int i = 0; i < activePackages.size(); i++) {
+            PackagePurchase packagePurchase = activePackages.get(i);
+            packagePurchase.setPackage_description(getPackageDescriptionByPackageId(packagePurchase.getPackage_id()));
+
+        }
+        List<PackagePurchase> sharedPackages = getAllSharedActiveQuantityPackages(client_id);
+        for (int i = 0; i < sharedPackages.size(); i++) {
+            PackagePurchase packagePurchase = sharedPackages.get(i);
+            packagePurchase.setPackage_description("(Shared) " + getPackageDescriptionByPackageId(packagePurchase.getPackage_id()));
+        }
+        activePackages.addAll(sharedPackages);
+
+        for (int i = 0; i < activePackages.size(); i++) {
+            PackagePurchase packagePurchase = activePackages.get(i);
+
+            //TODO: Make sure to add quick_details
+            String packageDescription = packagePurchase.getPackage_description();
+            String expirationString = "";
+            Date expirationDate = packagePurchase.getExpiration_date();
+            // Format pattern for the date
+            String pattern = "yyyy-MM-dd"; // You can change the pattern based on your requirements
+
+            // Create a SimpleDateFormat object with the specified pattern
+            SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+            expirationString = sdf.format(expirationDate);
+            packagePurchase.setQuick_details(packageDescription + " Exp. " + expirationString);
+
+        }
+        return activePackages;
+    }
+
 
     // helper
     public String getPackageDescriptionByPackageId(int PackageId) {

@@ -12,7 +12,6 @@
       fade-img-on-scroll
       height="150px"
       contain
-      
       color="rgba(245, 104, 71, 0.95)"
     >
       <template v-slot:img="{ props }">

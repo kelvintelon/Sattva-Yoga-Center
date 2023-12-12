@@ -30,16 +30,16 @@
           <v-dialog v-model="dialog" max-width="500px" persistent>
             <v-card justify="center">
               <v-card-title>
-                <span class="text-h5"> Edit Package </span>
+                <span class="text-h5" style="color: rgba(245, 104, 71, 0.95)"> Edit Package </span>
               </v-card-title>
 
               <v-container>
                 <v-row justify="center" style="min-height: 160px">
-                  <v-col cols="6">
+                  <v-col cols="8">
                     <v-form
                       ref="form"
                       height="100"
-                      width="500"
+                      width="1000"
                       v-model="valid"
                       lazy-validation
                       class="class-form mx-auto white"
@@ -113,7 +113,7 @@
                       ></v-row> -->
                       <v-row justify="center" align="center">
                         <v-col>
-                          <v-btn class="mr-4" type="submit">
+                          <v-btn color="blue darken-1" outlined class="mr-4" type="submit">
                             update
                           </v-btn></v-col
                         ></v-row
@@ -125,7 +125,7 @@
 
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="close">
+                <v-btn color="red" text @click="close">
                   Cancel
                 </v-btn>
                 <!-- <v-btn color="blue darken-1" text @click="save"> Save </v-btn> -->
@@ -144,8 +144,8 @@
         v-slot:[`item.actions`]="{ item }"
         v-if="$store.state.user.username == 'admin'"
       >
-        <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
-        <v-icon small class="mr-2" @click.stop="resendEmailForm(item)"> mdi-email </v-icon>
+        <v-icon large class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
+        <v-icon large class="mr-2" @click.stop="resendEmailForm(item)"> mdi-email </v-icon>
       </template>
     </v-data-table>
     <v-row>
@@ -194,19 +194,20 @@
                     ></v-text-field>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn
-            color="primary"
-            text
-            @click="showEmailForm = false"
-          >
-            Cancel
-          </v-btn>
+          
           <v-btn
             color="primary"
             text
             @click.stop="resendEmailToClient"
           >
             Send
+          </v-btn>
+          <v-btn
+            color="red"
+            text
+            @click="showEmailForm = false"
+          >
+            Cancel
           </v-btn>
         </v-card-actions>
       </v-card>

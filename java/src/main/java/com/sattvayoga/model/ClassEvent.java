@@ -18,6 +18,7 @@ public class ClassEvent {
     private int package_purchase_id;
     // helper instance variable
     private String quick_details;
+    private boolean isShared;
 
     public ClassEvent() {
 
@@ -33,6 +34,14 @@ public class ClassEvent {
         this.timed = timed;
         this.is_visible_online = is_visible_online;
         this.is_paid = is_paid;
+    }
+
+    public boolean isShared() {
+        return isShared;
+    }
+
+    public void setShared(boolean shared) {
+        isShared = shared;
     }
 
     public boolean isIs_paid() {

@@ -36,7 +36,7 @@
             <v-card>
               <!-- Add a Class Form starts here -->
               <v-card-title>
-                <span class="text-h5">Add a class</span>
+                <span class="text-h5" style="color: rgba(245, 104, 71, 0.95)">Add a class</span>
               </v-card-title>
 
               <v-card-title>
@@ -58,11 +58,11 @@
 
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="close">
-                  Cancel
-                </v-btn>
+                
                 <v-btn color="blue darken-1" text @click="addClassesForClient">
                   Save
+                </v-btn><v-btn color="red" text @click="close">
+                  Cancel
                 </v-btn>
               </v-card-actions>
             </v-card>
@@ -70,19 +70,23 @@
         </v-toolbar>
       </template>
       <template v-slot:[`item.actions`]="{ item }"
-        ><v-icon
-          small
+        >
+        <v-icon large class="mr-2" @click="swapActivePackages(item)">
+          mdi-receipt-text-edit
+        </v-icon>
+        <v-icon
+          large
           class="mr-2"
           @click.prevent="sendToEventPageAdminView(item)"
         >
           mdi-calendar-search
         </v-icon>
-        <v-icon small class="mr-2" @click="RemoveClassForClient(item)">
+        <v-icon large class="mr-2" @click="RemoveClassForClient(item)">
           mdi-close-thick
         </v-icon>
       </template>
       <template v-slot:[`item.event_id`]="{ item }">
-        <v-chip :color="getColor(item)" dark>
+        <v-chip :color="getPackagePurchaseColor(item)" dark>
           {{ item.event_id }}
         </v-chip>
       </template>
@@ -107,24 +111,28 @@
       <template
         v-slot:[`item.actions`]="{ item }"
         v-if="$store.state.user.username == 'admin'"
-        ><v-icon
-          small
+        >
+        <v-icon large class="mr-2" @click="swapActivePackages(item)">
+          mdi-receipt-text-edit
+        </v-icon>
+        <v-icon
+          large
           class="mr-2"
           @click.prevent="sendToEventPageAdminView(item)"
         >
           mdi-calendar-search
         </v-icon>
-        <v-icon small class="mr-2" @click="RemoveClassForClient(item)">
+        <v-icon large class="mr-2" @click="RemoveClassForClient(item)">
           mdi-close-thick
         </v-icon>
       </template>
       <template v-slot:[`item.event_id`]="{ item }">
-        <v-chip :color="getColor(item)" dark>
+        <v-chip :color="getPackagePurchaseColor(item)" dark>
           {{ item.event_id }}
         </v-chip>
       </template>
       <template v-slot:[`item.package_purchase_id`]="{ item }">
-        <v-chip :color="getColor(item)" dark>
+        <v-chip :color="getPackagePurchaseColor(item)" dark>
           {{ item.package_purchase_id }}
         </v-chip>
       </template>
@@ -132,6 +140,48 @@
     <v-overlay :value="overlay">
       <v-progress-circular indeterminate size="70"></v-progress-circular>
     </v-overlay>
+    <v-dialog
+      v-model="showActivePackages"
+      persistent
+      max-width="700"
+    >
+      <v-card>
+        <v-card-title class="text-h5" style="color: rgba(245, 104, 71, 0.95)">
+          Swap Package Used
+        </v-card-title>
+        <v-container>
+          <v-row>
+            <v-col>
+              <v-select
+                label="Choose One to Swap"
+                :items="activePackagesToSwap"
+                v-model="selectedPackageToSwap"
+                 item-text="quick_details"
+                return-object
+              ></v-select>
+            </v-col>
+          </v-row>
+        </v-container>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          
+          <v-btn
+            color="primary"
+            text
+            @click.stop="resendEmailToClient"
+          >
+            Send
+          </v-btn>
+          <v-btn
+            color="red"
+            text
+            @click="showActivePackages = false"
+          >
+            Cancel
+          </v-btn> 
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -180,9 +230,46 @@ export default {
       loading: true,
       loading2: true,
       overlay: false,
+      activePackagesToSwap: [],
+      selectedPackageToSwap: {},
+      selectedEventToEditPackageUsed: {},
+      showActivePackages: false,
     };
   },
   methods: {
+    swapActivePackages(item) {
+      this.showActivePackages = true;
+      this.selectedEventToEditPackageUsed = item
+      this.getAllActivePackagesToSwap();
+    },
+    getAllActivePackagesToSwap() {
+      packagePurchaseService.getAllActivePackagesToSwap(parseInt(this.$route.params.clientId)).then((response) => {
+        if (response.status == 200) {
+          this.activePackagesToSwap = response.data;
+          for (let i = 0; i < this.activePackagesToSwap.length; i++) {
+            
+            let currentPackage = this.activePackagesToSwap[i];
+            
+            if (currentPackage.package_purchase_id == this.selectedEventToEditPackageUsed.package_purchase_id) {
+              
+              this.selectedPackageToSwap = currentPackage;
+            }
+          }
+          
+          // TODO: Match the package purchase ID used and have that as the selected. 
+          // If they match then have the selected one show up in the object: this.selectedPackageToSwap.
+        }
+      })
+    },
+    getPackagePurchaseColor(item) {
+      if (item.package_purchase_id == 0) {
+        return "red";
+      } else if (item.shared) {
+        return "green"
+      } else {
+        return "blue";
+      }
+    },
     getColor(item) {
       if (item.package_purchase_id == 0) {
         return "red";
@@ -375,6 +462,9 @@ export default {
         this.close();
       } else {
         alert("Please select at least one event");
+        this.loading = false;
+        this.loading2 = false;
+        this.overlay = false;
       }
     },
     RemoveClassForClient(item) {
@@ -455,6 +545,7 @@ export default {
           this.validSignUp == true ||
           this.eventClientSignUp.package_purchase_id == 0
         ) {
+          if (confirm("Remove Event For Client?")) {
           eventService
             .removeEventForClientByClientId(
               this.eventClientSignUp.event_id,
@@ -492,6 +583,7 @@ export default {
                 this.$root.$refs.B.getPackageHistoryTable();
               }
             });
+          }
         }
       }
     },

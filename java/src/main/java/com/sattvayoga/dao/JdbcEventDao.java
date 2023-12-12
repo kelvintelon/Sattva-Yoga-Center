@@ -1,6 +1,7 @@
 package com.sattvayoga.dao;
 
 import com.sattvayoga.model.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.sql.In;
@@ -28,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 public class JdbcEventDao implements EventDao {
 
     private final JdbcTemplate jdbcTemplate;
-
 
     public JdbcEventDao(DataSource dataSource) {
         jdbcTemplate = new JdbcTemplate(dataSource);
@@ -2005,12 +2005,78 @@ public class JdbcEventDao implements EventDao {
                 "WHERE user_id = ? " +
                 "ORDER BY events.start_time";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, user_id);
+        ClientDetails clientDetails = findClientByUserId(user_id);
+        List<PackagePurchase> sharedPackages = getAllSharedActiveQuantityPackages(clientDetails.getClient_id());
+        Set<Integer> sharedPackageIdsInSet = new HashSet<>();
+
+        for (int i = 0; i < sharedPackages.size(); i++) {
+            PackagePurchase currentPackage = sharedPackages.get(i);
+            sharedPackageIdsInSet.add(currentPackage.getPackage_purchase_id());
+        }
+
         while (result.next()) {
             classEvent = mapRowToEvent(result);
             classEvent.setPackage_purchase_id(result.getInt("package_purchase_id"));
+            if (sharedPackageIdsInSet.contains(classEvent.getPackage_purchase_id()) ) {
+                classEvent.setShared(true);
+            }
             allClientClassEvents.add(classEvent);
         }
         return allClientClassEvents;
+    }
+
+    public ClientDetails findClientByUserId(int userId) {
+        String sql = "SELECT * FROM client_details WHERE user_id = ?";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
+        ClientDetails clientDetails = new ClientDetails();
+        if (results.next()) {
+            clientDetails = mapRowToClient(results);
+        }
+
+        return clientDetails;
+    }
+
+    public List<PackagePurchase> getAllSharedActiveQuantityPackages(int client_id) {
+        List<PackagePurchase> packages = new ArrayList<>();
+        String sql = "SELECT package_purchase.*\n" +
+                "from package_purchase\n" +
+                "JOIN client_family ON package_purchase.client_id = client_family.client_id\n" +
+                "WHERE client_family.family_id = \n" +
+                "(select family_id from client_family where client_family.client_id = ?) \n" +
+                "AND client_family.client_id != ?\n" +
+                "AND ( (classes_remaining > 0 AND package_purchase.expiration_date > NOW()) ) \n" +
+                "ORDER BY expiration_date;";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, client_id, client_id);
+        while (result.next()) {
+            packages.add(mapRowToPackagePurchase(result));
+        }
+        return packages;
+    }
+
+    public PackagePurchase mapRowToPackagePurchase(SqlRowSet rs) {
+        PackagePurchase packagePurchase = new PackagePurchase();
+        packagePurchase.setPackage_purchase_id(rs.getInt("package_purchase_id"));
+        packagePurchase.setClient_id(rs.getInt("client_id"));
+        packagePurchase.setDate_purchased(rs.getTimestamp("date_purchased"));
+        packagePurchase.setPackage_id(rs.getInt("package_id"));
+        if (rs.getInt("classes_remaining") > 0) {
+            packagePurchase.setClasses_remaining(rs.getInt("classes_remaining"));
+        }
+        if (rs.getDate("activation_date") != null) {
+            packagePurchase.setActivation_date(rs.getDate("activation_date"));
+        }
+        if (rs.getDate("expiration_date") != null) {
+            packagePurchase.setExpiration_date(rs.getDate("expiration_date"));
+        }
+        if (rs.getBigDecimal("total_amount_paid") != null) {
+            packagePurchase.setTotal_amount_paid(rs.getBigDecimal("total_amount_paid"));
+        }
+        packagePurchase.setIs_monthly_renew(rs.getBoolean("is_monthly_renew"));
+        if (rs.getBigDecimal("discount") != null) {
+            packagePurchase.setDiscount(rs.getBigDecimal("discount"));
+        }
+
+        return packagePurchase;
     }
 
     @Override

@@ -7,6 +7,7 @@ import com.sattvayoga.dto.order.ResendEmailDTO;
 import com.sattvayoga.model.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -91,6 +92,11 @@ public class PackagePurchaseController {
     @RequestMapping(value= "/userPackagePurchaseListByUserId/{userId}", method = RequestMethod.GET)
     public List<PackagePurchase> getAllUserPackagePurchaseByUserId(@PathVariable int userId) throws SQLException {
         return packagePurchaseDao.getAllUserPackagePurchases(userId);
+    }
+
+    @RequestMapping(value = "/getAllActivePackagesToSwap/{clientId}", method = RequestMethod.GET)
+    public List<PackagePurchase> getAllActivePackagesToSwap(@PathVariable int clientId) {
+        return packagePurchaseDao.getAllActivatePackagesToSwap(clientId);
     }
 
 

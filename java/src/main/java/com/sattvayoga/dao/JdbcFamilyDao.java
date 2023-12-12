@@ -151,9 +151,12 @@ public class JdbcFamilyDao implements FamilyDao{
 
         for(Family family : familySetFromFile) {
             String familyName = family.getFamily_name();
-
+            String oldFamilyName = family.getFamily_name();
             int newFamilyId = createNewFamily(familyName);
             family.setFamily_id(newFamilyId);
+            familyName = ""+newFamilyId+"-"+familyName;
+            family.setFamily_name(familyName);
+            updateFamilyName(family);
             familySetFromFile.add(family);
             mapOfNewFamilies.put(familyName, newFamilyId);
         }
@@ -164,19 +167,19 @@ public class JdbcFamilyDao implements FamilyDao{
         for (int i = 0; i < listOfStrings.size(); i++) {
 
             Family family = new Family();
-
-            int leftLimit = 48; // numeral '0'
-            int rightLimit = 122; // letter 'z'
-            int targetStringLength = 10;
-            Random random = new Random();
-
-            String generatedFamilyName = "F " + random.ints(leftLimit, rightLimit + 1)
-                    .filter(z -> (z <= 57 || z >= 65) && (z <= 90 || z >= 97))
-                    .limit(targetStringLength)
-                    .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-                    .toString();
-
-            family.setFamily_name(generatedFamilyName);
+//
+//            int leftLimit = 48; // numeral '0'
+//            int rightLimit = 122; // letter 'z'
+//            int targetStringLength = 10;
+//            Random random = new Random();
+//
+//            String generatedFamilyName = "F " + random.ints(leftLimit, rightLimit + 1)
+//                    .filter(z -> (z <= 57 || z >= 65) && (z <= 90 || z >= 97))
+//                    .limit(targetStringLength)
+//                    .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+//                    .toString();
+//
+//            family.setFamily_name(generatedFamilyName);
 
             String thisLine = listOfStrings.get(i);
             String[] splitLine = thisLine.split(",");
@@ -188,6 +191,7 @@ public class JdbcFamilyDao implements FamilyDao{
                 String clientIdString = splitLine[clientIndex].replaceAll("[^\\d]", "");
                 int clientId = Integer.valueOf(clientIdString);
                 family.getListOfFamilyMembersClientIds().add(clientId);
+                family.setFamily_name(splitLine[clientIndex + 1]);
             }
 
             familySetFromFile.add(family);

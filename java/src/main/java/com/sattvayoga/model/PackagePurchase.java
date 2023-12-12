@@ -21,6 +21,7 @@ public class PackagePurchase {
     private boolean unlimited;
     private int package_duration;
     private String paymentId = "";
+    private String quick_details;
 
     public PackagePurchase(int package_purchase_id, int client_id, Timestamp date_purchased, int package_id,
                            int classes_remaining, Date activation_date,
@@ -57,6 +58,14 @@ public class PackagePurchase {
 
     public PackagePurchase() {
 
+    }
+
+    public String getQuick_details() {
+        return quick_details;
+    }
+
+    public void setQuick_details(String quick_details) {
+        this.quick_details = quick_details;
     }
 
     public String getPayment_description() {

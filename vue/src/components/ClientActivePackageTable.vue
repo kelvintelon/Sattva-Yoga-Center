@@ -520,15 +520,17 @@
 
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="close">
-                  Cancel
-                </v-btn>
+                
                 <v-btn
                   color="blue darken-1"
+                  large
                   text
                   @click.prevent="submitClientCheckout"
                 >
                   Save
+                </v-btn>
+                <v-btn color="red" text @click="close">
+                  Cancel
                 </v-btn>
               </v-card-actions>
             </v-card>
@@ -545,10 +547,11 @@
         v-slot:[`item.actions`]="{ item }"
         v-if="$store.state.user.username == 'admin'"
       >
-        <v-icon small class="mr-2" @click="Remove(item)">
+        <v-icon large class="mr-2" @click="Remove(item)">
           mdi-close-thick
         </v-icon>
       </template>
+      
     </v-data-table>
     <v-row>
       <v-col lg="10" md="9" sm="9">
@@ -576,6 +579,7 @@
     <!-- <v-overlay :value="overlay">
       <v-progress-circular indeterminate size="70"></v-progress-circular>
     </v-overlay> -->
+    
   </v-container>
 </template>
 
@@ -1331,17 +1335,20 @@ export default {
     Remove(item) {
       item.date_purchased = new Date(item.date_purchased).toJSON();
       // this will be an update
-      packagePurchaseService.expirePackage(item).then((response) => {
-        if (response.status == 200) {
-          alert("You have canceled this package");
-          this.getActivePurchaseServerRequest();
+      if(confirm("!!!  Confirm Package Cancellation  !!!!")) {
+          packagePurchaseService.expirePackage(item).then((response) => {
+          if (response.status == 200) {
+            alert("You have canceled this package");
+            this.getActivePurchaseServerRequest();
 
-          // call the method to update the purchase history table so it updates the expired column
-          this.$root.$refs.B.getPackageHistoryTable();
-        } else {
-          alert("Error canceling class");
-        }
-      });
+            // call the method to update the purchase history table so it updates the expired column
+            this.$root.$refs.B.getPackageHistoryTable();
+          } else {
+            alert("Error canceling class");
+          }
+        });
+      }
+      
     },
     addPackageForClient() {
       this.loading = true;

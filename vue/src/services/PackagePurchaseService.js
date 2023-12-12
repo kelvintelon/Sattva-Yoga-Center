@@ -7,6 +7,9 @@ export default {
     getActiveUserPurchasedPackages() {
       return axios.get('activeUserPackagePurchaseList')  
     },
+    getAllActivePackagesToSwap(clientId) {
+      return axios.get(`getAllActivePackagesToSwap/${clientId}`)
+    },
     getUserPurchasedPackagesByClientId(clientId) {
         return axios.get(`userPackagePurchaseListByClientId/${clientId}`)
     },

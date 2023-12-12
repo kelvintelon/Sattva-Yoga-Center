@@ -42,6 +42,8 @@ CREATE TABLE class_details
 CREATE TABLE client_details
 (
     client_id               serial      NOT NULL,
+	user_id 				int 		NOT NULL,
+	customer_id				varchar(50)	,
     last_name               varchar(60) NOT NULL,
     first_name              varchar(60) NOT NULL,
     is_client_active        boolean     NOT NULL,
@@ -57,8 +59,6 @@ CREATE TABLE client_details
     has_record_of_liability boolean     ,
     date_of_entry           timestamp   ,
 	is_allowed_video		boolean		NOT NULL,
-	user_id 				int 		NOT NULL,
-	customer_id				varchar(50)	,
     CONSTRAINT PK_client_id PRIMARY KEY (client_id),
 	CONSTRAINT FK_client_id_user_id FOREIGN KEY (user_id) REFERENCES users (user_id)
 );
@@ -162,7 +162,7 @@ CREATE TABLE client_event (
 
 CREATE TABLE families (
 	family_id serial NOT NULL,
-	family_name varchar(30) NOT NULL UNIQUE,
+	family_name varchar(30) NOT NULL,
 	CONSTRAINT PK_family PRIMARY KEY (family_id)
 );
 
