@@ -129,7 +129,8 @@ export default {
     },  
     getPaginatedClientTable() {
       clientDetailService
-        .getPaginatedClients(this.page, this.pageSize, this.search, this.sortBy, this.sortDesc)
+        .getPaginatedClients(parseInt(this.page),
+            parseInt(this.pageSize), this.search, this.sortBy, this.sortDesc)
         .then((response) => {
           if (response.status == 200) {
             this.loading = false;
@@ -156,7 +157,8 @@ export default {
     },
     resetClientTable() {
       clientDetailService
-        .getPaginatedClients(this.page, this.pageSize, this.search)
+        .getPaginatedClients(parseInt(this.page),
+            parseInt(this.pageSize), this.search)
         .then((response) => {
           if (response.status == 200) {
             this.loading = false;

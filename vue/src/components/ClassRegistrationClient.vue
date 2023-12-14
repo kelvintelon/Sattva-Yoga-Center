@@ -471,17 +471,6 @@ export default {
               if (response.status == 200) {
                 // call method that updates the client_class_table
                 alert("Removed the class from your list");
-                if (
-                  !this.isUnlimitedPackage &&
-                  this.eventClientSignUp.package_purchase_id > 0
-                ) {
-                  packagePurchaseService
-                    .incrementByOne(this.eventClientSignUp.package_purchase_id)
-                    .then((response) => {
-                      if (response.status == 200)
-                        alert("Package Incremented +1");
-                    });
-                }
                 this.isUnlimitedPackage = false;
                 this.getClientEventTable();
                 this.getEventTable();

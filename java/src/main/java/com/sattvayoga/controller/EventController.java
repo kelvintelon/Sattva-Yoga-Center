@@ -70,11 +70,25 @@ public class EventController {
     public void deleteClassForClient (@PathVariable int eventId ,Principal principal) {
         ClientDetails clientDetails = clientDetailsDao.findClientByUserId(userDao.findIdByUsername(principal.getName()));
         eventDao.deleteEventForClient(eventId, clientDetails.getClient_id());
+
+        int packagePurchaseID = eventDao.getPackagePurchaseIdByEventIdClientId(eventId,clientDetails.getClient_id());
+        PackagePurchase packagePurchase = packagePurchaseDao.getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseID);
+
+        if (!packagePurchase.isUnlimited() && packagePurchase.getPackage_id() != 22 && packagePurchaseID > 0) {
+            packagePurchaseDao.incrementByOne(packagePurchaseID);
+        }
     }
 
     @RequestMapping(value = "/removeEventForClient/{eventId}/{clientId}", method = RequestMethod.DELETE)
     public void deleteClassForClientByClientId (@PathVariable int eventId, @PathVariable int clientId) {
         eventDao.deleteEventForClient(eventId, clientId);
+
+        int packagePurchaseID = eventDao.getPackagePurchaseIdByEventIdClientId(eventId,clientId);
+        PackagePurchase packagePurchase = packagePurchaseDao.getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseID);
+
+        if (!packagePurchase.isUnlimited() && packagePurchase.getPackage_id() != 22 && packagePurchaseID > 0) {
+            packagePurchaseDao.incrementByOne(packagePurchaseID);
+        }
     }
 
     @RequestMapping(value = "/removeEventForSelectedClients", method = RequestMethod.PUT)

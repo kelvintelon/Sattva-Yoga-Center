@@ -20,6 +20,9 @@
               </v-spacer>
           </v-row>
       </form>
+      <v-overlay :value="overlay">
+      <v-progress-circular indeterminate size="70"></v-progress-circular>
+    </v-overlay>
     </v-container>
 </template>
 

@@ -54,6 +54,7 @@ public class PackagePurchaseController {
         return packagePurchaseDao.getAllUserPaginatedPackagePurchases(userId, page, pageSize, sortBy, sortDesc);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value= "/userPaginatedPackagePurchaseListByClientId/{clientId}", method = RequestMethod.GET)
     public PaginatedListOfPurchasedPackages getAllPaginatedUserPackagePurchaseByClientId(@PathVariable int clientId,
                                                                                          @RequestParam(defaultValue = "1")  int page,
@@ -64,6 +65,7 @@ public class PackagePurchaseController {
         return packagePurchaseDao.getAllUserPaginatedPackagePurchases(userId, page, pageSize, sortBy, sortDesc);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value= "/userActivePaginatedPackagePurchaseListByClientId/{clientId}", method = RequestMethod.GET)
     public PaginatedListOfPurchasedPackages getAllActivePaginatedUserPackagePurchaseByClientId(@PathVariable int clientId,
                                                                                          @RequestParam(defaultValue = "1")  int page,
@@ -74,12 +76,22 @@ public class PackagePurchaseController {
         return packagePurchaseDao.getAllActiveUserPaginatedPackagePurchases(userId, page, pageSize, sortBy, sortDesc);
     }
 
-    @ResponseStatus(HttpStatus.CREATED)
-    @RequestMapping(value = "/createPackagePurchase", method = RequestMethod.POST)
-    public void createPackagePurchase(@RequestBody PackagePurchase packagePurchase) {
-
-        packagePurchaseDao.createPackagePurchase(packagePurchase);
+    @RequestMapping(value= "/userActivePaginatedPackagePurchaseListForLoggedInUser", method = RequestMethod.GET)
+    public PaginatedListOfPurchasedPackages getAllActivePaginatedUserPackagePurchaseForLoggedInUser(Principal principal,
+                                                                                               @RequestParam(defaultValue = "1")  int page,
+                                                                                               @RequestParam(defaultValue = "10") int pageSize,
+                                                                                               @RequestParam(defaultValue = "package_purchase_id") String sortBy,
+                                                                                               @RequestParam(defaultValue = "false") boolean sortDesc) throws SQLException {
+        int userId = userDao.findIdByUsername(principal.getName());
+        return packagePurchaseDao.getAllActiveUserPaginatedPackagePurchases(userId, page, pageSize, sortBy, sortDesc);
     }
+
+//    @ResponseStatus(HttpStatus.CREATED)
+//    @RequestMapping(value = "/createPackagePurchase", method = RequestMethod.POST)
+//    public void createPackagePurchase(@RequestBody PackagePurchase packagePurchase) {
+//
+//        packagePurchaseDao.createPackagePurchase(packagePurchase);
+//    }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
@@ -88,12 +100,13 @@ public class PackagePurchaseController {
         packagePurchaseDao.resendEmail(resendEmailDTO);
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value= "/userPackagePurchaseListByUserId/{userId}", method = RequestMethod.GET)
     public List<PackagePurchase> getAllUserPackagePurchaseByUserId(@PathVariable int userId) throws SQLException {
         return packagePurchaseDao.getAllUserPackagePurchases(userId);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/getAllActivePackagesToSwap/{clientId}", method = RequestMethod.GET)
     public List<PackagePurchase> getAllActivePackagesToSwap(@PathVariable int clientId) {
         return packagePurchaseDao.getAllActivatePackagesToSwap(clientId);
@@ -135,11 +148,13 @@ public class PackagePurchaseController {
         return giftCardResponse;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path="/getAllSharedActiveQuantityPackagesByClientId/{clientId}")
     public List<PackagePurchase> getAllSharedActiveQuantityPackagesByClientId(@PathVariable int clientId){
         return packagePurchaseDao.getAllSharedActiveQuantityPackages(clientId);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value= "/expirePackage", method = RequestMethod.PUT)
     public boolean expirePackage(@RequestBody PackagePurchase packagePurchase) {
         return packagePurchaseDao.expirePackage(packagePurchase);
@@ -155,10 +170,10 @@ public class PackagePurchaseController {
         return packagePurchaseDao.updatePackage(packagePurchase);
     }
 
-    @RequestMapping(value= "/increment/{packagePurchaseId}", method = RequestMethod.PUT)
-    public boolean incrementByOne(@PathVariable int packagePurchaseId){
-        return packagePurchaseDao.incrementByOne(packagePurchaseId);
-    }
+//    @RequestMapping(value= "/increment/{packagePurchaseId}", method = RequestMethod.PUT)
+//    public boolean incrementByOne(@PathVariable int packagePurchaseId){
+//        return packagePurchaseDao.incrementByOne(packagePurchaseId);
+//    }
 
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/swapPackages", method = RequestMethod.POST)

@@ -658,7 +658,7 @@ export default {
     getAutoCompletedFirstClientTable() {
 
       clientDetailService
-        .getPaginatedClients(this.firstAutocompletePage, this.pageSize, this.firstAutocompleteSearch)
+        .getPaginatedClients(this.firstAutocompletePage, parseInt(this.pageSize), this.firstAutocompleteSearch)
         .then((response) => {
           if (response.status == 200) {
             this.paginatedObject = response.data;
@@ -734,7 +734,7 @@ export default {
     },
     getAutoCompletedSecondClientTable() {
       clientDetailService
-        .getPaginatedClients(this.secondAutocompletePage, this.pageSize, this.secondAutocompleteSearch)
+        .getPaginatedClients(this.secondAutocompletePage, parseInt(this.pageSize), this.secondAutocompleteSearch)
         .then((response) => {
           if (response.status == 200) {
             this.paginatedObject = response.data;
@@ -988,7 +988,8 @@ export default {
       this.loading = true;
       this.overlay = !this.overlay;
       clientDetailService
-        .getPaginatedClients(this.page, this.pageSize, this.search, this.sortBy, this.sortDesc)
+        .getPaginatedClients(parseInt(this.page),
+            parseInt(this.pageSize), this.search, this.sortBy, this.sortDesc)
         .then((response) => {
           if (response.status == 200) {
             this.loading = false;
@@ -1043,7 +1044,7 @@ export default {
     retrieveDuplicateClients() {
 
 
-      clientDetailService.getPaginatedDuplicateClients(this.duplicateAutocompletePage, this.pageSize, this.duplicateAutocompleteSearch).then((response) => {
+      clientDetailService.getPaginatedDuplicateClients(this.duplicateAutocompletePage, parseInt(this.pageSize), this.duplicateAutocompleteSearch).then((response) => {
         if (response.status == 200) {
           let paginatedObject = response.data;
           this.autocompleteDuplicateClientList = paginatedObject.listOfClients;

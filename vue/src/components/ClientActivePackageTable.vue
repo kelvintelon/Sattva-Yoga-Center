@@ -1217,8 +1217,8 @@ export default {
         packagePurchaseService
           .getActivePaginatedUserPurchasedPackagesByClientId(
             parseInt(this.$route.params.clientId),
-            this.page,
-            this.pageSize,
+            parseInt(this.page),
+            parseInt(this.pageSize),
             this.sortBy,
             this.sortDesc
           )
@@ -1275,10 +1275,9 @@ export default {
           });
       } else {
         packagePurchaseService
-          .getActivePaginatedUserPurchasedPackagesByClientId(
-            this.$store.state.clientDetails.client_id,
-            this.page,
-            this.pageSize,
+          .getAllActivePaginatedUserPackagePurchaseForLoggedInUser(
+            parseInt(this.page),
+            parseInt(this.pageSize),
             this.sortBy,
             this.sortDesc
           )

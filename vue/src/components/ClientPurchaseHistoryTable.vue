@@ -448,7 +448,8 @@ export default {
       this.loading = true;
       if (this.$store.state.user.username == "admin") {
         packagePurchaseService
-        .getPaginatedUserPurchasedPackagesByClientId(parseInt(this.$route.params.clientId),this.page, this.pageSize, this.sortBy, this.sortDesc)
+        .getPaginatedUserPurchasedPackagesByClientId(parseInt(this.$route.params.clientId),parseInt(this.page),
+            parseInt(this.pageSize), this.sortBy, this.sortDesc)
           .then((response) => {
             if (response.status == 200) {
               this.loading = false;
@@ -469,7 +470,8 @@ export default {
             }
           });
       } else {
-        packagePurchaseService.getPaginatedUserPurchasedPackages(this.page, this.pageSize, this.sortBy, this.sortDesc).then((response) => {
+        packagePurchaseService.getPaginatedUserPurchasedPackages(parseInt(this.page),
+            parseInt(this.pageSize), this.sortBy, this.sortDesc).then((response) => {
           if (response.status == 200) {
               this.loading = false;
               this.paginatedObject = response.data;

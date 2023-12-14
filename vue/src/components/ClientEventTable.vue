@@ -581,30 +581,12 @@ export default {
             .then((response) => {
               if (response.status == 200) {
                 // call method that updates the client_class_table
-
-                if (
-                  !this.hasSubscriptionPackage &&
-                  this.eventClientSignUp.package_purchase_id > 0
-                ) {
-                  packagePurchaseService
-                    .incrementByOne(this.eventClientSignUp.package_purchase_id)
-                    .then((response) => {
-                      if (response.status == 200) {
-                        response;
-                        alert("Removed Class Successfully");
-                        // this.listOfSignedUpClients.splice(
-                        //   this.indexOfClientToBeDeleted,
-                        //   1
-                        // );
-                      }
-                    });
-                } else {
                   alert("Removed Class Successfully");
                   // this.listOfSignedUpClients.splice(
                   //   this.indexOfClientToBeDeleted,
                   //   1
                   // );
-                }
+                
                 this.getClientEventTable();
                 this.$root.$refs.A.getActivePurchaseServerRequest();
                 this.$root.$refs.B.getPackageHistoryTable();

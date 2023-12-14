@@ -217,7 +217,7 @@ export default {
         getAutoCompletedFirstClientTable() {
             clientDetailService
                 .getPaginatedClientsForFamily(parseInt(this.$route.params.familyId),
-                 this.firstAutocompletePage, this.pageSize, this.firstAutocompleteSearch)
+                 parseInt(this.firstAutocompletePage), parseInt(this.pageSize), this.firstAutocompleteSearch)
                 .then((response) => {
                 if (response.status == 200) {
                     this.paginatedObject = response.data;

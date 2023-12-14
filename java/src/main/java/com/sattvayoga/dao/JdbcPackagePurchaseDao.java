@@ -362,7 +362,13 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             BigDecimal totalAmountPaid = new BigDecimal(totalAmountPaidString);
             packagePurchase.setTotal_amount_paid(totalAmountPaid);
 
-            String paymentType = formatCardType(splitLine[columnMap.get("Payment Method")]);
+            String paymentType = "";
+            if (splitLine.length > 14 && columnMap.containsKey("Payment Method")) {
+                // Access the element at index 14
+                paymentType = formatCardType(splitLine[columnMap.get("Payment Method")]);
+
+            }
+
             packagePurchase.setPaymentId(paymentType);
 
             Set<Integer> packagePurchaseIds = new HashSet<>();
@@ -1126,15 +1132,27 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     }
 
     public static Timestamp convertDateStringToTimestamp(String dateString) {
-        // Define the date format
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yy");
+        // Define the date formats
+        SimpleDateFormat dateFormat1 = new SimpleDateFormat("dd-MMM-yy");
+        SimpleDateFormat dateFormat2 = new SimpleDateFormat("MM/dd/yyyy");
 
-        // Parse the input date string
+        // Attempt to parse the input date string with the first format
         java.util.Date date = null;
         try {
-            date = dateFormat.parse(dateString);
-        } catch (ParseException e) {
-            System.out.println("Error parsing date in CSV");
+            date = dateFormat1.parse(dateString);
+        } catch (ParseException e1) {
+            // If parsing fails with the first format, try the second format
+            try {
+                date = dateFormat2.parse(dateString);
+            } catch (ParseException e2) {
+                System.out.println("Error parsing date in both formats: " + dateString);
+            }
+        }
+
+        // If date is still null, both formats failed, handle the error as needed
+        if (date == null) {
+            System.out.println("Error parsing date in both formats: " + dateString);
+            return null; // Or throw an exception, depending on your requirements
         }
 
         // Convert java.util.Date to java.sql.Timestamp
