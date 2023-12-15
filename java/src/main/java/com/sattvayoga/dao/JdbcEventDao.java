@@ -833,7 +833,6 @@ public class JdbcEventDao implements EventDao {
         Map<Integer, List<PackagePurchase>> mapOfSales = getSalesAsMap();
 
         for (int i = 0; i < listOfStringsFromBufferedReader.size(); i++) {
-            System.out.println(i);
             ClientEvent clientEvent = new ClientEvent();
 
             String thisLine = listOfStringsFromBufferedReader.get(i);
@@ -851,8 +850,6 @@ public class JdbcEventDao implements EventDao {
                 break;
             }
 
-
-
             int packagePurchaseId = 0;
 
             if (mapOfSales.get(saleId).size() > 1) {
@@ -863,7 +860,7 @@ public class JdbcEventDao implements EventDao {
                         break;
                     }
                 }
-            } else  if (mapOfSales.get(saleId).size() == 1) {
+            } else if (mapOfSales.get(saleId).size() == 1) {
                 PackagePurchase currentPackagePurchase = mapOfSales.get(saleId).get(0);
                 packagePurchaseId = currentPackagePurchase.getPackage_purchase_id();
             } else {
