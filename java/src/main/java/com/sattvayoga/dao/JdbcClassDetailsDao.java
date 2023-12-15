@@ -61,7 +61,7 @@ public class JdbcClassDetailsDao implements ClassDetailsDao {
             }
 
             // set a list of clients for each class calling helper method
-            classDetails.setClient_list(getClientDetailsByClassId(classDetails.getClass_id()));
+//            classDetails.setClient_list(getClientDetailsByClassId(classDetails.getClass_id()));
 
             allClasses.add(classDetails);
         }

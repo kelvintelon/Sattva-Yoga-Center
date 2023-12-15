@@ -775,12 +775,12 @@ public class JdbcEventDao implements EventDao {
 
         //Batch create;
         if (!setOfEventsFromFile.isEmpty()) {
-            batchCreateEvents(setOfEventsFromFile);
+            batchCreateEventsWithEventId(setOfEventsFromFile);
         }
 
         long endTimeForEntireUpload = System.nanoTime();
         long totalTimeForEntireUpload = endTimeForEntireUpload - startTimeForEntireUpload;
-        System.out.println("Total time for entire upload in : " + getReadableTime(totalTimeForEntireUpload) + " / " + totalTimeForEntireUpload + " ns");
+//        System.out.println("Total time for entire upload in : " + getReadableTime(totalTimeForEntireUpload) + " / " + totalTimeForEntireUpload + " ns");
 
     }
 
@@ -983,8 +983,12 @@ public class JdbcEventDao implements EventDao {
     }
 
     private void readLinesFromListAndPopulateSet(List<String> listOfStringsFromBufferedReader, Set<ClassEvent> setOfEventsToPopulate, HashMap<String, Integer> columnMap) {
+        int nextHighestEventId = findHighestEventId()+500000;
+
         for (int i = 0; i < listOfStringsFromBufferedReader.size(); i++) {
             ClassEvent classEvent = new ClassEvent();
+
+            classEvent.setEvent_id(nextHighestEventId);
 
             String thisLine = listOfStringsFromBufferedReader.get(i);
             String[] splitLine = thisLine.split(",");
@@ -1032,7 +1036,39 @@ public class JdbcEventDao implements EventDao {
             classEvent.setTimed(true);
 
             setOfEventsToPopulate.add(classEvent);
+
+            nextHighestEventId++;
         }
+    }
+
+    private int findHighestEventId() {
+        String sql = "SELECT MAX(event_id) FROM events";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+        if (result.next()) {
+            int max = result.getInt("max");
+            return max;
+        }
+        return 0;
+    }
+
+    public void batchCreateEventsWithEventId(final Collection<ClassEvent> events) {
+
+        jdbcTemplate.batchUpdate(
+                "INSERT INTO events (event_id, class_id, event_name, start_time, " +
+                        "end_time, color, timed, is_visible_online, is_paid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                events,
+                100,
+                (PreparedStatement ps, ClassEvent event) -> {
+                    ps.setInt(1, event.getEvent_id());
+                    ps.setInt(2, event.getClass_id());
+                    ps.setString(3, event.getEvent_name());
+                    ps.setTimestamp(4, event.getStart_time());
+                    ps.setTimestamp(5, event.getEnd_time());
+                    ps.setString(6, event.getColor());
+                    ps.setBoolean(7, event.isTimed());
+                    ps.setBoolean(8, event.isIs_visible_online());
+                    ps.setBoolean(9, event.isIs_paid());
+                });
     }
 
     public void batchCreateEvents(final Collection<ClassEvent> events) {
@@ -2686,7 +2722,7 @@ public class JdbcEventDao implements EventDao {
             }
 
             // set a list of clients for each class calling helper method
-            classDetails.setClient_list(getClientDetailsByClassId(classDetails.getClass_id()));
+//            classDetails.setClient_list(getClientDetailsByClassId(classDetails.getClass_id()));
 
             allClasses.add(classDetails);
         }

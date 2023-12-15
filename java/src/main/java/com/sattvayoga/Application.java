@@ -42,10 +42,11 @@ class WorkerThread extends Thread {
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
             EventDao eventDao = context.getBean(EventDao.class);
 
+
             try {
                 eventDao.updateEventServerTask();
             } catch (Exception e) {
-                System.out.println("ERROR ON EVENTS UPDATE THREAD");;
+                System.out.println("ERROR ON EVENTS UPDATE THREAD. Caused by: " + e.getCause());;
             }
 
             try {
