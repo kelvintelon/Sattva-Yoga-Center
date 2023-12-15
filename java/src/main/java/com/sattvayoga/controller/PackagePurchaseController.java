@@ -7,7 +7,6 @@ import com.sattvayoga.dto.order.ResendEmailDTO;
 import com.sattvayoga.model.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -119,7 +118,7 @@ public class PackagePurchaseController {
         int userId = userDao.findIdByUsername(principal.getName());
         int clientId = clientDetailsDao.findClientByUserId(userId).getClient_id();
         //TODO: Account for consolidation
-        return packagePurchaseDao.getAllSharedActiveQuantityPackages(clientId);
+        return packagePurchaseDao.getAllSharedActivePackages(clientId);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -151,7 +150,7 @@ public class PackagePurchaseController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path="/getAllSharedActiveQuantityPackagesByClientId/{clientId}")
     public List<PackagePurchase> getAllSharedActiveQuantityPackagesByClientId(@PathVariable int clientId){
-        return packagePurchaseDao.getAllSharedActiveQuantityPackages(clientId);
+        return packagePurchaseDao.getAllSharedActivePackages(clientId);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

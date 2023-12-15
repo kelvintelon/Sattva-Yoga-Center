@@ -152,9 +152,9 @@ public class EventController {
 
             // shared package reconcile
             if(packagePurchase.getPackage_purchase_id() == 0){
-                List<PackagePurchase> allActiveSharedPackages = packagePurchaseDao.getAllSharedActiveQuantityPackages(clientId);
+                List<PackagePurchase> allActiveSharedPackages = packagePurchaseDao.getAllSharedActivePackages(clientId);
                 if(allActiveSharedPackages.size()>0){
-                    packagePurchase = allActiveSharedPackages.get(0);
+                    packagePurchase = packagePurchaseDao.filterPackageList(allActiveSharedPackages, classEventList.get(i));
                 }
             }
 
@@ -360,9 +360,10 @@ public class EventController {
 
                 // if user doesn't have any usable package, look for shared packages;
                 if (packagePurchase.getPackage_purchase_id() == 0) {
-                    List<PackagePurchase> allActiveSharedPackages = packagePurchaseDao.getAllSharedActiveQuantityPackages(clientEvent.getClient_id());
+                    List<PackagePurchase> allActiveSharedPackages = packagePurchaseDao.getAllSharedActivePackages(clientEvent.getClient_id());
                     if (allActiveSharedPackages.size() > 0) {
-                        packagePurchase = allActiveSharedPackages.get(0);
+                        //Come up with logic that filters for
+                        packagePurchase = packagePurchaseDao.filterPackageList(allActiveSharedPackages,classEvent);
                     }
                 }
 

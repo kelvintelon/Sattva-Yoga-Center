@@ -1042,6 +1042,7 @@ export default {
         .reconcileClassesForClient(parseInt(this.$route.params.clientId))
         .then((response) => {
           if (response.status == 200) {
+            this.snackBarReconcilePackages = false;
             this.$root.$refs.C.getClientDetails();
             this.loading = false;
             this.overlay = false;

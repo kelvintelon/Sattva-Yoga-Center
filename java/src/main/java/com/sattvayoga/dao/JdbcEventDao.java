@@ -2185,7 +2185,7 @@ public class JdbcEventDao implements EventDao {
                 "ORDER BY events.start_time";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, user_id);
         ClientDetails clientDetails = findClientByUserId(user_id);
-        List<PackagePurchase> sharedPackages = getAllSharedActiveQuantityPackages(clientDetails.getClient_id());
+        List<PackagePurchase> sharedPackages = getAllSharedActivePackages(clientDetails.getClient_id());
         Set<Integer> sharedPackageIdsInSet = new HashSet<>();
 
         for (int i = 0; i < sharedPackages.size(); i++) {
@@ -2215,19 +2215,26 @@ public class JdbcEventDao implements EventDao {
         return clientDetails;
     }
 
-    public List<PackagePurchase> getAllSharedActiveQuantityPackages(int client_id) {
+    public List<PackagePurchase> getAllSharedActivePackages(int client_id) {
         List<PackagePurchase> packages = new ArrayList<>();
         String sql = "SELECT package_purchase.*\n" +
                 "from package_purchase\n" +
-                "JOIN client_family ON package_purchase.client_id = client_family.client_id\n" +
+                "JOIN package_details on package_purchase.package_id = package_details.package_id " +
+                "JOIN client_family ON package_purchase.client_id = client_family.client_id \n" +
                 "WHERE client_family.family_id = \n" +
                 "(select family_id from client_family where client_family.client_id = ?) \n" +
                 "AND client_family.client_id != ?\n" +
-                "AND ( (classes_remaining > 0 AND package_purchase.expiration_date > NOW()) ) \n" +
+                "AND ( (classes_remaining > 0 AND package_purchase.expiration_date > NOW())  \n" +
+                "OR (package_details.unlimited = true AND package_purchase.expiration_date > NOW()) ) " +
                 "ORDER BY expiration_date;";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, client_id, client_id);
         while (result.next()) {
-            packages.add(mapRowToPackagePurchase(result));
+
+            PackagePurchase packagePurchase = mapRowToPackagePurchase((result));
+
+            packagePurchase.setUnlimited(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
+            packages.add(packagePurchase);
+
         }
         return packages;
     }

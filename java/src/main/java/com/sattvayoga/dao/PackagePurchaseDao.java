@@ -25,7 +25,7 @@ public interface PackagePurchaseDao {
 
     PackagePurchase filterPackageList(List<PackagePurchase> packagePurchaseList, ClassEvent classEvent);
 
-    List<PackagePurchase> getAllSharedActiveQuantityPackages(int client_id);
+    List<PackagePurchase> getAllSharedActivePackages(int client_id);
 
     List<PackagePurchase> getAllActivatePackagesToSwap(int client_id);
 
