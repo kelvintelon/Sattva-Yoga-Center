@@ -50,11 +50,11 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         String searchString = "";
         if (!search.isEmpty()) {
             search = "%" + search + "%";
-            searchString = " WHERE first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ?";
+            searchString = " WHERE (first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ?) OR (CONCAT(first_name, ' ', last_name) ILIKE ?) ";
 
             String sql = "SELECT * FROM client_details" + searchString + " ORDER BY " + sortBy + " " + sortDirection + offsetString;
 
-            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, search, search, search, offset);
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, search, search, search, search, offset);
 
             while (result.next()) {
                 ClientDetails clientDetails = mapRowToClient(result);
@@ -74,7 +74,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
             String countSql = "Select COUNT(*) from client_details" + searchString;
 
-            int count = jdbcTemplate.queryForObject(countSql, Integer.class,  search, search, search);
+            int count = jdbcTemplate.queryForObject(countSql, Integer.class,  search, search, search, search);
 
             paginatedListOfClients.setTotalRows(count);
             return paginatedListOfClients;
@@ -129,13 +129,13 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         String searchString = "";
         if (!search.isEmpty()) {
             search = "%" + search + "%";
-            searchString = " WHERE client_id NOT IN (SELECT client_id from client_event WHERE event_id = ?) AND (first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ?)";
+            searchString = " WHERE client_id NOT IN (SELECT client_id from client_event WHERE event_id = ?) AND (first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ?) OR (CONCAT(first_name, ' ', last_name) ILIKE ?) ";
 
             // TODO: Here is where you filter for clients that are already tied to this specific event's attendance
 
             String sql = "SELECT * FROM client_details" + searchString + " ORDER BY " + sortBy + " " + sortDirection + offsetString;
 
-            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, eventId, search, search, search, offset);
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, eventId, search, search, search, search, offset);
 
             while (result.next()) {
                 ClientDetails clientDetails = mapRowToClient(result);
@@ -155,7 +155,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
             String countSql = "Select COUNT(*) from client_details" + searchString;
 
-            int count = jdbcTemplate.queryForObject(countSql, Integer.class, eventId, search, search, search);
+            int count = jdbcTemplate.queryForObject(countSql, Integer.class, eventId, search, search, search, search);
 
             paginatedListOfClients.setTotalRows(count);
             return paginatedListOfClients;
@@ -209,13 +209,13 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
         String searchString = "";
         if (!search.isEmpty()) {
             search = "%" + search + "%";
-            searchString = " WHERE client_id NOT IN (SELECT client_id from client_family WHERE family_id = ?) AND (first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ?)";
+            searchString = " WHERE client_id NOT IN (SELECT client_id from client_family WHERE family_id = ?) AND (first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ?) OR (CONCAT(first_name, ' ', last_name) ILIKE ?) ";
 
             // TODO: Here is where you filter for clients that are already tied to this specific event's attendance
 
             String sql = "SELECT * FROM client_details" + searchString + " ORDER BY " + sortBy + " " + sortDirection + offsetString;
 
-            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, familyId, search, search, search, offset);
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, familyId, search, search, search, search, offset);
 
             while (result.next()) {
                 ClientDetails clientDetails = mapRowToClient(result);
@@ -235,7 +235,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
             String countSql = "Select COUNT(*) from client_details" + searchString;
 
-            int count = jdbcTemplate.queryForObject(countSql, Integer.class, familyId, search, search, search);
+            int count = jdbcTemplate.queryForObject(countSql, Integer.class, familyId, search, search, search, search);
 
             paginatedListOfClients.setTotalRows(count);
             return paginatedListOfClients;
@@ -291,11 +291,11 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
         if (!search.isEmpty()) {
             search = "%" + search + "%";
-            searchString = " WHERE first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ?";
+            searchString = " WHERE (first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ?) OR (CONCAT(first_name, ' ', last_name) ILIKE ?) ";
 
             String sql = "SELECT * FROM client_details" + searchString + " ORDER BY client_id" + offsetString;
 
-            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, search, search, search, offset);
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, search, search, search, search, offset);
 
             while (result.next()) {
                 ClientDetails clientDetails = mapRowToClient(result);
@@ -315,7 +315,7 @@ public class JdbcClientDetailsDao implements ClientDetailsDao {
 
             String countSql = "Select COUNT(*) from client_details" + searchString;
 
-            int count = jdbcTemplate.queryForObject(countSql, Integer.class,  search, search, search);
+            int count = jdbcTemplate.queryForObject(countSql, Integer.class,  search, search, search, search);
 
             paginatedListOfClients.setTotalRows(count);
             return paginatedListOfClients;
