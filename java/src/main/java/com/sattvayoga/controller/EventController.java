@@ -81,9 +81,11 @@ public class EventController {
 
     @RequestMapping(value = "/removeEventForClient/{eventId}/{clientId}", method = RequestMethod.DELETE)
     public void deleteClassForClientByClientId (@PathVariable int eventId, @PathVariable int clientId) {
-        eventDao.deleteEventForClient(eventId, clientId);
 
         int packagePurchaseID = eventDao.getPackagePurchaseIdByEventIdClientId(eventId,clientId);
+
+        eventDao.deleteEventForClient(eventId, clientId);
+
         PackagePurchase packagePurchase = packagePurchaseDao.getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseID);
 
         if (!packagePurchase.isUnlimited() && packagePurchase.getPackage_id() != 22 && packagePurchaseID > 0) {
