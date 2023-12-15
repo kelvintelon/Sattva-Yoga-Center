@@ -983,7 +983,7 @@ public class JdbcEventDao implements EventDao {
     }
 
     private void readLinesFromListAndPopulateSet(List<String> listOfStringsFromBufferedReader, Set<ClassEvent> setOfEventsToPopulate, HashMap<String, Integer> columnMap) {
-        int nextHighestEventId = findHighestEventId()+500000;
+        int nextHighestEventId = findHighestEventId()+1;
 
         for (int i = 0; i < listOfStringsFromBufferedReader.size(); i++) {
             ClassEvent classEvent = new ClassEvent();
@@ -1042,7 +1042,7 @@ public class JdbcEventDao implements EventDao {
     }
 
     private int findHighestEventId() {
-        String sql = "SELECT MAX(event_id) FROM events";
+        String sql = "SELECT MAX(event_id) FROM events WHERE event_id < 500000";
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
         if (result.next()) {
             int max = result.getInt("max");

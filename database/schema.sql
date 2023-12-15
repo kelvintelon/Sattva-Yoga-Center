@@ -150,6 +150,10 @@ CREATE TABLE events (
 -- 	CONSTRAINT FK_event_class_id FOREIGN KEY (class_id) REFERENCES class_details (class_id)
 );
 
+CREATE SEQUENCE event_id_seq START 500001 OWNED BY events.event_id;
+
+ALTER TABLE events ALTER COLUMN event_id SET DEFAULT nextval('event_id_seq');
+
 CREATE TABLE client_event (
 	client_id int NOT NULL,
 	event_id int NOT NULL,
