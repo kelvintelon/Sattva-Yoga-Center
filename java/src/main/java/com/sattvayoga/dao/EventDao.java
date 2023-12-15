@@ -60,4 +60,6 @@ public interface EventDao {
 
     void uploadEventCsv(MultipartFile multipartFile);
 
+    void uploadAttendanceCsv(MultipartFile multipartFile);
+
 }

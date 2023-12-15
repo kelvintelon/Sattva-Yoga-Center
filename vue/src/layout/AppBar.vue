@@ -306,11 +306,11 @@ export default {
           { text: "Class Management", route: "/classManagement" },
           { text: "Teacher Management", route: "/teacherManagement" },
           { text: "Client Management", route: "/clientManagement" },
+          { text: "Shared Packages", route: "/familyManagement"},
           { text: "Package Management", route: "/packageManagement" },
           { text: "Reset Password", route: "/resetPassword" },
           { text: "Videos", route: "/videos" },
           { text: "Database Upload", route: "/databaseUpload" },
-          { text: "Shared Packages Management", route: "/familyManagement"},
           { text: "Logout", route: "/logout" }
         );
       } else if (this.$store.state.token != "") {

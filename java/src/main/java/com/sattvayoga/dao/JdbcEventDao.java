@@ -724,6 +724,7 @@ public class JdbcEventDao implements EventDao {
         }
     }
 
+
     @Override
     public void uploadEventCsv(MultipartFile multipartFile) {
 
@@ -759,7 +760,7 @@ public class JdbcEventDao implements EventDao {
 
         readLinesFromListAndPopulateSet(listOfStringsFromBufferedReader,setOfEventsFromFile, mapColumns);
 
-        //TODO: Check for duplicates
+        //Check for duplicates
         Map<Timestamp, Timestamp> mapOfExistingEvents = getMapOfExistingEvents();
 
         List<ClassEvent> listOfEventsReadFromFile = new ArrayList<>(setOfEventsFromFile);
@@ -772,7 +773,7 @@ public class JdbcEventDao implements EventDao {
             }
         }
 
-        //TODO: Batch create;
+        //Batch create;
         if (!setOfEventsFromFile.isEmpty()) {
             batchCreateEvents(setOfEventsFromFile);
         }
@@ -781,6 +782,187 @@ public class JdbcEventDao implements EventDao {
         long totalTimeForEntireUpload = endTimeForEntireUpload - startTimeForEntireUpload;
         System.out.println("Total time for entire upload in : " + getReadableTime(totalTimeForEntireUpload) + " / " + totalTimeForEntireUpload + " ns");
 
+    }
+
+    @Override
+    public void uploadAttendanceCsv(MultipartFile multipartFile) {
+
+        int count = 0;
+
+        long startTimeForEntireUpload = System.nanoTime();
+
+        List<String> listOfStringsFromBufferedReader = new ArrayList<>();
+
+        Set<ClientEvent> setOfClientEventsFromFile = new HashSet<>();
+
+        HashMap<String,Integer> mapColumns = new HashMap<>();
+
+        try (BufferedReader fileReader = new BufferedReader(new
+                InputStreamReader(multipartFile.getInputStream(), "UTF-8"))) {
+
+            String line;
+            while ((line = fileReader.readLine()) != null) {
+
+                if (count > 0) {
+
+                    listOfStringsFromBufferedReader.add(line);
+
+                } else {
+                    String[] firstLine =  line.split(",");
+                    mapColumns = populateColumnsForAttendanceMap(firstLine);
+                }
+                count++;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        readLinesFromListAndPopulateAttendanceSet(listOfStringsFromBufferedReader, setOfClientEventsFromFile, mapColumns);
+
+        batchCreateAttendance(setOfClientEventsFromFile);
+
+        long endTimeForEntireUpload = System.nanoTime();
+
+        long totalTimeForEntireUpload = endTimeForEntireUpload - startTimeForEntireUpload;
+//        System.out.println("Total time for entire upload in : " + getReadableTime(totalTimeForEntireUpload) + " / " + totalTimeForEntireUpload + " ns");
+
+    }
+
+    private void readLinesFromListAndPopulateAttendanceSet(List<String> listOfStringsFromBufferedReader, Set<ClientEvent> setOfClientEventsToPopulate, HashMap<String, Integer> columnMap) {
+
+        Map<Integer, List<PackagePurchase>> mapOfSales = getSalesAsMap();
+
+        for (int i = 0; i < listOfStringsFromBufferedReader.size(); i++) {
+            System.out.println(i);
+            ClientEvent clientEvent = new ClientEvent();
+
+            String thisLine = listOfStringsFromBufferedReader.get(i);
+            String[] splitLine = thisLine.split(",");
+
+            int eventId = 0;
+            int clientId = 0;
+            int saleId = 0;
+
+            if (splitLine.length > 0) {
+                eventId = Integer.valueOf(splitLine[columnMap.get("Event_ID")]);
+                clientId = Integer.valueOf(splitLine[columnMap.get("Client ID")]);
+                saleId = Integer.valueOf(splitLine[columnMap.get("SaleID")]);
+            } else {
+                break;
+            }
+
+
+
+            int packagePurchaseId = 0;
+
+            if (mapOfSales.get(saleId).size() > 1) {
+                for (int j = 0; j < mapOfSales.get(saleId).size(); j++) {
+                    PackagePurchase currentPackagePurchase = mapOfSales.get(saleId).get(j);
+                    if (currentPackagePurchase.getPackage_id() == 22) {
+                        packagePurchaseId = currentPackagePurchase.getPackage_purchase_id();
+                        break;
+                    }
+                }
+            } else  if (mapOfSales.get(saleId).size() == 1) {
+                PackagePurchase currentPackagePurchase = mapOfSales.get(saleId).get(0);
+                packagePurchaseId = currentPackagePurchase.getPackage_purchase_id();
+            } else {
+                System.out.println("No package purchase for sale ID: " + saleId);
+            }
+
+
+            clientEvent.setEvent_id(eventId);
+            clientEvent.setClient_id(clientId);
+            clientEvent.setPackage_purchase_id(packagePurchaseId);
+
+            setOfClientEventsToPopulate.add(clientEvent);
+        }
+    }
+
+    public void batchCreateAttendance(final Collection<ClientEvent> clientEvents) {
+
+        jdbcTemplate.batchUpdate(
+                "INSERT INTO client_event (event_id, client_id, package_purchase_id) VALUES (?, ?, ?)",
+                clientEvents,
+                100,
+                (PreparedStatement ps, ClientEvent clientEvent) -> {
+                    ps.setInt(1, clientEvent.getEvent_id());
+                    ps.setInt(2, clientEvent.getClient_id());
+                    ps.setInt(3, clientEvent.getPackage_purchase_id());
+
+                });
+    }
+
+    public static HashMap<String, Integer> populateColumnsForAttendanceMap(String[] array) {
+        HashMap<String, Integer> columnMap = new HashMap<>();
+
+        for (int i = 0; i < array.length; i++) {
+            String currentString = array[i];
+            if (currentString.contains("Event_ID")) {
+                columnMap.put("Event_ID", i);
+            } else if (currentString.contains("Client ID")) {
+                columnMap.put("Client ID", i);
+            } else if (currentString.contains("SaleID")) {
+                columnMap.put("SaleID", i);
+            } else if (currentString.contains("PackageID")) {
+                columnMap.put("PackageID", i);
+            }
+
+        }
+
+        return columnMap;
+    }
+
+    public Map<Integer,List<PackagePurchase> > getSalesAsMap() {
+        Map<Integer, List<PackagePurchase> > mapOfSales = new HashMap<>();
+
+        String sql = "SELECT * FROM sales";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
+
+        Map<Integer, Integer> mapOfIds = getMapOfPackageIdsWithPackagePurchaseId();
+
+        while(results.next()) {
+            Sale sale = mapRowToSale(results);
+            List<PackagePurchase> listOfPackages = new ArrayList<>();
+
+            for (int i = 0; i < sale.getPackages_purchased_array().length; i++) {
+                PackagePurchase packagePurchase = new PackagePurchase();
+                int packagePurchaseId = sale.getPackages_purchased_array()[i];
+                if (mapOfIds.containsKey(packagePurchaseId)) {
+                    packagePurchase.setPackage_id(mapOfIds.get(packagePurchaseId));
+                }
+                packagePurchase.setPackage_purchase_id(packagePurchaseId);
+                listOfPackages.add(packagePurchase);
+            }
+            mapOfSales.put(sale.getSale_id(), listOfPackages);
+        }
+
+        return mapOfSales;
+    }
+
+    public Map<Integer, Integer> getMapOfPackageIdsWithPackagePurchaseId() {
+        Map<Integer, Integer> mapOfPackageIdsWithPackagePurchaseIds = new HashMap<>();
+        int packageId = 0;
+        int packagePurchaseId = 0;
+        String sql = "SELECT package_purchase_id, package_id FROM package_purchase ";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+        while (result.next()) {
+            packagePurchaseId = result.getInt("package_purchase_id");
+            packageId = result.getInt("package_id");
+
+            mapOfPackageIdsWithPackagePurchaseIds.put(packagePurchaseId, packageId);
+        }
+        return mapOfPackageIdsWithPackagePurchaseIds;
+    }
+
+    public boolean IsSubscriptionOrNot(int packageId) {
+        boolean isSubscription = false;
+        String sql = "SELECT unlimited from package_details WHERE package_id = ?";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, packageId);
+        if (result.next()) {
+            return result.getBoolean("unlimited");
+        }
+        return isSubscription;
     }
 
     public static HashMap<String, Integer> populateColumnsForMap(String[] array) {
@@ -2393,6 +2575,30 @@ public class JdbcEventDao implements EventDao {
         clientDetails.setDate_of_entry(rs.getTimestamp("date_of_entry"));
         clientDetails.setUser_id(rs.getInt("user_id"));
         return clientDetails;
+    }
+
+    private Sale mapRowToSale(SqlRowSet rs) {
+        Sale sale = new Sale();
+        sale.setSale_id(rs.getInt("sale_id"));
+        Object newObject = rs.getObject("packages_purchased_array");
+
+        if (newObject instanceof Array) {
+            Array tempArray = (Array) newObject;
+            Object[] tempObjectArray = new Object[0];
+            try {
+                tempObjectArray = (Object[]) tempArray.getArray();
+            } catch (SQLException e) {
+                System.out.println("Error retrieving packages purchased array from Sale ID");
+            }
+            int[] packagesPurchasedArray = new int[tempObjectArray.length];
+            for (int i = 0; i < tempObjectArray.length; i++) {
+                packagesPurchasedArray[i] = Integer.valueOf(tempObjectArray[i].toString());
+            }
+            sale.setPackages_purchased_array(packagesPurchasedArray);
+        }
+        sale.setClient_id(rs.getInt("client_id"));
+        sale.setBatch_number(rs.getInt("batch_number"));
+        return sale;
     }
 
     private ClientEvent mapRowToClientEvent(SqlRowSet rs) {

@@ -67,14 +67,14 @@ CREATE SEQUENCE client_details_id_seq START 200001 OWNED BY client_details.clien
 
 ALTER TABLE client_details ALTER COLUMN client_id SET DEFAULT nextval('client_details_id_seq');
 
-CREATE TABLE client_class
-(
-	client_id			int				NOT NULL,
-	class_id			int				NOT NULL,
-	CONSTRAINT PK_client_class PRIMARY KEY (client_id,class_id),
-	CONSTRAINT FK_client_class_client_id FOREIGN KEY (client_id) REFERENCES client_details(client_id),
-	CONSTRAINT FK_client_class_class_id FOREIGN KEY (class_id) REFERENCES class_details(class_id)
-);
+-- CREATE TABLE client_class
+-- (
+-- 	client_id			int				NOT NULL,
+-- 	class_id			int				NOT NULL,
+-- 	CONSTRAINT PK_client_class PRIMARY KEY (client_id,class_id),
+-- 	CONSTRAINT FK_client_class_client_id FOREIGN KEY (client_id) REFERENCES client_details(client_id),
+-- 	CONSTRAINT FK_client_class_class_id FOREIGN KEY (class_id) REFERENCES class_details(class_id)
+-- );
 
 CREATE TABLE package_details
 (

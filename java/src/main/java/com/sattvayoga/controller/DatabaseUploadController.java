@@ -90,7 +90,6 @@ public class DatabaseUploadController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/uploadAttendance")
     public void uploadAttendance(@RequestParam("file")MultipartFile multipartFile) {
-        //TODO: Don't hardcode columns
-
+        eventDao.uploadAttendanceCsv(multipartFile);
     }
 }
