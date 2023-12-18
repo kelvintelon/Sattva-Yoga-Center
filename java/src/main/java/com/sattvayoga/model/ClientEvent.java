@@ -5,6 +5,7 @@ public class ClientEvent {
     private int event_id;
     private int client_id;
     private int package_purchase_id;
+    private int true_package_id;
 
     public ClientEvent(int event_id, int client_id, int package_purchase_id) {
         this.event_id = event_id;
@@ -13,6 +14,14 @@ public class ClientEvent {
     }
 
     public ClientEvent() {
+    }
+
+    public int getTrue_package_id() {
+        return true_package_id;
+    }
+
+    public void setTrue_package_id(int true_package_id) {
+        this.true_package_id = true_package_id;
     }
 
     public int getEvent_id() {

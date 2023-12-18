@@ -14,15 +14,13 @@ import javax.sql.DataSource;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.sql.Array;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 
@@ -816,9 +814,7 @@ public class JdbcEventDao implements EventDao {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         readLinesFromListAndPopulateAttendanceSet(listOfStringsFromBufferedReader, setOfClientEventsFromFile, mapColumns);
-
         batchCreateAttendance(setOfClientEventsFromFile);
 
         long endTimeForEntireUpload = System.nanoTime();
@@ -831,7 +827,9 @@ public class JdbcEventDao implements EventDao {
     private void readLinesFromListAndPopulateAttendanceSet(List<String> listOfStringsFromBufferedReader, Set<ClientEvent> setOfClientEventsToPopulate, HashMap<String, Integer> columnMap) {
 
         Map<Integer, List<PackagePurchase>> mapOfSales = getSalesAsMap();
-
+        Map<Integer, List<Integer>> existingInDatabase = getMapOfExistingClientEvents();
+        Map<Integer, List<Integer>> existingInFile = new HashMap<>();
+        Map<Integer, List<Integer>> duplicate = new HashMap<>();
         for (int i = 0; i < listOfStringsFromBufferedReader.size(); i++) {
             ClientEvent clientEvent = new ClientEvent();
 
@@ -841,11 +839,16 @@ public class JdbcEventDao implements EventDao {
             int eventId = 0;
             int clientId = 0;
             int saleId = 0;
+            int truePackageId = 0;
 
             if (splitLine.length > 0) {
                 eventId = Integer.valueOf(splitLine[columnMap.get("Event_ID")]);
                 clientId = Integer.valueOf(splitLine[columnMap.get("Client ID")]);
                 saleId = Integer.valueOf(splitLine[columnMap.get("SaleID")]);
+                if (splitLine[columnMap.get("PackageID")].isEmpty()) {
+                    System.out.println("Could not find package ID at Sale ID: " + saleId + ". Client ID: " + clientId + ". Event ID: " + eventId);
+                }
+                truePackageId = Integer.valueOf(splitLine[columnMap.get("PackageID")]);
             } else {
                 break;
             }
@@ -867,26 +870,117 @@ public class JdbcEventDao implements EventDao {
                 System.out.println("No package purchase for sale ID: " + saleId);
             }
 
+            // If our database has the event ID
+            if (existingInDatabase.containsKey(eventId)) {
 
-            clientEvent.setEvent_id(eventId);
-            clientEvent.setClient_id(clientId);
-            clientEvent.setPackage_purchase_id(packagePurchaseId);
+                List<Integer> listOfExistingSignedUpClientIds = existingInDatabase.get(eventId);
 
-            setOfClientEventsToPopulate.add(clientEvent);
+                // If the event ID doesn't exist within our DB then follow through
+                if (!listOfExistingSignedUpClientIds.contains(clientId)) {
+
+                    // If the event ID from the file exists already at some point.
+                    if (existingInFile.containsKey(eventId)) {
+
+                        List<Integer> listOfExistingClientsInFile = existingInFile.get(eventId);
+
+                        if (listOfExistingClientsInFile.contains(clientId)) {
+                            // Handle duplicates whether the event ID is new or not
+                            if (duplicate.containsKey(eventId)) {
+                                List<Integer> duplicateClientIds = duplicate.get(eventId);
+                                duplicateClientIds.add(clientId);
+                                duplicate.put(eventId,duplicateClientIds);
+                            } else {
+                                List<Integer> duplicateClientIds = new ArrayList<>();
+                                duplicateClientIds.add(clientId);
+                                duplicate.put(eventId,duplicateClientIds);
+                            }
+                        } else {
+                            // Handle if we have the event ID but not the client ID from the file.
+                            listOfExistingClientsInFile.add(clientId);
+                            existingInFile.put(eventId, listOfExistingClientsInFile);
+
+                            clientEvent.setEvent_id(eventId);
+                            clientEvent.setClient_id(clientId);
+                            clientEvent.setPackage_purchase_id(packagePurchaseId);
+                            clientEvent.setTrue_package_id(truePackageId);
+
+                            setOfClientEventsToPopulate.add(clientEvent);
+                        }
+                    } else {
+                        // Handle we don't have event ID at all
+                        List<Integer> listOfClientsToAdd = new ArrayList<>();
+                        listOfClientsToAdd.add(clientId);
+                        existingInFile.put(eventId, listOfClientsToAdd);
+
+                        clientEvent.setEvent_id(eventId);
+                        clientEvent.setClient_id(clientId);
+                        clientEvent.setPackage_purchase_id(packagePurchaseId);
+                        clientEvent.setTrue_package_id(truePackageId);
+
+                        setOfClientEventsToPopulate.add(clientEvent);
+                    }
+                }
+            } else {
+                // If the event ID is not in our DB.
+                // If the event ID from the file exists already at some point.
+                if (existingInFile.containsKey(eventId)) {
+
+                    List<Integer> listOfExistingClientsInFile = existingInFile.get(eventId);
+
+                    if (listOfExistingClientsInFile.contains(clientId)) {
+                        // Handle duplicates whether the event ID is new or not
+                        if (duplicate.containsKey(eventId)) {
+                            List<Integer> duplicateClientIds = duplicate.get(eventId);
+                            duplicateClientIds.add(clientId);
+                            duplicate.put(eventId,duplicateClientIds);
+                        } else {
+                            List<Integer> duplicateClientIds = new ArrayList<>();
+                            duplicateClientIds.add(clientId);
+                            duplicate.put(eventId,duplicateClientIds);
+                        }
+                    } else {
+                        // Handle if we have the event ID but not the client ID from the file.
+                        listOfExistingClientsInFile.add(clientId);
+                        existingInFile.put(eventId, listOfExistingClientsInFile);
+
+                        clientEvent.setEvent_id(eventId);
+                        clientEvent.setClient_id(clientId);
+                        clientEvent.setPackage_purchase_id(packagePurchaseId);
+                        clientEvent.setTrue_package_id(truePackageId);
+
+                        setOfClientEventsToPopulate.add(clientEvent);
+                    }
+                } else {
+                    // Handle we don't have event ID at all
+                    List<Integer> listOfClientsToAdd = new ArrayList<>();
+                    listOfClientsToAdd.add(clientId);
+                    existingInFile.put(eventId, listOfClientsToAdd);
+
+                    clientEvent.setEvent_id(eventId);
+                    clientEvent.setClient_id(clientId);
+                    clientEvent.setPackage_purchase_id(packagePurchaseId);
+                    clientEvent.setTrue_package_id(truePackageId);
+
+                    setOfClientEventsToPopulate.add(clientEvent);
+                }
+            }
+
         }
+        System.out.println("Duplicates: ");
+        duplicate.forEach((key, value) -> System.out.println("Event ID: " + key + ", Client ID: " + value));
     }
 
     public void batchCreateAttendance(final Collection<ClientEvent> clientEvents) {
 
         jdbcTemplate.batchUpdate(
-                "INSERT INTO client_event (event_id, client_id, package_purchase_id) VALUES (?, ?, ?)",
+                "INSERT INTO client_event (event_id, client_id, package_purchase_id, true_package_id) VALUES (?, ?, ?, ?)",
                 clientEvents,
                 100,
                 (PreparedStatement ps, ClientEvent clientEvent) -> {
                     ps.setInt(1, clientEvent.getEvent_id());
                     ps.setInt(2, clientEvent.getClient_id());
                     ps.setInt(3, clientEvent.getPackage_purchase_id());
-
+                    ps.setInt(4, clientEvent.getTrue_package_id());
                 });
     }
 
@@ -936,6 +1030,31 @@ public class JdbcEventDao implements EventDao {
 
         return mapOfSales;
     }
+
+    public Map<Integer, List<Integer>> getMapOfExistingClientEvents() {
+        Map<Integer, List<Integer>> mapOfExistingClientEvents = new HashMap<>();
+
+        String sql = "SELECT * FROM client_event";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
+
+        while (results.next()) {
+            int clientId = results.getInt("client_id");
+            int eventId = results.getInt("event_id");
+
+            if (mapOfExistingClientEvents.containsKey(eventId)) {
+                List<Integer> listOfClients = mapOfExistingClientEvents.get(eventId);
+                listOfClients.add(clientId);
+                mapOfExistingClientEvents.put(eventId, listOfClients);
+            } else {
+                List<Integer> listOfClients = new ArrayList<>();
+                listOfClients.add(clientId);
+                mapOfExistingClientEvents.put(eventId, listOfClients);
+            }
+        }
+
+        return  mapOfExistingClientEvents;
+    }
+
 
     public Map<Integer, Integer> getMapOfPackageIdsWithPackagePurchaseId() {
         Map<Integer, Integer> mapOfPackageIdsWithPackagePurchaseIds = new HashMap<>();
