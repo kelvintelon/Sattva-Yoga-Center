@@ -125,6 +125,7 @@ export default {
             this.registrationErrors = true;
             if (response.status === 400) {
               this.registrationErrorMsg = 'Bad Request: Validation Errors';
+              alert(error.response.data.message)
             }
           });
       }

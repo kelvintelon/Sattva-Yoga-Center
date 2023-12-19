@@ -1,13 +1,10 @@
 package com.sattvayoga.dao;
 
 import com.sattvayoga.model.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.sql.In;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.sql.DataSource;
@@ -2072,10 +2069,15 @@ public class JdbcEventDao implements EventDao {
 
         String sql1 = "SELECT COUNT(client_event.client_id) FROM client_event JOIN events ON events.event_id = client_event.event_id WHERE DATE(events.start_time) = CURRENT_DATE;";
 
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql1);
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql1);
 
-        if (result.next()) {
-            signUpAggregate.setDailySignUp(result.getInt("count"));
+            if (result.next()) {
+                signUpAggregate.setDailySignUp(result.getInt("count"));
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            throw new CustomSqlException("Failed to retrieve client sign up aggregate.");
         }
 
         // Weekly
@@ -2200,11 +2202,16 @@ public class JdbcEventDao implements EventDao {
         List<ClassEvent> allClassEvents = new ArrayList<>();
         String sql = "SELECT * " +
                 "FROM events; ";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
-        while (result.next()) {
-            ClassEvent classEvent = mapRowToEvent(result);
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+            while (result.next()) {
+                ClassEvent classEvent = mapRowToEvent(result);
 
-            allClassEvents.add(classEvent);
+                allClassEvents.add(classEvent);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            throw new CustomSqlException("Failed to read Events from database.");
         }
         return allClassEvents;
     }
@@ -2223,22 +2230,27 @@ public class JdbcEventDao implements EventDao {
     }
 
     @Override
-    public List<ClassEvent> getHundredEvents() {
+    public List<ClassEvent> getHundredEvents() throws CustomSqlException {
         List<ClassEvent> allClassEvents = new ArrayList<>();
         String sql = "SELECT * FROM events WHERE is_visible_online = true AND start_time >= now() ORDER BY start_time LIMIT 200  ; ";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
-        while (result.next()) {
-            ClassEvent classEvent = mapRowToEvent(result);
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+            while (result.next()) {
+                ClassEvent classEvent = mapRowToEvent(result);
 
-            Date currentDate = new Date(classEvent.getStart_time().getTime());
+                Date currentDate = new Date(classEvent.getStart_time().getTime());
 
 
-            SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy hh:mm a", java.util.Locale.ENGLISH);
-            sdf.applyPattern("EEE, d MMM yyyy hh:mm a");
-            String timeFormatted = sdf.format(classEvent.getStart_time());
+                SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy hh:mm a", Locale.ENGLISH);
+                sdf.applyPattern("EEE, d MMM yyyy hh:mm a");
+                String timeFormatted = sdf.format(classEvent.getStart_time());
 
-            classEvent.setQuick_details(classEvent.getEvent_name() + " " + timeFormatted);
-            allClassEvents.add(classEvent);
+                classEvent.setQuick_details(classEvent.getEvent_name() + " " + timeFormatted);
+                allClassEvents.add(classEvent);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            throw new CustomSqlException("Failed to read a hundred events from Database");
         }
         return allClassEvents;
     }

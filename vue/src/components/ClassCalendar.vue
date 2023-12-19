@@ -198,7 +198,7 @@
                 <v-btn icon>
                   <v-icon @click="showCardEditForm">mdi-pencil</v-icon>
                 </v-btn>
-                <v-toolbar-title v-html="selectedEvent.name"></v-toolbar-title>
+                <div>{{ selectedEvent.name }}</div>
                 <v-spacer></v-spacer>
 
                 <v-btn icon @click="toggleVisibleEvent(false)" v-show="toggleVisibilityButton == false">
@@ -536,7 +536,13 @@ export default {
               this.snackBarDeleteEventConfirmation = true;
             }
           }
-        });
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+      });
     },
     confirmDelete() {
       // 1. create a new snackbar to let the admin know
@@ -558,6 +564,12 @@ export default {
         } else {
           alert("Error removing event!");
         }
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
       });
     },
     submitUpdate() {
@@ -643,7 +655,7 @@ export default {
             this.closeSelectedCard();
             this.findsMatch();
           } else {
-            alert("Successly updated")
+            alert("Successfully updated")
             this.findsMatch();
             this.closeSelectedCard();
             this.getAllEvents();
@@ -652,6 +664,12 @@ export default {
         } else {
           alert("Error removing event!");
         }
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
       });
     } else {
       alert("Please edit the time")
@@ -705,6 +723,12 @@ export default {
         } else {
           alert("Error removing event!");
         }
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
       });
     },
     viewDay({ date }) {
@@ -847,6 +871,12 @@ export default {
         } else {
           alert("Error retrieving class information");
         }
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
       });
     },
     getAllEvents() {
@@ -857,6 +887,12 @@ export default {
 
           this.getEvents();
         }
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
       });
     },
     close() {
@@ -947,6 +983,12 @@ export default {
               // }
             } else {
               alert("Failed to create event: " + this.event.start_time);
+            }
+          })
+          .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
             }
           });
 

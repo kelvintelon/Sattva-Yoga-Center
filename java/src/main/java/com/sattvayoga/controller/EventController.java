@@ -32,7 +32,7 @@ public class EventController {
     private PackagePurchaseDao packagePurchaseDao;
 
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/eventList", method = RequestMethod.GET)
     public List<ClassEvent> getAllEvents() throws SQLException {
         return eventDao.getAllEvents();
@@ -121,6 +121,7 @@ public class EventController {
 
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/reconcileClassesForClient/{clientId}", method = RequestMethod.PUT)
     public void reconcileClassesForClient(@PathVariable int clientId) {
         ClientDetails clientDetails = clientDetailsDao.findClientByClientId(clientId);
