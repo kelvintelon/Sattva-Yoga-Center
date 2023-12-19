@@ -968,6 +968,9 @@ public class JdbcEventDao implements EventDao {
         }
         System.out.println("Attendance Duplicates: ");
         duplicate.forEach((key, value) -> System.out.println("Event ID: " + key + ", Client ID: " + value));
+        if (duplicate.isEmpty()) {
+            System.out.println("No Duplicates");
+        }
     }
 
     public void batchCreateAttendance(final Collection<ClientEvent> clientEvents) {
