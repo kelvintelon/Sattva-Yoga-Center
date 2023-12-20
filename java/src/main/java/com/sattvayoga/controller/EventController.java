@@ -40,12 +40,12 @@ public class EventController {
 
     @RequestMapping(value = "/100eventList", method = RequestMethod.GET)
     public List<ClassEvent> getHundredEvents() throws SQLException {
-        return eventDao.getHundredEvents();
+        return eventDao.getTwoHundredEvents();
     }
 
     @RequestMapping(value = "/100eventList/{clientId}", method = RequestMethod.GET)
     public List<ClassEvent> getHundredEventsForClient(@PathVariable int clientId) throws SQLException {
-        return eventDao.getHundredEventsForUser(clientId);
+        return eventDao.getTwoHundredEventsForUser(clientId);
     }
 
 //    @RequestMapping(value= "/clientEventList", method = RequestMethod.GET)

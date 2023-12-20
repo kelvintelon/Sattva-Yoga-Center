@@ -1,6 +1,7 @@
 package com.sattvayoga;
 
 import com.sattvayoga.dao.EventDao;
+import com.sattvayoga.model.CustomException;
 import com.sattvayoga.spring.config.AppConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -46,13 +47,17 @@ class WorkerThread extends Thread {
             try {
                 eventDao.updateEventServerTask();
             } catch (Exception e) {
-                System.out.println("ERROR ON EVENTS UPDATE THREAD. Caused by: " + e.getCause());;
+                System.out.println("Error message: " + e.getMessage());
+                System.out.println("Cause: " + e.getCause());
+                throw new CustomException("ERROR ON EVENTS UPDATE THREAD");
             }
 
             try {
                 eventDao.updateAllClientsByLookingAtEvents();
             } catch (Exception e) {
-                System.out.println("ERROR ON CLIENTS UPDATE THREAD");
+                System.out.println("Error message: " + e.getMessage());
+                System.out.println("Cause: " + e.getCause());
+                throw new CustomException("ERROR ON CLIENTS UPDATE THREAD");
             }
 
             System.out.println("Events Up To Date. Clients Up To Date. Thread Initialized at count:  " + ++count);
@@ -63,7 +68,7 @@ class WorkerThread extends Thread {
                 sleep(86400000);
             } catch (InterruptedException e) {
                 // handle exception here
-                System.out.println("Thread error");
+                System.out.println("THREAD ERROR");
 
 
             }

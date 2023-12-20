@@ -26,9 +26,9 @@ public interface EventDao {
 
     boolean updateEventDetails(ClassEvent classEvent);
 
-    List<ClassEvent> getHundredEvents() throws CustomSqlException;
+    List<ClassEvent> getTwoHundredEvents() throws CustomException;
 
-    List<ClassEvent> getHundredEventsForUser(int client_id);
+    List<ClassEvent> getTwoHundredEventsForUser(int client_id);
 
     void registerForEvent(int client_id, int event_id, int package_purchase_id);
 

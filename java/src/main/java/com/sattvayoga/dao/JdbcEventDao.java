@@ -33,11 +33,18 @@ public class JdbcEventDao implements EventDao {
     public void createEvent(ClassEvent newClassEvent) {
         String sql = "INSERT INTO events (class_id, event_name, start_time, " +
                 "end_time, color, timed, is_visible_online, is_paid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        jdbcTemplate.update(sql, newClassEvent.getClass_id(),
-                newClassEvent.getEvent_name(), newClassEvent.getStart_time(),
-                newClassEvent.getEnd_time(), newClassEvent.getColor(),
-                newClassEvent.isTimed(), newClassEvent.isIs_visible_online(),
-                newClassEvent.isIs_paid());
+
+        try {
+            jdbcTemplate.update(sql, newClassEvent.getClass_id(),
+                    newClassEvent.getEvent_name(), newClassEvent.getStart_time(),
+                    newClassEvent.getEnd_time(), newClassEvent.getColor(),
+                    newClassEvent.isTimed(), newClassEvent.isIs_visible_online(),
+                    newClassEvent.isIs_paid());
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to create new Event.", e);
+        }
     }
 
     @Override
@@ -371,8 +378,7 @@ public class JdbcEventDao implements EventDao {
     @Override
     public void updateEventServerTask() throws Exception {
         List<ClassDetails> classDetails = getAllClasses();
-        String end_time = "SELECT * FROM events ORDER BY end_time DESC LIMIT 1";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(end_time);
+
         ClassEvent classEvent;
         Date date = new Date();
         Timestamp theLatestTimestamp = new Timestamp(date.getTime());
@@ -381,15 +387,21 @@ public class JdbcEventDao implements EventDao {
         LocalDate currentDate = LocalDate.now();
         Set<ClassEvent> eventsToInsert = new HashSet<>();
 
-        if (results.next()) {
-            classEvent = mapRowToEvent(results);
-            theLatestTimestamp = classEvent.getEnd_time();
-        }
         try {
-            theLatestTimestamp = addDays(1, theLatestTimestamp);
-        } catch (EmptyResultDataAccessException e) {
-            System.out.println("Error incrementing the timestamp");
+            String end_time = "SELECT * FROM events ORDER BY end_time DESC LIMIT 1";
+            SqlRowSet results = jdbcTemplate.queryForRowSet(end_time);
+            if (results.next()) {
+                classEvent = mapRowToEvent(results);
+                theLatestTimestamp = classEvent.getEnd_time();
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Error in retrieving events.", e);
         }
+
+        theLatestTimestamp = addDays(1, theLatestTimestamp);
 
         LocalDate latestDate = theLatestTimestamp.toLocalDateTime().toLocalDate();
         cal1.set(latestDate.getYear(), latestDate.getMonthValue(), latestDate.getDayOfMonth());
@@ -972,16 +984,22 @@ public class JdbcEventDao implements EventDao {
 
     public void batchCreateAttendance(final Collection<ClientEvent> clientEvents) {
 
-        jdbcTemplate.batchUpdate(
-                "INSERT INTO client_event (event_id, client_id, package_purchase_id, true_package_id) VALUES (?, ?, ?, ?)",
-                clientEvents,
-                100,
-                (PreparedStatement ps, ClientEvent clientEvent) -> {
-                    ps.setInt(1, clientEvent.getEvent_id());
-                    ps.setInt(2, clientEvent.getClient_id());
-                    ps.setInt(3, clientEvent.getPackage_purchase_id());
-                    ps.setInt(4, clientEvent.getTrue_package_id());
-                });
+        try {
+            jdbcTemplate.batchUpdate(
+                    "INSERT INTO client_event (event_id, client_id, package_purchase_id, true_package_id) VALUES (?, ?, ?, ?)",
+                    clientEvents,
+                    100,
+                    (PreparedStatement ps, ClientEvent clientEvent) -> {
+                        ps.setInt(1, clientEvent.getEvent_id());
+                        ps.setInt(2, clientEvent.getClient_id());
+                        ps.setInt(3, clientEvent.getPackage_purchase_id());
+                        ps.setInt(4, clientEvent.getTrue_package_id());
+                    });
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Error batch creating attendance.", e);
+        }
     }
 
     public static HashMap<String, Integer> populateColumnsForAttendanceMap(String[] array) {
@@ -1008,7 +1026,14 @@ public class JdbcEventDao implements EventDao {
         Map<Integer, List<PackagePurchase> > mapOfSales = new HashMap<>();
 
         String sql = "SELECT * FROM sales";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
+        SqlRowSet results = null;
+        try {
+            results = jdbcTemplate.queryForRowSet(sql);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Error retrieving sales.");
+        }
 
         Map<Integer, Integer> mapOfIds = getMapOfPackageIdsWithPackagePurchaseId();
 
@@ -1035,7 +1060,14 @@ public class JdbcEventDao implements EventDao {
         Map<Integer, List<Integer>> mapOfExistingClientEvents = new HashMap<>();
 
         String sql = "SELECT * FROM client_event";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
+        SqlRowSet results = null;
+        try {
+            results = jdbcTemplate.queryForRowSet(sql);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Error retrieving attendance.");
+        }
 
         while (results.next()) {
             int clientId = results.getInt("client_id");
@@ -1061,7 +1093,14 @@ public class JdbcEventDao implements EventDao {
         int packageId = 0;
         int packagePurchaseId = 0;
         String sql = "SELECT package_purchase_id, package_id FROM package_purchase ";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+        SqlRowSet result = null;
+        try {
+            result = jdbcTemplate.queryForRowSet(sql);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Error retrieving IDs for map of purchase tables");
+        }
         while (result.next()) {
             packagePurchaseId = result.getInt("package_purchase_id");
             packageId = result.getInt("package_id");
@@ -1074,9 +1113,15 @@ public class JdbcEventDao implements EventDao {
     public boolean IsSubscriptionOrNot(int packageId) {
         boolean isSubscription = false;
         String sql = "SELECT unlimited from package_details WHERE package_id = ?";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, packageId);
-        if (result.next()) {
-            return result.getBoolean("unlimited");
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, packageId);
+            if (result.next()) {
+                return result.getBoolean("unlimited");
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Error returning boolean for confirming a package is unlimited.");
         }
         return isSubscription;
     }
@@ -1172,98 +1217,128 @@ public class JdbcEventDao implements EventDao {
 
     public void batchCreateEventsWithEventId(final Collection<ClassEvent> events) {
 
-        jdbcTemplate.batchUpdate(
-                "INSERT INTO events (event_id, class_id, event_name, start_time, " +
-                        "end_time, color, timed, is_visible_online, is_paid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                events,
-                100,
-                (PreparedStatement ps, ClassEvent event) -> {
-                    ps.setInt(1, event.getEvent_id());
-                    ps.setInt(2, event.getClass_id());
-                    ps.setString(3, event.getEvent_name());
-                    ps.setTimestamp(4, event.getStart_time());
-                    ps.setTimestamp(5, event.getEnd_time());
-                    ps.setString(6, event.getColor());
-                    ps.setBoolean(7, event.isTimed());
-                    ps.setBoolean(8, event.isIs_visible_online());
-                    ps.setBoolean(9, event.isIs_paid());
-                });
+        try {
+            jdbcTemplate.batchUpdate(
+                    "INSERT INTO events (event_id, class_id, event_name, start_time, " +
+                            "end_time, color, timed, is_visible_online, is_paid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    events,
+                    100,
+                    (PreparedStatement ps, ClassEvent event) -> {
+                        ps.setInt(1, event.getEvent_id());
+                        ps.setInt(2, event.getClass_id());
+                        ps.setString(3, event.getEvent_name());
+                        ps.setTimestamp(4, event.getStart_time());
+                        ps.setTimestamp(5, event.getEnd_time());
+                        ps.setString(6, event.getColor());
+                        ps.setBoolean(7, event.isTimed());
+                        ps.setBoolean(8, event.isIs_visible_online());
+                        ps.setBoolean(9, event.isIs_paid());
+                    });
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Error batch creating attendance records with an event ID.");
+        }
     }
 
     public void batchCreateEvents(final Collection<ClassEvent> events) {
 
-        jdbcTemplate.batchUpdate(
-                "INSERT INTO events (class_id, event_name, start_time, " +
-                        "end_time, color, timed, is_visible_online, is_paid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                events,
-                100,
-                (PreparedStatement ps, ClassEvent event) -> {
-                    ps.setInt(1, event.getClass_id());
-                    ps.setString(2, event.getEvent_name());
-                    ps.setTimestamp(3, event.getStart_time());
-                    ps.setTimestamp(4, event.getEnd_time());
-                    ps.setString(5, event.getColor());
-                    ps.setBoolean(6, event.isTimed());
-                    ps.setBoolean(7, event.isIs_visible_online());
-                    ps.setBoolean(8, event.isIs_paid());
-                });
+        try {
+            jdbcTemplate.batchUpdate(
+                    "INSERT INTO events (class_id, event_name, start_time, " +
+                            "end_time, color, timed, is_visible_online, is_paid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    events,
+                    100,
+                    (PreparedStatement ps, ClassEvent event) -> {
+                        ps.setInt(1, event.getClass_id());
+                        ps.setString(2, event.getEvent_name());
+                        ps.setTimestamp(3, event.getStart_time());
+                        ps.setTimestamp(4, event.getEnd_time());
+                        ps.setString(5, event.getColor());
+                        ps.setBoolean(6, event.isTimed());
+                        ps.setBoolean(7, event.isIs_visible_online());
+                        ps.setBoolean(8, event.isIs_paid());
+                    });
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Error batch creating events.");
+        }
     }
 
     public void batchUpdateEvents(final Collection<ClassEvent> events) {
-        jdbcTemplate.batchUpdate(
-                "UPDATE events SET class_id = ? , " +
-                        "event_name = ? , " +
-                        "start_time = ? , " +
-                        "end_time = ? , " +
-                        "color = ? , " +
-                        "timed = ? , " +
-                        "is_visible_online = ? , " +
-                        "is_paid = ? " +
-                        "WHERE event_id = ?",
-                events, 100,
-                (PreparedStatement ps, ClassEvent event) -> {
-                    ps.setInt(1, event.getClass_id());
-                    ps.setString(2, event.getEvent_name());
-                    ps.setTimestamp(3, event.getStart_time());
-                    ps.setTimestamp(4, event.getEnd_time());
-                    ps.setString(5, event.getColor());
-                    ps.setBoolean(6, event.isTimed());
-                    ps.setBoolean(7, event.isIs_visible_online());
-                    ps.setBoolean(8, event.isIs_paid());
-                    ps.setInt(9, event.getEvent_id());
-                });
+        try {
+            jdbcTemplate.batchUpdate(
+                    "UPDATE events SET class_id = ? , " +
+                            "event_name = ? , " +
+                            "start_time = ? , " +
+                            "end_time = ? , " +
+                            "color = ? , " +
+                            "timed = ? , " +
+                            "is_visible_online = ? , " +
+                            "is_paid = ? " +
+                            "WHERE event_id = ?",
+                    events, 100,
+                    (PreparedStatement ps, ClassEvent event) -> {
+                        ps.setInt(1, event.getClass_id());
+                        ps.setString(2, event.getEvent_name());
+                        ps.setTimestamp(3, event.getStart_time());
+                        ps.setTimestamp(4, event.getEnd_time());
+                        ps.setString(5, event.getColor());
+                        ps.setBoolean(6, event.isTimed());
+                        ps.setBoolean(7, event.isIs_visible_online());
+                        ps.setBoolean(8, event.isIs_paid());
+                        ps.setInt(9, event.getEvent_id());
+                    });
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Error batch updating events.");
+        }
     }
 
     @Override
     public boolean deleteEvent(int eventId) {
-        String sql = "BEGIN TRANSACTION;\n" +
+        try {
+            String sql = "BEGIN TRANSACTION;\n" +
 
-                "\n" +
-                "DELETE FROM client_event \n" +
-                "WHERE client_event.event_id = ?;\n" +
-                "\n" +
-                "DELETE FROM events\n" +
-                "WHERE event_id = ?;\n" +
-                "\n" +
-                "COMMIT TRANSACTION;";
-        return jdbcTemplate.update(sql, eventId, eventId) == 1;
+                    "\n" +
+                    "DELETE FROM client_event \n" +
+                    "WHERE client_event.event_id = ?;\n" +
+                    "\n" +
+                    "DELETE FROM events\n" +
+                    "WHERE event_id = ?;\n" +
+                    "\n" +
+                    "COMMIT TRANSACTION;";
+            return jdbcTemplate.update(sql, eventId, eventId) == 1;
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Error deleting an event.");
+        }
     }
 
     @Override
     public boolean updateEventDetails(ClassEvent classEvent) {
 
-        String sql = "UPDATE events SET class_id = ? , " +
-                "event_name = ? , " +
-                "start_time = ? , " +
-                "end_time = ? , " +
-                "color = ? , " +
-                "timed = ? , " +
-                "is_visible_online = ? , " +
-                "is_paid = ? " +
-                "WHERE event_id = ?";
-        return jdbcTemplate.update(sql, classEvent.getClass_id(), classEvent.getEvent_name(), classEvent.getStart_time(),
-                classEvent.getEnd_time(), classEvent.getColor(), classEvent.isTimed(),
-                classEvent.isIs_visible_online(), classEvent.isIs_paid(), classEvent.getEvent_id()) == 1;
+        try {
+            String sql = "UPDATE events SET class_id = ? , " +
+                    "event_name = ? , " +
+                    "start_time = ? , " +
+                    "end_time = ? , " +
+                    "color = ? , " +
+                    "timed = ? , " +
+                    "is_visible_online = ? , " +
+                    "is_paid = ? " +
+                    "WHERE event_id = ?";
+            return jdbcTemplate.update(sql, classEvent.getClass_id(), classEvent.getEvent_name(), classEvent.getStart_time(),
+                    classEvent.getEnd_time(), classEvent.getColor(), classEvent.isTimed(),
+                    classEvent.isIs_visible_online(), classEvent.isIs_paid(), classEvent.getEvent_id()) == 1;
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Error update an event's details.");
+        }
     }
 
     private String getReadableTime(Long nanos){
@@ -1279,72 +1354,98 @@ public class JdbcEventDao implements EventDao {
     @Override
     public void updateAllClientsByLookingAtEvents() {
 
-        String sql = "SELECT * FROM client_details ORDER BY client_id;";
+        try {
+            String sql = "SELECT * FROM client_details ORDER BY client_id;";
 
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
 
-        while (result.next()) {
-            ClientDetails clientDetails = mapRowToClient(result);
-            List<ClassEvent> clientClassEvents = new ArrayList<>();
-            ClassEvent classEvent = new ClassEvent();
-            String sql2 = "SELECT events.event_id, events.class_id, events.event_name, events.start_time, events.end_time, events.color, events.timed, events.is_visible_online, events.is_paid FROM events " +
-                    "JOIN client_event ON events.event_id = client_event.event_id " +
-                    "JOIN client_details ON client_details.client_id = client_event.client_id " +
-                    "WHERE client_details.user_id = ? " +
-                    "ORDER BY events.end_time DESC LIMIT 1";
-            SqlRowSet result2 = jdbcTemplate.queryForRowSet(sql2, clientDetails.getUser_id());
+            while (result.next()) {
+                ClientDetails clientDetails = mapRowToClient(result);
+                List<ClassEvent> clientClassEvents = new ArrayList<>();
+                ClassEvent classEvent = new ClassEvent();
+                String sql2 = "SELECT events.event_id, events.class_id, events.event_name, events.start_time, events.end_time, events.color, events.timed, events.is_visible_online, events.is_paid FROM events " +
+                        "JOIN client_event ON events.event_id = client_event.event_id " +
+                        "JOIN client_details ON client_details.client_id = client_event.client_id " +
+                        "WHERE client_details.user_id = ? " +
+                        "ORDER BY events.end_time DESC LIMIT 1";
+                Timestamp theLatestTimestamp = null;
+                boolean noClasses = false;
+                try {
+                    SqlRowSet result2 = jdbcTemplate.queryForRowSet(sql2, clientDetails.getUser_id());
 
-            Date date = new Date();
-            Timestamp theLatestTimestamp = new Timestamp(date.getTime());
+                    Date date = new Date();
+                    theLatestTimestamp = new Timestamp(date.getTime());
 
-            boolean noClasses = false;
-            while (result2.next()) {
-                classEvent = mapRowToEvent(result2);
-                clientClassEvents.add(classEvent);
-                theLatestTimestamp = classEvent.getEnd_time();
+                    noClasses = false;
+                    while (result2.next()) {
+                        classEvent = mapRowToEvent(result2);
+                        clientClassEvents.add(classEvent);
+                        theLatestTimestamp = classEvent.getEnd_time();
 
-            }
-            if (clientClassEvents.size()==0) {
-                noClasses = true;
-            }
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error message: " + e.getMessage());
+                    System.out.println("Cause: " + e.getCause());
+                    throw new CustomException("Failed to retrieve all events for user.");
+                }
+                if (clientClassEvents.size()==0) {
+                    noClasses = true;
+                }
 
-            if (!noClasses) {
-
-
-                LocalDate latestDatePlusOneMonth = theLatestTimestamp.toLocalDateTime().toLocalDate().plusMonths(1);
-
-                Timestamp oneMonthFromLastEvent = Timestamp.valueOf(getStartTimeStampBuilder(latestDatePlusOneMonth));
-
-                LocalDate today = LocalDate.now();
-
-                String startTimeStampBuilder = getStartTimeStampBuilder(today);
-
-                Timestamp currentDay = Timestamp.valueOf(startTimeStampBuilder);
-
-                int numberValueFromComparison = currentDay.compareTo(oneMonthFromLastEvent);
-
-                // Integer value 0 if this Timestamp object is equal to given Timestamp object.
-                // A value less than 0 if this Timestamp object is before the given argument.
-                // A value greater than 0 if this Timestamp object is after the given argument.
+                if (!noClasses) {
 
 
-                if (numberValueFromComparison > 0) {
-                    // So if it's been more than a month then set them to inactive
+                    LocalDate latestDatePlusOneMonth = theLatestTimestamp.toLocalDateTime().toLocalDate().plusMonths(1);
+
+                    Timestamp oneMonthFromLastEvent = Timestamp.valueOf(getStartTimeStampBuilder(latestDatePlusOneMonth));
+
+                    LocalDate today = LocalDate.now();
+
+                    String startTimeStampBuilder = getStartTimeStampBuilder(today);
+
+                    Timestamp currentDay = Timestamp.valueOf(startTimeStampBuilder);
+
+                    int numberValueFromComparison = currentDay.compareTo(oneMonthFromLastEvent);
+
+                    // Integer value 0 if this Timestamp object is equal to given Timestamp object.
+                    // A value less than 0 if this Timestamp object is before the given argument.
+                    // A value greater than 0 if this Timestamp object is after the given argument.
+
+
+                    if (numberValueFromComparison > 0) {
+                        // So if it's been more than a month then set them to inactive
+                        String sql3 = "UPDATE client_details SET is_new_client = ? " +
+                                "WHERE user_id = ?";
+
+                        try {
+                            jdbcTemplate.update(sql3, false,
+                                    clientDetails.getUser_id());
+                        } catch (Exception e) {
+                            System.out.println("Error message: " + e.getMessage());
+                            System.out.println("Cause: " + e.getCause());
+                            throw new CustomException("Failed to update client_details new client field.");
+                        }
+
+                    }
+                }
+                 else {
                     String sql3 = "UPDATE client_details SET is_new_client = ? " +
                             "WHERE user_id = ?";
 
-                    jdbcTemplate.update(sql3, false,
-                            clientDetails.getUser_id());
-
+                    try {
+                        jdbcTemplate.update(sql3, false,
+                                clientDetails.getUser_id());
+                    } catch (Exception e) {
+                        System.out.println("Error message: " + e.getMessage());
+                        System.out.println("Cause: " + e.getCause());
+                        throw new CustomException("Failed to update client_details new client field.");
+                    }
                 }
             }
-             else {
-                String sql3 = "UPDATE client_details SET is_new_client = ? " +
-                        "WHERE user_id = ?";
-
-                jdbcTemplate.update(sql3, false,
-                        clientDetails.getUser_id());
-            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to update all client_details for events.");
         }
 
 
@@ -1352,143 +1453,150 @@ public class JdbcEventDao implements EventDao {
 
     @Override
     public String deleteEventsByClass(ClassDetails originalClass) {
-        // find all Event objects with the same start time, end time, and class_id
-
-        String sql = "SELECT * FROM events WHERE start_time >= now() AND class_id = ? ; ";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, originalClass.getClass_id());
 
         // Limit to 300 because clients can't sign up farther than that
         String sqlForAttendance = "SELECT * FROM events WHERE start_time >= now() AND class_id = ? LIMIT 300; ";
-        SqlRowSet resultForAttendanceCheck = jdbcTemplate.queryForRowSet(sqlForAttendance, originalClass.getClass_id());
+        String stringToReturn = null;
+        try {
+            SqlRowSet resultForAttendanceCheck = jdbcTemplate.queryForRowSet(sqlForAttendance, originalClass.getClass_id());
 
-        String stringToReturn = "";
-        boolean returnFailed = false;
+            stringToReturn = "";
+            boolean returnFailed = false;
 
-        while(resultForAttendanceCheck.next()) {
-            // PULL THE EVENT
-            ClassEvent classEvent = mapRowToEvent(resultForAttendanceCheck);
-            classEvent.setAttendanceList(getAttendanceByEventId(classEvent.getEvent_id()));
-
-
-            // check this current event and compare if it has the same start-time and end-time as the original
-            // filtering it down so that we don't accidentally change any events that weren't exact matches
-            // CONVERSION ROUTINE TO EXTRACT THE HOUR AND MINUTES am/pm (e.g. "06:00 am")
-            Timestamp startTimeStamp = classEvent.getStart_time();
-            Timestamp endTimeStamp = classEvent.getEnd_time();
+            while(resultForAttendanceCheck.next()) {
+                // PULL THE EVENT
+                ClassEvent classEvent = mapRowToEvent(resultForAttendanceCheck);
+                classEvent.setAttendanceList(getAttendanceByEventId(classEvent.getEvent_id()));
 
 
-            LocalDateTime startTimeLocalDate = startTimeStamp.toLocalDateTime();
-            LocalDateTime endTimeLocalDate = endTimeStamp.toLocalDateTime();
-
-            DayOfWeek currentDayOfWeek = startTimeLocalDate.getDayOfWeek();
-            String currentDay = currentDayOfWeek.toString().substring(0, 3).toLowerCase();
-            currentDay = currentDay.substring(0, 1).toUpperCase() + currentDay.substring(1);
-
-            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
-
-            String startTimeString = dateTimeFormatter.format(startTimeLocalDate);
-            String originalClassStartTime = originalClass.getStart_time();
+                // check this current event and compare if it has the same start-time and end-time as the original
+                // filtering it down so that we don't accidentally change any events that weren't exact matches
+                // CONVERSION ROUTINE TO EXTRACT THE HOUR AND MINUTES am/pm (e.g. "06:00 am")
+                Timestamp startTimeStamp = classEvent.getStart_time();
+                Timestamp endTimeStamp = classEvent.getEnd_time();
 
 
-            LocalDateTime nextHourEndTime = startTimeLocalDate;
+                LocalDateTime startTimeLocalDate = startTimeStamp.toLocalDateTime();
+                LocalDateTime endTimeLocalDate = endTimeStamp.toLocalDateTime();
 
-            int originalClassDuration = originalClass.getClass_duration();
+                DayOfWeek currentDayOfWeek = startTimeLocalDate.getDayOfWeek();
+                String currentDay = currentDayOfWeek.toString().substring(0, 3).toLowerCase();
+                currentDay = currentDay.substring(0, 1).toUpperCase() + currentDay.substring(1);
 
-            // GRAB THE CORRECT "06:30" END TIME  If it's not an hour
-            if (originalClassDuration != 60) {
-                nextHourEndTime = startTimeLocalDate.plusMinutes(originalClassDuration);
-            } else {
-                nextHourEndTime = startTimeLocalDate.plusHours(1);
-            }
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
 
-            String actualEndTimeString = dateTimeFormatter.format(endTimeLocalDate);
-            String expectedEndTimeString = dateTimeFormatter.format(nextHourEndTime);
+                String startTimeString = dateTimeFormatter.format(startTimeLocalDate);
+                String originalClassStartTime = originalClass.getStart_time();
 
-            // Check if This event had already been updated thus it isn't an exact match and something to change across the board
 
-            if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && classEvent.isIs_visible_online()) {
-                if (classEvent.getAttendanceList().size() > 0) {
-                    returnFailed = true;
-                    if (stringToReturn.length() == 0) {
-                        stringToReturn = "Failed at: " + classEvent.getStart_time().toString();
-                    }
-                    else {
-                        stringToReturn += " and " +  classEvent.getStart_time().toString();
+                LocalDateTime nextHourEndTime = startTimeLocalDate;
+
+                int originalClassDuration = originalClass.getClass_duration();
+
+                // GRAB THE CORRECT "06:30" END TIME  If it's not an hour
+                if (originalClassDuration != 60) {
+                    nextHourEndTime = startTimeLocalDate.plusMinutes(originalClassDuration);
+                } else {
+                    nextHourEndTime = startTimeLocalDate.plusHours(1);
+                }
+
+                String actualEndTimeString = dateTimeFormatter.format(endTimeLocalDate);
+                String expectedEndTimeString = dateTimeFormatter.format(nextHourEndTime);
+
+                // Check if This event had already been updated thus it isn't an exact match and something to change across the board
+
+                if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && classEvent.isIs_visible_online()) {
+                    if (classEvent.getAttendanceList().size() > 0) {
+                        returnFailed = true;
+                        if (stringToReturn.length() == 0) {
+                            stringToReturn = "Failed at: " + classEvent.getStart_time().toString();
+                        }
+                        else {
+                            stringToReturn += " and " +  classEvent.getStart_time().toString();
+                        }
                     }
                 }
             }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to grab/update events for a specific class ID with a 300 limit list.");
         }
 
         if (stringToReturn.length() > 0) {
             return stringToReturn;
         }
 
-        // second while loop deletes it
-        while (result.next()) {
-            // PULL THE EVENT
-            ClassEvent classEvent = mapRowToEvent(result);
+        // find all Event objects with the same start time, end time, and class_id
 
-            // Don't set the attendance since these classes you're deleting shouldnt have any clients signed up
-            //  event.setAttendanceList(getAttendanceByEventId(event.getEvent_id()));
+        String sql = "SELECT * FROM events WHERE start_time >= now() AND class_id = ? ; ";
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, originalClass.getClass_id());
 
+            // second while loop deletes it
+            while (result.next()) {
+                // PULL THE EVENT
+                ClassEvent classEvent = mapRowToEvent(result);
 
-            // check this current event and compare if it has the same start-time and end-time as the original
-            // filtering it down so that we don't accidentally change any events that weren't exact matches
-            // CONVERSION ROUTINE TO EXTRACT THE HOUR AND MINUTES am/pm (e.g. "06:00 am")
-            Timestamp startTimeStamp = classEvent.getStart_time();
-            Timestamp endTimeStamp = classEvent.getEnd_time();
-
-
-            LocalDateTime startTimeLocalDate = startTimeStamp.toLocalDateTime();
-            LocalDateTime endTimeLocalDate = endTimeStamp.toLocalDateTime();
-
-            DayOfWeek currentDayOfWeek = startTimeLocalDate.getDayOfWeek();
-            String currentDay = currentDayOfWeek.toString().substring(0, 3).toLowerCase();
-            currentDay = currentDay.substring(0, 1).toUpperCase() + currentDay.substring(1);
-
-            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
-
-            String startTimeString = dateTimeFormatter.format(startTimeLocalDate);
-            String originalClassStartTime = originalClass.getStart_time();
+                // Don't set the attendance since these classes you're deleting shouldnt have any clients signed up
+                //  event.setAttendanceList(getAttendanceByEventId(event.getEvent_id()));
 
 
-            LocalDateTime nextHourEndTime = startTimeLocalDate;
+                // check this current event and compare if it has the same start-time and end-time as the original
+                // filtering it down so that we don't accidentally change any events that weren't exact matches
+                // CONVERSION ROUTINE TO EXTRACT THE HOUR AND MINUTES am/pm (e.g. "06:00 am")
+                Timestamp startTimeStamp = classEvent.getStart_time();
+                Timestamp endTimeStamp = classEvent.getEnd_time();
 
-            int originalClassDuration = originalClass.getClass_duration();
 
-            // GRAB THE CORRECT "06:30" END TIME  If it's not an hour
-            if (originalClassDuration != 60) {
-                nextHourEndTime = startTimeLocalDate.plusMinutes(originalClassDuration);
-            } else {
-                nextHourEndTime = startTimeLocalDate.plusHours(1);
+                LocalDateTime startTimeLocalDate = startTimeStamp.toLocalDateTime();
+                LocalDateTime endTimeLocalDate = endTimeStamp.toLocalDateTime();
+
+                DayOfWeek currentDayOfWeek = startTimeLocalDate.getDayOfWeek();
+                String currentDay = currentDayOfWeek.toString().substring(0, 3).toLowerCase();
+                currentDay = currentDay.substring(0, 1).toUpperCase() + currentDay.substring(1);
+
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
+
+                String startTimeString = dateTimeFormatter.format(startTimeLocalDate);
+                String originalClassStartTime = originalClass.getStart_time();
+
+
+                LocalDateTime nextHourEndTime = startTimeLocalDate;
+
+                int originalClassDuration = originalClass.getClass_duration();
+
+                // GRAB THE CORRECT "06:30" END TIME  If it's not an hour
+                if (originalClassDuration != 60) {
+                    nextHourEndTime = startTimeLocalDate.plusMinutes(originalClassDuration);
+                } else {
+                    nextHourEndTime = startTimeLocalDate.plusHours(1);
+                }
+
+                String actualEndTimeString = dateTimeFormatter.format(endTimeLocalDate);
+                String expectedEndTimeString = dateTimeFormatter.format(nextHourEndTime);
+
+                // Check if This event had already been updated thus it isn't an exact match and something to change across the board
+
+                if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && classEvent.isIs_visible_online()) {
+                    //just delete it while you're here.
+                    deleteEvent(classEvent.getEvent_id());
+
+                }
+
+
             }
-
-            String actualEndTimeString = dateTimeFormatter.format(endTimeLocalDate);
-            String expectedEndTimeString = dateTimeFormatter.format(nextHourEndTime);
-
-            // Check if This event had already been updated thus it isn't an exact match and something to change across the board
-
-            if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && classEvent.isIs_visible_online()) {
-                //just delete it while you're here.
-                deleteEvent(classEvent.getEvent_id());
-
-            }
-
-
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to grab/update all events for a specific class ID.");
         }
         return "Success";
 
     }
     @Override
     public String updateEventsByClass(ClassDetails originalClass, ClassDetails updatedClass) {
-        // find all Event objects with the same start time, end time, and class_id
 
-        String sql = "SELECT * FROM events WHERE start_time >= now() AND class_id = ? ; ";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, originalClass.getClass_id());
-
-        // Limit to 300 because clients can't sign up farther than that
-        String sqlForAttendance = "SELECT * FROM events WHERE start_time >= now() AND class_id = ? LIMIT 300; ";
-        SqlRowSet resultForAttendanceCheck = jdbcTemplate.queryForRowSet(sqlForAttendance, originalClass.getClass_id());
 
         // A map
         // CREATE YOUR PROPERTIES
@@ -1508,281 +1616,238 @@ public class JdbcEventDao implements EventDao {
         boolean returnFailed = false;
 
         // first while loop just checks the attendance list of all the events
-        while(resultForAttendanceCheck.next()) {
-            // PULL THE EVENT
-            ClassEvent classEvent = mapRowToEvent(resultForAttendanceCheck);
-            classEvent.setAttendanceList(getAttendanceByEventId(classEvent.getEvent_id()));
+
+        // Limit to 300 because clients can't sign up farther than that
+        String sqlForAttendance = "SELECT * FROM events WHERE start_time >= now() AND class_id = ? LIMIT 300; ";
+        try {
+            SqlRowSet resultForAttendanceCheck = jdbcTemplate.queryForRowSet(sqlForAttendance, originalClass.getClass_id());
+
+            while(resultForAttendanceCheck.next()) {
+                // PULL THE EVENT
+                ClassEvent classEvent = mapRowToEvent(resultForAttendanceCheck);
+                classEvent.setAttendanceList(getAttendanceByEventId(classEvent.getEvent_id()));
 
 
-            // check this current event and compare if it has the same start-time and end-time as the original
-            // filtering it down so that we don't accidentally change any events that weren't exact matches
-            // CONVERSION ROUTINE TO EXTRACT THE HOUR AND MINUTES am/pm (e.g. "06:00 am")
-            Timestamp startTimeStamp = classEvent.getStart_time();
-            Timestamp endTimeStamp = classEvent.getEnd_time();
+                // check this current event and compare if it has the same start-time and end-time as the original
+                // filtering it down so that we don't accidentally change any events that weren't exact matches
+                // CONVERSION ROUTINE TO EXTRACT THE HOUR AND MINUTES am/pm (e.g. "06:00 am")
+                Timestamp startTimeStamp = classEvent.getStart_time();
+                Timestamp endTimeStamp = classEvent.getEnd_time();
 
 
-            LocalDateTime startTimeLocalDate = startTimeStamp.toLocalDateTime();
-            LocalDateTime endTimeLocalDate = endTimeStamp.toLocalDateTime();
+                LocalDateTime startTimeLocalDate = startTimeStamp.toLocalDateTime();
+                LocalDateTime endTimeLocalDate = endTimeStamp.toLocalDateTime();
 
-            DayOfWeek currentDayOfWeek = startTimeLocalDate.getDayOfWeek();
-            String currentDay = currentDayOfWeek.toString().substring(0, 3).toLowerCase();
-            currentDay = currentDay.substring(0, 1).toUpperCase() + currentDay.substring(1);
+                DayOfWeek currentDayOfWeek = startTimeLocalDate.getDayOfWeek();
+                String currentDay = currentDayOfWeek.toString().substring(0, 3).toLowerCase();
+                currentDay = currentDay.substring(0, 1).toUpperCase() + currentDay.substring(1);
 
-            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
 
-            String startTimeString = dateTimeFormatter.format(startTimeLocalDate);
-            String originalClassStartTime = originalClass.getStart_time();
-            String updatedClassStartTime = updatedClass.getStart_time();
+                String startTimeString = dateTimeFormatter.format(startTimeLocalDate);
+                String originalClassStartTime = originalClass.getStart_time();
+                String updatedClassStartTime = updatedClass.getStart_time();
 
-            LocalDateTime nextHourEndTime = startTimeLocalDate;
+                LocalDateTime nextHourEndTime = startTimeLocalDate;
 
-            int originalClassDuration = originalClass.getClass_duration();
-            int updatedClassDuration = updatedClass.getClass_duration();
-            // GRAB THE CORRECT "06:30" END TIME  If it's not an hour
-            if (originalClassDuration != 60) {
-                nextHourEndTime = startTimeLocalDate.plusMinutes(originalClassDuration);
-            } else {
-                nextHourEndTime = startTimeLocalDate.plusHours(1);
-            }
+                int originalClassDuration = originalClass.getClass_duration();
+                int updatedClassDuration = updatedClass.getClass_duration();
+                // GRAB THE CORRECT "06:30" END TIME  If it's not an hour
+                if (originalClassDuration != 60) {
+                    nextHourEndTime = startTimeLocalDate.plusMinutes(originalClassDuration);
+                } else {
+                    nextHourEndTime = startTimeLocalDate.plusHours(1);
+                }
 
-            String actualEndTimeString = dateTimeFormatter.format(endTimeLocalDate);
-            String expectedEndTimeString = dateTimeFormatter.format(nextHourEndTime);
+                String actualEndTimeString = dateTimeFormatter.format(endTimeLocalDate);
+                String expectedEndTimeString = dateTimeFormatter.format(nextHourEndTime);
 
-            // Check if This event had already been updated thus it isn't an exact match and something to change across the board
+                // Check if This event had already been updated thus it isn't an exact match and something to change across the board
 
-            if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && classEvent.isIs_visible_online()) {
-                if (classEvent.getAttendanceList().size() > 0) {
-                    returnFailed = true;
-                    if (stringToReturn.length() == 0) {
-                        stringToReturn = "Failed at: " + classEvent.getStart_time().toString();
-                    }
-                    else {
-                        stringToReturn += " and " +  classEvent.getStart_time().toString();
+                if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && classEvent.isIs_visible_online()) {
+                    if (classEvent.getAttendanceList().size() > 0) {
+                        returnFailed = true;
+                        if (stringToReturn.length() == 0) {
+                            stringToReturn = "Failed at: " + classEvent.getStart_time().toString();
+                        }
+                        else {
+                            stringToReturn += " and " +  classEvent.getStart_time().toString();
+                        }
                     }
                 }
             }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to grab/delete all events for a specific class ID a 300 limit list.");
         }
 
         if (stringToReturn.length() > 0) {
             return stringToReturn;
         }
         Set<ClassEvent> eventsToUpdate = new HashSet<>();
+
         // second while loop updates it
-        while (result.next()) {
-            // PULL THE EVENT
-            ClassEvent classEvent = mapRowToEvent(result);
-
-            // Don't set the attendance since these classes you're updating shouldnt have any clients signed up
-            //  event.setAttendanceList(getAttendanceByEventId(event.getEvent_id()));
 
 
-            // check this current event and compare if it has the same start-time and end-time as the original
-            // filtering it down so that we don't accidentally change any events that weren't exact matches
-            // CONVERSION ROUTINE TO EXTRACT THE HOUR AND MINUTES am/pm (e.g. "06:00 am")
-            Timestamp startTimeStamp = classEvent.getStart_time();
-            Timestamp endTimeStamp = classEvent.getEnd_time();
+        // find all Event objects with the same start time, end time, and class_id
+
+        String sql = "SELECT * FROM events WHERE start_time >= now() AND class_id = ? ; ";
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, originalClass.getClass_id());
+            while (result.next()) {
+                // PULL THE EVENT
+                ClassEvent classEvent = mapRowToEvent(result);
+
+                // Don't set the attendance since these classes you're updating shouldnt have any clients signed up
+                //  event.setAttendanceList(getAttendanceByEventId(event.getEvent_id()));
 
 
-            LocalDateTime startTimeLocalDate = startTimeStamp.toLocalDateTime();
-            LocalDateTime endTimeLocalDate = endTimeStamp.toLocalDateTime();
+                // check this current event and compare if it has the same start-time and end-time as the original
+                // filtering it down so that we don't accidentally change any events that weren't exact matches
+                // CONVERSION ROUTINE TO EXTRACT THE HOUR AND MINUTES am/pm (e.g. "06:00 am")
+                Timestamp startTimeStamp = classEvent.getStart_time();
+                Timestamp endTimeStamp = classEvent.getEnd_time();
 
-            DayOfWeek currentDayOfWeek = startTimeLocalDate.getDayOfWeek();
-            String currentDay = currentDayOfWeek.toString().substring(0, 3).toLowerCase();
-            currentDay = currentDay.substring(0, 1).toUpperCase() + currentDay.substring(1);
 
-            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
+                LocalDateTime startTimeLocalDate = startTimeStamp.toLocalDateTime();
+                LocalDateTime endTimeLocalDate = endTimeStamp.toLocalDateTime();
 
-            String startTimeString = dateTimeFormatter.format(startTimeLocalDate);
-            String originalClassStartTime = originalClass.getStart_time();
-            String updatedClassStartTime = updatedClass.getStart_time();
+                DayOfWeek currentDayOfWeek = startTimeLocalDate.getDayOfWeek();
+                String currentDay = currentDayOfWeek.toString().substring(0, 3).toLowerCase();
+                currentDay = currentDay.substring(0, 1).toUpperCase() + currentDay.substring(1);
 
-            LocalDateTime nextHourEndTime = startTimeLocalDate;
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
 
-            int originalClassDuration = originalClass.getClass_duration();
-            int updatedClassDuration = updatedClass.getClass_duration();
-            // GRAB THE CORRECT "06:30" END TIME  If it's not an hour
-            if (originalClassDuration != 60) {
-                nextHourEndTime = startTimeLocalDate.plusMinutes(originalClassDuration);
-            } else {
-                nextHourEndTime = startTimeLocalDate.plusHours(1);
-            }
+                String startTimeString = dateTimeFormatter.format(startTimeLocalDate);
+                String originalClassStartTime = originalClass.getStart_time();
+                String updatedClassStartTime = updatedClass.getStart_time();
 
-            String actualEndTimeString = dateTimeFormatter.format(endTimeLocalDate);
-            String expectedEndTimeString = dateTimeFormatter.format(nextHourEndTime);
+                LocalDateTime nextHourEndTime = startTimeLocalDate;
 
-            // Check if This event had already been updated thus it isn't an exact match and something to change across the board
+                int originalClassDuration = originalClass.getClass_duration();
+                int updatedClassDuration = updatedClass.getClass_duration();
+                // GRAB THE CORRECT "06:30" END TIME  If it's not an hour
+                if (originalClassDuration != 60) {
+                    nextHourEndTime = startTimeLocalDate.plusMinutes(originalClassDuration);
+                } else {
+                    nextHourEndTime = startTimeLocalDate.plusHours(1);
+                }
 
-            if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && classEvent.isIs_visible_online()) {
-                //just update it while you're here.
+                String actualEndTimeString = dateTimeFormatter.format(endTimeLocalDate);
+                String expectedEndTimeString = dateTimeFormatter.format(nextHourEndTime);
 
-                // Happy Path: The date range never changed
+                // Check if This event had already been updated thus it isn't an exact match and something to change across the board
 
-                // check the size first
+                if (startTimeString.equals(originalClassStartTime) && actualEndTimeString.equals(expectedEndTimeString) && classEvent.isIs_visible_online()) {
+                    //just update it while you're here.
 
-                int sizeOfUpdatedClassDateRange = updateDateRangeArray.length;
-                int sizeOfOriginalClassDateRange = originalDateRangeArray.length;
-                boolean sameDateRange = true;
-                boolean sameSize = false;
-                String largerRange = "None";
-                if (sizeOfOriginalClassDateRange == sizeOfUpdatedClassDateRange) {
-                    // compare to see if they have the same days
-                    sameSize = true;
-                    for (int i = 0; i < updateDateRangeArray.length; i++) {
-                        boolean foundMatch = false;
-                        for (int j = 0; j < originalDateRangeArray.length; j++) {
-                            if (updateDateRangeArray[i].equals(originalDateRangeArray[j])) {
-                                foundMatch = true;
+                    // Happy Path: The date range never changed
+
+                    // check the size first
+
+                    int sizeOfUpdatedClassDateRange = updateDateRangeArray.length;
+                    int sizeOfOriginalClassDateRange = originalDateRangeArray.length;
+                    boolean sameDateRange = true;
+                    boolean sameSize = false;
+                    String largerRange = "None";
+                    if (sizeOfOriginalClassDateRange == sizeOfUpdatedClassDateRange) {
+                        // compare to see if they have the same days
+                        sameSize = true;
+                        for (int i = 0; i < updateDateRangeArray.length; i++) {
+                            boolean foundMatch = false;
+                            for (int j = 0; j < originalDateRangeArray.length; j++) {
+                                if (updateDateRangeArray[i].equals(originalDateRangeArray[j])) {
+                                    foundMatch = true;
+                                }
+                            }
+                            if (!foundMatch) {
+                                sameDateRange = false;
                             }
                         }
-                        if (!foundMatch) {
-                            sameDateRange = false;
-                        }
-                    }
-                } else {
-                    sameDateRange = false;
-                    if (sizeOfOriginalClassDateRange > sizeOfUpdatedClassDateRange) {
-                        largerRange = "Original";
                     } else {
-                        largerRange = "Updated";
-                    }
-                }
-
-                // Check if They have the same start time and have the same duration, which means there's nothing to change time-wise
-
-                boolean sameTimes = false;
-                if (startTimeString.equals(updatedClassStartTime) && (originalClassDuration == updatedClassDuration)) {
-                    sameTimes = true;
-                }
-
-                // CREATE YOUR PROPERTIES
-
-                // A date range to keep track
-                String[] dayRange = new String[]{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
-
-                // sort it immediately since you have to.
-                int newPosition = 0;
-                int originalPosition = 0;
-
-                // sort the dayRange to keep track
-                String[] orderedDayRange = new String[dayRange.length];
-
-                boolean madeOnePass = false;
-                for (int i = 0; i < dayRange.length; i++) {
-                    if (dayRange[i].equals(currentDay)) {
-                        orderedDayRange[newPosition] = dayRange[i];
-                        originalPosition = i;
-                        newPosition++;
-                    }
-                    if (i > originalPosition) {
-                        orderedDayRange[newPosition] = dayRange[i];
-                    }
-                    // once you get to the end, if the originalPosition was not zero then loop through the remaining positions
-                    if ((originalPosition > 0) && (i == dayRange.length - 1) && (newPosition != dayRange.length - 1)) {
-                        madeOnePass = true;
-                        i = -1;
-                    }
-                    if (madeOnePass && newPosition != dayRange.length - 1 && i >= 0 && i < originalPosition) {
-                        orderedDayRange[newPosition] = dayRange[i];
-                    }
-
-                }
-
-                //Iterator<String> it = updatedClassDateRangeSet.iterator();
-
-                //  Go through the values of the Map and Set, just one quick pass,
-                //  where you make another "put" into the map for existing matching values
-                //  but what if one of them is bigger than the other?
-
-                if (sameSize) {
-                    // loop through either map or set
-                    for (String day : updatedClassDateRangeMap.keySet()) {
-                        if (originalClassDateRangeSet.contains(day)) {
-                            updatedClassDateRangeMap.put(day, day);
-                        }
-                    }
-                } else if (largerRange.equals("Original")) {
-                    // loop through the original (map)
-                    for (String day : originalClassDateRangeSet) {
-                        if (updatedClassDateRangeMap.containsKey(day)) {
-                            updatedClassDateRangeMap.put(day, day);
+                        sameDateRange = false;
+                        if (sizeOfOriginalClassDateRange > sizeOfUpdatedClassDateRange) {
+                            largerRange = "Original";
+                        } else {
+                            largerRange = "Updated";
                         }
                     }
 
-                } else if (largerRange.equals("Updated")) {
-                    // loop through the updated (set)
-                    for (String day : updatedClassDateRangeMap.keySet()) {
-                        if (originalClassDateRangeSet.contains(day)) {
-                            updatedClassDateRangeMap.put(day, day);
+                    // Check if They have the same start time and have the same duration, which means there's nothing to change time-wise
+
+                    boolean sameTimes = false;
+                    if (startTimeString.equals(updatedClassStartTime) && (originalClassDuration == updatedClassDuration)) {
+                        sameTimes = true;
+                    }
+
+                    // CREATE YOUR PROPERTIES
+
+                    // A date range to keep track
+                    String[] dayRange = new String[]{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
+
+                    // sort it immediately since you have to.
+                    int newPosition = 0;
+                    int originalPosition = 0;
+
+                    // sort the dayRange to keep track
+                    String[] orderedDayRange = new String[dayRange.length];
+
+                    boolean madeOnePass = false;
+                    for (int i = 0; i < dayRange.length; i++) {
+                        if (dayRange[i].equals(currentDay)) {
+                            orderedDayRange[newPosition] = dayRange[i];
+                            originalPosition = i;
+                            newPosition++;
+                        }
+                        if (i > originalPosition) {
+                            orderedDayRange[newPosition] = dayRange[i];
+                        }
+                        // once you get to the end, if the originalPosition was not zero then loop through the remaining positions
+                        if ((originalPosition > 0) && (i == dayRange.length - 1) && (newPosition != dayRange.length - 1)) {
+                            madeOnePass = true;
+                            i = -1;
+                        }
+                        if (madeOnePass && newPosition != dayRange.length - 1 && i >= 0 && i < originalPosition) {
+                            orderedDayRange[newPosition] = dayRange[i];
+                        }
+
+                    }
+
+                    //Iterator<String> it = updatedClassDateRangeSet.iterator();
+
+                    //  Go through the values of the Map and Set, just one quick pass,
+                    //  where you make another "put" into the map for existing matching values
+                    //  but what if one of them is bigger than the other?
+
+                    if (sameSize) {
+                        // loop through either map or set
+                        for (String day : updatedClassDateRangeMap.keySet()) {
+                            if (originalClassDateRangeSet.contains(day)) {
+                                updatedClassDateRangeMap.put(day, day);
+                            }
+                        }
+                    } else if (largerRange.equals("Original")) {
+                        // loop through the original (map)
+                        for (String day : originalClassDateRangeSet) {
+                            if (updatedClassDateRangeMap.containsKey(day)) {
+                                updatedClassDateRangeMap.put(day, day);
+                            }
+                        }
+
+                    } else if (largerRange.equals("Updated")) {
+                        // loop through the updated (set)
+                        for (String day : updatedClassDateRangeMap.keySet()) {
+                            if (originalClassDateRangeSet.contains(day)) {
+                                updatedClassDateRangeMap.put(day, day);
+                            }
                         }
                     }
-                }
 
 
-                if (sameDateRange && !sameTimes) {
-                    // FOR THIS CONDITION BLOCK ONLY CHANGE THE HOURS OF THE START AND END TIMESTAMPS
-                    // BECAUSE THEY KEPT THE EXACT SAME DATE RANGE
-
-                    // empty event Object
-                    ClassEvent newClassEvent = new ClassEvent();
-                    // set event ID
-                    newClassEvent.setEvent_id(classEvent.getEvent_id());
-                    // set class ID
-                    newClassEvent.setClass_id(updatedClass.getClass_id());
-                    // set name
-                    newClassEvent.setEvent_name(updatedClass.getClass_description());
-                    // set color (default to blue)
-                    newClassEvent.setColor("blue");
-                    // set timed (default to true)
-                    newClassEvent.setTimed(true);
-                    // set visible to true
-                    newClassEvent.setIs_visible_online(true);
-
-                    // Process to Prepare the new startTime/endTime timestamps for the updated event
-                    LocalDate startTimeDate = startTimeStamp.toInstant().atZone(ZoneId.of("America/New_York")).toLocalDate();
-
-                    // Use that assigned Day to update this event for the next assigned day
-                    DayOfWeek assignedDayOfWeek = getDayOfWeekByString(currentDay);
-
-                    // finds the same or next date object at the assigned day
-                    LocalDate nextOrSameAssignedDay = startTimeDate.with(TemporalAdjusters.nextOrSame(assignedDayOfWeek));
-
-                    String startTimeStampBuilder = "";
-                    String month = String.valueOf(nextOrSameAssignedDay.getMonthValue());
-                    String day = String.valueOf(nextOrSameAssignedDay.getDayOfMonth());
-                    String year = String.valueOf(nextOrSameAssignedDay.getYear());
-
-                    String time = LocalTime.parse(updatedClass.getStart_time(), DateTimeFormatter.ofPattern("hh:mm a", Locale.US)).format(DateTimeFormatter.ofPattern("HH:mm"));
-                    startTimeStampBuilder += year + "-" + month + "-" + day + " " + time.substring(0, 5) + ":00.00";
-
-                    Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
-                    Timestamp end = new Timestamp(start.getTime());
-
-                    if (updatedClassDuration != 60) {
-                        end = new Timestamp(start.getTime() + TimeUnit.MINUTES.toMillis(updatedClassDuration));
-                    } else {
-                        end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
-                    }
-
-                    // startTime and endTime are prepared here
-                    newClassEvent.setStart_time(start);
-                    newClassEvent.setEnd_time(end);
-
-                    // Maybe make sure no event has the same timestamps already so that you don't double book
-                    boolean checkForExistingEventWithStartTime = isThereExistingEventWithStartTime(newClassEvent);
-
-                    if (!checkForExistingEventWithStartTime) {
-//                        updateEventDetails(newClassEvent);
-                        eventsToUpdate.add(newClassEvent);
-                    }
-
-
-                } else if (!sameDateRange) {
-
-
-                    // See if the map with the updated Date Range contains the currentDay as a key
-
-                    if (updatedClassDateRangeMap.containsKey(currentDay)) {
-                        // Use that value in the map to create the new event
+                    if (sameDateRange && !sameTimes) {
+                        // FOR THIS CONDITION BLOCK ONLY CHANGE THE HOURS OF THE START AND END TIMESTAMPS
+                        // BECAUSE THEY KEPT THE EXACT SAME DATE RANGE
 
                         // empty event Object
                         ClassEvent newClassEvent = new ClassEvent();
@@ -1833,30 +1898,18 @@ public class JdbcEventDao implements EventDao {
                         boolean checkForExistingEventWithStartTime = isThereExistingEventWithStartTime(newClassEvent);
 
                         if (!checkForExistingEventWithStartTime) {
-//                            updateEventDetails(newClassEvent);
+    //                        updateEventDetails(newClassEvent);
                             eventsToUpdate.add(newClassEvent);
                         }
 
 
-                    } else {
-                        // Loop through and see if the map has any slots open where the value is an empty stirng
-                        boolean foundEmptySlot = false;
-                        String assignedDay = "";
-                        for (String day : updatedClassDateRangeMap.keySet()) {
-                            String currentValue = updatedClassDateRangeMap.get(day);
-                            if (currentValue.equals("")) {
-                                foundEmptySlot = true;
-                                assignedDay = day;
-                                updatedClassDateRangeMap.put(day, currentDay);
-                            }
-                        }
+                    } else if (!sameDateRange) {
 
-                        // Delete it only if we cant switch it to another day and there's no attendance
-                        // Find out if this event has an attendance
-                        if (!foundEmptySlot && (classEvent.getAttendanceList() == null || classEvent.getAttendanceList().size() == 0)) {
-                            deleteEvent(classEvent.getEvent_id());
-                        } else if (foundEmptySlot && !(assignedDay.equals("") && updatedClassDateRangeMap.get(assignedDay).equals(currentDay))) {
 
+                        // See if the map with the updated Date Range contains the currentDay as a key
+
+                        if (updatedClassDateRangeMap.containsKey(currentDay)) {
+                            // Use that value in the map to create the new event
 
                             // empty event Object
                             ClassEvent newClassEvent = new ClassEvent();
@@ -1873,14 +1926,13 @@ public class JdbcEventDao implements EventDao {
                             // set visible to true
                             newClassEvent.setIs_visible_online(true);
 
-
                             // Process to Prepare the new startTime/endTime timestamps for the updated event
                             LocalDate startTimeDate = startTimeStamp.toInstant().atZone(ZoneId.of("America/New_York")).toLocalDate();
 
                             // Use that assigned Day to update this event for the next assigned day
-                            DayOfWeek assignedDayOfWeek = getDayOfWeekByString(assignedDay);
+                            DayOfWeek assignedDayOfWeek = getDayOfWeekByString(currentDay);
 
-                            // finds the next date object at the assigned day
+                            // finds the same or next date object at the assigned day
                             LocalDate nextOrSameAssignedDay = startTimeDate.with(TemporalAdjusters.nextOrSame(assignedDayOfWeek));
 
                             String startTimeStampBuilder = "";
@@ -1908,49 +1960,130 @@ public class JdbcEventDao implements EventDao {
                             boolean checkForExistingEventWithStartTime = isThereExistingEventWithStartTime(newClassEvent);
 
                             if (!checkForExistingEventWithStartTime) {
-//                                updateEventDetails(newClassEvent);
+    //                            updateEventDetails(newClassEvent);
                                 eventsToUpdate.add(newClassEvent);
+                            }
+
+
+                        } else {
+                            // Loop through and see if the map has any slots open where the value is an empty stirng
+                            boolean foundEmptySlot = false;
+                            String assignedDay = "";
+                            for (String day : updatedClassDateRangeMap.keySet()) {
+                                String currentValue = updatedClassDateRangeMap.get(day);
+                                if (currentValue.equals("")) {
+                                    foundEmptySlot = true;
+                                    assignedDay = day;
+                                    updatedClassDateRangeMap.put(day, currentDay);
+                                }
+                            }
+
+                            // Delete it only if we cant switch it to another day and there's no attendance
+                            // Find out if this event has an attendance
+                            if (!foundEmptySlot && (classEvent.getAttendanceList() == null || classEvent.getAttendanceList().size() == 0)) {
+                                deleteEvent(classEvent.getEvent_id());
+                            } else if (foundEmptySlot && !(assignedDay.equals("") && updatedClassDateRangeMap.get(assignedDay).equals(currentDay))) {
+
+
+                                // empty event Object
+                                ClassEvent newClassEvent = new ClassEvent();
+                                // set event ID
+                                newClassEvent.setEvent_id(classEvent.getEvent_id());
+                                // set class ID
+                                newClassEvent.setClass_id(updatedClass.getClass_id());
+                                // set name
+                                newClassEvent.setEvent_name(updatedClass.getClass_description());
+                                // set color (default to blue)
+                                newClassEvent.setColor("blue");
+                                // set timed (default to true)
+                                newClassEvent.setTimed(true);
+                                // set visible to true
+                                newClassEvent.setIs_visible_online(true);
+
+
+                                // Process to Prepare the new startTime/endTime timestamps for the updated event
+                                LocalDate startTimeDate = startTimeStamp.toInstant().atZone(ZoneId.of("America/New_York")).toLocalDate();
+
+                                // Use that assigned Day to update this event for the next assigned day
+                                DayOfWeek assignedDayOfWeek = getDayOfWeekByString(assignedDay);
+
+                                // finds the next date object at the assigned day
+                                LocalDate nextOrSameAssignedDay = startTimeDate.with(TemporalAdjusters.nextOrSame(assignedDayOfWeek));
+
+                                String startTimeStampBuilder = "";
+                                String month = String.valueOf(nextOrSameAssignedDay.getMonthValue());
+                                String day = String.valueOf(nextOrSameAssignedDay.getDayOfMonth());
+                                String year = String.valueOf(nextOrSameAssignedDay.getYear());
+
+                                String time = LocalTime.parse(updatedClass.getStart_time(), DateTimeFormatter.ofPattern("hh:mm a", Locale.US)).format(DateTimeFormatter.ofPattern("HH:mm"));
+                                startTimeStampBuilder += year + "-" + month + "-" + day + " " + time.substring(0, 5) + ":00.00";
+
+                                Timestamp start = Timestamp.valueOf(startTimeStampBuilder);
+                                Timestamp end = new Timestamp(start.getTime());
+
+                                if (updatedClassDuration != 60) {
+                                    end = new Timestamp(start.getTime() + TimeUnit.MINUTES.toMillis(updatedClassDuration));
+                                } else {
+                                    end = new Timestamp(start.getTime() + TimeUnit.HOURS.toMillis(1));
+                                }
+
+                                // startTime and endTime are prepared here
+                                newClassEvent.setStart_time(start);
+                                newClassEvent.setEnd_time(end);
+
+                                // Maybe make sure no event has the same timestamps already so that you don't double book
+                                boolean checkForExistingEventWithStartTime = isThereExistingEventWithStartTime(newClassEvent);
+
+                                if (!checkForExistingEventWithStartTime) {
+    //                                updateEventDetails(newClassEvent);
+                                    eventsToUpdate.add(newClassEvent);
+                                }
+
                             }
 
                         }
 
+                    } else if (sameDateRange && sameTimes && sameSize) {
+                        // Remember to Update the rest of the event since the Timestamps match
+
+                        // empty event Object
+                        ClassEvent newClassEvent = new ClassEvent();
+                        // set event ID
+                        newClassEvent.setEvent_id(classEvent.getEvent_id());
+                        // set class ID
+                        newClassEvent.setClass_id(updatedClass.getClass_id());
+                        // set name
+                        newClassEvent.setEvent_name(updatedClass.getClass_description());
+                        // set color (default to blue)
+                        newClassEvent.setColor("blue");
+                        // set timed (default to true)
+                        newClassEvent.setTimed(true);
+                        // set visible to true
+                        newClassEvent.setIs_visible_online(true);
+
+                        // startTime and endTime are prepared here
+                        newClassEvent.setStart_time(classEvent.getStart_time());
+                        newClassEvent.setEnd_time(classEvent.getEnd_time());
+
+                        // Maybe make sure no event has the same timestamps already so that you don't double book
+                        boolean checkForExistingEventWithStartTime = isThereExistingEventWithStartTime(newClassEvent);
+
+                        if (!checkForExistingEventWithStartTime) {
+    //                        updateEventDetails(newClassEvent);
+                            eventsToUpdate.add(newClassEvent);
+                        }
                     }
 
-                } else if (sameDateRange && sameTimes && sameSize) {
-                    // Remember to Update the rest of the event since the Timestamps match
-
-                    // empty event Object
-                    ClassEvent newClassEvent = new ClassEvent();
-                    // set event ID
-                    newClassEvent.setEvent_id(classEvent.getEvent_id());
-                    // set class ID
-                    newClassEvent.setClass_id(updatedClass.getClass_id());
-                    // set name
-                    newClassEvent.setEvent_name(updatedClass.getClass_description());
-                    // set color (default to blue)
-                    newClassEvent.setColor("blue");
-                    // set timed (default to true)
-                    newClassEvent.setTimed(true);
-                    // set visible to true
-                    newClassEvent.setIs_visible_online(true);
-
-                    // startTime and endTime are prepared here
-                    newClassEvent.setStart_time(classEvent.getStart_time());
-                    newClassEvent.setEnd_time(classEvent.getEnd_time());
-
-                    // Maybe make sure no event has the same timestamps already so that you don't double book
-                    boolean checkForExistingEventWithStartTime = isThereExistingEventWithStartTime(newClassEvent);
-
-                    if (!checkForExistingEventWithStartTime) {
-//                        updateEventDetails(newClassEvent);
-                        eventsToUpdate.add(newClassEvent);
-                    }
                 }
 
+
             }
-
-
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to grab/delete all events for a specific class ID.");
         }
+
         // Loop through the remaining empty string values and make events for that specific key
         batchUpdateEvents(eventsToUpdate);
 
@@ -2076,8 +2209,9 @@ public class JdbcEventDao implements EventDao {
                 signUpAggregate.setDailySignUp(result.getInt("count"));
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            throw new CustomSqlException("Failed to retrieve today's client sign up aggregate data.");
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve today's client sign up aggregate data.");
         }
 
         // Weekly
@@ -2114,9 +2248,10 @@ public class JdbcEventDao implements EventDao {
             if (result2.next()) {
                 signUpAggregate.setWeeklySignUp(result2.getInt("count"));
             }
-        } catch (DataAccessException e) {
-            System.out.println(e.getMessage());
-            throw new CustomSqlException("Failed to retrieve client this week's sign up aggregate data.");
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve client this week's sign up aggregate data.");
         }
 
         // Monthly
@@ -2153,9 +2288,10 @@ public class JdbcEventDao implements EventDao {
             if (result3.next()) {
                 signUpAggregate.setMonthlySignUp(result3.getInt("count"));
             }
-        } catch (DataAccessException e) {
-            System.out.println(e.getMessage());
-            throw new CustomSqlException("Failed to retrieve this month's client sign up aggregate data.");
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve this month's client sign up aggregate data.");
         }
 
         return signUpAggregate;
@@ -2166,12 +2302,20 @@ public class JdbcEventDao implements EventDao {
     public boolean isThereExistingEventWithStartTime(ClassEvent newClassEvent) {
         String sql = "SELECT * FROM events WHERE start_time = ? AND end_time = ? AND event_name = ? AND color = ? AND is_paid = ?;";
         List<ClassEvent> checkForExistingClassEventList = new ArrayList<>();
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, newClassEvent.getStart_time(), newClassEvent.getEnd_time(), newClassEvent.getEvent_name(), newClassEvent.getColor(), newClassEvent.isIs_paid());
-        while (result.next()) {
-            ClassEvent classEvent = mapRowToEvent(result);
+        SqlRowSet result = null;
+        try {
+            result = jdbcTemplate.queryForRowSet(sql, newClassEvent.getStart_time(), newClassEvent.getEnd_time(), newClassEvent.getEvent_name(), newClassEvent.getColor(), newClassEvent.isIs_paid());
+            while (result.next()) {
+                ClassEvent classEvent = mapRowToEvent(result);
 
-            checkForExistingClassEventList.add(classEvent);
+                checkForExistingClassEventList.add(classEvent);
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to confirm boolean if there is existing event with start time.");
         }
+
         return checkForExistingClassEventList.size() > 0;
     }
 
@@ -2220,8 +2364,9 @@ public class JdbcEventDao implements EventDao {
                 allClassEvents.add(classEvent);
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            throw new CustomSqlException("Failed to read Events from database.");
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to read Events from database.");
         }
         return allClassEvents;
     }
@@ -2229,18 +2374,24 @@ public class JdbcEventDao implements EventDao {
     public Map<Timestamp, Timestamp> getMapOfExistingEvents() {
         Map<Timestamp, Timestamp> mapToReturn = new HashMap<>();
         String sql = "SELECT start_time, end_time FROM events;";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
-        while (results.next()) {
-            Timestamp start = results.getTimestamp("start_time");
-            Timestamp end = results.getTimestamp("end_time");
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
+            while (results.next()) {
+                Timestamp start = results.getTimestamp("start_time");
+                Timestamp end = results.getTimestamp("end_time");
 
-            mapToReturn.put(start,end);
+                mapToReturn.put(start,end);
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to map start times and end times of all existing events.");
         }
         return mapToReturn;
     }
 
     @Override
-    public List<ClassEvent> getHundredEvents() throws CustomSqlException {
+    public List<ClassEvent> getTwoHundredEvents() throws CustomException {
         List<ClassEvent> allClassEvents = new ArrayList<>();
         String sql = "SELECT * FROM events WHERE is_visible_online = true AND start_time >= now() ORDER BY start_time LIMIT 200  ; ";
         try {
@@ -2259,20 +2410,27 @@ public class JdbcEventDao implements EventDao {
                 allClassEvents.add(classEvent);
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            throw new CustomSqlException("Failed to read a hundred events from Database");
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to read two hundred events from Database");
         }
         return allClassEvents;
     }
 
     @Override
-    public List<ClassEvent> getHundredEventsForUser(int client_id) {
+    public List<ClassEvent> getTwoHundredEventsForUser(int client_id) {
         List<ClassEvent> allClassEvents = new ArrayList<>();
         String sql = "SELECT * FROM events WHERE NOT EXISTS (SELECT event_id FROM client_event WHERE client_event.event_id = events.event_id AND client_event.client_id = ?) AND is_visible_online = true AND start_time >= now() ORDER BY start_time LIMIT 200 ; ";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, client_id);
-        while (result.next()) {
-            ClassEvent classEvent = mapRowToEvent(result);
-            allClassEvents.add(classEvent);
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, client_id);
+            while (result.next()) {
+                ClassEvent classEvent = mapRowToEvent(result);
+                allClassEvents.add(classEvent);
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to read two hundred events for a client from Database.");
         }
         return allClassEvents;
     }
@@ -2283,12 +2441,17 @@ public class JdbcEventDao implements EventDao {
 
         // Pull a list of clients from the client_event table for anyone who signed up.
         String sql = "SELECT * FROM events WHERE event_id = ?;";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, eventId);
-        if (result.next()) {
-            classEvent = mapRowToEvent(result);
-            classEvent.setAttendanceList(getAttendanceByEventId(eventId));
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, eventId);
+            if (result.next()) {
+                classEvent = mapRowToEvent(result);
+                classEvent.setAttendanceList(getAttendanceByEventId(eventId));
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to find event by event ID.");
         }
-
 
 
         return classEvent;
@@ -2297,10 +2460,17 @@ public class JdbcEventDao implements EventDao {
     @Override
     public int getPackagePurchaseIdByEventIdClientId(int eventId, int clientId) {
         String sql = "SELECT package_purchase_id FROM client_event WHERE event_id = ? AND client_id = ?";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, eventId, clientId);
         int packageId = 0;
-        if (result.next()) {
-            packageId = result.getInt("package_purchase_id");
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, eventId, clientId);
+            packageId = 0;
+            if (result.next()) {
+                packageId = result.getInt("package_purchase_id");
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to get Package Purchase By Event And Client.", e);
         }
         return packageId;
     }
@@ -2312,13 +2482,19 @@ public class JdbcEventDao implements EventDao {
         String sql = "SELECT * FROM client_details JOIN client_event ON " +
                 "client_event.client_id = client_details.client_id " +
                 "WHERE client_event.event_id = ?";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, eventId);
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, eventId);
 
-        while (result.next()) {
-            ClientDetails clientDetails = mapRowToClient(result);
-            // before you add it to the list, include whether they are red-flagged or not
-            clientDetails.setRedFlag(getRedFlaggedClientEventsByClientId(clientDetails.getClient_id()).size() > 0);
-            listOfAttendance.add(clientDetails);
+            while (result.next()) {
+                ClientDetails clientDetails = mapRowToClient(result);
+                // before you add it to the list, include whether they are red-flagged or not
+                clientDetails.setRedFlag(getRedFlaggedClientEventsByClientId(clientDetails.getClient_id()).size() > 0);
+                listOfAttendance.add(clientDetails);
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve attendance for event with ID.", e);
         }
         return listOfAttendance;
     }
@@ -2327,10 +2503,16 @@ public class JdbcEventDao implements EventDao {
     public List<ClientEvent> getRedFlaggedClientEventsByClientId(int clientId) {
         List<ClientEvent> clientEventObjectList = new ArrayList<>();
         String sql = "SELECT * FROM client_event WHERE client_id = ? AND package_purchase_id = 0";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, clientId);
-        while (result.next()) {
-            ClientEvent clientEvent = mapRowToClientEvent(result);
-            clientEventObjectList.add(clientEvent);
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, clientId);
+            while (result.next()) {
+                ClientEvent clientEvent = mapRowToClientEvent(result);
+                clientEventObjectList.add(clientEvent);
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to get red flagged events for a client.", e);
         }
         return clientEventObjectList;
     }
@@ -2339,17 +2521,35 @@ public class JdbcEventDao implements EventDao {
     @Override
     public void registerForEvent(int client_id, int event_id, int package_purchase_id) {
         String sql = "INSERT INTO client_event (client_id, event_id, package_purchase_id) VALUES (?,?,?);";
-        jdbcTemplate.update(sql, client_id, event_id, package_purchase_id);
+        try {
+            jdbcTemplate.update(sql, client_id, event_id, package_purchase_id);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to register client for event.");
+        }
 
         String sql2 = "UPDATE client_details SET is_new_client = FALSE WHERE client_id = ?";
 
-        jdbcTemplate.update(sql2, client_id);
+        try {
+            jdbcTemplate.update(sql2, client_id);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to set new client to false for this specific client.");
+        }
     }
 
     @Override
-    public void reconcileClassWithPackageId(int packageId, int eventId, int clientId) {
+    public void reconcileClassWithPackageId(int packagePurchaseID, int eventId, int clientId) {
         String sql = "UPDATE client_event SET package_purchase_id = ? WHERE event_id = ? AND client_id = ?";
-        jdbcTemplate.update(sql, packageId, eventId, clientId);
+        try {
+            jdbcTemplate.update(sql, packagePurchaseID, eventId, clientId);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to update client event with new package purchase.");
+        }
     }
 
 
@@ -2363,33 +2563,46 @@ public class JdbcEventDao implements EventDao {
                 "JOIN client_details ON client_details.client_id = client_event.client_id \n" +
                 "WHERE user_id = ? " +
                 "ORDER BY events.start_time";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, user_id);
-        ClientDetails clientDetails = findClientByUserId(user_id);
-        List<PackagePurchase> sharedPackages = getAllSharedActivePackages(clientDetails.getClient_id());
-        Set<Integer> sharedPackageIdsInSet = new HashSet<>();
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, user_id);
+            ClientDetails clientDetails = findClientByUserId(user_id);
+            List<PackagePurchase> sharedPackages = getAllSharedActivePackages(clientDetails.getClient_id());
+            Set<Integer> sharedPackageIdsInSet = new HashSet<>();
 
-        for (int i = 0; i < sharedPackages.size(); i++) {
-            PackagePurchase currentPackage = sharedPackages.get(i);
-            sharedPackageIdsInSet.add(currentPackage.getPackage_purchase_id());
-        }
-
-        while (result.next()) {
-            classEvent = mapRowToEvent(result);
-            classEvent.setPackage_purchase_id(result.getInt("package_purchase_id"));
-            if (sharedPackageIdsInSet.contains(classEvent.getPackage_purchase_id()) ) {
-                classEvent.setShared(true);
+            for (int i = 0; i < sharedPackages.size(); i++) {
+                PackagePurchase currentPackage = sharedPackages.get(i);
+                sharedPackageIdsInSet.add(currentPackage.getPackage_purchase_id());
             }
-            allClientClassEvents.add(classEvent);
+
+            while (result.next()) {
+                classEvent = mapRowToEvent(result);
+                classEvent.setPackage_purchase_id(result.getInt("package_purchase_id"));
+                if (sharedPackageIdsInSet.contains(classEvent.getPackage_purchase_id()) ) {
+                    classEvent.setShared(true);
+                }
+                allClientClassEvents.add(classEvent);
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve all client events for user.");
         }
         return allClientClassEvents;
     }
 
     public ClientDetails findClientByUserId(int userId) {
         String sql = "SELECT * FROM client_details WHERE user_id = ?";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
-        ClientDetails clientDetails = new ClientDetails();
-        if (results.next()) {
-            clientDetails = mapRowToClient(results);
+        ClientDetails clientDetails = null;
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
+            clientDetails = new ClientDetails();
+            if (results.next()) {
+                clientDetails = mapRowToClient(results);
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve client by user.");
         }
 
         return clientDetails;
@@ -2407,14 +2620,20 @@ public class JdbcEventDao implements EventDao {
                 "AND ( (classes_remaining > 0 AND package_purchase.expiration_date > NOW())  \n" +
                 "OR (package_details.unlimited = true AND package_purchase.expiration_date > NOW()) ) " +
                 "ORDER BY expiration_date;";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, client_id, client_id);
-        while (result.next()) {
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, client_id, client_id);
+            while (result.next()) {
 
-            PackagePurchase packagePurchase = mapRowToPackagePurchase((result));
+                PackagePurchase packagePurchase = mapRowToPackagePurchase((result));
 
-            packagePurchase.setUnlimited(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
-            packages.add(packagePurchase);
+                packagePurchase.setUnlimited(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
+                packages.add(packagePurchase);
 
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve all shared packages for a client.");
         }
         return packages;
     }
@@ -2448,7 +2667,13 @@ public class JdbcEventDao implements EventDao {
     @Override
     public void deleteEventForClient(int event_id, int client_id) {
         String sql = "DELETE FROM client_event where event_id = ? and client_id = ?";
-        jdbcTemplate.update(sql, event_id, client_id);
+        try {
+            jdbcTemplate.update(sql, event_id, client_id);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to delete event for client.");
+        }
     }
 
 
@@ -2840,11 +3065,18 @@ public class JdbcEventDao implements EventDao {
     }
 
     public Timestamp addDays(int days, Timestamp t1) throws Exception {
-        if (days < 0) {
-            throw new Exception("Day in wrong format.");
+        try {
+            if (days < 0) {
+                throw new Exception("Day in wrong format.");
+            }
+            Long miliseconds = dayToMiliseconds(days);
+            return new Timestamp(t1.getTime() + miliseconds);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Error incrementing the timestamp");
         }
-        Long miliseconds = dayToMiliseconds(days);
-        return new Timestamp(t1.getTime() + miliseconds);
+
     }
 
 
