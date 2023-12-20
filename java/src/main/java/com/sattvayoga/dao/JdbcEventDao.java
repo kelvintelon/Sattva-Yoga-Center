@@ -2077,7 +2077,7 @@ public class JdbcEventDao implements EventDao {
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            throw new CustomSqlException("Failed to retrieve client sign up aggregate.");
+            throw new CustomSqlException("Failed to retrieve today's client sign up aggregate data.");
         }
 
         // Weekly
@@ -2108,10 +2108,15 @@ public class JdbcEventDao implements EventDao {
 
         String sql2 = "SELECT COUNT(client_event.client_id) FROM client_event JOIN events ON events.event_id = client_event.event_id WHERE (events.start_time BETWEEN ? AND ?)";
 
-        SqlRowSet result2 = jdbcTemplate.queryForRowSet(sql2, startOfWeek, endOfWeek);
+        try {
+            SqlRowSet result2 = jdbcTemplate.queryForRowSet(sql2, startOfWeek, endOfWeek);
 
-        if (result2.next()) {
-            signUpAggregate.setWeeklySignUp(result2.getInt("count"));
+            if (result2.next()) {
+                signUpAggregate.setWeeklySignUp(result2.getInt("count"));
+            }
+        } catch (DataAccessException e) {
+            System.out.println(e.getMessage());
+            throw new CustomSqlException("Failed to retrieve client this week's sign up aggregate data.");
         }
 
         // Monthly
@@ -2142,10 +2147,15 @@ public class JdbcEventDao implements EventDao {
 
         String sql3 = "SELECT COUNT(client_event.client_id) FROM client_event JOIN events ON events.event_id = client_event.event_id WHERE (events.start_time BETWEEN ? AND ?)";
 
-        SqlRowSet result3 = jdbcTemplate.queryForRowSet(sql3, startOfMonth, endOfMonth);
+        try {
+            SqlRowSet result3 = jdbcTemplate.queryForRowSet(sql3, startOfMonth, endOfMonth);
 
-        if (result3.next()) {
-            signUpAggregate.setMonthlySignUp(result3.getInt("count"));
+            if (result3.next()) {
+                signUpAggregate.setMonthlySignUp(result3.getInt("count"));
+            }
+        } catch (DataAccessException e) {
+            System.out.println(e.getMessage());
+            throw new CustomSqlException("Failed to retrieve this month's client sign up aggregate data.");
         }
 
         return signUpAggregate;
