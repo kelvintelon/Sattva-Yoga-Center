@@ -140,6 +140,8 @@ public class PackagePurchaseController {
             }
 
         } catch (Exception e) {
+            System.out.println("Error Message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
             throw new GiftCardNotFoundException();
         }
 

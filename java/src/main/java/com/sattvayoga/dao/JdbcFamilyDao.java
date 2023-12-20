@@ -1,6 +1,7 @@
 package com.sattvayoga.dao;
 
 import com.sattvayoga.model.*;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.relational.core.sql.In;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -30,43 +31,74 @@ public class JdbcFamilyDao implements FamilyDao{
     public List<Family> getAllFamilies() throws SQLException {
         List<Family> allFamilies = new ArrayList<>();
         String sql = "SELECT family_id, family_name from families;";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
-        while(result.next()){
-            Family family = mapRowToFamily(result);
-            family.setQuick_details("("+family.getFamily_id()+") " + family.getFamily_name());
-            family.setListOfFamilyMembers(getFamilyMemberListByFamilyId(family.getFamily_id()));
-            allFamilies.add(family);
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+            while(result.next()){
+                Family family = mapRowToFamily(result);
+                family.setQuick_details("("+family.getFamily_id()+") " + family.getFamily_name());
+                family.setListOfFamilyMembers(getFamilyMemberListByFamilyId(family.getFamily_id()));
+                allFamilies.add(family);
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve all families.");
         }
         return allFamilies;
     }
 
     @Override
     public void addClientToFamily(int client_id, int family_id){
-        String sql = "Delete from client_family WHERE client_id = ?;";
-        jdbcTemplate.update(sql,client_id);
-        sql = "INSERT INTO client_family (client_id, family_id) VALUES (?,?);";
-        jdbcTemplate.update(sql,client_id,family_id);
+        try {
+            String sql = "Delete from client_family WHERE client_id = ?;";
+            jdbcTemplate.update(sql,client_id);
+            sql = "INSERT INTO client_family (client_id, family_id) VALUES (?,?);";
+            jdbcTemplate.update(sql,client_id,family_id);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to add client to family.");
+        }
     }
 
     @Override
     public int createNewFamily(String family_name) {
         String sql = "INSERT into families (family_name) VALUES (?) RETURNING family_id;";
-        int newFamilyId = jdbcTemplate.queryForObject(sql,Integer.class, family_name);
+        int newFamilyId = 0;
+        try {
+            newFamilyId = jdbcTemplate.queryForObject(sql,Integer.class, family_name);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to create new family.");
+        }
         return newFamilyId;
     }
 
     @Override
     public void updateFamilyName(Family newFamilyName) {
         String sql = "UPDATE families SET family_name = ? WHERE family_id =?;";
-        jdbcTemplate.update(sql,newFamilyName.getFamily_name(),newFamilyName.getFamily_id());
+        try {
+            jdbcTemplate.update(sql,newFamilyName.getFamily_name(),newFamilyName.getFamily_id());
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to update family name.");
+        }
     }
 
     @Override
     public void deleteFamily(Family familyToDelete) {
-        String sql = "DELETE FROM client_family WHERE family_id = ?";
-        jdbcTemplate.update(sql, familyToDelete.getFamily_id());
-        sql = "DELETE FROM families WHERE family_id = ?";
-        jdbcTemplate.update(sql, familyToDelete.getFamily_id());
+        try {
+            String sql = "DELETE FROM client_family WHERE family_id = ?";
+            jdbcTemplate.update(sql, familyToDelete.getFamily_id());
+            sql = "DELETE FROM families WHERE family_id = ?";
+            jdbcTemplate.update(sql, familyToDelete.getFamily_id());
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to delete family name.");
+        }
     }
 
     @Override
@@ -74,17 +106,23 @@ public class JdbcFamilyDao implements FamilyDao{
         Family family = new Family();
 
         String sql = "SELECT * FROM families WHERE family_id = ?";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql,familyId);
-        if (result.next()) {
-            family = mapRowToFamily(result);
-        }
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql,familyId);
+            if (result.next()) {
+                family = mapRowToFamily(result);
+            }
 
-        sql = "SELECT * FROM client_details JOIN client_family ON client_details.client_id = client_family.client_id WHERE family_id = ?";
-        SqlRowSet result2 = jdbcTemplate.queryForRowSet(sql,familyId);
+            sql = "SELECT * FROM client_details JOIN client_family ON client_details.client_id = client_family.client_id WHERE family_id = ?";
+            SqlRowSet result2 = jdbcTemplate.queryForRowSet(sql,familyId);
 
-        while (result2.next()) {
-            ClientDetails familyMember = mapRowToClient(result2);
-            family.getListOfFamilyMembers().add(familyMember);
+            while (result2.next()) {
+                ClientDetails familyMember = mapRowToClient(result2);
+                family.getListOfFamilyMembers().add(familyMember);
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to get family details by ID.");
         }
 
         return family;
@@ -97,7 +135,13 @@ public class JdbcFamilyDao implements FamilyDao{
             int familyId = clientDetailsList.get(i).getFamily_id();
 
             String sql = "DELETE FROM client_family WHERE client_id = ? AND family_id = ?";
-            jdbcTemplate.update(sql, currentClientId, familyId);
+            try {
+                jdbcTemplate.update(sql, currentClientId, familyId);
+            } catch (Exception e) {
+                System.out.println("Error message: " + e.getMessage());
+                System.out.println("Cause: " + e.getCause());
+                throw new CustomException("Failed to remove a family member from selected clients in a list.");
+            }
         }
     }
 
@@ -218,12 +262,18 @@ public class JdbcFamilyDao implements FamilyDao{
 
         String sql = "SELECT * FROM client_details JOIN client_family ON client_details.client_id = client_family.client_id WHERE family_id = ?";
 
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, familyId);
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, familyId);
 
-        while(result.next()) {
-            ClientDetails familyMember = mapRowToClient(result);
-            familyMember.setQuick_details("(" + familyMember.getClient_id() + ")" + " " + familyMember.getFirst_name() + " " + familyMember.getLast_name());
-            familyMemberList.add(familyMember);
+            while(result.next()) {
+                ClientDetails familyMember = mapRowToClient(result);
+                familyMember.setQuick_details("(" + familyMember.getClient_id() + ")" + " " + familyMember.getFirst_name() + " " + familyMember.getLast_name());
+                familyMemberList.add(familyMember);
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve family members by ID.");
         }
 
         return  familyMemberList;

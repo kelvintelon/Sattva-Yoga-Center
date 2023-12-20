@@ -5,6 +5,7 @@ import com.sattvayoga.dto.order.ClientCheckoutDTO;
 import com.sattvayoga.dto.order.ResendEmailDTO;
 import com.sattvayoga.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
@@ -55,14 +56,20 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         String sql = "SELECT * FROM package_purchase " +
                 "JOIN client_details on client_details.client_id = package_purchase.client_id " +
                 "WHERE client_details.user_id = ?";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId);
-        while (result.next()) {
-            PackagePurchase packagePurchase = mapRowToPackagePurchase(result);
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId);
+            while (result.next()) {
+                PackagePurchase packagePurchase = mapRowToPackagePurchase(result);
 
-            // set package description
-            packagePurchase.setPackage_description(getPackageDescriptionByPackageId(packagePurchase.getPackage_id()));
-            packagePurchase.setUnlimited(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
-            allUserPackagePurchase.add(packagePurchase);
+                // set package description
+                packagePurchase.setPackage_description(getPackageDescriptionByPackageId(packagePurchase.getPackage_id()));
+                packagePurchase.setUnlimited(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
+                allUserPackagePurchase.add(packagePurchase);
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve all package purchases by user ID.");
         }
         return allUserPackagePurchase;
     }
@@ -88,48 +95,73 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 "JOIN client_details on client_details.client_id = package_purchase.client_id " +
                 "WHERE client_details.user_id = ? ORDER BY package_purchase." + sortBy + " " + sortDirection + offsetString;
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId, offset);
-        while (result.next()) {
-            PackagePurchase packagePurchase = mapRowToPackagePurchase(result);
+        try {
+            while (result.next()) {
+                PackagePurchase packagePurchase = mapRowToPackagePurchase(result);
 
-            // set package description
-            String description = "";
-            if (getPackageDescriptionByPackageId(packagePurchase.getPackage_id()) != null) {
-                description = getPackageDescriptionByPackageId(packagePurchase.getPackage_id());
-            }
+                // set package description
+                String description = "";
+                if (getPackageDescriptionByPackageId(packagePurchase.getPackage_id()) != null) {
+                    description = getPackageDescriptionByPackageId(packagePurchase.getPackage_id());
+                }
 
-            int saleId = 0;
-            String sql2 = "SELECT sale_id FROM sales WHERE ? = ANY (packages_purchased_array);";
-            SqlRowSet result2 = jdbcTemplate.queryForRowSet(sql2, packagePurchase.getPackage_purchase_id());
-            if (result2.next()) {
-                saleId = result2.getInt("sale_id");
-            }
+                int saleId = 0;
+                String sql2 = "SELECT sale_id FROM sales WHERE ? = ANY (packages_purchased_array);";
+                try {
+                    SqlRowSet result2 = jdbcTemplate.queryForRowSet(sql2, packagePurchase.getPackage_purchase_id());
+                    if (result2.next()) {
+                        saleId = result2.getInt("sale_id");
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error message: " + e.getMessage());
+                    System.out.println("Cause: " + e.getCause());
+                    throw new CustomException("Failed to retrieve sale ID from sale");
+                }
 
-            String paymentDescriptions = "";
-            String sql3 = "SELECT payment_type FROM transactions WHERE sale_id = ?";
-            Set<String> capturePaymentTypes = new HashSet<>();
-            if (saleId > 0) {
-                SqlRowSet result3 = jdbcTemplate.queryForRowSet(sql3, saleId);
-                while (result3.next()) {
-                    if (!capturePaymentTypes.contains(result3.getString("payment_Type"))) {
-                        paymentDescriptions += result3.getString("payment_Type") + " /";
-                        capturePaymentTypes.add(result3.getString("payment_Type"));
+                String paymentDescriptions = "";
+                String sql3 = "SELECT payment_type FROM transactions WHERE sale_id = ?";
+                Set<String> capturePaymentTypes = new HashSet<>();
+                if (saleId > 0) {
+                    try {
+                        SqlRowSet result3 = jdbcTemplate.queryForRowSet(sql3, saleId);
+                        while (result3.next()) {
+                            if (!capturePaymentTypes.contains(result3.getString("payment_Type"))) {
+                                paymentDescriptions += result3.getString("payment_Type") + " /";
+                                capturePaymentTypes.add(result3.getString("payment_Type"));
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Error message: " + e.getMessage());
+                        System.out.println("Cause: " + e.getCause());
+                        throw new CustomException("Failed to retrieve payment_type of a transaction by sale ID.");
                     }
                 }
+                if (paymentDescriptions.length() > 0) {
+                    paymentDescriptions = paymentDescriptions.substring(0, paymentDescriptions.length() - 1);
+                }
+                packagePurchase.setPayment_description(paymentDescriptions);
+                packagePurchase.setPackage_description(description);
+                packagePurchase.setUnlimited(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
+                allUserPackagePurchase.add(packagePurchase);
             }
-            if (paymentDescriptions.length() > 0) {
-                paymentDescriptions = paymentDescriptions.substring(0, paymentDescriptions.length() - 1);
-            }
-            packagePurchase.setPayment_description(paymentDescriptions);
-            packagePurchase.setPackage_description(description);
-            packagePurchase.setUnlimited(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
-            allUserPackagePurchase.add(packagePurchase);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve paginated package purchases by user ID.");
         }
 
         String countSql = "SELECT COUNT(*) FROM package_purchase " +
                 "JOIN client_details on client_details.client_id = package_purchase.client_id " +
                 "WHERE client_details.user_id = ?";
 
-        int count = jdbcTemplate.queryForObject(countSql, Integer.class, userId);
+        int count = 0;
+        try {
+            count = jdbcTemplate.queryForObject(countSql, Integer.class, userId);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve count of package purchases by user ID.");
+        }
 
         PaginatedListOfPurchasedPackages paginatedListOfPurchasedPackages = new PaginatedListOfPurchasedPackages(allUserPackagePurchase, count);
 
@@ -199,8 +231,10 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         clientCheckoutDTO.setEmailForReceipt(resendEmailDTO.getEmail());
         try {
             sendEmailReceipt(clientCheckoutDTO, packagesBeingBoughtForEmail, saleId, saleDate, firstName, subject, subTotal, tax, total, usedPaymentTypes);
-        } catch (Throwable e) {
-            System.out.println("Error sending gift card email to client id: " + clientCheckoutDTO.getClient_id());
+        } catch (Exception e) {
+            System.out.println("Error sending gift card email to client id: " + clientCheckoutDTO.getClient_id() + " Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Error sending gift card email to client id.");
         }
         // You need all the payment methods that were used, plug in the sale id into the transaction table to find that out.
     }
@@ -464,75 +498,95 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
 
     public void batchCreatePackagePurchases(final Collection<PackagePurchase> packagePurchases) {
-        jdbcTemplate.batchUpdate(
-                "INSERT INTO package_purchase (package_purchase_id, client_id,package_id,date_purchased, " +
-                        "classes_remaining, activation_date, " +
-                        "expiration_date, is_monthly_renew, " +
-                        "total_amount_paid, discount, paymentid) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-                packagePurchases,100,
-                (PreparedStatement ps, PackagePurchase packagePurchase) -> {
-                    ps.setInt(1, packagePurchase.getPackage_purchase_id());
-                    ps.setInt(2, packagePurchase.getClient_id());
-                    ps.setInt(3, packagePurchase.getPackage_id());
-                    ps.setTimestamp(4, packagePurchase.getDate_purchased());
-                    ps.setInt(5, packagePurchase.getClasses_remaining());
-                    ps.setDate(6, packagePurchase.getActivation_date());
-                    ps.setDate(7, packagePurchase.getExpiration_date());
-                    ps.setBoolean(8, packagePurchase.isIs_monthly_renew());
-                    ps.setBigDecimal(9, packagePurchase.getTotal_amount_paid());
-                    ps.setBigDecimal(10, packagePurchase.getDiscount());
-                    ps.setString(11, packagePurchase.getPaymentId());
-                }
-        );
+        try {
+            jdbcTemplate.batchUpdate(
+                    "INSERT INTO package_purchase (package_purchase_id, client_id,package_id,date_purchased, " +
+                            "classes_remaining, activation_date, " +
+                            "expiration_date, is_monthly_renew, " +
+                            "total_amount_paid, discount, paymentid) " +
+                            "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                    packagePurchases,100,
+                    (PreparedStatement ps, PackagePurchase packagePurchase) -> {
+                        ps.setInt(1, packagePurchase.getPackage_purchase_id());
+                        ps.setInt(2, packagePurchase.getClient_id());
+                        ps.setInt(3, packagePurchase.getPackage_id());
+                        ps.setTimestamp(4, packagePurchase.getDate_purchased());
+                        ps.setInt(5, packagePurchase.getClasses_remaining());
+                        ps.setDate(6, packagePurchase.getActivation_date());
+                        ps.setDate(7, packagePurchase.getExpiration_date());
+                        ps.setBoolean(8, packagePurchase.isIs_monthly_renew());
+                        ps.setBigDecimal(9, packagePurchase.getTotal_amount_paid());
+                        ps.setBigDecimal(10, packagePurchase.getDiscount());
+                        ps.setString(11, packagePurchase.getPaymentId());
+                    }
+            );
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to batch create package purchases with ID.");
+        }
     }
 
     public void batchCreateSales(final Collection<Sale> sales) {
         Connection finalConn =null;
         try {
             finalConn = jdbcTemplate.getDataSource().getConnection("postgres","postgres1");
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve connection to data source in batch creating sales.");
         }
 
 
         Connection finalConn1 = finalConn;
-        jdbcTemplate.batchUpdate(
-                "INSERT INTO sales (sale_id, " +
-                        "packages_purchased_array, batch_number, client_id) " +
-                        "VALUES (?,?,?,?)",
-                sales,100,
-                (PreparedStatement ps, Sale sale) -> {
-                    ps.setInt(1, sale.getSale_id());
-//                    Integer[] idArray = sale.getPackages_purchased_list().toArray(new Integer[0]);
-//                    Integer[] idArray = sale.getPackages_purchased_list().stream().mapToInt(Integer::intValue).toArray();
-//                    Array idSqlArray = jdbcTemplate.execute(
-//                            (Connection c) -> c.createArrayOf(JDBCType.INTEGER.getName(), idArray)
-//                    );
-                    Array sqlArray = finalConn1.createArrayOf("INTEGER", sale.getPackages_purchased_list().toArray());
-                    ps.setObject(2, (sqlArray),Types.ARRAY);
-//                    ps.setArray(2,idSqlArray);
-                    ps.setInt(3, sale.getBatch_number());
-                    ps.setInt(4, sale.getClient_id());
+        try {
+            jdbcTemplate.batchUpdate(
+                    "INSERT INTO sales (sale_id, " +
+                            "packages_purchased_array, batch_number, client_id) " +
+                            "VALUES (?,?,?,?)",
+                    sales,100,
+                    (PreparedStatement ps, Sale sale) -> {
+                        ps.setInt(1, sale.getSale_id());
+    //                    Integer[] idArray = sale.getPackages_purchased_list().toArray(new Integer[0]);
+    //                    Integer[] idArray = sale.getPackages_purchased_list().stream().mapToInt(Integer::intValue).toArray();
+    //                    Array idSqlArray = jdbcTemplate.execute(
+    //                            (Connection c) -> c.createArrayOf(JDBCType.INTEGER.getName(), idArray)
+    //                    );
+                        Array sqlArray = finalConn1.createArrayOf("INTEGER", sale.getPackages_purchased_list().toArray());
+                        ps.setObject(2, (sqlArray),Types.ARRAY);
+    //                    ps.setArray(2,idSqlArray);
+                        ps.setInt(3, sale.getBatch_number());
+                        ps.setInt(4, sale.getClient_id());
 
-                }
-        );
+                    }
+            );
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to batch create sales.");
+        }
     }
 
     public void batchCreateTransactions(final Collection<Transaction> transactions) {
-        jdbcTemplate.batchUpdate(
-                "INSERT INTO transactions (sale_id, client_id,payment_type, " +
-                        "payment_amount, gift_code) " +
-                        "VALUES (?,?,?,?,?)",
-                transactions,100,
-                (PreparedStatement ps, Transaction transaction) -> {
-                    ps.setInt(1, transaction.getSale_id());
-                    ps.setInt(2, transaction.getClient_id());
-                    ps.setString(3, transaction.getPayment_type());
-                    ps.setDouble(4, transaction.getPayment_amount());
-                    ps.setString(5, transaction.getGift_code());
-                }
-        );
+        try {
+            jdbcTemplate.batchUpdate(
+                    "INSERT INTO transactions (sale_id, client_id,payment_type, " +
+                            "payment_amount, gift_code) " +
+                            "VALUES (?,?,?,?,?)",
+                    transactions,100,
+                    (PreparedStatement ps, Transaction transaction) -> {
+                        ps.setInt(1, transaction.getSale_id());
+                        ps.setInt(2, transaction.getClient_id());
+                        ps.setString(3, transaction.getPayment_type());
+                        ps.setDouble(4, transaction.getPayment_amount());
+                        ps.setString(5, transaction.getGift_code());
+                    }
+            );
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to batch create transactions.");
+        }
     }
 
     @Override
@@ -626,23 +680,35 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     }
 
     public void batchUpdateGiftCards(final Collection<GiftCard> giftCards) {
-        jdbcTemplate.batchUpdate("UPDATE gift_card SET client_id = ?, amount = ? WHERE code = ?",
-                giftCards, 100,
-                (PreparedStatement ps, GiftCard giftCard) -> {
-                    ps.setInt(1, (int) giftCard.getClient_id());
-                    ps.setDouble(2,giftCard.getAmount());
-                    ps.setString(3, giftCard.getCode());
-                });
+        try {
+            jdbcTemplate.batchUpdate("UPDATE gift_card SET client_id = ?, amount = ? WHERE code = ?",
+                    giftCards, 100,
+                    (PreparedStatement ps, GiftCard giftCard) -> {
+                        ps.setInt(1, (int) giftCard.getClient_id());
+                        ps.setDouble(2,giftCard.getAmount());
+                        ps.setString(3, giftCard.getCode());
+                    });
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to batch update gift cards.");
+        }
     }
 
     public void batchCreateGiftCards(final Collection<GiftCard> giftCards) {
-        jdbcTemplate.batchUpdate("INSERT INTO gift_card (code, amount, client_id) VALUES (?, ?, ?)",
-                giftCards, 100,
-                (PreparedStatement ps, GiftCard giftCard) -> {
-                    ps.setString(1,giftCard.getCode());
-                    ps.setDouble(2,giftCard.getAmount());
-                    ps.setInt(3, giftCard.getClient_id());
-                });
+        try {
+            jdbcTemplate.batchUpdate("INSERT INTO gift_card (code, amount, client_id) VALUES (?, ?, ?)",
+                    giftCards, 100,
+                    (PreparedStatement ps, GiftCard giftCard) -> {
+                        ps.setString(1,giftCard.getCode());
+                        ps.setDouble(2,giftCard.getAmount());
+                        ps.setInt(3, giftCard.getClient_id());
+                    });
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to batch create gift cards.");
+        }
     }
 
 
@@ -1103,7 +1169,13 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     public void updatePaymentIdForGiftCardPurchase(int packagePurchaseId) {
         // Update PaymentId to have 'Gift Card Code' using the packagePurchaseId to locate it.
         String sql = "UPDATE package_purchase SET paymentId = paymentId || ' /Gift Card Code' WHERE package_purchase_id = ?";
-        jdbcTemplate.update(sql, packagePurchaseId);
+        try {
+            jdbcTemplate.update(sql, packagePurchaseId);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to update payment ID for gift card purchase at a specific ID.");
+        }
     }
 
     @Override
@@ -1127,7 +1199,13 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
         // Lastly, swap the package.
         String sql = "UPDATE client_event SET package_purchase_id = ? WHERE event_id = ?";
-        jdbcTemplate.update(sql, newId, eventId);
+        try {
+            jdbcTemplate.update(sql, newId, eventId);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to update client event with package purchase ID.");
+        }
 
     }
 
@@ -1203,7 +1281,9 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             try {
                 senderService.sendEmail(clientCheckoutDTO.getEmailForReceipt(), subject, body);
             } catch (Throwable e) {
-                System.out.println("Error sending comp/free email receipt");
+                System.out.println("Error sending comp/free email receipt. Error message: " + e.getMessage());
+                System.out.println("Cause: " + e.getCause());
+                throw new CustomException("Error sending comp/free email receipt");
             }
         }
     }
@@ -1218,30 +1298,36 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
         // Get all Transactions by this point
         String sql = "SELECT * FROM transactions WHERE sale_id = ?";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, saleId);
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, saleId);
 
-        while (result.next()) {
-            if (result.getString("payment_type").equalsIgnoreCase("Comp/Free")) {
-                compFree = true;
+            while (result.next()) {
+                if (result.getString("payment_type").equalsIgnoreCase("Comp/Free")) {
+                    compFree = true;
+                }
+                if (result.getString("payment_type").equalsIgnoreCase("Cash")) {
+                    cash = result.getDouble("payment_amount");
+                }
+                if (result.getString("payment_type").equalsIgnoreCase("Check")) {
+                    check = result.getDouble("payment_amount");
+                }
+                if (result.getString("payment_type").equalsIgnoreCase("Gift Card Code")) {
+                    giftAmountUsed = result.getDouble("payment_amount");
+                }
+                if (result.getString("payment_type").equalsIgnoreCase("Credit Card Swiped")) {
+                    creditCardSwiped = result.getDouble("payment_amount");
+                }
+                if (result.getString("payment_type").equalsIgnoreCase("Credit Card Keyed/Stored")) {
+                    creditCardKeyedStored = result.getDouble("payment_amount");
+                }
+                if (result.getString("payment_type").equalsIgnoreCase("Online Payment")) {
+                    onlinePayment = result.getDouble("payment_amount");
+                }
             }
-            if (result.getString("payment_type").equalsIgnoreCase("Cash")) {
-                cash = result.getDouble("payment_amount");
-            }
-            if (result.getString("payment_type").equalsIgnoreCase("Check")) {
-                check = result.getDouble("payment_amount");
-            }
-            if (result.getString("payment_type").equalsIgnoreCase("Gift Card Code")) {
-                giftAmountUsed = result.getDouble("payment_amount");
-            }
-            if (result.getString("payment_type").equalsIgnoreCase("Credit Card Swiped")) {
-                creditCardSwiped = result.getDouble("payment_amount");
-            }
-            if (result.getString("payment_type").equalsIgnoreCase("Credit Card Keyed/Stored")) {
-                creditCardKeyedStored = result.getDouble("payment_amount");
-            }
-            if (result.getString("payment_type").equalsIgnoreCase("Online Payment")) {
-                onlinePayment = result.getDouble("payment_amount");
-            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve all transactions by sale ID.");
         }
 
         if (compFree) {
@@ -1271,29 +1357,35 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
     private int retrieveSaleAndPackagesPurchased(PackagePurchase packagePurchase, int saleId, List<PackagePurchase> listOfPackagesPurchased) {
         String sql = "SELECT * FROM sales WHERE ? = ANY (packages_purchased_array);";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, packagePurchase.getPackage_purchase_id());
-        if (result.next()) {
-            saleId = result.getInt("sale_id");
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, packagePurchase.getPackage_purchase_id());
+            if (result.next()) {
+                saleId = result.getInt("sale_id");
 
-            Object newObject = result.getObject("packages_purchased_array");
+                Object newObject = result.getObject("packages_purchased_array");
 
-            if (newObject instanceof Array) {
-                Array tempArray = (Array) newObject;
-                Object[] tempObjectArray = new Object[0];
-                try {
-                    tempObjectArray = (Object[]) tempArray.getArray();
-                } catch (SQLException e) {
-                    System.out.println("Error trying to retrieve array of packages purchased");
-                }
-                int[] packagePurchaseArray = new int[tempObjectArray.length];
-                for (int i = 0; i < tempObjectArray.length; i++) {
-                    packagePurchaseArray[i] = Integer.valueOf(tempObjectArray[i].toString());
-                }
-                for (int i = 0; i < packagePurchaseArray.length; i++) {
-                    PackagePurchase packagePurchaseFromSale = getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseArray[i]);
-                    listOfPackagesPurchased.add(packagePurchaseFromSale);
+                if (newObject instanceof Array) {
+                    Array tempArray = (Array) newObject;
+                    Object[] tempObjectArray = new Object[0];
+                    try {
+                        tempObjectArray = (Object[]) tempArray.getArray();
+                    } catch (SQLException e) {
+                        System.out.println("Error trying to retrieve array of packages purchased");
+                    }
+                    int[] packagePurchaseArray = new int[tempObjectArray.length];
+                    for (int i = 0; i < tempObjectArray.length; i++) {
+                        packagePurchaseArray[i] = Integer.valueOf(tempObjectArray[i].toString());
+                    }
+                    for (int i = 0; i < packagePurchaseArray.length; i++) {
+                        PackagePurchase packagePurchaseFromSale = getPackagePurchaseObjectByPackagePurchaseId(packagePurchaseArray[i]);
+                        listOfPackagesPurchased.add(packagePurchaseFromSale);
+                    }
                 }
             }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve sales by package purchase ID.");
         }
         return saleId;
     }
@@ -1323,39 +1415,45 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 "OR (package_details.package_id = 22 AND pp.expiration_date > NOW()) ) " +
                 "ORDER BY " + sortBy + " " + sortDirection + offsetString;
 
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId, offset);
-        while (result.next()) {
-            PackagePurchase packagePurchase = mapRowToPackagePurchase(result);
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId, offset);
+            while (result.next()) {
+                PackagePurchase packagePurchase = mapRowToPackagePurchase(result);
 
-            int saleId = 0;
-            String sql2 = "SELECT sale_id FROM sales WHERE ? = ANY (packages_purchased_array);";
-            SqlRowSet result2 = jdbcTemplate.queryForRowSet(sql2, packagePurchase.getPackage_purchase_id());
-            if (result2.next()) {
-                saleId = result2.getInt("sale_id");
-            }
-
-            String paymentDescriptions = "";
-            String sql3 = "SELECT payment_type FROM transactions WHERE sale_id = ?";
-            Set<String> capturePaymentTypes = new HashSet<>();
-            if (saleId > 0) {
-                SqlRowSet result3 = jdbcTemplate.queryForRowSet(sql3, saleId);
-                while (result3.next()) {
-                    if (!capturePaymentTypes.contains(result3.getString("payment_Type"))) {
-                        paymentDescriptions += result3.getString("payment_Type") + " /";
-                        capturePaymentTypes.add(result3.getString("payment_Type"));
-                    }
-
+                int saleId = 0;
+                String sql2 = "SELECT sale_id FROM sales WHERE ? = ANY (packages_purchased_array);";
+                SqlRowSet result2 = jdbcTemplate.queryForRowSet(sql2, packagePurchase.getPackage_purchase_id());
+                if (result2.next()) {
+                    saleId = result2.getInt("sale_id");
                 }
-            }
-            if (paymentDescriptions.length() > 0) {
-                paymentDescriptions = paymentDescriptions.substring(0, paymentDescriptions.length() - 1);
-            }
-            packagePurchase.setPayment_description(paymentDescriptions);
 
-            // set package description
-            packagePurchase.setPackage_description(getPackageDescriptionByPackageId(packagePurchase.getPackage_id()));
-            packagePurchase.setUnlimited(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
-            allUserPackagePurchase.add(packagePurchase);
+                String paymentDescriptions = "";
+                String sql3 = "SELECT payment_type FROM transactions WHERE sale_id = ?";
+                Set<String> capturePaymentTypes = new HashSet<>();
+                if (saleId > 0) {
+                    SqlRowSet result3 = jdbcTemplate.queryForRowSet(sql3, saleId);
+                    while (result3.next()) {
+                        if (!capturePaymentTypes.contains(result3.getString("payment_Type"))) {
+                            paymentDescriptions += result3.getString("payment_Type") + " /";
+                            capturePaymentTypes.add(result3.getString("payment_Type"));
+                        }
+
+                    }
+                }
+                if (paymentDescriptions.length() > 0) {
+                    paymentDescriptions = paymentDescriptions.substring(0, paymentDescriptions.length() - 1);
+                }
+                packagePurchase.setPayment_description(paymentDescriptions);
+
+                // set package description
+                packagePurchase.setPackage_description(getPackageDescriptionByPackageId(packagePurchase.getPackage_id()));
+                packagePurchase.setUnlimited(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
+                allUserPackagePurchase.add(packagePurchase);
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve all paginated active packages purchased by a user.");
         }
 
 
@@ -1367,7 +1465,14 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 "OR (package_details.unlimited = true AND pp.expiration_date > NOW()) " +
                 "OR (package_details.package_id = 22 AND pp.expiration_date > NOW()) ) ";
 
-        int count = jdbcTemplate.queryForObject(countSql, Integer.class, userId);
+        int count = 0;
+        try {
+            count = jdbcTemplate.queryForObject(countSql, Integer.class, userId);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve count of all paginated active packages purchased by a user.");
+        }
 
         PaginatedListOfPurchasedPackages paginatedListOfPurchasedPackages = new PaginatedListOfPurchasedPackages(allUserPackagePurchase, count);
 
@@ -1389,15 +1494,21 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 "OR (package_details.package_id = 22 AND pp.expiration_date > NOW()) ) ";
 
 
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId);
-        while (result.next()) {
-            PackagePurchase packagePurchase = mapRowToPackagePurchase(result);
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId);
+            while (result.next()) {
+                PackagePurchase packagePurchase = mapRowToPackagePurchase(result);
 
-            // set package description
-            packagePurchase.setPackage_description(getPackageDescriptionByPackageId(packagePurchase.getPackage_id()));
-            packagePurchase.setUnlimited(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
+                // set package description
+                packagePurchase.setPackage_description(getPackageDescriptionByPackageId(packagePurchase.getPackage_id()));
+                packagePurchase.setUnlimited(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
 
-            allUserPackagePurchase.add(packagePurchase);
+                allUserPackagePurchase.add(packagePurchase);
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve all active packages by a user ID.");
         }
 
         return allUserPackagePurchase;
@@ -1409,11 +1520,17 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, " +
                 "classes_remaining, activation_date, expiration_date, " +
                 "total_amount_paid, is_monthly_renew,  discount, paymentId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING package_purchase_id";
-        return jdbcTemplate.queryForObject(sql, Integer.class, packagePurchase.getClient_id(), packagePurchase.getDate_purchased(),
-                packagePurchase.getPackage_id(), packagePurchase.getClasses_remaining(),
-                packagePurchase.getActivation_date(), packagePurchase.getExpiration_date(),
-                packagePurchase.getTotal_amount_paid(),
-                packagePurchase.isIs_monthly_renew(), packagePurchase.getDiscount(), packagePurchase.getPaymentId());
+        try {
+            return jdbcTemplate.queryForObject(sql, Integer.class, packagePurchase.getClient_id(), packagePurchase.getDate_purchased(),
+                    packagePurchase.getPackage_id(), packagePurchase.getClasses_remaining(),
+                    packagePurchase.getActivation_date(), packagePurchase.getExpiration_date(),
+                    packagePurchase.getTotal_amount_paid(),
+                    packagePurchase.isIs_monthly_renew(), packagePurchase.getDiscount(), packagePurchase.getPaymentId());
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to create a package purchase.");
+        }
     }
 
     @Override
@@ -1421,14 +1538,20 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         PackagePurchase packagePurchase = null;
         String sql = "SELECT * FROM package_purchase " +
                 "WHERE package_purchase_id = ?";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, packagePurchaseId);
-        if (result.next()) {
-            packagePurchase = mapRowToPackagePurchase(result);
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, packagePurchaseId);
+            if (result.next()) {
+                packagePurchase = mapRowToPackagePurchase(result);
 
-            // set package description
-            packagePurchase.setPackage_description(getPackageDescriptionByPackageId(packagePurchase.getPackage_id()));
-            packagePurchase.setUnlimited(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
+                // set package description
+                packagePurchase.setPackage_description(getPackageDescriptionByPackageId(packagePurchase.getPackage_id()));
+                packagePurchase.setUnlimited(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
 
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve a package purchase by ID.");
         }
         return packagePurchase;
     }
@@ -1436,9 +1559,15 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     public boolean IsSubscriptionOrNot(int packageId) {
         boolean isSubscription = false;
         String sql = "SELECT unlimited from package_details WHERE package_id = ?";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, packageId);
-        if (result.next()) {
-            return result.getBoolean("unlimited");
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, packageId);
+            if (result.next()) {
+                return result.getBoolean("unlimited");
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to confirm if a package purchase was type unlimited.");
         }
         return isSubscription;
     }
@@ -1451,33 +1580,63 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
             sql = "UPDATE package_purchase SET expiration_date = current_date - INTEGER '1', activation_date = current_date - INTEGER '1' " +
                     "WHERE package_purchase_id = ?;";
         }
-        return jdbcTemplate.update(sql, packagePurchase.getPackage_purchase_id()) == 1;
+        try {
+            return jdbcTemplate.update(sql, packagePurchase.getPackage_purchase_id()) == 1;
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to expire package.");
+        }
     }
 
     @Override
     public boolean updatePackage(PackagePurchase packagePurchase) {
         String sql = "UPDATE package_purchase SET date_purchased = ?, classes_remaining = ?, " +
                 "activation_date = ?, expiration_date = ?, is_monthly_renew = ? , discount = ? WHERE package_purchase_id = ?;";
-        return jdbcTemplate.update(sql, packagePurchase.getDate_purchased(), packagePurchase.getClasses_remaining(), packagePurchase.getActivation_date(), packagePurchase.getExpiration_date(), packagePurchase.isIs_monthly_renew(), packagePurchase.getDiscount(), packagePurchase.getPackage_purchase_id()) == 1;
+        try {
+            return jdbcTemplate.update(sql, packagePurchase.getDate_purchased(), packagePurchase.getClasses_remaining(), packagePurchase.getActivation_date(), packagePurchase.getExpiration_date(), packagePurchase.isIs_monthly_renew(), packagePurchase.getDiscount(), packagePurchase.getPackage_purchase_id()) == 1;
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to update package.");
+        }
     }
 
     @Override
     public boolean decrementByOne(int packagePurchaseId) {
         String sql = "UPDATE package_purchase SET classes_remaining = classes_remaining - 1 WHERE package_purchase_id = ?";
-        return jdbcTemplate.update(sql, packagePurchaseId) == 1;
+        try {
+            return jdbcTemplate.update(sql, packagePurchaseId) == 1;
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to decrement classes remaining.");
+        }
     }
 
     @Override
     public boolean incrementByOne(int packagePurchaseId) {
         String sql = "UPDATE package_purchase SET classes_remaining = classes_remaining + 1 WHERE package_purchase_id = ?";
-        return jdbcTemplate.update(sql, packagePurchaseId) == 1;
+        try {
+            return jdbcTemplate.update(sql, packagePurchaseId) == 1;
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to increment packages remaining.");
+        }
     }
 
     @Override
     public boolean updateGiftCard(GiftCard originalGiftCard, int clientId, double amountUsed) {
         int newAmount = (int) (originalGiftCard.getAmount() - amountUsed);
         String sql = "UPDATE gift_card SET amount = ? , client_id = ? WHERE code ILIKE ?";
-        return jdbcTemplate.update(sql, newAmount, clientId, originalGiftCard.getCode()) == 1;
+        try {
+            return jdbcTemplate.update(sql, newAmount, clientId, originalGiftCard.getCode()) == 1;
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to update gift card.");
+        }
     }
 
 
@@ -1566,14 +1725,20 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 "AND ( (classes_remaining > 0 AND package_purchase.expiration_date > NOW())  \n" +
                 "OR (package_details.unlimited = true AND package_purchase.expiration_date > NOW()) ) " +
                 "ORDER BY expiration_date;";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, client_id, client_id);
-        while (result.next()) {
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, client_id, client_id);
+            while (result.next()) {
 
-            PackagePurchase packagePurchase = mapRowToPackagePurchase((result));
+                PackagePurchase packagePurchase = mapRowToPackagePurchase((result));
 
-            packagePurchase.setUnlimited(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
-            packages.add(packagePurchase);
+                packagePurchase.setUnlimited(IsSubscriptionOrNot(packagePurchase.getPackage_id()));
+                packages.add(packagePurchase);
 
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to get all shared active packages purchased by client ID.");
         }
         return packages;
     }
@@ -1621,12 +1786,18 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     public String getPackageDescriptionByPackageId(int PackageId) {
         PackageDetails packageDetails = null;
         String sql = "SELECT * FROM package_details WHERE package_id = ?";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, PackageId);
-        if (result.next()) {
-            packageDetails = mapRowToPackage(result);
-        }
-        if (packageDetails != null) {
-            return packageDetails.getDescription();
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, PackageId);
+            if (result.next()) {
+                packageDetails = mapRowToPackage(result);
+            }
+            if (packageDetails != null) {
+                return packageDetails.getDescription();
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve package details by package ID for package purchase.");
         }
         return "";
     }
@@ -1688,17 +1859,28 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
     public void createGiftCard(String code, double amount) {
         String sql = "INSERT INTO gift_card (code, amount) VALUES (?,?)";
-        jdbcTemplate.update(sql, code, amount);
-
+        try {
+            jdbcTemplate.update(sql, code, amount);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to create gift card.");
+        }
     }
 
     @Override
     public GiftCard retrieveGiftCard(String code) {
         GiftCard giftCard = null;
         String sql = "SELECT * FROM gift_card WHERE code ILIKE ?";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, code);
-        if (result.next()) {
-            giftCard = mapRowToGiftCard(result);
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, code);
+            if (result.next()) {
+                giftCard = mapRowToGiftCard(result);
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve gift card by code.");
         }
         return giftCard;
     }
@@ -1708,12 +1890,18 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
         List<GiftCard> listOfGiftCards = new ArrayList<>();
 
         String sql = "SELECT * FROM gift_card";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
 
-        while (result.next()) {
-            GiftCard giftCard = mapRowToGiftCard(result);
-            listOfGiftCards.add(giftCard);
+            while (result.next()) {
+                GiftCard giftCard = mapRowToGiftCard(result);
+                listOfGiftCards.add(giftCard);
 
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve all gift cards.");
         }
 
         return  listOfGiftCards;
@@ -1738,12 +1926,18 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
         if (checkoutItemDTO.getPackageDuration() > 0 && checkoutItemDTO.isUnlimited()) {
             String sql = "SELECT expiration_date FROM package_purchase JOIN package_details ON package_details.package_id = package_purchase.package_id WHERE package_details.unlimited = true AND client_id = ? AND expiration_date > NOW() ORDER BY expiration_date DESC LIMIT 1;";
-            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, checkoutItemDTO.getClient_id());
-            if (results.next()) {
-                activationDate = results.getDate("expiration_date").toLocalDate();
-                activationDate = activationDate.plusDays(1);
-            } else {
-                activationDate = LocalDate.now();
+            try {
+                SqlRowSet results = jdbcTemplate.queryForRowSet(sql, checkoutItemDTO.getClient_id());
+                if (results.next()) {
+                    activationDate = results.getDate("expiration_date").toLocalDate();
+                    activationDate = activationDate.plusDays(1);
+                } else {
+                    activationDate = LocalDate.now();
+                }
+            } catch (Exception e) {
+                System.out.println("Error message: " + e.getMessage());
+                System.out.println("Cause: " + e.getCause());
+                throw new CustomException("Failed to retrieve expiration date for a stripe package purchase.");
             }
         }
 
@@ -1751,10 +1945,16 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 "classes_remaining, activation_date, expiration_date, " +
                 "is_monthly_renew, total_amount_paid, discount, paymentId ) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING package_purchase_id";
-        return jdbcTemplate.queryForObject(sql, Integer.class, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
-                checkoutItemDTO.getPackage_id(), checkoutItemDTO.getClasses_remaining(),
-                activationDate, returnCorrectPackageExpirationDateForCheckoutItem(checkoutItemDTO, activationDate), checkoutItemDTO.isIs_monthly_renew(),
-                checkoutItemDTO.getTotal_amount_paid(), checkoutItemDTO.getDiscount(), checkoutItemDTO.getPaymentId());
+        try {
+            return jdbcTemplate.queryForObject(sql, Integer.class, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
+                    checkoutItemDTO.getPackage_id(), checkoutItemDTO.getClasses_remaining(),
+                    activationDate, returnCorrectPackageExpirationDateForCheckoutItem(checkoutItemDTO, activationDate), checkoutItemDTO.isIs_monthly_renew(),
+                    checkoutItemDTO.getTotal_amount_paid(), checkoutItemDTO.getDiscount(), checkoutItemDTO.getPaymentId());
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to create a stripe package purchase.");
+        }
     }
 
     private LocalDate returnCorrectPackageExpirationDateForCheckoutItem(CheckoutItemDTO checkoutItemDTO, LocalDate activationDate) {
@@ -1772,19 +1972,31 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
                 "classes_remaining, activation_date, expiration_date, " +
                 "is_monthly_renew, total_amount_paid, discount, paymentId ) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING package_purchase_id";
-        return jdbcTemplate.queryForObject(sql, Integer.class, packagePurchase.getClient_id(), LocalDateTime.now(),
-                packagePurchase.getPackage_id(), packagePurchase.getClasses_remaining(),
-                activationDate, returnCorrectPackageExpirationDateForPackagePurchase(packagePurchase, activationDate), packagePurchase.isIs_monthly_renew(),
-                packagePurchase.getTotal_amount_paid(), packagePurchase.getDiscount(), packagePurchase.getPaymentId());
+        try {
+            return jdbcTemplate.queryForObject(sql, Integer.class, packagePurchase.getClient_id(), LocalDateTime.now(),
+                    packagePurchase.getPackage_id(), packagePurchase.getClasses_remaining(),
+                    activationDate, returnCorrectPackageExpirationDateForPackagePurchase(packagePurchase, activationDate), packagePurchase.isIs_monthly_renew(),
+                    packagePurchase.getTotal_amount_paid(), packagePurchase.getDiscount(), packagePurchase.getPaymentId());
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to create an admin package purchase.");
+        }
     }
 
     private LocalDate findActivationDateForClient(PackagePurchase packagePurchase) {
         if (packagePurchase.getPackage_duration() > 0 && packagePurchase.isUnlimited()) {
             String sql = "SELECT expiration_date FROM package_purchase JOIN package_details ON package_details.package_id = package_purchase.package_id WHERE package_details.unlimited = true AND client_id = ? ORDER BY expiration_date DESC LIMIT 1;";
-            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, packagePurchase.getClient_id());
-            if (results.next()) {
-                LocalDate localDate = results.getDate("expiration_date").toLocalDate();
-                return localDate.plusDays(1);
+            try {
+                SqlRowSet results = jdbcTemplate.queryForRowSet(sql, packagePurchase.getClient_id());
+                if (results.next()) {
+                    LocalDate localDate = results.getDate("expiration_date").toLocalDate();
+                    return localDate.plusDays(1);
+                }
+            } catch (Exception e) {
+                System.out.println("Error message: " + e.getMessage());
+                System.out.println("Cause: " + e.getCause());
+                throw new CustomException("Failed to find activation date for package purchase.");
             }
         }
         return LocalDate.now();
@@ -1792,13 +2004,19 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
 
     private int findHighestPackagePurchaseId() {
         String sql = "SELECT MAX(package_purchase_id) FROM package_purchase";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
-        if (result.next()) {
-            int maxId = result.getInt("max");
-            if (maxId > 0) {
-                return maxId;
-            }
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+            if (result.next()) {
+                int maxId = result.getInt("max");
+                if (maxId > 0) {
+                    return maxId;
+                }
 
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to find highest package purchase ID.");
         }
         return 0;
     }
@@ -1815,47 +2033,77 @@ public class JdbcPackagePurchaseDao implements PackagePurchaseDao {
     public int createOneMonthAutoRenewPurchase(CheckoutItemDTO checkoutItemDTO) {
         LocalDate activationDate;
         String sql = "SELECT expiration_date FROM package_purchase JOIN package_details ON package_details.package_id = package_purchase.package_id WHERE package_details.unlimited = true AND client_id = ? AND expiration_date > NOW() ORDER BY expiration_date DESC LIMIT 1;";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, checkoutItemDTO.getClient_id());
-        if (results.next()) {
-            activationDate = results.getDate("expiration_date").toLocalDate();
-            activationDate.plusDays(1);
-        } else {
-            activationDate = LocalDate.now();
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, checkoutItemDTO.getClient_id());
+            if (results.next()) {
+                activationDate = results.getDate("expiration_date").toLocalDate();
+                activationDate.plusDays(1);
+            } else {
+                activationDate = LocalDate.now();
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve expiration date for creating a monthly auto renew purchase.");
         }
         String sql2 = "INSERT INTO package_purchase (client_id, date_purchased, package_id, classes_remaining, activation_date, expiration_date, is_monthly_renew, total_amount_paid, discount, paymentId ) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING package_purchase_id";
-        return jdbcTemplate.queryForObject(sql2, Integer.class, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
-                checkoutItemDTO.getPackage_id(), 0, activationDate,
-                activationDate.plusMonths(1).plusDays(1), true,
-                checkoutItemDTO.getTotal_amount_paid(), checkoutItemDTO.getDiscount(), checkoutItemDTO.getPaymentId());
+        try {
+            return jdbcTemplate.queryForObject(sql2, Integer.class, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
+                    checkoutItemDTO.getPackage_id(), 0, activationDate,
+                    activationDate.plusMonths(1).plusDays(1), true,
+                    checkoutItemDTO.getTotal_amount_paid(), checkoutItemDTO.getDiscount(), checkoutItemDTO.getPaymentId());
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to create a monthly auto renew purchase.");
+        }
     }
 
     public int createSixMonthAutoRenewPurchase(CheckoutItemDTO checkoutItemDTO) {
         LocalDate activationDate;
         String sql = "SELECT expiration_date FROM package_purchase JOIN package_details ON package_details.package_id = package_purchase.package_id WHERE package_details.unlimited = true AND client_id = ? AND expiration_date > NOW() ORDER BY expiration_date DESC LIMIT 1;";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, checkoutItemDTO.getClient_id());
-        if (results.next()) {
-            activationDate = results.getDate("expiration_date").toLocalDate();
-            activationDate.plusDays(1);
-        } else {
-            activationDate = LocalDate.now();
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, checkoutItemDTO.getClient_id());
+            if (results.next()) {
+                activationDate = results.getDate("expiration_date").toLocalDate();
+                activationDate.plusDays(1);
+            } else {
+                activationDate = LocalDate.now();
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve expiration date for creating a six monthly auto renew purchase.");
         }
 
         String sql2 = "INSERT INTO package_purchase (client_id, date_purchased, package_id, classes_remaining, activation_date, expiration_date, is_monthly_renew, total_amount_paid, discount, paymentId ) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING package_purchase_id";
-        return jdbcTemplate.queryForObject(sql2, Integer.class, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
-                checkoutItemDTO.getPackage_id(), 0, activationDate,
-                activationDate.plusMonths(6).plusDays(1), true,
-                checkoutItemDTO.getTotal_amount_paid(), checkoutItemDTO.getDiscount(), checkoutItemDTO.getPaymentId());
+        try {
+            return jdbcTemplate.queryForObject(sql2, Integer.class, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
+                    checkoutItemDTO.getPackage_id(), 0, activationDate,
+                    activationDate.plusMonths(6).plusDays(1), true,
+                    checkoutItemDTO.getTotal_amount_paid(), checkoutItemDTO.getDiscount(), checkoutItemDTO.getPaymentId());
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to create a six monthly auto renew purchase.");
+        }
     }
 
     public int createGiftCardPurchase(CheckoutItemDTO checkoutItemDTO) {
         String sql = "INSERT INTO package_purchase (client_id, date_purchased, package_id, classes_remaining, activation_date, expiration_date, is_monthly_renew, total_amount_paid, discount, paymentId ) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING package_purchase_id";
-        return jdbcTemplate.queryForObject(sql, Integer.class, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
-                checkoutItemDTO.getPackage_id(), 0, LocalDate.now(),
-                LocalDate.now().plusMonths(60), false,
-                checkoutItemDTO.getTotal_amount_paid(), checkoutItemDTO.getDiscount(), checkoutItemDTO.getPaymentId());
+        try {
+            return jdbcTemplate.queryForObject(sql, Integer.class, checkoutItemDTO.getClient_id(), LocalDateTime.now(),
+                    checkoutItemDTO.getPackage_id(), 0, LocalDate.now(),
+                    LocalDate.now().plusMonths(60), false,
+                    checkoutItemDTO.getTotal_amount_paid(), checkoutItemDTO.getDiscount(), checkoutItemDTO.getPaymentId());
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to create gift card purchase.");
+        }
     }
 
     @Override

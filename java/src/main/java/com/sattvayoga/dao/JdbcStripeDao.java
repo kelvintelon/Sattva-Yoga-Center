@@ -84,16 +84,22 @@ public class JdbcStripeDao implements StripeDao {
             sessionItemList.add(createSessionLineItem(checkoutItemDTO));
         }
         // (foundSubscription) ? SessionCreateParams.Mode.SUBSCRIPTION :SessionCreateParams.Mode.PAYMENT
-        SessionCreateParams params = SessionCreateParams.builder()
-                .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
-                .setMode((foundSubscription) ? SessionCreateParams.Mode.SUBSCRIPTION : SessionCreateParams.Mode.PAYMENT)
-                .setCancelUrl(failureURL)
-                .setSuccessUrl(successURL)
-                .addAllLineItem(sessionItemList)
-                .setCustomer(customer_id)
-                .build();
+        try {
+            SessionCreateParams params = SessionCreateParams.builder()
+                    .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
+                    .setMode((foundSubscription) ? SessionCreateParams.Mode.SUBSCRIPTION : SessionCreateParams.Mode.PAYMENT)
+                    .setCancelUrl(failureURL)
+                    .setSuccessUrl(successURL)
+                    .addAllLineItem(sessionItemList)
+                    .setCustomer(customer_id)
+                    .build();
 
-        return Session.create(params);
+            return Session.create(params);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to create session.");
+        }
 
     }
 
@@ -456,38 +462,53 @@ public class JdbcStripeDao implements StripeDao {
 
             if (clientCheckoutDTO.getEmailForReceipt().length()>0 && clientCheckoutDTO.isSendEmail()) {
                 PaymentIntentCreateParams paymentIntentCreateParams =
-                        PaymentIntentCreateParams.builder()
-                                .setCurrency("usd")
-                                .setCustomer(customer_id)
-                                .setAmount((long) clientCheckoutDTO.getBalance() * 100)
-                                .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
-                                .setPaymentMethod(clientCheckoutDTO.getPaymentMethodId())
-                                .setReturnUrl(returnUrl)
-                                .setReceiptEmail(clientCheckoutDTO.getEmailForReceipt())
-                                .setDescription(descriptionForPayment)
-                                .setConfirm(true)
-                                .putAllMetadata(metaDataMap)
-                                .build();
+                        null;
+                try {
+                    paymentIntentCreateParams = PaymentIntentCreateParams.builder()
+                            .setCurrency("usd")
+                            .setCustomer(customer_id)
+                            .setAmount((long) clientCheckoutDTO.getBalance() * 100)
+                            .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
+                            .setPaymentMethod(clientCheckoutDTO.getPaymentMethodId())
+                            .setReturnUrl(returnUrl)
+                            .setReceiptEmail(clientCheckoutDTO.getEmailForReceipt())
+                            .setDescription(descriptionForPayment)
+                            .setConfirm(true)
+                            .putAllMetadata(metaDataMap)
+                            .build();
 
-                // This creates a payment intent
-                PaymentIntent paymentIntent = PaymentIntent.create(paymentIntentCreateParams);
+                    // This creates a payment intent
+                    PaymentIntent paymentIntent = PaymentIntent.create(paymentIntentCreateParams);
+                } catch (Exception e) {
+                    System.out.println("Error message: " + e.getMessage());
+                    System.out.println("Cause: " + e.getCause());
+                    throw new CustomException("Failed to create payment intent params with email receipt.");
+                }
+
+
             } else {
 
-                PaymentIntentCreateParams paymentIntentCreateParams =
-                        PaymentIntentCreateParams.builder()
-                                .setCurrency("usd")
-                                .setCustomer(customer_id)
-                                .setAmount((long) clientCheckoutDTO.getBalance() * 100)
-                                .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
-                                .setPaymentMethod(clientCheckoutDTO.getPaymentMethodId())
-                                .setReturnUrl(returnUrl)
-                                .setDescription(descriptionForPayment)
-                                .setConfirm(true)
-                                .putAllMetadata(metaDataMap)
-                                .build();
+                try {
+                    PaymentIntentCreateParams paymentIntentCreateParams =
+                            PaymentIntentCreateParams.builder()
+                                    .setCurrency("usd")
+                                    .setCustomer(customer_id)
+                                    .setAmount((long) clientCheckoutDTO.getBalance() * 100)
+                                    .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
+                                    .setPaymentMethod(clientCheckoutDTO.getPaymentMethodId())
+                                    .setReturnUrl(returnUrl)
+                                    .setDescription(descriptionForPayment)
+                                    .setConfirm(true)
+                                    .putAllMetadata(metaDataMap)
+                                    .build();
 
-                // This creates a payment intent
-                PaymentIntent paymentIntent = PaymentIntent.create(paymentIntentCreateParams);
+                    // This creates a payment intent
+                    PaymentIntent paymentIntent = PaymentIntent.create(paymentIntentCreateParams);
+                } catch (Exception e) {
+                    System.out.println("Error message: " + e.getMessage());
+                    System.out.println("Cause: " + e.getCause());
+                    throw new CustomException("Failed to create payment intent params without email receipt.");
+                }
             }
             return "Success";
         } else {
@@ -508,9 +529,16 @@ public class JdbcStripeDao implements StripeDao {
                 params.put("receipt_email", clientCheckoutDTO.getEmailForReceipt());
                 paymentIntent = paymentIntent.update(params);
             }
+            ReaderProcessPaymentIntentParams readerProcessParams = null;
 
-            // This creates a parameter to pass in through the reader using the payment intent ID
-            ReaderProcessPaymentIntentParams readerProcessParams = ReaderProcessPaymentIntentParams.builder().setPaymentIntent(paymentIntent.getId()).build();
+            try {
+                // This creates a parameter to pass in through the reader using the payment intent ID
+                readerProcessParams = ReaderProcessPaymentIntentParams.builder().setPaymentIntent(paymentIntent.getId()).build();
+            } catch (Exception e) {
+                System.out.println("Error message: " + e.getMessage());
+                System.out.println("Cause: " + e.getCause());
+                throw new CustomException("Failed to build reader process params.");
+            }
 
             int attempt = 0;
             int tries = 3;
@@ -554,6 +582,10 @@ public class JdbcStripeDao implements StripeDao {
                         default:
                             return e.getStripeError().toJson();
                     }
+                } catch (Exception e) {
+                    System.out.println("Error message: " + e.getMessage());
+                    System.out.println("Cause: " + e.getCause());
+                    throw new CustomException("Failed to process payment.");
                 }
 
             }
@@ -774,7 +806,9 @@ public class JdbcStripeDao implements StripeDao {
             try {
                 senderService.sendEmail(clientCheckoutDTO.getEmailForReceipt(), subject, body);
             } catch (Throwable e) {
-                System.out.println("Error sending comp/free email receipt");
+                System.out.println("Error sending comp/free email receipt. Error message: " + e.getMessage());
+                System.out.println("Cause: " + e.getCause());
+                throw new CustomException("");
             }
         }
     }
@@ -938,28 +972,40 @@ public class JdbcStripeDao implements StripeDao {
         PaymentIntentCreateParams paymentIntentCreateParams = null;
 
         if (clientCheckoutDTO.isSaveCard()) {
-            paymentIntentCreateParams =
-                    PaymentIntentCreateParams.builder()
-                            .setCurrency("usd")
-                            .setCustomer(customer_id)
-                            .setAmount((long) clientCheckoutDTO.getBalance() * 100)
-                            .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
-                            .addPaymentMethodType("card_present")
-                            .setSetupFutureUsage(PaymentIntentCreateParams.SetupFutureUsage.OFF_SESSION)
-                            .setDescription(description)
-                            .putAllMetadata(metaDataMap)
-                            .build();
+            try {
+                paymentIntentCreateParams =
+                        PaymentIntentCreateParams.builder()
+                                .setCurrency("usd")
+                                .setCustomer(customer_id)
+                                .setAmount((long) clientCheckoutDTO.getBalance() * 100)
+                                .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
+                                .addPaymentMethodType("card_present")
+                                .setSetupFutureUsage(PaymentIntentCreateParams.SetupFutureUsage.OFF_SESSION)
+                                .setDescription(description)
+                                .putAllMetadata(metaDataMap)
+                                .build();
+            } catch (Exception e) {
+                System.out.println("Error message: " + e.getMessage());
+                System.out.println("Cause: " + e.getCause());
+                throw new CustomException("Failed to create payment intent params and save card.");
+            }
         } else {
-            paymentIntentCreateParams =
-                    PaymentIntentCreateParams.builder()
-                            .setCurrency("usd")
-                            .setCustomer(customer_id)
-                            .setAmount((long) clientCheckoutDTO.getBalance() * 100)
-                            .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
-                            .addPaymentMethodType("card_present")
-                            .setDescription(description)
-                            .putAllMetadata(metaDataMap)
-                            .build();
+            try {
+                paymentIntentCreateParams =
+                        PaymentIntentCreateParams.builder()
+                                .setCurrency("usd")
+                                .setCustomer(customer_id)
+                                .setAmount((long) clientCheckoutDTO.getBalance() * 100)
+                                .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.AUTOMATIC)
+                                .addPaymentMethodType("card_present")
+                                .setDescription(description)
+                                .putAllMetadata(metaDataMap)
+                                .build();
+            } catch (Exception e) {
+                System.out.println("Error message: " + e.getMessage());
+                System.out.println("Cause: " + e.getCause());
+                throw new CustomException("Failed to create payment intent params no saved card.");
+            }
 
         }
         return paymentIntentCreateParams;
@@ -979,15 +1025,36 @@ public class JdbcStripeDao implements StripeDao {
         String customer_id = getCustomerIdString(retrievedClientId);
 
         Customer customer =
-                Customer.retrieve(customer_id);
+                null;
+        try {
+            customer = Customer.retrieve(customer_id);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve customer ID in retrieve payment methods.");
+        }
 
         CustomerListPaymentMethodsParams customerListPaymentMethodsParams =
-                CustomerListPaymentMethodsParams.builder()
-                        .setType(CustomerListPaymentMethodsParams.Type.CARD)
-                        .build();
+                null;
+        try {
+            customerListPaymentMethodsParams = CustomerListPaymentMethodsParams.builder()
+                    .setType(CustomerListPaymentMethodsParams.Type.CARD)
+                    .build();
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to create payment methods list params.");
+        }
 
         PaymentMethodCollection paymentMethods =
-                customer.listPaymentMethods(customerListPaymentMethodsParams);
+                null;
+        try {
+            paymentMethods = customer.listPaymentMethods(customerListPaymentMethodsParams);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve list of payment methods.");
+        }
 
         List<PaymentMethod> paymentMethodsData = paymentMethods.getData();
 
@@ -1012,24 +1079,52 @@ public class JdbcStripeDao implements StripeDao {
         Reader readerResource = getReader();
 
         SetupIntentCreateParams setupIntentParams =
-                SetupIntentCreateParams.builder()
-                        .addPaymentMethodType("card_present")
-                        .setCustomer(customer_id)
-                        .build();;
+                null;
+        try {
+            setupIntentParams = SetupIntentCreateParams.builder()
+                    .addPaymentMethodType("card_present")
+                    .setCustomer(customer_id)
+                    .build();
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to create setup intent params.");
+        }
 
         SetupIntent setupIntent =
-                SetupIntent.create(setupIntentParams);
+                null;
+        try {
+            setupIntent = SetupIntent.create(setupIntentParams);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to create setup intent.");
+        }
 
         String setupIntentId = setupIntent.getId();
 
         ReaderProcessSetupIntentParams readerParams =
-                ReaderProcessSetupIntentParams.builder()
-                        .setSetupIntent(setupIntentId)
-                        .setCustomerConsentCollected(true)
-                        .build();
+                null;
+        try {
+            readerParams = ReaderProcessSetupIntentParams.builder()
+                    .setSetupIntent(setupIntentId)
+                    .setCustomerConsentCollected(true)
+                    .build();
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to create reader process setup intent params.");
+        }
 
         Reader updatedReader =
-                readerResource.processSetupIntent(readerParams);
+                null;
+        try {
+            updatedReader = readerResource.processSetupIntent(readerParams);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to process setup intent.");
+        }
 
         updatedReader.toJson();
 
@@ -1039,8 +1134,14 @@ public class JdbcStripeDao implements StripeDao {
     private Reader getReader() throws StripeException {
         //TODO:
         // 1. Replace this simulated reader ID ("tmr_FPKgUQOJ7fdmwi") with physical reader ID
-        return Reader.retrieve("tmr_FPKgUQOJ7fdmwi");
+        try {
+            return Reader.retrieve("tmr_FPKgUQOJ7fdmwi");
 //        return Reader.retrieve("tmr_FP6wARXsBdbits");
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve reader.");
+        }
     }
 
     //HELPER
@@ -1078,7 +1179,13 @@ public class JdbcStripeDao implements StripeDao {
         setupIntentParams.put("customer", customer_id);
         setupIntentParams.put("payment_method", paymentMethod);
 
-        SetupIntent.create(setupIntentParams);
+        try {
+            SetupIntent.create(setupIntentParams);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to create setup intent for manual payment method.");
+        }
 
     }
 
@@ -1093,17 +1200,20 @@ public class JdbcStripeDao implements StripeDao {
             params.put("email", newEmail);
 
             Customer updatedCustomer = customer.update(params);
-        } catch (StripeException e) {
-            System.out.println("Error retrieving customer from stripe in updating their email");
+        }  catch (Exception e) {
+            System.out.println("Error retrieving customer from stripe in updating their email. Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to update customer email for stripe.");
         }
 
     }
 
     //HELPER
     private void SetStripeKey() {
-        Stripe.apiKey = apiKey;
+        try {
+            Stripe.apiKey = apiKey;
 
-        // TODO: If you want to deploy uncomment below and comment out the Stripe key above
+            // TODO: If you want to deploy uncomment below and comment out the Stripe key above
 
 //        String retrievedValue = "";
 //        try {
@@ -1113,6 +1223,11 @@ public class JdbcStripeDao implements StripeDao {
 //        }
 //
 //        Stripe.apiKey = retrievedValue.substring(20,retrievedValue.length()-2);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to set stripe key.");
+        }
     }
 
 
@@ -1138,30 +1253,48 @@ public class JdbcStripeDao implements StripeDao {
 
     //HELPER
     private SessionCreateParams.LineItem createSessionLineItem(CheckoutItemDTO checkoutItemDTO) {
-        return SessionCreateParams.LineItem.builder()
-                .setPriceData(createPriceData(checkoutItemDTO))
-                .setQuantity(Long.parseLong(String.valueOf(checkoutItemDTO.getQuantity())))
-                .build();
+        try {
+            return SessionCreateParams.LineItem.builder()
+                    .setPriceData(createPriceData(checkoutItemDTO))
+                    .setQuantity(Long.parseLong(String.valueOf(checkoutItemDTO.getQuantity())))
+                    .build();
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to create session line item.");
+        }
     }
 
     //HELPER
     private SessionCreateParams.LineItem createSubscriptionLineItem(CheckoutItemDTO checkoutItemDTO) {
-        return SessionCreateParams.LineItem.builder()
-                .setPrice((checkoutItemDTO.getProductName().equals("One Month Subscription")) ? "price_1NieCWBV0tnIJdW6WqIm2dti" : "price_1NkWmnBV0tnIJdW6ZGHtezqw")
-                .setQuantity(Long.parseLong(String.valueOf(checkoutItemDTO.getQuantity())))
-                .build();
+        try {
+            return SessionCreateParams.LineItem.builder()
+                    .setPrice((checkoutItemDTO.getProductName().equals("One Month Subscription")) ? "price_1NieCWBV0tnIJdW6WqIm2dti" : "price_1NkWmnBV0tnIJdW6ZGHtezqw")
+                    .setQuantity(Long.parseLong(String.valueOf(checkoutItemDTO.getQuantity())))
+                    .build();
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to create subscription line item");
+        }
     }
 
     //HELPER
     private SessionCreateParams.LineItem.PriceData createPriceData(CheckoutItemDTO checkoutItemDTO) {
-        return SessionCreateParams.LineItem.PriceData.builder()
-                .setCurrency("usd")
-                .setUnitAmount((long) (checkoutItemDTO.getPrice() * 100))
-                .setProductData(
-                        SessionCreateParams.LineItem.PriceData.ProductData.builder()
-                                .setName(checkoutItemDTO.getProductName())
-                                .build()
-                ).build();
+        try {
+            return SessionCreateParams.LineItem.PriceData.builder()
+                    .setCurrency("usd")
+                    .setUnitAmount((long) (checkoutItemDTO.getPrice() * 100))
+                    .setProductData(
+                            SessionCreateParams.LineItem.PriceData.ProductData.builder()
+                                    .setName(checkoutItemDTO.getProductName())
+                                    .build()
+                    ).build();
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failure to create price data.");
+        }
     }
 
     //HELPER
@@ -1205,7 +1338,14 @@ public class JdbcStripeDao implements StripeDao {
         } else {
             Map<String, Object> params = new HashMap<>();
             params.put("name", clientDetails.getFirst_name() + " " + clientDetails.getLast_name());
-            Customer customer = Customer.create(params);
+            Customer customer = null;
+            try {
+                customer = Customer.create(params);
+            } catch (Exception e) {
+                System.out.println("Error message: " + e.getMessage());
+                System.out.println("Cause: " + e.getCause());
+                throw new CustomException("Failed to create customer for subscription by client ID.");
+            }
 
             customer_id = customer.getId();
 
@@ -1217,14 +1357,33 @@ public class JdbcStripeDao implements StripeDao {
         if (emailForReceipt.length()>0) {
 
             Customer customer =
-                    Customer.retrieve(customer_id);
+                    null;
+            try {
+                customer = Customer.retrieve(customer_id);
+            } catch (Exception e) {
+                System.out.println("Error message: " + e.getMessage());
+                System.out.println("Cause: " + e.getCause());
+                throw new CustomException("Failed to retrieve customer by cus ID for email receipt.");
+            }
 
             Map<String, Object> params = new HashMap<>();
             params.put("email", emailForReceipt);
 
-            Customer updatedCustomer = customer.update(params);
+            try {
+                Customer updatedCustomer = customer.update(params);
+            } catch (Exception e) {
+                System.out.println("Error message: " + e.getMessage());
+                System.out.println("Cause: " + e.getCause());
+                throw new CustomException("Failed to update email for customer in stripe, for email receipt.");
+            }
         }
 
-        return Customer.retrieve(customer_id);
+        try {
+            return Customer.retrieve(customer_id);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to return customer by retrieved client ID.");
+        }
     }
 }

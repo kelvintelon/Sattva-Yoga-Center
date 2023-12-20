@@ -1,6 +1,8 @@
 package com.sattvayoga.dao;
 
+import com.sattvayoga.model.CustomException;
 import com.sattvayoga.model.Sale;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
@@ -23,7 +25,13 @@ public class JdbcSaleDao implements SaleDao {
     public int createSaleNoBatch(Sale sale) {
         String sql = "INSERT INTO sales (client_id, packages_purchased_array) VALUES (?, ?) RETURNING sale_id;";
 
-        return jdbcTemplate.queryForObject(sql, Integer.class, sale.getClient_id(), sale.getPackages_purchased_array());
+        try {
+            return jdbcTemplate.queryForObject(sql, Integer.class, sale.getClient_id(), sale.getPackages_purchased_array());
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to create a sale.");
+        }
     }
 
     @Override
@@ -31,10 +39,16 @@ public class JdbcSaleDao implements SaleDao {
         Set<Integer> setOfSaleIds = new HashSet<>();
 
         String sql = "Select sale_id FROM sales";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
-        while (results.next()) {
-            int saleId = results.getInt("sale_id");
-            setOfSaleIds.add(saleId);
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
+            while (results.next()) {
+                int saleId = results.getInt("sale_id");
+                setOfSaleIds.add(saleId);
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to get a set of sale IDs.");
         }
         return setOfSaleIds;
     }
@@ -45,9 +59,15 @@ public class JdbcSaleDao implements SaleDao {
 
         String sql = "SELECT * FROM sales WHERE sale_id = ?";
 
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql,saleId);
-        if (results.next()) {
-            sale = mapRowToSale(results);
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql,saleId);
+            if (results.next()) {
+                sale = mapRowToSale(results);
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve a sale by ID.");
         }
         return sale;
     }

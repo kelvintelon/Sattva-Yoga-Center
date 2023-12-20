@@ -3,8 +3,10 @@ package com.sattvayoga.dao;
 import java.sql.PreparedStatement;
 import java.util.*;
 
+import com.sattvayoga.model.CustomException;
 import com.sattvayoga.model.EmailNotFoundException;
 import com.sattvayoga.model.UserNotFoundException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.relational.core.sql.In;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -33,6 +35,10 @@ public class JdbcUserDao implements UserDao {
             userId = jdbcTemplate.queryForObject("select user_id from users where username = ?", int.class, username);
         } catch (EmptyResultDataAccessException e) {
             throw new UsernameNotFoundException("User " + username + " was not found.");
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to find user ID by username");
         }
 
         return userId;
@@ -52,29 +58,53 @@ public class JdbcUserDao implements UserDao {
     @Override
     public void updateUserToActivated(int userId) {
         String sql = "UPDATE users SET activated = true WHERE user_id = ?";
-        jdbcTemplate.update(sql, userId);
+        try {
+            jdbcTemplate.update(sql, userId);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to update user as activated.");
+        }
     }
 
     @Override
     public void updateUsernameAndPassword(String username, String password, String usernameToUpdate) {
         String sql = "UPDATE users SET username = ? , password_hash = ? WHERE username = ?;";
         String password_hash = new BCryptPasswordEncoder().encode(password);
-        jdbcTemplate.update(sql,username,password_hash,usernameToUpdate);
+        try {
+            jdbcTemplate.update(sql,username,password_hash,usernameToUpdate);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to update username and password.");
+        }
     }
 
     @Override
     public void updatePassword(String password, String usernameToUpdate) {
         String sql = "UPDATE users SET password_hash = ? WHERE username = ?;";
         String password_hash = new BCryptPasswordEncoder().encode(password);
-        jdbcTemplate.update(sql,password_hash,usernameToUpdate);
+        try {
+            jdbcTemplate.update(sql,password_hash,usernameToUpdate);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to update password.");
+        }
     }
 
     @Override
     public boolean isPasswordEmpty(String username) {
         String sql = "SELECT LENGTH(password_hash) FROM users WHERE username = ?;";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, username);
-        if (result.next()) {
-            return result.getInt("length") == 0;
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, username);
+            if (result.next()) {
+                return result.getInt("length") == 0;
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to confirm if password is empty.");
         }
         return false;
     }
@@ -87,8 +117,14 @@ public class JdbcUserDao implements UserDao {
         String password_hash = new BCryptPasswordEncoder().encode(password);
         String ssRole = role.toUpperCase().startsWith("ROLE_") ? role.toUpperCase() : "ROLE_" + role.toUpperCase();
 
-        //TODO: try/catch + exception for the following
-        return jdbcTemplate.queryForObject(insertUserSql, Integer.class, username, password_hash, ssRole, false);
+        //try/catch + exception for the following
+        try {
+            return jdbcTemplate.queryForObject(insertUserSql, Integer.class, username, password_hash, ssRole, false);
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to create user.");
+        }
 
     }
 
@@ -98,10 +134,16 @@ public class JdbcUserDao implements UserDao {
         List<YogaUser> users = new ArrayList<>();
         String sql = "select * from users";
 
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
-        while (results.next()) {
-            YogaUser user = mapRowToUser(results);
-            users.add(user);
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
+            while (results.next()) {
+                YogaUser user = mapRowToUser(results);
+                users.add(user);
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to find all users.");
         }
 
         return users;
@@ -125,11 +167,18 @@ public class JdbcUserDao implements UserDao {
 
         String sql = "select * from users JOIN client_details ON client_details.user_id = users.user_id WHERE email = ?";
 
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql,email);
-        if (results.next()) {
-            YogaUser user = mapRowToUser(results);
-            return user;
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql,email);
+            if (results.next()) {
+                YogaUser user = mapRowToUser(results);
+                return user;
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to find user by email.");
         }
+
         throw new EmailNotFoundException();
 
     }

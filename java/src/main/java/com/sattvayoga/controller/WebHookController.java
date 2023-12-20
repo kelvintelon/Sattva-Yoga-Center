@@ -400,7 +400,7 @@ public class WebHookController {
                         subscription.update(params);
             }
 
-        } catch (StripeException e) {
+        } catch (Exception e) {
             System.out.println("Error updating subscription's contract length in checkout session.");
         }
     }

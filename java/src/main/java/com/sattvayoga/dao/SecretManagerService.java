@@ -2,6 +2,7 @@ package com.sattvayoga.dao;
 
 
 
+import com.sattvayoga.model.CustomException;
 import com.sattvayoga.model.JavaMailCredentials;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,8 +48,9 @@ public class SecretManagerService {
         } catch (Exception e) {
             // For a list of exceptions thrown, see
             // https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
-            System.out.println("Could not retrieve Secret Value Response");
-            throw e.getCause();
+            System.out.println("Could not retrieve Secret Value Response. Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve stripe secret");
         }
 
         String secret = getSecretValueResponse.secretString();
@@ -77,8 +79,9 @@ public class SecretManagerService {
         } catch (Exception e) {
             // For a list of exceptions thrown, see
             // https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
-            System.out.println("Could not retrieve Secret Value Response");
-            throw e.getCause();
+            System.out.println("Could not retrieve Secret Value Response. Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve webhook secret");
         }
 
         String secret = getSecretValueResponse.secretString();
@@ -114,7 +117,9 @@ public class SecretManagerService {
 //        } catch (Exception e) {
 //            // For a list of exceptions thrown, see
 //            // https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
-//            throw e.getCause();
+//            System.out.println("Could not retrieve Secret Value Response. Error message: " + e.getMessage());
+//            System.out.println("Cause: " + e.getCause());
+//            throw new CustomException("Failed to retrieve credentials for email service");
 //        }
 //
 //        String secret = getSecretValueResponse.secretString();

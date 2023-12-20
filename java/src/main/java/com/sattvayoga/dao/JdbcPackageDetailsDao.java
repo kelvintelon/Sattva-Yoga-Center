@@ -2,7 +2,9 @@ package com.sattvayoga.dao;
 
 import com.sattvayoga.model.ClassEvent;
 import com.sattvayoga.model.ClientDetails;
+import com.sattvayoga.model.CustomException;
 import com.sattvayoga.model.PackageDetails;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.relational.core.sql.In;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -34,9 +36,16 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
                 "classes_amount, package_duration, unlimited, is_visible_online, is_recurring, active) VALUES " +
                 "(?, ?, ?, ?, ?, ?, ?, ?) RETURNING package_id;";
 
-        int packageId = jdbcTemplate.queryForObject(sql, Integer.class, packageDetails.getDescription(), packageDetails.getPackage_cost(),
-                packageDetails.getClasses_amount(), packageDetails.getPackage_duration(),
-                packageDetails.isUnlimited(), packageDetails.isIs_visible_online(), packageDetails.isIs_recurring(), packageDetails.isActive());
+        int packageId = 0;
+        try {
+            packageId = jdbcTemplate.queryForObject(sql, Integer.class, packageDetails.getDescription().trim(), packageDetails.getPackage_cost(),
+                    packageDetails.getClasses_amount(), packageDetails.getPackage_duration(),
+                    packageDetails.isUnlimited(), packageDetails.isIs_visible_online(), packageDetails.isIs_recurring(), packageDetails.isActive());
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to create package.");
+        }
         int desiredPackageOrder = packageDetails.getPackage_order();
         packageDetails.setPackage_id(packageId);
         int nextHighestPackageOrder = findHighestPackageOrder()+1;
@@ -46,10 +55,16 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
 
     private int findHighestPackageOrder() {
         String sql = "SELECT MAX(package_order) FROM package_details";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
-        if (result.next()) {
-            int max = result.getInt("max");
-            return max;
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+            if (result.next()) {
+                int max = result.getInt("max");
+                return max;
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to find highest package order.");
         }
         return 0;
     }
@@ -58,7 +73,13 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
 
         if (nextHighestPackageOrder == desiredPackageOrder || desiredPackageOrder > nextHighestPackageOrder) {
             String sql2 = "UPDATE package_details SET package_order = ? WHERE package_id = ?";
-            jdbcTemplate.update(sql2, nextHighestPackageOrder, packageId);
+            try {
+                jdbcTemplate.update(sql2, nextHighestPackageOrder, packageId);
+            } catch (Exception e) {
+                System.out.println("Error message: " + e.getMessage());
+                System.out.println("Cause: " + e.getCause());
+                throw new CustomException("Failed to set package order for package details.");
+            }
         } else {
 
             List<PackageDetails> allPackages = getAllPackages();
@@ -107,12 +128,18 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
         List<PackageDetails> allPackages = new ArrayList<>();
 
         String sql = "SELECT * FROM package_details ORDER BY package_order;";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
-        while (result.next()) {
-            PackageDetails packageDetails = mapRowToPackage(result);
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+            while (result.next()) {
+                PackageDetails packageDetails = mapRowToPackage(result);
 
 
-            allPackages.add(packageDetails);
+                allPackages.add(packageDetails);
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve all packages");
         }
 
         return allPackages;
@@ -121,10 +148,17 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
     @Override
     public PackageDetails findPackageByPackageName(String packageName) {
         String sql = "SELECT * FROM package_details WHERE description = ?;";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, packageName);
-        PackageDetails packageDetails = new PackageDetails();
-        if (result.next()) {
-            packageDetails = mapRowToPackage(result);
+        PackageDetails packageDetails = null;
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, packageName);
+            packageDetails = new PackageDetails();
+            if (result.next()) {
+                packageDetails = mapRowToPackage(result);
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve a package by their name.");
         }
         return packageDetails;
     }
@@ -132,10 +166,17 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
     @Override
     public PackageDetails findPackageByPackageId(int packageId) {
         String sql = "SELECT * FROM package_details WHERE package_id = ?;";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, packageId);
-        PackageDetails packageDetails = new PackageDetails();
-        if (result.next()) {
-            packageDetails = mapRowToPackage(result);
+        PackageDetails packageDetails = null;
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, packageId);
+            packageDetails = new PackageDetails();
+            if (result.next()) {
+                packageDetails = mapRowToPackage(result);
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve a package by ID.");
         }
         return packageDetails;
     }
@@ -143,10 +184,17 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
     @Override
     public PackageDetails findPackageBySubscriptionDuration(int subscriptionDuration) {
         String sql = "SELECT * FROM package_details WHERE is_recurring = true AND unlimited = true AND package_duration = ?;";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, subscriptionDuration);
-        PackageDetails packageDetails = new PackageDetails();
-        if (result.next()) {
-            packageDetails = mapRowToPackage(result);
+        PackageDetails packageDetails = null;
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, subscriptionDuration);
+            packageDetails = new PackageDetails();
+            if (result.next()) {
+                packageDetails = mapRowToPackage(result);
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve a subscription package by their duration.");
         }
         return packageDetails;
     }
@@ -274,7 +322,7 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
 
             packageDetails.setPackage_id(packageId);
 
-            String description = splitLine[columnMap.get("description")];
+            String description = splitLine[columnMap.get("description")].trim();
 
             packageDetails.setDescription(description);
 
@@ -332,24 +380,30 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
     }
 
     public void batchCreatePackages(final Collection<PackageDetails> packages) {
-        jdbcTemplate.batchUpdate(
-                "INSERT INTO package_details (package_id, description, package_cost, " +
-                        "classes_amount, package_duration, unlimited, is_visible_online, " +
-                        "is_recurring, active, package_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                packages,
-                100,
-                (PreparedStatement ps, PackageDetails packageDetails) -> {
-                    ps.setInt(1, packageDetails.getPackage_id());
-                    ps.setString(2, packageDetails.getDescription());
-                    ps.setBigDecimal(3, packageDetails.getPackage_cost());
-                    ps.setInt(4, packageDetails.getClasses_amount());
-                    ps.setInt(5, packageDetails.getPackage_duration());
-                    ps.setBoolean(6, packageDetails.isUnlimited());
-                    ps.setBoolean(7, packageDetails.isIs_visible_online());
-                    ps.setBoolean(8, packageDetails.isIs_recurring());
-                    ps.setBoolean(9, packageDetails.isActive());
-                    ps.setInt(10, packageDetails.getPackage_order());
-                });
+        try {
+            jdbcTemplate.batchUpdate(
+                    "INSERT INTO package_details (package_id, description, package_cost, " +
+                            "classes_amount, package_duration, unlimited, is_visible_online, " +
+                            "is_recurring, active, package_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    packages,
+                    100,
+                    (PreparedStatement ps, PackageDetails packageDetails) -> {
+                        ps.setInt(1, packageDetails.getPackage_id());
+                        ps.setString(2, packageDetails.getDescription());
+                        ps.setBigDecimal(3, packageDetails.getPackage_cost());
+                        ps.setInt(4, packageDetails.getClasses_amount());
+                        ps.setInt(5, packageDetails.getPackage_duration());
+                        ps.setBoolean(6, packageDetails.isUnlimited());
+                        ps.setBoolean(7, packageDetails.isIs_visible_online());
+                        ps.setBoolean(8, packageDetails.isIs_recurring());
+                        ps.setBoolean(9, packageDetails.isActive());
+                        ps.setInt(10, packageDetails.getPackage_order());
+                    });
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to batch create packages.");
+        }
     }
 
     @Override
@@ -365,12 +419,18 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
                 "package_order = ? , " +
                 "is_recurring = ? " +
                 "WHERE package_id = ?";
-        jdbcTemplate.update(sql, packageDetails.getPackage_id(), packageDetails.getDescription(),
-                packageDetails.getPackage_cost(), packageDetails.getClasses_amount(),
-                packageDetails.getPackage_duration(), packageDetails.isUnlimited(),
-                packageDetails.isIs_visible_online(), packageDetails.isActive(), packageDetails.getPackage_order(),
-                packageDetails.isIs_recurring(), packageDetails.getPackage_id());
-   }
+        try {
+            jdbcTemplate.update(sql, packageDetails.getPackage_id(), packageDetails.getDescription(),
+                    packageDetails.getPackage_cost(), packageDetails.getClasses_amount(),
+                    packageDetails.getPackage_duration(), packageDetails.isUnlimited(),
+                    packageDetails.isIs_visible_online(), packageDetails.isActive(), packageDetails.getPackage_order(),
+                    packageDetails.isIs_recurring(), packageDetails.getPackage_id());
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to update a single package.");
+        }
+    }
 
     @Override
     public void updatePackages(PackageDetails packageDetails) {
@@ -390,11 +450,17 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
                     "active = ? , " +
                     "is_recurring = ? " +
                     "WHERE package_id = ?";
-            jdbcTemplate.update(sql, packageDetails.getPackage_id(), packageDetails.getDescription(),
-                    packageDetails.getPackage_cost(), packageDetails.getClasses_amount(),
-                    packageDetails.getPackage_duration(), packageDetails.isUnlimited(),
-                    packageDetails.isIs_visible_online(), packageDetails.isActive(),
-                    packageDetails.isIs_recurring(), packageDetails.getPackage_id());
+            try {
+                jdbcTemplate.update(sql, packageDetails.getPackage_id(), packageDetails.getDescription(),
+                        packageDetails.getPackage_cost(), packageDetails.getClasses_amount(),
+                        packageDetails.getPackage_duration(), packageDetails.isUnlimited(),
+                        packageDetails.isIs_visible_online(), packageDetails.isActive(),
+                        packageDetails.isIs_recurring(), packageDetails.getPackage_id());
+            } catch (Exception e) {
+                System.out.println("Error message: " + e.getMessage());
+                System.out.println("Cause: " + e.getCause());
+                throw new CustomException("Failed to update a package at desired order.");
+            }
 
             return;
         }
@@ -511,13 +577,19 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
 
     @Override
     public boolean deletePackage(int packageId) {
-        String sql = "BEGIN TRANSACTION;\n" +
-                "\n" +
-                "DELETE FROM package_details\n" +
-                "WHERE package_id = ?;\n" +
-                "\n" +
-                "COMMIT TRANSACTION;";
-        return jdbcTemplate.update(sql, packageId)==1;
+        try {
+            String sql = "BEGIN TRANSACTION;\n" +
+                    "\n" +
+                    "DELETE FROM package_details\n" +
+                    "WHERE package_id = ?;\n" +
+                    "\n" +
+                    "COMMIT TRANSACTION;";
+            return jdbcTemplate.update(sql, packageId)==1;
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to delete package by ID.");
+        }
     }
 
     @Override
@@ -525,12 +597,18 @@ public class JdbcPackageDetailsDao implements PackageDetailsDao {
         List<PackageDetails> allPackages = new ArrayList<>();
 
         String sql = "SELECT * FROM package_details WHERE is_visible_online = TRUE AND active = TRUE ORDER BY package_order;";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
-        while (result.next()) {
-            PackageDetails packageDetails = mapRowToPackage(result);
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql);
+            while (result.next()) {
+                PackageDetails packageDetails = mapRowToPackage(result);
 
 
-            allPackages.add(packageDetails);
+                allPackages.add(packageDetails);
+            }
+        } catch (Exception e) {
+            System.out.println("Error message: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause());
+            throw new CustomException("Failed to retrieve all public packages.");
         }
 
         return allPackages;
