@@ -58,6 +58,9 @@ export default {
               if (response.status == 403) {
                 this.$router.push({name: "logout"});
               }
+              if (response.status === 400) {
+              alert(error.response.data.message)
+              }
             });
     }
   },

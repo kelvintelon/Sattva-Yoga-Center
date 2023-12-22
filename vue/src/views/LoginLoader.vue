@@ -63,6 +63,12 @@ export default {
         } else {
           this.$router.push("/clientRegistration");
         }
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
       });
     }
   },

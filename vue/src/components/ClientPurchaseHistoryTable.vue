@@ -423,6 +423,12 @@ export default {
         if (response.status == 201) {
           alert("Email sent")
         }
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
       });
     },
     temporaryPageMethod() {
@@ -465,10 +471,16 @@ export default {
                 "SET_PACKAGE_HISTORY_LIST",
                 this.packageHistoryList
               );
+            }
+          })
+          .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
             } else {
               alert("Error retrieving package information");
             }
-          });
+      });
       } else {
         packagePurchaseService.getPaginatedUserPurchasedPackages(parseInt(this.page),
             parseInt(this.pageSize), this.sortBy, this.sortDesc).then((response) => {
@@ -486,10 +498,16 @@ export default {
               "SET_PACKAGE_HISTORY_LIST",
               this.packageHistoryList
             );
-          } else {
+          }
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
             alert("Error retrieving package information");
           }
-        });
+      });
       }
     },
     close() {
@@ -529,7 +547,13 @@ export default {
             this.$root.$refs.A.getActivePurchaseServerRequest();
             this.getPackageHistoryTable();
           }
-        });
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+      });
     },
   },
 };

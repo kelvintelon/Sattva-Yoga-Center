@@ -224,7 +224,13 @@ export default {
           this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
           this.activePackageList = this.$store.state.activePackageList;
           this.formattingSignUp();
-        } else {
+        }
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
           alert("Error retrieving package information");
         }
       });
@@ -237,7 +243,13 @@ export default {
             this.sharedPackages = response.data;
           }
           this.$store.commit("SET_SHARED_PACKAGE_LIST", this.sharedPackages);
-        });
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+      });
     },
     formattingSignUp() {
       // find out if they have at least one active package that's a subscription or a bundle and active
@@ -380,11 +392,23 @@ export default {
                       this.clientProfile = response.data;
                       this.$store.commit("SET_CLIENT_DETAILS", response.data);
                     }
+                  })
+                  .catch((error) => {
+                    const response = error.response;
+                      if (response.status === 400) {
+                        alert(error.response.data.message)
+                      }
                   });
                 this.getEventTable();
                 this.getClientEventTable();
               }
-            });
+            })
+            .catch((error) => {
+                    const response = error.response;
+                      if (response.status === 400) {
+                        alert(error.response.data.message)
+                      }
+                  });
         }
       }
     },
@@ -453,7 +477,13 @@ export default {
           }
           this.allowSignUp = true;
           this.cancelCheck();
-        } else {
+        }
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
           alert("Error retrieving package information");
         }
       });

@@ -268,6 +268,12 @@ export default {
           this.retrievedUsername = response.data;
         }
       })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+          });
     },
     checkTokenForValidation() {
       authService
@@ -281,7 +287,13 @@ export default {
           } else {
             ("Error validating link");
           }
-        });
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+          });
     },
     checkTokenForResetUsernameAndPassword() {
       authService
@@ -297,7 +309,13 @@ export default {
           } else {
             ("Error validating link");
           }
-        });
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+          });
     },
     checkTokenForResetPassword() {
       authService
@@ -313,7 +331,13 @@ export default {
           } else {
             ("Error validating link");
           }
-        });
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+          });
     },
     resetUsernameAndPassword() {
       if (this.user.password != this.user.confirmPassword) {
@@ -335,6 +359,7 @@ export default {
             this.resetPasswordErrors = true;
             if (response.status === 400) {
               this.resetPasswordErrorsMsg = "Bad Request: Validation Errors";
+              alert(error.response.data.message)
             }
           });
       }
@@ -359,6 +384,7 @@ export default {
             this.resetPasswordErrors = true;
             if (response.status === 400) {
               this.resetPasswordErrorsMsg = "Bad Request: Validation Errors";
+              alert(error.response.data.message)
             }
           });
       }

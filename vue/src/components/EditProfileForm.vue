@@ -459,6 +459,7 @@ export default {
               this.emailRegistrationErrors = true;
               if (response.status === 400) {
                 this.emailRegistrationErrorMsg = "Could not update. Email is already being used by an account";
+                alert(error.response.data.message)
               }
             });
 
@@ -473,10 +474,16 @@ export default {
       clientDetailService.getClientDetailsByClientId(parseInt(this.$route.params.clientId)).then((response) => {
          if (response.status == 200) {
            this.clientDetails = response.data;
-         } else {
+         } 
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
            alert("Error retrieving client information")
          }
-      })
+      });
     } else {
       this.clientDetails = this.$store.state.clientDetails;
     }

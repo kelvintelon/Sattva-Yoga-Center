@@ -1032,7 +1032,13 @@ export default {
               this.snackBarReconcileWarning = true;
             }
           }
-        });
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+      });
     },
     // snackbars not showing and not unshowing
     allowClientReconcile() {
@@ -1060,10 +1066,17 @@ export default {
             this.snackBarReconcilePackages = false;
           } else {
             this.snackBarReconcilePackages = false;
-            alert("Error Reconciling Classes");
             this.getActivePurchaseServerRequest();
           }
-        });
+        })
+        .catch((error) => {
+                    const response = error.response;
+                      if (response.status === 400) {
+                        alert(error.response.data.message)
+                      } else {
+                        alert("Error Reconciling Classes");
+                      }
+                  });
     },
     getPublicPackagesTable() {
       packageDetailService.getAllPublicPackages().then((response) => {
@@ -1072,7 +1085,13 @@ export default {
           this.$store.commit("SET_PACKAGE_LIST", response.data);
             
           this.availablePackages = response.data.map(item => ({ ...item, quantity: 1 }));
-        } else {
+        }
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
           alert("Error retrieving package information");
         }
       });
@@ -1110,7 +1129,12 @@ export default {
 
      
       })
-
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+      });
     },
     processSetupIntentThroughReader() {
       stripeService.addPaymentMethodThroughReader(parseInt(this.$route.params.clientId)).then((response) => {
@@ -1121,10 +1145,16 @@ export default {
           setTimeout(() => {
             this.retrievePaymentMethodsFromStripe();
           }, 5000);
-        } else {
-          alert("Error with SetupIntent through Reader")
         }
       })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
+              alert("Error with SetupIntent through Reader")
+            }
+      });
     },
     saveNewCard() {
       if (this.newCardObject.cardNumber.length == 0 || this.newCardObject.expirationMonth == 0 || this.newCardObject.expYear == 0 || this.newCardObject.cvc == 0) {
@@ -1137,6 +1167,12 @@ export default {
             this.retrievePaymentMethodsFromStripe(parseInt(this.$route.params.clientId))
           }
         })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+      });
       }
     },
     close() {
@@ -1270,10 +1306,16 @@ export default {
                 this.snackBarReconcilePackages = true;
               }
               this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
+            }
+          })
+          .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
             } else {
               alert("Error retrieving package information");
             }
-          });
+      });
       } else {
         packagePurchaseService
           .getAllActivePaginatedUserPackagePurchaseForLoggedInUser(
@@ -1314,10 +1356,16 @@ export default {
                 this.snackBarReconcilePackages = true;
               }
               this.$store.commit("SET_ACTIVE_PACKAGE_LIST", this.packages);
-            } else {
+            } 
+          })
+          .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }else {
               alert("Error retrieving package information");
             }
-          });
+      });
       }
     },
     getSharedActivePackages() {
@@ -1330,7 +1378,13 @@ export default {
             this.sharedPackages = response.data;
           }
           this.$store.commit("SET_SHARED_PACKAGE_LIST", this.sharedPackages);
-        });
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+      });
     },
     Remove(item) {
       item.date_purchased = new Date(item.date_purchased).toJSON();
@@ -1343,10 +1397,16 @@ export default {
 
             // call the method to update the purchase history table so it updates the expired column
             this.$root.$refs.B.getPackageHistoryTable();
-          } else {
+          }
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
             alert("Error canceling class");
           }
-        });
+      });
       }
       
     },
@@ -1446,7 +1506,7 @@ export default {
           if (response.status == 201) {
             this.loading = false;
             this.overlay = false;
-            alert("Succesfully purchased package");
+            alert("Successfully purchased package");
             // call method that updates the list of active packages
             this.getActivePurchaseServerRequest();
             this.$root.$refs.B.getPackageHistoryTable();
@@ -1456,7 +1516,13 @@ export default {
             this.packagePurchase = {};
             this.close();
           }
-        });
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+      });
       this.close();
     },
     addMonths(date, months) {
@@ -1508,6 +1574,12 @@ export default {
           }
         }
       })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+      });
     },
     submitClientCheckout() {
       if (this.selectedPackages.length != 0) {
@@ -1585,7 +1657,13 @@ export default {
 
               this.loading = false;
             }
-          });
+          })
+          .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+      });
         }
       }
       } else {

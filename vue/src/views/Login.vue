@@ -163,6 +163,9 @@ export default {
           if (response.status === 401) {
             this.invalidCredentials = true;
           }
+          if (response.status === 400) {
+              alert(error.response.data.message)
+            }
         });
     },
     goToLogout() {

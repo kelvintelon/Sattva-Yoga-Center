@@ -147,6 +147,12 @@ export default {
           
         }
       })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+      });
     },
     getClientDetails() {
       clientDetailService.getClientDetailsByClientId(parseInt(this.$route.params.clientId)).then((response) => {
@@ -159,6 +165,12 @@ export default {
             this.snackBarReconcileWarning = false;
           }
         }
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
       });
     },
     checkForEmail() {
@@ -176,14 +188,13 @@ export default {
           
         } else {
           this.snackBarEmailReset = false;
-          alert("Error sending email")
         }
       })
       .catch((error) => {
             const response = error.response;
             this.registrationErrors = true;
             if (response.status === 400 || response.status === 404) {
-              alert("Error email not found")
+              alert("Error email not found.. " + error.response.data.message)
             }
           });
     },
@@ -199,6 +210,12 @@ export default {
             this.snackBarReconcileWarning = true
           }
         }
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
       });
 
     this.clientDetails = this.$store.state.clientDetails;

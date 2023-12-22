@@ -1082,6 +1082,12 @@ export default {
         } else {
           alert("Error retrieving class information");
         }
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
       });
     },
     SignUp() {

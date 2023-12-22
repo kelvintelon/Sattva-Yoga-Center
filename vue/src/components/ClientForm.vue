@@ -490,6 +490,7 @@ export default {
               if (response.status === 400) {
                 this.emailRegistrationErrorMsg =
                   "There were problems registering this email.";
+                  alert(error.response.data.message)
               }
             });
         } else {

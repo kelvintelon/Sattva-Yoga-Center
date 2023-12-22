@@ -28,10 +28,16 @@
         if (response.status == 200) {
           this.readOnlyDescription = response.data;
           this.adminOnlyDescription = response.data;
-        } else {
-          alert("Error retrieving class schedule")
         }
       })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
+          alert("Error retrieving class schedule")
+        }
+      });
     },
     updateClassScheduleDescription(event) {
       // let newDescription = {description: ''};
@@ -43,6 +49,12 @@
           
           // this.readOnlyDescription = newDescription.description;
         }
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
       });
     },
      

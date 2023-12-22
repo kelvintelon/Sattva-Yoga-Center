@@ -83,6 +83,12 @@ export default {
             this.$router.push({ name: "home" });
           }
         }
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
       });
     } else {
       clientDetailService
@@ -112,6 +118,9 @@ export default {
           if (response.status == 403) {
             this.$router.push({ name: "logout" });
           }
+          if (response.status === 400) {
+              alert(error.response.data.message)
+            }
         });
     }
     // VideoService.getVideoFilenames().then((response) => {

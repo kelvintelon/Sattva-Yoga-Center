@@ -225,14 +225,17 @@ export default {
                     this.autocompleteFirstClientList = this.paginatedObject.listOfClients;
                     this.loadingFirstClientList = false;
                     
-                } else {
-                    alert("Error retrieving client information");
-                }
+                } 
                 })
                 .catch((error) => {
                 const response = error.response;
                 if (response.status === 401) {
                     this.$router.push("/login");
+                }
+                if (response.status === 400) {
+                alert(error.response.data.message)
+                } else {
+                    alert("Error retrieving client information");
                 }
                 });
         },

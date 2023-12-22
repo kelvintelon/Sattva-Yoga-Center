@@ -144,14 +144,17 @@ export default {
               item.date_of_entry = new Date(item.date_of_entry);
             });
             this.$store.commit("SET_CLIENT_LIST", response.data);
-          } else {
-            alert("Error retrieving client information");
-          }
+          } 
         })
         .catch((error) => {
           const response = error.response;
           if (response.status === 401) {
             this.$router.push("/login");
+          }
+          if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
+            alert("Error retrieving client information");
           }
         });
     },
@@ -172,14 +175,17 @@ export default {
               item.date_of_entry = new Date(item.date_of_entry);
             });
             this.$store.commit("SET_CLIENT_LIST", response.data);
-          } else {
-            alert("Error retrieving client information");
-          }
+          } 
         })
         .catch((error) => {
           const response = error.response;
           if (response.status === 401) {
             this.$router.push("/login");
+          }
+          if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
+            alert("Error retrieving client information");
           }
         });
     },

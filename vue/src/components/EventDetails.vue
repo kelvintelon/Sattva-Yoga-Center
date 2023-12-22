@@ -558,10 +558,16 @@ export default {
             alert("Successfully deleted clients from roster");
             this.getEventDetailsCall();
             this.selectedClientsFromRoster = [];
-          } else {
+          } 
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
             alert("Error deleting clients from roster");
           }
-        }); // END OF REMOVING CLIENT FROM ROSTER
+      }); // END OF REMOVING CLIENT FROM ROSTER
     },
     allowClientDelete() {
       this.overlay = !this.overlay;
@@ -573,10 +579,16 @@ export default {
             alert("Successfully deleted clients from roster");
             this.getEventDetailsCall();
             this.selectedClientsFromRoster = [];
-          } else {
+          } 
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
             alert("Error deleting clients from roster");
           }
-        });
+      });
     },
     // START OF ADDING CLIENT TO ROSTER
     save() {
@@ -605,10 +617,16 @@ export default {
               this.selectedClients = [];
               this.clientDetails.first_name = "";
               this.clientDetails.last_name = "";
+            }
+          })
+          .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
             } else {
               alert("Error adding clients to roster");
             }
-          });
+      });
           this.close();
       } else {
         alert("Please select at least one client")
@@ -638,10 +656,16 @@ export default {
             this.clientDetails.first_name = "";
             this.clientDetails.last_name = "";
             this.clientDetails.email = "";
-          } else {
+          }
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
             alert("Error adding clients to roster");
           }
-        });
+      });
 
       this.close();
       } else {
@@ -677,11 +701,17 @@ export default {
 
             // format the sign up and pass along the object
             this.formattingSignUp(this.eventClientSignUp);
-          } else {
+          } 
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }else {
             alert("Error retrieving package information");
           }
           // END OF ACTIVE PACKAGE REQUEST
-        });
+      });
     },
     formattingSignUp(object) {
       this.overlay = !this.overlay;
@@ -777,7 +807,13 @@ export default {
               //  this.listOfSignedUpClients.push(this.individualClientFromLoop)
               this.getEventDetailsCall();
             }
-          });
+          })
+          .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+      });
         }
       }
     },
@@ -845,14 +881,17 @@ export default {
               }
               item.date_of_entry = new Date(item.date_of_entry);
             });
-          } else {
-            alert("Error retrieving client information");
-          }
+          } 
         })
         .catch((error) => {
           const response = error.response;
           if (response.status === 401) {
             this.$router.push("/login");
+          }
+          if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
+            alert("Error retrieving client information");
           }
         });
     },
@@ -866,7 +905,13 @@ export default {
           this.allClientsList = response.data;
 
           this.$store.commit("SET_CLIENT_EVENT_LIST", response.data);
-        } else {
+        } 
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
           alert("Error retrieving client information");
         }
       });
@@ -921,7 +966,13 @@ export default {
               }
             });
           }
-        });
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+      });
     },
   },
   created() {

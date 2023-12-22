@@ -54,7 +54,13 @@ export default {
               ) {
                 this.$router.push({ name: "clientRegistration" });
               }
-            });
+            })
+            .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+      });
         }
       } else {
         this.adminIsLoggedin = true;

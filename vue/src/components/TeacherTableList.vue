@@ -270,10 +270,16 @@ export default {
             this.getTeachers();
             this.reset();
             this.close();
-          } else {
+          }
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
             alert("Error creating a teacher!");
           }
-        });
+      });
       }
     },
 
@@ -286,10 +292,16 @@ export default {
             this.getTeachers();
             this.reset();
             this.close2();
-          } else {
+          }
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
             alert("Error updating a teacher!");
           }
-        });
+      }); 
       }
     },
     // ===========
@@ -299,7 +311,13 @@ export default {
         if (response.status == 200) {
           this.$store.commit("SET_TEACHER_LIST", response.data);
           this.teachers = response.data;
-        } else {
+        }
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
           alert("Error retrieving class information");
         }
       });
@@ -322,7 +340,13 @@ export default {
         if (response.status == 200) {
           this.$store.commit("SET_CLASS_LIST", response.data);
           this.classes = response.data;
-        } else {
+        } 
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
           alert("Error retrieving class information");
         }
       });
@@ -345,11 +369,17 @@ export default {
           .then((response) => {
             if (response.status == 200) {
               alert("Teacher successfully removed!");
+            }
+          })
+          .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
             } else {
               // error alert not showing if server gets error
               alert("Error removing teacher!");
             }
-          });
+      });
         this.closeDelete();
       } else {
         alert("Error! This teacher is currently assigned to a class!");

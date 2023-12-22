@@ -191,7 +191,7 @@ import eventService from "../services/EventService";
 import packagePurchaseService from "../services/PackagePurchaseService";
 
 export default {
-  name: "client-event-table",
+  name: "Client-Event-Table",
   data() {
     return {
       clientEventHeaders: [
@@ -260,6 +260,12 @@ export default {
           // If they match then have the selected one show up in the object: this.selectedPackageToSwap.
         }
       })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+      });
     },
     swapPackages() {
          
@@ -285,6 +291,12 @@ export default {
               this.showActivePackages = false;
             }
           })
+          .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+      });
         }
          
     },
@@ -357,10 +369,16 @@ export default {
                 hour12: true,
               });
             });
-          } else {
+          } 
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
             alert("Error retrieving class information");
           }
-        });
+      });
     },
     get100Events() {
       eventService
@@ -448,7 +466,13 @@ export default {
             //   }
             // });
           }
-        });
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+      });
     },
     close() {
       this.selectedClasses = [];
@@ -482,10 +506,16 @@ export default {
               this.$root.$refs.C.getClientDetails();
 
               this.selectedClasses = [];
+            } 
+          })
+          .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
             } else {
               alert("Error adding events to this client");
             }
-          });
+      });
         this.close();
       } else {
         alert("Please select at least one event");
@@ -556,10 +586,16 @@ export default {
             }
             this.allowSignUp = true;
             this.cancelCheck();
-          } else {
+          }
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
             alert("Error retrieving package information");
           }
-        });
+      });
     },
     cancelCheck() {
       if (this.allowSignUp || this.eventClientSignUp.package_purchase_id <= 0) {
@@ -591,7 +627,13 @@ export default {
                 this.$root.$refs.A.getActivePurchaseServerRequest();
                 this.$root.$refs.B.getPackageHistoryTable();
               }
-            });
+            })
+            .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+      });
           }
         }
       }

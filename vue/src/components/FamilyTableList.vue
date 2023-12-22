@@ -217,9 +217,15 @@ export default {
       FamilyService.getFamilyList().then((response) => {
         if (response.status == 200) {
           this.familyList = response.data;
-        } else {
-          alert("Error retrieving family information");
-        }
+        } 
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
+            alert("Error retrieving family information");
+            }
       });
     },
     sendToFamilyDetailsPage(item) {
@@ -241,7 +247,13 @@ export default {
             this.dialog = false;
             this.newFamilyObj.family_name = "";
           }
-        });
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+      });
       }
     },
     checkCreateForm() {
@@ -274,6 +286,12 @@ export default {
             if (response.status == 200) {
               alert("Family successfully removed!");
               this.getFamilyTable();
+            }
+          })
+          .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
             } else {
               // error alert not showing if server gets error
               alert("Error removing teacher!");
@@ -295,10 +313,13 @@ export default {
             alert("Error updating a family server side!");
           }
           
-        }).catch((error) => {
+        })
+        .catch((error) => {
             const response = error.response;
-            alert("Error status: " + response.status)
-          });
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+        });
       }
     },
     editItem(item) {

@@ -262,9 +262,15 @@ export default {
             }
           }
 
-        } else {
-          alert("Error retrieving class information");
-        }
+        } 
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
+              alert("Error retrieving classes.")
+            }
       });
     },
     sortSundayColumns() {
@@ -400,6 +406,12 @@ export default {
         this.teacherObj.forEach((item) => {
           this.teacherNames.push(item.first_name + " " + item.last_name);
         });
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
       });
     },
     getMeridiamButtonColor(m) {

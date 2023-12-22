@@ -199,10 +199,16 @@ export default {
             this.classDetails.teacher_name = this.selectedTeacherName;
             this.$store.state.classList.push(this.classDetails);
             this.reset();
-          } else {
+          } 
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
             alert("!Error creating a class!");
           }
-        });
+      });
       }
     },
 
@@ -213,6 +219,12 @@ export default {
           this.fullName = item.first_name + " " + item.last_name;
           this.teacherNames.push(this.fullName);
         });
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
       });
     },
   },

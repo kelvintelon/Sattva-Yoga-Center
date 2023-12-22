@@ -669,7 +669,11 @@ export default {
           if (response.status === 401) {
             this.$router.push('/login')
           }
+          if (response.status === 400) {
+              alert(error.response.data.message)
+            }
         });
+        
       
     },
     editItem(item) {
@@ -708,10 +712,16 @@ export default {
               this.loading = false;
             this.overlay = false;
             }
-          } else {
-            alert("Error removing class!");
-          }
-        });
+          } 
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
+              alert("Error removing class!");
+            }
+      });
       this.closeDelete();
     },
 
@@ -794,10 +804,16 @@ export default {
             this.reset();
             this.$root.$refs.Z.getAllEvents();
             this.close();
-          } else {
+          } 
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
             alert("Error creating a class!");
           }
-        });
+      });
       }
     },
     update() {
@@ -831,10 +847,16 @@ export default {
               this.loading = false;
               this.overlay = false;
             }
-          } else {
+          } 
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
             alert("Error updating a class!");
           }
-        });
+      });
       }
     },
     fetchTeachers() {
@@ -843,6 +865,12 @@ export default {
         this.teacherList.forEach((item) => {
           this.teacherNames.push(item.first_name + " " + item.last_name);
         });
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
       });
     },
     getMeridiamButtonColor(m) {

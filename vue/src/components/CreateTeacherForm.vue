@@ -96,10 +96,16 @@ export default {
             teacherService.registerTeacher(this.teacherDetails).then((response) => {
                 if(response.status == 201){
                     alert("You have created a teacher")
-                }else{
+                }
+            })
+            .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else{
                     alert("!Error creating a teacher")
                 }
-            });
+      });
         }
     }
   },

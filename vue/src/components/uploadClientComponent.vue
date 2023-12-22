@@ -59,7 +59,7 @@
               }).catch((error) => {
             const response = error.response;
             if (response.status === 500 || response.status === 400) {
-              alert("Error uploading file")
+                alert(error.response.data.message)
               this.overlay = false;
             }
           });

@@ -671,9 +671,7 @@ export default {
               }
               item.date_of_entry = new Date(item.date_of_entry);
             });
-          } else {
-            alert("Error retrieving client information");
-          }
+          } 
         })
         .catch((error) => {
           const response = error.response;
@@ -683,6 +681,12 @@ export default {
           if (response.status == 403) {
             this.$router.push("/logout")
           }
+          if (response.status === 400) {
+              alert(error.response.data.message)
+          } else {
+            alert("Error retrieving client information");
+          }
+          
         });
     },
     endSecondIntersect(entries, observer, isIntersecting) {
@@ -747,9 +751,7 @@ export default {
               }
               item.date_of_entry = new Date(item.date_of_entry);
             });
-          } else {
-            alert("Error retrieving client information");
-          }
+          } 
         })
         .catch((error) => {
           const response = error.response;
@@ -759,6 +761,12 @@ export default {
           if (response.status == 403) {
             this.$router.push("/logout")
           }
+          if (response.status === 400) {
+              alert(error.response.data.message)
+          } else {
+            alert("Error retrieving client information");
+          }
+          
         });
     },
     endDuplicateIntersect(entries, observer, isIntersecting) {
@@ -953,7 +961,9 @@ export default {
          
               this.emailRegistrationErrorMsg =
                 "Email is already being used by an account. Refresh";
+                alert(error.response.data.message)
             }
+            
           });
       }
     },
@@ -1008,8 +1018,6 @@ export default {
               item.date_of_entry = dateEntry.substring(0, 10);
             });
             this.$store.commit("SET_CLIENT_LIST", response.data);
-          } else {
-            alert("Error retrieving client information");
           }
         })
         .catch((error) => {
@@ -1019,6 +1027,11 @@ export default {
           }
           if (response.status == 403) {
             this.$router.push("/logout")
+          }
+          if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
+            alert("Error retrieving client information");
           }
         });
     },
@@ -1054,6 +1067,12 @@ export default {
 
           // this.listOfDuplicateClients = response.data;
         }
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
       });
     },
     editItem(item) {
@@ -1076,10 +1095,16 @@ export default {
           if (response.status == 200) {
             this.clientList.splice(this.editedIndex, 1);
             alert("Client successfully removed!");
-          } else {
+          } 
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
             alert("Error removing client!");
           }
-        });
+      });
       this.closeDelete();
     },
     closeDelete() {
@@ -1134,6 +1159,12 @@ export default {
         if (response.status == 200) {
           this.familyList = response.data;
         }
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
       });
     },
     save() {
@@ -1161,10 +1192,16 @@ export default {
               // this.getEventDetailsCall();
               this.selectedClients = [];
               this.selectedFamily = {};
+            }
+          })
+          .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
             } else {
               alert("Error adding clients to roster");
             }
-          });
+      });
 
         this.close1();
       }
@@ -1183,10 +1220,16 @@ export default {
             // this.getEventDetailsCall();
             this.selectedClients = [];
             this.newFamily = "";
-          } else {
+          }
+        })
+        .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
             alert("Error adding clients to roster");
           }
-        });
+      });
 
       this.close1();
     },
@@ -1201,16 +1244,16 @@ export default {
             if (response.status == 200) {
               alert("Successfully added client");
               this.getClientTable();
-            } else {
-              alert("Error adding clients to roster");
-            }
+            } 
           })
           .catch((error) => {
               const response = error.response;
               this.emailRegistrationErrors = true;
               if (response.status === 400) {
                 this.getClientTable();
-               alert("There were problems registering this user with this email.");
+                alert(error.response.data.message)
+              } else {
+                alert("Error adding clients to roster");              
               }
             })
         this.newClientDialog = false

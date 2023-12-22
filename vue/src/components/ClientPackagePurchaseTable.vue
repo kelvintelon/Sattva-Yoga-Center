@@ -186,7 +186,13 @@ export default {
           } else {
             this.packages = response.data;
           }
-        } else {
+        } 
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            } else {
           alert("Error retrieving package information");
         }
       });

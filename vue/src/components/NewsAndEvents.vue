@@ -28,6 +28,12 @@ export default {
            this.newsAndEventsDescription = response.data;
         }
       })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
+      });
     },
     updateNewsAndEventsDescription(event) {
       websiteDescriptionService.updateNewsAndEventsDescription({description: event.target.value}).then((response) => {
@@ -35,6 +41,12 @@ export default {
           
           // this.readOnlyDescription = newDescription.description;
         }
+      })
+      .catch((error) => {
+            const response = error.response;
+            if (response.status === 400) {
+              alert(error.response.data.message)
+            }
       });
     },
   },
